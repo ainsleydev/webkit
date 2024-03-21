@@ -1,10 +1,9 @@
 package webkit
 
 import (
+	"log/slog"
 	"net/http"
 	"strings"
-
-	"github.com/ainsleydev/webkit/pkg/logger"
 )
 
 type (
@@ -47,6 +46,16 @@ func (a *Kit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.mux.ServeHTTP(w, r)
 }
 
+// ServeHTTP wraps the Handler function to a Handler so that
+// it satisfies the http.Handler interface.
+func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	err := h(NewContext(w, r))
+	if err != nil {
+		slog.Error("Handling HTTP route: " + err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
 // Plug adds a middleware function to the chain. These are called after
 // the funcs that are passed directly to the route-level handlers.
 //
@@ -57,14 +66,14 @@ func (a *Kit) Plug(plugs ...Plug) {
 
 // Start starts the HTTP server.
 func (a *Kit) Start(address string) error {
-	logger.Info("App listening on address: " + address)
+	slog.Info("App listening on address: " + address)
 	return http.ListenAndServe(address, a.mux)
 }
 
 var DefaultErrorHandler = func(ctx *Context, err error) error {
 	ctx.Response.WriteHeader(http.StatusInternalServerError)
 	if err != nil {
-		logger.Error("Handling HTTP route: " + err.Error())
+		slog.Error("Handling HTTP route: " + err.Error())
 	}
 	return nil
 }
@@ -91,7 +100,7 @@ func (a *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug)
 		}
 		if err := h(ctx); err != nil {
 			if handleErr := a.ErrorHandler(ctx, err); handleErr != nil {
-				logger.Error("Handling error: %v", handleErr)
+				slog.Error("Handling error: %v", handleErr)
 			}
 			return
 		}
