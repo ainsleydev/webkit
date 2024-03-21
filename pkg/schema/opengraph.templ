@@ -1,0 +1,164 @@
+package seo
+
+// OpenGraph represents web page information according to OGP.
+// See https://ogp.me/ for more details.
+type OpenGraphProps struct {
+	// Basic Metadata - https://ogp.me/#metadata
+	Title string           `json:"title"`
+	Type  string           `json:"type"`
+	Image []OpengraphImageProps `json:"image"`
+	URL   string           `json:"url"`
+
+	// Optional Metadata - https://ogp.me/#optional
+	Audio       []OpengraphAudioProps `json:"audio"`
+	Description string           `json:"description"`
+	Determiner  string           `json:"determiner"`
+	Locale      string           `json:"locale"`
+	LocaleAlt   []string         `json:"locale_alternate"`
+	SiteName    string           `json:"site_name"`
+	Video       []OpengraphVideoProps `json:"video"`
+}
+
+// OpengraphImage represents a structure of "og:image".
+// "og:image" might have following properties:
+//   - og:image:url
+//   - og:image:secure_url
+//   - og:image:type
+//   - og:image:width
+//   - og:image:height
+//   - og:image:alt
+type OpengraphImageProps struct {
+	URL       string `json:"url"`
+	SecureURL string `json:"secure_url"`
+	Type      string `json:"type"` // Content-Type
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+	Alt       string `json:"alt"`
+}
+
+// OpengraphVideo represents a structure of "og:video".
+// "og:video" might have following properties:
+//   - og:video:url
+//   - og:video:secure_url
+//   - og:video:type
+//   - og:video:width
+//   - og:video:height
+type OpengraphVideoProps struct {
+	URL       string `json:"url"`
+	SecureURL string `json:"secure_url"`
+	Type      string `json:"type"` // Content-Type
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+	// Duration in seconds
+	Duration int `json:"duration"`
+}
+
+// OpengraphAudio represents a structure of "og:audio".
+// "og:audio" might have following properties:
+//   - og:audio:url
+//   - og:audio:secure_url
+//   - og:audio:type
+type OpengraphAudioProps struct {
+	URL       string `json:"url"`
+	SecureURL string `json:"secure_url"`
+	Type      string `json:"type"` // Content-Type
+}
+
+templ OpenGraph(props OpenGraphProps) {
+    if props.Title != "" {
+        <meta property="og:title" content="{ .Title }" />
+    }
+    if props.Description != "" {
+        <meta property="og:description" content="{ .Description }" />
+    }
+    if props.Type != "" {
+        <meta property="og:type" content="{ .Type }" />
+    }
+    if props.URL != "" {
+        <meta property="og:url" content="{ .URL }" />
+    }
+    if len(props.Image) > 0 {
+        for _, image := range props.Image {
+           @OpenGraphImage(image)
+        }
+    }
+    if len(props.Audio) > 0 {
+        for _, audio := range props.Audio {
+            @OpengraphAudio(audio)
+        }
+    }
+    if props.Determiner != "" {
+        <meta property="og:determiner" content="{ .Determiner }" />
+    }
+    if props.Locale != "" {
+        <meta property="og:locale" content="{ .Locale }" />
+    }
+    if len(props.LocaleAlt) > 0 {
+        for _, locale := range props.LocaleAlt {
+            <meta property="og:locale:alternate" content="{ locale }" />
+        }
+    }
+    if props.SiteName != "" {
+        <meta property="og:site_name" content="{ .SiteName }" />
+    }
+    if len(props.Video) > 0 {
+        for _, video := range props.Video {
+           @OpengraphVideo(video)
+        }
+    }
+}
+
+templ OpenGraphImage(props OpengraphImageProps) {
+    if props.URL != "" {
+        <meta property="og:image" content="{ props.URL }" />
+    }
+    if props.SecureURL != "" {
+        <meta property="og:image:secure_url" content="{ props.SecureURL }" />
+    }
+    if props.Type != "" {
+        <meta property="og:image:type" content="{ props.Type }" />
+    }
+    if props.Width > 0 {
+        <meta property="og:image:width" content="{ props.Width }" />
+    }
+    if props.Height > 0 {
+        <meta property="og:image:height" content="{ props.Height }" />
+    }
+    if props.Alt != "" {
+        <meta property="og:image:alt" content="{ props.Alt }" />
+    }
+
+}
+
+templ OpengraphVideo(props OpengraphVideoProps) {
+    if props.URL != "" {
+        <meta property="og:video" content="{ props.URL }" />
+    }
+    if props.SecureURL != "" {
+        <meta property="og:video:secure_url" content="{ props.SecureURL }" />
+    }
+    if props.Type != "" {
+        <meta property="og:video:type" content="{ props.Type }" />
+    }
+    if props.Width > 0 {
+        <meta property="og:video:width" content="{ props.Width }" />
+    }
+    if props.Height > 0 {
+        <meta property="og:video:height" content="{ props.Height }" />
+    }
+    if props.Duration > 0 {
+        <meta property="og:video:duration" content="{ props.Duration }" />
+    }
+}
+
+templ OpengraphAudio(props OpengraphAudioProps) {
+    if props.URL != "" {
+        <meta property="og:audio" content="{ props.URL }" />
+    }
+    if props.SecureURL != "" {
+        <meta property="og:audio:secure_url" content="{ props.SecureURL }" />
+    }
+    if props.Type != "" {
+        <meta property="og:audio:type" content="{ props.Type }" />
+    }
+}
