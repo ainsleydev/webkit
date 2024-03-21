@@ -14,11 +14,12 @@ func RedirectSlashes(next webkit.Handler) webkit.Handler {
 	return func(ctx *webkit.Context) error {
 		r := ctx.Request
 		path := r.URL.Path
-		if len(path) > 1 && path[len(path)-1] == '/' {
+
+		if len(path) > 1 && path[len(path)-1] != '/' {
 			if r.URL.RawQuery != "" {
-				path = fmt.Sprintf("%s?%s", path[:len(path)-1], r.URL.RawQuery)
+				path = fmt.Sprintf("%s/?%s", path, r.URL.RawQuery)
 			} else {
-				path = path[:len(path)-1]
+				path = path + "/"
 			}
 			redirectURL := fmt.Sprintf("//%s%s", r.Host, path)
 			return ctx.Redirect(301, redirectURL)

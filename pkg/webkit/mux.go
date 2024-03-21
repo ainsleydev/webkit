@@ -1,11 +1,10 @@
 package webkit
 
 import (
-	"log/slog"
 	"net/http"
 	"strings"
 
-	log "github.com/ainsleydev/webkit/pkg/logger"
+	"github.com/ainsleydev/webkit/pkg/logger"
 )
 
 type (
@@ -17,7 +16,14 @@ type (
 	Kit struct {
 		ErrorHandler ErrorHandler
 		mux          *http.ServeMux
+		routes       []Route
 		plugs        []Plug
+	}
+	// Route contains a handler and information for matching against requests.
+	Route struct {
+		Path   string
+		Method string
+		Name   string
 	}
 	// Handler is a function that handles HTTP requests.
 	Handler func(c *Context) error
@@ -51,13 +57,14 @@ func (a *Kit) Plug(plugs ...Plug) {
 
 // Start starts the HTTP server.
 func (a *Kit) Start(address string) error {
+	logger.Info("App listening on address: " + address)
 	return http.ListenAndServe(address, a.mux)
 }
 
-func DefaultErrorHandler(ctx *Context, err error) error {
+var DefaultErrorHandler = func(ctx *Context, err error) error {
 	ctx.Response.WriteHeader(http.StatusInternalServerError)
 	if err != nil {
-		slog.Error("Handling HTTP route: " + err.Error())
+		logger.Error("Handling HTTP route: " + err.Error())
 	}
 	return nil
 }
@@ -65,6 +72,10 @@ func DefaultErrorHandler(ctx *Context, err error) error {
 // Add registers a new route for an HTTP method and path with matching handler
 // in the router with optional route-level plugs.
 func (a *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug) {
+	a.routes = append(a.routes, Route{
+		Path:   pattern,
+		Method: method,
+	})
 	a.mux.HandleFunc(strings.Join([]string{method, pattern}, " "), func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != method {
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -80,7 +91,7 @@ func (a *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug)
 		}
 		if err := h(ctx); err != nil {
 			if handleErr := a.ErrorHandler(ctx, err); handleErr != nil {
-				log.Error("Handling error: %v", handleErr)
+				logger.Error("Handling error: %v", handleErr)
 			}
 			return
 		}

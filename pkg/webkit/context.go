@@ -37,6 +37,11 @@ func (c *Context) Set(key string, value any) {
 	c.ctx = context.WithValue(c.ctx, key, value)
 }
 
+// Context returns the underlying standard context.
+func (c *Context) Context() context.Context {
+	return c.ctx
+}
+
 // Param retrieves a parameter from the route parameters.
 func (c *Context) Param(key string) string {
 	return c.Request.PathValue(key)

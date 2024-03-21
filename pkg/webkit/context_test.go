@@ -1,6 +1,7 @@
 package webkit
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -21,6 +22,13 @@ func TestContext_GetSet(t *testing.T) {
 	c.Set("test", "value")
 	got := c.Get("test")
 	assert.Equal(t, got, "value")
+}
+
+func TestContext_Context(t *testing.T) {
+	c := NewContext(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/url", nil))
+	got := c.Context()
+	assert.NotNil(t, got)
+	assert.IsType(t, got, context.Background())
 }
 
 func TestContext_Param(t *testing.T) {
