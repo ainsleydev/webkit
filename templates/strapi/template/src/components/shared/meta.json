@@ -1,0 +1,35 @@
+{
+	"collectionName": "components_shared_meta",
+	"info": {
+		"displayName": "Meta",
+		"icon": "twitter",
+		"description": ""
+	},
+	"options": {},
+	"attributes": {
+		"notes": {
+			"type": "text",
+			"private": true
+		},
+		"title": {
+			"type": "string",
+			"required": false
+		},
+		"description": {
+			"type": "text",
+			"required": false
+		},
+		"type": {
+			"type": "string"
+		},
+		"video": {
+			"type": "string"
+		},
+		"image": {
+			"type": "media",
+			"multiple": false,
+			"required": false,
+			"allowedTypes": ["images"]
+		}
+	}
+}

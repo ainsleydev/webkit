@@ -1,0 +1,13 @@
+{
+	"collectionName": "components_blocks_contents",
+	"info": {
+		"displayName": "Content",
+		"icon": "file"
+	},
+	"options": {},
+	"attributes": {
+		"content": {
+			"type": "richtext"
+		}
+	}
+}

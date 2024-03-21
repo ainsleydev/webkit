@@ -1,0 +1,16 @@
+{
+	"collectionName": "components_shared_code_injections",
+	"info": {
+		"displayName": "Code Injection",
+		"icon": "code"
+	},
+	"options": {},
+	"attributes": {
+		"header": {
+			"type": "text"
+		},
+		"footer": {
+			"type": "text"
+		}
+	}
+}

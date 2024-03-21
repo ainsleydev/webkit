@@ -1,0 +1,26 @@
+{
+	"name": "ainsleydev/strap-template",
+	"version": "0.0.1",
+	"description": "Strapi Template",
+	"license": "MIT",
+	"author": {
+		"name": "ainsley.dev LTD",
+		"email": "hello@ainsley.dev",
+		"url": "https://ainsley.dev"
+	},
+	"keywords": [
+		"strapi",
+		"template"
+	],
+	"maintainers": [
+		{
+			"name": "Ainsley Clark",
+			"email": "hello@ainsley.dev",
+			"url": "https://ainsley.dev"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/TODO/TODO.git"
+	}
+}

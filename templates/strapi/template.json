@@ -1,0 +1,19 @@
+{
+	"package": {
+		"dependencies": {
+			"@strapi/plugin-cloud": "4.15.5",
+			"@strapi/plugin-i18n": "4.15.5",
+			"@strapi/plugin-users-permissions": "4.15.5",
+			"@strapi/provider-email-mailgun": "^4.14.3",
+			"@strapi/provider-upload-aws-s3": "4.15.5",
+			"strapi-plugin-config-sync": "^1.2.1",
+			"strapi-plugin-duplicate-button": "^1.1.14",
+			"strapi-plugin-navigation": "^2.2.16",
+			"strapi-plugin-populate-deep": "^3.0.0",
+			"strapi-plugin-react-editorjs": "file:src/plugins/strapi-plugin-react-editorjs",
+			"strapi-plugin-responsive-image": "^1.2.0",
+			"strapi-plugin-rest-cache": "^4.2.8",
+			"strapi-plugin-sitemap": "^3.0.6"
+		}
+	}
+}
