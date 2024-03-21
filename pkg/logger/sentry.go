@@ -8,16 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-package log
-
-import (
-	"reflect"
-	"time"
-
-	"github.com/getsentry/sentry-go"
-	"github.com/sirupsen/logrus"
-)
-
 // severityMap is a mapping of logrus log level to sentry log level.
 var severityMap = map[logrus.Level]sentry.Level{
 	logrus.DebugLevel: sentry.LevelDebug,
@@ -96,4 +86,3 @@ func (m *SentryEventIdentityModifier) ApplyToEvent(event *sentry.Event, hint *se
 }
 
 var sentryModifier = &SentryEventIdentityModifier{}
-

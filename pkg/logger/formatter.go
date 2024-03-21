@@ -183,13 +183,13 @@ func (h *LocalHandler) computeAttrs(ctx context.Context, r slog.Record) (map[str
 		h.mtx.Unlock()
 	}()
 	if err := h.handler.Handle(ctx, r); err != nil {
-		return nil, fmt.Errorf("error when calling inner handler's Handle: %w", err)
+		return nil, fmt.Errorf("error when calling inner handler's Add: %w", err)
 	}
 
 	var attrs map[string]any
 	err := json.Unmarshal(h.bytes.Bytes(), &attrs)
 	if err != nil {
-		return nil, fmt.Errorf("error when unmarshaling inner handler's Handle result: %w", err)
+		return nil, fmt.Errorf("error when unmarshaling inner handler's Add result: %w", err)
 	}
 	return attrs, nil
 }

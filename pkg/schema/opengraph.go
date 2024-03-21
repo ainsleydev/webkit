@@ -76,8 +76,5 @@ func (og OpenGraph) Render() string {
 	if og.Title != "" {
 		b.WriteString("<meta property=\"og:title\" content=\"")
 	}
-
-	ff := ""
-
-	ff.
+	return ""
 }
