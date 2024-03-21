@@ -15,9 +15,7 @@ type TwitterCardProps struct {
 }
 
 templ TwitterCard(props TwitterCardProps) {
-	if props.Card != "" {
-		<meta name="twitter:card" content="summary_large_image" />
-	}
+	<meta name="twitter:card" content="summary_large_image" />
 	// TODO: Maybe we should call a function for site instead of passing it?
 	if props.Site != "" {
 		<meta name="twitter:site" content={props.Site} />
