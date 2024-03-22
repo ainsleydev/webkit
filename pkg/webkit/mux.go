@@ -70,9 +70,15 @@ func (a *Kit) Start(address string) error {
 	return http.ListenAndServe(address, a.mux)
 }
 
+// ErrorKey is the key used to store the error in the context.
+const ErrorKey = "error"
+
+// DefaultErrorHandler is the default error handler that is called when a route
+// handler returns an error.
 var DefaultErrorHandler = func(ctx *Context, err error) error {
 	ctx.Response.WriteHeader(http.StatusInternalServerError)
 	if err != nil {
+		ctx.Set("error", err)
 		slog.Error("Handling HTTP route: " + err.Error())
 	}
 	return nil

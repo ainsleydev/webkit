@@ -39,6 +39,10 @@ func (c *Client) PerformRequest(ctx context.Context, method, url string, body an
 
 }
 
+func (c *Client) doGetRequest() {
+
+}
+
 type Response[T any] struct {
 	Docs []T `json:"products"`
 	//Id        string    `json:"id"`

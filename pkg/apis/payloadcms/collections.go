@@ -22,26 +22,54 @@ const collectsBasePath = "collects"
 
 // CollectServiceOp handles communication with the collect related methods of
 // the Shopify API.
-type CollectServiceOp struct {
-	client *Client
+type CollectServiceOp[T any] struct {
+	Client *Client
 }
 
 // https://vladimir.varank.in/notes/2022/05/a-real-life-use-case-for-generics-in-go-api-for-client-side-pagination/
 
-func Find[T any](ctx context.Context, client *Client, collection string) (*Response[T], error) {
+func (c *CollectServiceOp[T]) Find(ctx context.Context, collection string) (*Response[T], error) {
 	//path := `/api/` + collection
-
-	resource := new(Response[T])
-	buf, err := client.PerformRequest(ctx, http.MethodGet, "", nil)
+	buf, err := c.Client.PerformRequest(ctx, http.MethodGet, "", nil)
 	if err != nil {
 		return nil, err
 	}
-
-	if err = json.Unmarshal(buf, resource); err != nil {
+	r := &Response[T]{}
+	if err = json.Unmarshal(buf, r); err != nil {
 		return nil, err
 	}
+	return r, nil
+}
 
-	return resource, nil
+func Find[T *Response[T]](c *CollectServiceOp, ctx context.Context, collection string) (*T, error) {
+	buf, err := c.Client.PerformRequest(ctx, http.MethodGet, "", nil)
+	if err != nil {
+		return nil, err
+	}
+	out := new(T)
+	if err = json.Unmarshal(buf, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *CollectServiceOpp[T]) FindTEMP(ctx context.Context, collection string, response *Response[T]) error {
+	buf, err := c.Client.PerformRequest(ctx, http.MethodGet, "", nil)
+	if err != nil {
+		return err
+	}
+	if err = json.Unmarshal(buf, response); err != nil {
+		return err
+	}
+	return nil
+}
+
+func unmarshal[T any](data []byte) (*T, error) {
+	out := new(T)
+	if err := json.Unmarshal(data, out); err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 // List collects

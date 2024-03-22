@@ -25,11 +25,12 @@ func main() {
 	}
 
 	app.Plug(middleware.Logger)
-	app.Plug(middleware.RequestID)
+	app.Plug(middleware.Recover)
 	app.Plug(middleware.RedirectSlashes)
+	app.Plug(middleware.RequestID)
 
 	app.Get("/", func(ctx *webkit.Context) error {
-		return ctx.String(200, "Hello, World!")
+		return ctx.String(500, "Hello, World!")
 	})
 
 	if err := app.Start(":8080"); err != nil {

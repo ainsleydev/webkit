@@ -17,21 +17,22 @@ import (
 // print in color, otherwise it will print in black and white. Logger prints a
 // request ID if one is provided.
 //
-// Alternatively, look at https://github.com/goware/httplog for a more in-depth
-// http logger with structured logging support.
-//
 // IMPORTANT NOTE: Logger should go before any other middleware that may change
-// the response, such as middleware.Recoverer. Example:
+// the response, such as middleware.Recover. Example:
 //
-//	r := chi.NewRouter()
-//	r.Use(middleware.Logger)        // <--<< Logger should come before Recoverer
-//	r.Use(middleware.Recoverer)
+//	app := webkit.New()
+//	app.Plug(middleware.Logger)        // <--<< Logger should come before Recover
+//	app.Plug(middleware.Recover)
 //	r.Get("/", handler)
 func Logger(next webkit.Handler) webkit.Handler {
 	return func(ctx *webkit.Context) error {
 		start := time.Now()
 		rw := &responseWrapper{ResponseWriter: ctx.Response}
 		req := ctx.Request
+
+		if strings.Contains(req.URL.Path, "favicon.ico") {
+			return next(ctx)
+		}
 
 		next.ServeHTTP(rw, ctx.Request)
 
@@ -40,8 +41,16 @@ func Logger(next webkit.Handler) webkit.Handler {
 			scheme = "https"
 		}
 
-		// TODO: Think we need to add a coloured pretty print of the status code.
-		msg := fmt.Sprintf("[%s] - %s://%s%s %s", strings.ToUpper(req.Method), scheme, req.Host, req.RequestURI, req.Proto)
+		level := statusLevel(rw.status)
+
+		msg := fmt.Sprintf("%s [%s] - %s://%s%s %s",
+			statusLabel(rw.status),
+			strings.ToUpper(req.Method),
+			scheme,
+			req.Host,
+			req.RequestURI,
+			req.Proto,
+		)
 
 		fields := []any{
 			slog.String("url", req.URL.Path),
@@ -49,15 +58,16 @@ func Logger(next webkit.Handler) webkit.Handler {
 			slog.Int("status", rw.status),
 			slog.String("remote_addr", req.RemoteAddr),
 			slog.Duration("latency", time.Now().Sub(start)),
-			slog.Any("request_id", ctx.Get(RequestIDContextKey)),
+			slog.Any(RequestIDContextKey, ctx.Get(RequestIDContextKey)),
+			slog.String("user_agent", req.UserAgent()),
+			slog.Any(webkit.ErrorKey, ctx.Get("error")),
 		}
 
-		if env.IsProduction() {
-			slog.DebugContext(ctx.Context(), msg, fields...)
-			return nil
+		if !env.IsProduction() {
+			fields = fields[2:]
 		}
 
-		slog.Info(msg, fields[2:]...)
+		slog.Log(ctx.Context(), level, msg, fields...)
 
 		return nil
 	}
@@ -73,4 +83,37 @@ type responseWrapper struct {
 func (rw *responseWrapper) WriteHeader(statusCode int) {
 	rw.status = statusCode
 	rw.ResponseWriter.WriteHeader(statusCode)
+}
+
+// statusLevel returns a slog.Level based on the HTTP status code.
+func statusLevel(status int) slog.Level {
+	switch {
+	case status <= 0:
+		return slog.LevelWarn
+	case status < 400: // for codes in 100s, 200s, 300s
+		return slog.LevelInfo
+	case status >= 400 && status < 500:
+		// switching to info level to be less noisy
+		return slog.LevelInfo
+	case status >= 500:
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
+}
+
+// statusLabel returns a human readable status code label.
+func statusLabel(status int) string {
+	switch {
+	case status >= 100 && status < 300:
+		return "OK"
+	case status >= 300 && status < 400:
+		return "Redirect"
+	case status >= 400 && status < 500:
+		return "Client Error"
+	case status >= 500:
+		return "Server Error"
+	default:
+		return "Unknown"
+	}
 }
