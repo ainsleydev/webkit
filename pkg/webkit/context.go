@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/goccy/go-json"
@@ -83,4 +84,37 @@ func (c *Context) JSON(status int, v any) error {
 	c.Response.Header().Set("Content-Type", "application/json")
 	c.Response.WriteHeader(status)
 	return json.NewEncoder(c.Response).Encode(v)
+}
+
+// IsTLS returns true if HTTP connection is TLS otherwise false.
+func (c *Context) IsTLS() bool {
+	return c.Request.TLS != nil
+}
+
+// IsWebSocket returns true if HTTP connection is WebSocket otherwise false.
+func (c *Context) IsWebSocket() bool {
+	upgrade := c.Request.Header.Get("Upgrade")
+	return strings.EqualFold(upgrade, "websocket")
+}
+
+// Scheme returns the HTTP protocol scheme, `http` or `https`.
+func (c *Context) Scheme() string {
+	// Can't use `r.Request.URL.Scheme`
+	// See: https://groups.google.com/forum/#!topic/golang-nuts/pMUkBlQBDF0
+	if c.IsTLS() {
+		return "https"
+	}
+	if scheme := c.Request.Header.Get("X-Forwarded-Proto"); scheme != "" {
+		return scheme
+	}
+	if scheme := c.Request.Header.Get("X-Forwarded-Protocol"); scheme != "" {
+		return scheme
+	}
+	if ssl := c.Request.Header.Get("X-Forwarded-Ssl"); ssl == "on" {
+		return "https"
+	}
+	if scheme := c.Request.Header.Get("X-Url-Scheme"); scheme != "" {
+		return scheme
+	}
+	return "http"
 }
