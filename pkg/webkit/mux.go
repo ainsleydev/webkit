@@ -99,7 +99,7 @@ func (a *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug)
 		ctx := NewContext(w, r)
 		h := handler
 		for i := len(plugs) - 1; i >= 0; i-- {
-			h = a.plugs[i](h)
+			h = plugs[i](h)
 		}
 		for i := len(a.plugs) - 1; i >= 0; i-- {
 			h = a.plugs[i](h)

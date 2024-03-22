@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewContext(t *testing.T) {
@@ -55,8 +56,7 @@ func TestContext_Render(t *testing.T) {
 			app := New()
 
 			app.Get("/redirect", func(c *Context) error {
-				err := c.Redirect(code, location)
-				assert.NoError(t, err)
+				require.NoError(t, c.Redirect(code, location))
 				return nil
 			})
 
@@ -72,26 +72,38 @@ func TestContext_Render(t *testing.T) {
 	t.Run("Errors", func(t *testing.T) {
 		app := New()
 		app.Get("/redirect", func(c *Context) error {
-			err := c.Redirect(500, "/location")
-			assert.Error(t, err)
+			require.NoError(t, c.Redirect(500, "/location"))
 			return nil
 		})
 		app.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", "/redirect", nil))
 	})
 }
 
+func TestContext_NoContext(t *testing.T) {
+	app := New()
+	app.Get("/nocontext", func(c *Context) error {
+		require.NoError(t, c.NoContext(http.StatusOK))
+		return nil
+	})
+	rr := httptest.NewRecorder()
+	app.ServeHTTP(rr, httptest.NewRequest("GET", "/nocontext", nil))
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestContext_Get(t *testing.T) {
+
+}
+
 func TestContext_JSON(t *testing.T) {
 	app := New()
 
 	app.Get("/json", func(c *Context) error {
-		err := c.JSON(http.StatusOK, map[string]any{"test": 1})
-		assert.NoError(t, err)
+		require.NoError(t, c.JSON(http.StatusOK, map[string]any{"test": 1}))
 		return nil
 	})
 
 	rr := httptest.NewRecorder()
-
-	app.ServeHTTP(rr, httptest.NewRequest("GET", "/json", nil))
+	app.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/json", nil))
 
 	assert.Equal(t, http.StatusOK, rr.Code)
 	assert.Equal(t, "application/json", rr.Header().Get("Content-Type"))

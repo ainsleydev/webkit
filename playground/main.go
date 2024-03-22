@@ -28,6 +28,7 @@ func main() {
 	app.Plug(middleware.Recover)
 	app.Plug(middleware.RedirectSlashes)
 	app.Plug(middleware.RequestID)
+	app.Plug(middleware.Gzip)
 
 	app.Get("/", func(ctx *webkit.Context) error {
 		return ctx.String(500, "Hello, World!")

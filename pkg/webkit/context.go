@@ -62,12 +62,10 @@ func (c *Context) Redirect(code int, url string) error {
 	return nil
 }
 
-// JSON writes a JSON response with the provided status code and data.
-// The header is set to application/json.
-func (c *Context) JSON(status int, v any) error {
-	c.Response.Header().Set("Content-Type", "application/json")
+// NoContext sends a response with no response body and the provided status code.
+func (c *Context) NoContext(status int) error {
 	c.Response.WriteHeader(status)
-	return json.NewEncoder(c.Response).Encode(v)
+	return nil
 }
 
 // String writes a plain text response with the provided status code and data.
@@ -77,4 +75,12 @@ func (c *Context) String(status int, v string) error {
 	c.Response.WriteHeader(status)
 	_, err := c.Response.Write([]byte(v))
 	return err
+}
+
+// JSON writes a JSON response with the provided status code and data.
+// The header is set to application/json.
+func (c *Context) JSON(status int, v any) error {
+	c.Response.Header().Set("Content-Type", "application/json")
+	c.Response.WriteHeader(status)
+	return json.NewEncoder(c.Response).Encode(v)
 }
