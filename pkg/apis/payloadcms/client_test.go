@@ -14,18 +14,14 @@ type Products struct {
 }
 
 func TestClient_PerformRequest(t *testing.T) {
-	c := payloadcms.CollectServiceOp[Products]{Client: &payloadcms.Client{}}
+	c := payloadcms.CollectServiceOp{Client: &payloadcms.Client{}}
 
-	got, err := c.Find(context.TODO(), "collection")
-
-	fmt.Println(got.Docs[0].ID)
-
-	r := payloadcms.Response[Products]{}
+	r := payloadcms.ListResponse[Products]{}
 	err := c.Find(context.TODO(), "collection", &r)
 	if err != nil {
 		fmt.Print(err)
 		return
 	}
 
-	fmt.Println(find)
+	fmt.Println(r)
 }

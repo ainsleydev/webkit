@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/ainsleydev/webkit/pkg/app"
 	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/log"
 	"github.com/ainsleydev/webkit/pkg/middleware"
@@ -14,7 +15,7 @@ type Env struct {
 }
 
 func main() {
-	app := webkit.New()
+	kit := webkit.New()
 
 	log.Bootstrap("Playground")
 
@@ -24,18 +25,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	app.Plug(middleware.Logger)
-	app.Plug(middleware.Recover)
-	app.Plug(middleware.RedirectSlashes)
-	app.Plug(middleware.RequestID)
-	app.Plug(middleware.Gzip)
-	app.Plug(middleware.CORS)
+	app.StartInternalHTTP()
 
-	app.Get("/", func(ctx *webkit.Context) error {
-		return ctx.String(500, "Hello, World!")
+	kit.Plug(middleware.Logger)
+	kit.Plug(middleware.Recover)
+	kit.Plug(middleware.TrailingSlashRedirect)
+	kit.Plug(middleware.NonWWWRedirect)
+	kit.Plug(middleware.RequestID)
+	kit.Plug(middleware.Gzip)
+	kit.Plug(middleware.CORS)
+
+	kit.Get("/ping", webkit.PingHandler)
+	kit.Get("/", func(ctx *webkit.Context) error {
+		return ctx.String(500, "Hello, Crab Poo!")
 	})
 
-	if err := app.Start(":8080"); err != nil {
+	if err := kit.Start(":8080"); err != nil {
 		slog.Error("Failed to start server: %v", err)
 	}
 }

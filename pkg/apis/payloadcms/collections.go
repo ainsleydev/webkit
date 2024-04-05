@@ -22,46 +22,44 @@ const collectsBasePath = "collects"
 
 // CollectServiceOp handles communication with the collect related methods of
 // the Shopify API.
-type CollectServiceOp[T any] struct {
+type CollectServiceOp struct {
 	Client *Client
+}
+
+type ListResponse[T any] struct {
+	Docs []T `json:"products"`
+	//Id        string    `json:"id"`
+	//Title     string    `json:"title"`
+	//Content   string    `json:"content"`
+	//Slug      string    `json:"slug"`
+	//CreatedAt time.Time `json:"createdAt"`
+	//UpdatedAt time.Time `json:"updatedAt"`
+
+	Total int `json:"total"`
+	//TotalDocs     int  `json:"totalDocs"`
+	//Limit         int  `json:"limit"`
+	//TotalPages    int  `json:"totalPages"`
+	//Page          int  `json:"page"`
+	//PagingCounter int  `json:"pagingCounter"`
+	//HasPrevPage   bool `json:"hasPrevPage"`
+	//HasNextPage   bool `json:"hasNextPage"`
+	//PrevPage      any  `json:"prevPage"`
+	//NextPage      any  `json:"nextPage"`
 }
 
 // https://vladimir.varank.in/notes/2022/05/a-real-life-use-case-for-generics-in-go-api-for-client-side-pagination/
 
-func (c *CollectServiceOp[T]) Find(ctx context.Context, collection string) (*Response[T], error) {
+func (c *CollectServiceOp) Find(ctx context.Context, collection string, out ListResponse[any]) (ListResponse[T any], error) {
 	//path := `/api/` + collection
 	buf, err := c.Client.PerformRequest(ctx, http.MethodGet, "", nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	r := &Response[T]{}
 	if err = json.Unmarshal(buf, r); err != nil {
 		return nil, err
 	}
 	return r, nil
-}
-
-func Find[T *Response[T]](c *CollectServiceOp, ctx context.Context, collection string) (*T, error) {
-	buf, err := c.Client.PerformRequest(ctx, http.MethodGet, "", nil)
-	if err != nil {
-		return nil, err
-	}
-	out := new(T)
-	if err = json.Unmarshal(buf, out); err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *CollectServiceOpp[T]) FindTEMP(ctx context.Context, collection string, response *Response[T]) error {
-	buf, err := c.Client.PerformRequest(ctx, http.MethodGet, "", nil)
-	if err != nil {
-		return err
-	}
-	if err = json.Unmarshal(buf, response); err != nil {
-		return err
-	}
-	return nil
 }
 
 func unmarshal[T any](data []byte) (*T, error) {

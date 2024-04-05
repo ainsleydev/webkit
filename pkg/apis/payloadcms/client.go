@@ -42,24 +42,3 @@ func (c *Client) PerformRequest(ctx context.Context, method, url string, body an
 func (c *Client) doGetRequest() {
 
 }
-
-type Response[T any] struct {
-	Docs []T `json:"products"`
-	//Id        string    `json:"id"`
-	//Title     string    `json:"title"`
-	//Content   string    `json:"content"`
-	//Slug      string    `json:"slug"`
-	//CreatedAt time.Time `json:"createdAt"`
-	//UpdatedAt time.Time `json:"updatedAt"`
-
-	Total int `json:"total"`
-	//TotalDocs     int  `json:"totalDocs"`
-	//Limit         int  `json:"limit"`
-	//TotalPages    int  `json:"totalPages"`
-	//Page          int  `json:"page"`
-	//PagingCounter int  `json:"pagingCounter"`
-	//HasPrevPage   bool `json:"hasPrevPage"`
-	//HasNextPage   bool `json:"hasNextPage"`
-	//PrevPage      any  `json:"prevPage"`
-	//NextPage      any  `json:"nextPage"`
-}

@@ -84,6 +84,11 @@ var DefaultErrorHandler = func(ctx *Context, err error) error {
 	return nil
 }
 
+// PingHandler is a handler that returns a PONG response for health requests.
+var PingHandler = func(ctx *Context) error {
+	return ctx.String(http.StatusOK, "PONG")
+}
+
 // Add registers a new route for an HTTP method and path with matching handler
 // in the router with optional route-level plugs.
 func (a *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug) {
