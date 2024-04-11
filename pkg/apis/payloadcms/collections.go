@@ -15,22 +15,6 @@ type CollectionService struct {
 	Client *Client
 }
 
-// ListResponse represents a list of entities that is sent back
-// from the Payload CMS.
-type ListResponse[T any] struct {
-	Docs          []T  `json:"docs"`
-	Total         int  `json:"total"`
-	TotalDocs     int  `json:"totalDocs"`
-	Limit         int  `json:"limit"`
-	TotalPages    int  `json:"totalPages"`
-	Page          int  `json:"page"`
-	PagingCounter int  `json:"pagingCounter"`
-	HasPrevPage   bool `json:"hasPrevPage"`
-	HasNextPage   bool `json:"hasNextPage"`
-	PrevPage      any  `json:"prevPage"`
-	NextPage      any  `json:"nextPage"`
-}
-
 // Collection represents a collection slug from Payload.
 // It's defined as a string under slug within the Collection Config.
 type Collection string

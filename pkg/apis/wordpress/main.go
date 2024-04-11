@@ -24,6 +24,21 @@ func New(baseURL string) *Client {
 	}
 }
 
+//
+//const (
+//	CollectionUsers      = "users"
+//	CollectionPosts      = "posts"
+//	CollectionPages      = "pages"
+//	CollectionMedia      = "media"
+//	CollectionMeta       = "meta"
+//	CollectionRevisions  = "revisions"
+//	CollectionComments   = "comments"
+//	CollectionTaxonomies = "taxonomies"
+//	CollectionTerms      = "terms"
+//	CollectionStatuses   = "statuses"
+//	CollectionTypes      = "types"
+//)
+
 // Get sends a GET request to the specified WordPress URL and returns the response body.
 // The base URL is prepended to the URL, for example:
 // https://wordpress/wp-json/wp/v2/posts/21
