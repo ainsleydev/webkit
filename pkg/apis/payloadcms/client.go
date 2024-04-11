@@ -15,17 +15,21 @@ import (
 type Client struct {
 	client  *http.Client
 	baseURL string
+	apiKey  string
 
 	Collections CollectionService
+	Media       MediaService
 }
 
 // New creates a new Payload CMS client.
-func New(baseURL string) *Client {
+func New(baseURL, apiKey string) *Client {
 	c := &Client{
 		client:  http.DefaultClient,
 		baseURL: baseURL,
+		apiKey:  apiKey,
 	}
 	c.Collections = CollectionService{Client: c}
+	c.Media = MediaService{Client: c}
 	return c
 }
 
@@ -37,6 +41,8 @@ func (c *Client) Do(ctx context.Context, method, path string, body io.Reader) ([
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "users API-KEY 46aabd6a-7303-4db3-a4ce-40625f47fd93")
 
 	resp, err := c.client.Do(req)
 	if err != nil {
