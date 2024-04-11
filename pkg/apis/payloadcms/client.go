@@ -41,8 +41,8 @@ func (c *Client) Do(ctx context.Context, method, path string, body io.Reader) ([
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "users API-KEY 46aabd6a-7303-4db3-a4ce-40625f47fd93")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "users API-Key "+c.apiKey)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
