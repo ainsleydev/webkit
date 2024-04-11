@@ -1,79 +1,90 @@
 package payloadcms
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/goccy/go-json"
 )
 
-const collectsBasePath = "collects"
-
-// CollectService is an interface for interfacing with the collect endpoints
-// of the Shopify API.
-// See: https://help.shopify.com/api/reference/products/collect
-//type CollectService interface {
-//	List(context.Context, interface{}) ([]Collect, error)
-//	Count(context.Context, interface{}) (int, error)
-//	Get(context.Context, uint64, interface{}) (*Collect, error)
-//	Create(context.Context, Collect) (*Collect, error)
-//	Delete(context.Context, uint64) error
-//}
-
-// CollectServiceOp handles communication with the collect related methods of
+// CollectionService handles communication with the collect related methods of
 // the Shopify API.
-type CollectServiceOp struct {
+type CollectionService struct {
 	Client *Client
 }
 
+// ListResponse represents a list of entities that is sent back
+// from the Payload CMS.
 type ListResponse[T any] struct {
-	Docs []T `json:"products"`
-	//Id        string    `json:"id"`
-	//Title     string    `json:"title"`
-	//Content   string    `json:"content"`
-	//Slug      string    `json:"slug"`
-	//CreatedAt time.Time `json:"createdAt"`
-	//UpdatedAt time.Time `json:"updatedAt"`
-
-	Total int `json:"total"`
-	//TotalDocs     int  `json:"totalDocs"`
-	//Limit         int  `json:"limit"`
-	//TotalPages    int  `json:"totalPages"`
-	//Page          int  `json:"page"`
-	//PagingCounter int  `json:"pagingCounter"`
-	//HasPrevPage   bool `json:"hasPrevPage"`
-	//HasNextPage   bool `json:"hasNextPage"`
-	//PrevPage      any  `json:"prevPage"`
-	//NextPage      any  `json:"nextPage"`
+	Docs          []T  `json:"docs"`
+	Total         int  `json:"total"`
+	TotalDocs     int  `json:"totalDocs"`
+	Limit         int  `json:"limit"`
+	TotalPages    int  `json:"totalPages"`
+	Page          int  `json:"page"`
+	PagingCounter int  `json:"pagingCounter"`
+	HasPrevPage   bool `json:"hasPrevPage"`
+	HasNextPage   bool `json:"hasNextPage"`
+	PrevPage      any  `json:"prevPage"`
+	NextPage      any  `json:"nextPage"`
 }
 
-// https://vladimir.varank.in/notes/2022/05/a-real-life-use-case-for-generics-in-go-api-for-client-side-pagination/
+// Collection represents a collection slug from Payload.
+// It's defined as a string under slug within the Collection Config.
+type Collection string
 
-func (c *CollectServiceOp) Find(ctx context.Context, collection string, out ListResponse[any]) (ListResponse[T any], error) {
-	//path := `/api/` + collection
-	buf, err := c.Client.PerformRequest(ctx, http.MethodGet, "", nil)
+const (
+	// CollectionMedia defines the Payload media collection slug.
+	CollectionMedia Collection = "media"
+	// CollectionUsers defines the Payload users collection slug.
+	CollectionUsers Collection = "users"
+)
+
+// FindById finds a collection entity by its ID.
+func (c CollectionService) FindById(ctx context.Context, collection Collection, id int, out any) error {
+	path := fmt.Sprintf("/api/%s/%d", collection, id)
+	return c.Client.DoAndUnmarshal(ctx, http.MethodGet, path, nil, out)
+}
+
+// FindBySlug finds a collection entity by its slug.
+func (c CollectionService) FindBySlug(ctx context.Context, collection Collection, slug string, out any) error {
+	path := fmt.Sprintf("/api/%s/%s", collection, slug)
+	return c.Client.DoAndUnmarshal(ctx, http.MethodGet, path, nil, out)
+}
+
+// List lists all collection entities.
+func (c CollectionService) List(ctx context.Context, collection Collection, out any) error {
+	path := fmt.Sprintf("/api/%s", collection)
+	return c.Client.DoAndUnmarshal(ctx, http.MethodGet, path, nil, out)
+}
+
+// Create creates a new collection entity.
+func (c CollectionService) Create(ctx context.Context, collection Collection, body any) error {
+	path := fmt.Sprintf("/api/%s", collection)
+	buf, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
-	r := &Response[T]{}
-	if err = json.Unmarshal(buf, r); err != nil {
-		return nil, err
-	}
-	return r, nil
+	_, err = c.Client.Do(ctx, http.MethodPost, path, bytes.NewReader(buf))
+	return err
 }
 
-func unmarshal[T any](data []byte) (*T, error) {
-	out := new(T)
-	if err := json.Unmarshal(data, out); err != nil {
-		return nil, err
+// UpdateByID updates a collection entity by its ID.
+func (c CollectionService) UpdateByID(ctx context.Context, collection Collection, id int, body any) error {
+	path := fmt.Sprintf("/api/%s/%d", collection, id)
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return err
 	}
-	return out, nil
+	_, err = c.Client.Do(ctx, http.MethodPut, path, bytes.NewReader(buf))
+	return err
 }
 
-// List collects
-//func (s *CollectServiceOp) List(ctx context.Context, options interface{}) ([]Collect, error) {
-//	path := fmt.Sprintf("%s.json", collectsBasePath)
-//	resource := new(CollectsResource)
-//	err := s.client.Get(ctx, path, resource, options)
-//	return resource.Collects, err
-//}
+// DeleteByID deletes a collection entity by its ID.
+func (c CollectionService) DeleteByID(ctx context.Context, collection Collection, id int) error {
+	path := fmt.Sprintf("/api/%s/%d", collection, id)
+	_, err := c.Client.Do(ctx, http.MethodDelete, path, nil)
+	return err
+}

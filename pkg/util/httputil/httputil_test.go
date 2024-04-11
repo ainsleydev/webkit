@@ -1,0 +1,162 @@
+package httputil
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestIs2xx(t *testing.T) {
+	tt := map[string]struct {
+		input int
+		want  bool
+	}{
+		"200": {
+			input: 200,
+			want:  true,
+		},
+		"204": {
+			input: 204,
+			want:  true,
+		},
+		"300": {
+			input: 300,
+			want:  false,
+		},
+		"199": {
+			input: 199,
+			want:  false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := Is2xx(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestIs3xx(t *testing.T) {
+	tt := map[string]struct {
+		input int
+		want  bool
+	}{
+		"300": {
+			input: 300,
+			want:  true,
+		},
+		"301": {
+			input: 301,
+			want:  true,
+		},
+		"400": {
+			input: 400,
+			want:  false,
+		},
+		"299": {
+			input: 299,
+			want:  false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := Is3xx(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestIs4xx(t *testing.T) {
+	tt := map[string]struct {
+		input int
+		want  bool
+	}{
+		"400": {
+			input: 400,
+			want:  true,
+		},
+		"401": {
+			input: 401,
+			want:  true,
+		},
+		"500": {
+			input: 500,
+			want:  false,
+		},
+		"399": {
+			input: 399,
+			want:  false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := Is4xx(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestIs5xx(t *testing.T) {
+	tt := map[string]struct {
+		input int
+		want  bool
+	}{
+		"500": {
+			input: 500,
+			want:  true,
+		},
+		"501": {
+			input: 501,
+			want:  true,
+		},
+		"600": {
+			input: 600,
+			want:  false,
+		},
+		"499": {
+			input: 499,
+			want:  false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := Is5xx(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestIsError(t *testing.T) {
+	tt := map[string]struct {
+		input int
+		want  bool
+	}{
+		"400": {
+			input: 400,
+			want:  true,
+		},
+		"500": {
+			input: 500,
+			want:  true,
+		},
+		"200": {
+			input: 200,
+			want:  false,
+		},
+		"599": {
+			input: 599,
+			want:  true,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := IsError(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}

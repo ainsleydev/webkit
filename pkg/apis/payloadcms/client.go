@@ -2,29 +2,43 @@ package payloadcms
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
+	"strings"
+
+	"github.com/goccy/go-json"
 )
 
-type (
-	Client struct {
-		client  *http.Client
-		baseURL string
+// Client represents a Payload CMS client.
+// For more information, see https://payloadcms.com/docs/api.
+type Client struct {
+	client  *http.Client
+	baseURL string
+
+	Collections CollectionService
+}
+
+// New creates a new Payload CMS client.
+func New(baseURL string) *Client {
+	c := &Client{
+		client:  http.DefaultClient,
+		baseURL: baseURL,
 	}
-)
+	c.Collections = CollectionService{Client: c}
+	return c
+}
 
-func (c *Client) PerformRequest(ctx context.Context, method, url string, body any) ([]byte, error) {
-	//kkk, err := json.Marshal(body)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	req, err := http.NewRequest(method, "https://dummyjson.com/products", nil)
+// Do sends an HTTP request and returns the response body as a byte slice.
+// It returns an error if the request fails or if the response status code is not in the 2xx range.
+func (c *Client) Do(ctx context.Context, method, path string, body io.Reader) ([]byte, error) {
+	url := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -35,10 +49,18 @@ func (c *Client) PerformRequest(ctx context.Context, method, url string, body an
 		return nil, err
 	}
 
-	return buf, nil
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, buf)
+	}
 
+	return buf, nil
 }
 
-func (c *Client) doGetRequest() {
-
+// DoAndUnmarshal sends an HTTP request and unmarshal the response body into the given value.
+func (c *Client) DoAndUnmarshal(ctx context.Context, method, url string, body io.Reader, out any) error {
+	buf, err := c.Do(ctx, method, url, body)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(buf, out)
 }
