@@ -78,6 +78,8 @@ func (c Client) Do(ctx context.Context, method, path string, body io.Reader, v a
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "users API-Key "+c.apiKey)
 
+	fmt.Println(url)
+
 	r, err := c.performRequest(req)
 	if err != nil {
 		return Response{}, err
@@ -97,7 +99,7 @@ func (c Client) Do(ctx context.Context, method, path string, body io.Reader, v a
 // DoWithRequest sends an API request using the provided http.Request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
-func (c Client) DoWithRequest(ctx context.Context, req *http.Request, v any) (Response, error) {
+func (c Client) DoWithRequest(_ context.Context, req *http.Request, v any) (Response, error) {
 	r, err := c.performRequest(req)
 	if err != nil {
 		return Response{}, err
@@ -120,23 +122,23 @@ func (c Client) Get(ctx context.Context, path string, v any) (Response, error) {
 // Put sends an HTTP PUT request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
-func (c Client) Put(ctx context.Context, path string, in, v any) (Response, error) {
+func (c Client) Put(ctx context.Context, path string, in any) (Response, error) {
 	buf, err := json.Marshal(in)
 	if err != nil {
 		return Response{}, err
 	}
-	return c.Do(ctx, http.MethodPut, path, bytes.NewReader(buf), v)
+	return c.Do(ctx, http.MethodPut, path, bytes.NewReader(buf), nil)
 }
 
 // Post sends an HTTP POST request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
-func (c Client) Post(ctx context.Context, path string, in, v any) (Response, error) {
+func (c Client) Post(ctx context.Context, path string, in any) (Response, error) {
 	buf, err := json.Marshal(in)
 	if err != nil {
 		return Response{}, err
 	}
-	return c.Do(ctx, http.MethodPost, path, bytes.NewReader(buf), v)
+	return c.Do(ctx, http.MethodPost, path, bytes.NewReader(buf), nil)
 }
 
 // Delete sends an HTTP DELETE request and returns the API response.
@@ -166,7 +168,7 @@ func (c Client) newFormRequest(ctx context.Context, method, path string, body io
 		return nil, err
 	}
 
-	// Set the content type, this will contain the boundary.
+	// Set the content type to contain the boundary.
 	req.Header.Set("Content-Type", contentType)
 	req.Header.Add("Authorization", "users API-Key "+c.apiKey)
 

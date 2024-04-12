@@ -28,16 +28,16 @@ const (
 )
 
 type (
-	// CollectionListParams represents additional query parameters for the find endpoint.
-	CollectionListParams struct {
+	// ListParams represents additional query parameters for the find endpoint.
+	ListParams struct {
 		Sort  string         `json:"sort" url:"sort"`   // Sort the returned documents by a specific field.
 		Where map[string]any `json:"where" url:"where"` // Constrain returned documents with a where query.
 		Limit int            `json:"limit" url:"limit"` // Limit the returned documents to a certain number.
 		Page  int            `json:"page" url:"page"`   // Get a specific page of documents.
 	}
-	// CollectionListResponse represents a list of entities that is sent back
+	// ListResponse represents a list of entities that is sent back
 	// from the Payload CMS.
-	CollectionListResponse[T any] struct {
+	ListResponse[T any] struct {
 		Docs          []T  `json:"docs"`
 		Total         int  `json:"total"`
 		TotalDocs     int  `json:"totalDocs"`
@@ -50,16 +50,16 @@ type (
 		PrevPage      any  `json:"prevPage"`
 		NextPage      any  `json:"nextPage"`
 	}
-	// CollectionCreateResponse represents a response from the Payload CMS
+	// CreateResponse represents a response from the Payload CMS
 	// when a new entity is created.
-	CollectionCreateResponse[T any] struct {
+	CreateResponse[T any] struct {
 		Doc     T      `json:"doc"`
 		Message string `json:"message"`
 		Errors  []any  `json:"errors"`
 	}
-	// CollectionUpdateResponse represents a response from the Payload CMS
+	// UpdateResponse represents a response from the Payload CMS
 	// when an entity is updated.
-	CollectionUpdateResponse[T any] struct {
+	UpdateResponse[T any] struct {
 		Doc     T      `json:"doc"`
 		Message string `json:"message"`
 		Errors  []any  `json:"error"`
@@ -79,7 +79,7 @@ func (s CollectionService) FindBySlug(ctx context.Context, collection Collection
 }
 
 // List lists all collection entities.
-func (s CollectionService) List(ctx context.Context, collection Collection, params CollectionListParams, out any) (Response, error) {
+func (s CollectionService) List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error) {
 	v, err := query.Values(params)
 	if err != nil {
 		return Response{}, err
@@ -95,7 +95,7 @@ func (s CollectionService) Create(ctx context.Context, collection Collection, in
 	if err != nil {
 		return Response{}, err
 	}
-	return s.Client.Do(ctx, http.MethodGet, path, bytes.NewReader(buf), nil)
+	return s.Client.Do(ctx, http.MethodPost, path, bytes.NewReader(buf), nil)
 }
 
 // UpdateByID updates a collection entity by its ID.
