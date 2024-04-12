@@ -14,6 +14,7 @@ import (
 type Client struct {
 	client  *http.Client
 	baseURL string
+	reader  func(io.Reader) ([]byte, error)
 }
 
 // New creates a new WordPress API client.
@@ -21,23 +22,25 @@ func New(baseURL string) *Client {
 	return &Client{
 		client:  &http.Client{},
 		baseURL: baseURL,
+		reader:  io.ReadAll,
 	}
 }
 
-//
-//const (
-//	CollectionUsers      = "users"
-//	CollectionPosts      = "posts"
-//	CollectionPages      = "pages"
-//	CollectionMedia      = "media"
-//	CollectionMeta       = "meta"
-//	CollectionRevisions  = "revisions"
-//	CollectionComments   = "comments"
-//	CollectionTaxonomies = "taxonomies"
-//	CollectionTerms      = "terms"
-//	CollectionStatuses   = "statuses"
-//	CollectionTypes      = "types"
-//)
+// Collection names for WordPress that are used in the API
+// after the base URL.
+const (
+	CollectionUsers      = "users"
+	CollectionPosts      = "posts"
+	CollectionPages      = "pages"
+	CollectionMedia      = "media"
+	CollectionMeta       = "meta"
+	CollectionRevisions  = "revisions"
+	CollectionComments   = "comments"
+	CollectionTaxonomies = "taxonomies"
+	CollectionTerms      = "terms"
+	CollectionStatuses   = "statuses"
+	CollectionTypes      = "types"
+)
 
 // Get sends a GET request to the specified WordPress URL and returns the response body.
 // The base URL is prepended to the URL, for example:
@@ -49,7 +52,7 @@ func (c *Client) Get(url string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := c.reader(resp.Body)
 	if err != nil {
 		return nil, err
 	}

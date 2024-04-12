@@ -65,7 +65,7 @@ type (
 
 // Media retrieves information about a media item by its ID.
 func (c *Client) Media(id int) (Media, error) {
-	path := fmt.Sprintf("/media/%d", id)
+	path := fmt.Sprintf("/%s/%d", CollectionMedia, id)
 	var m Media
 	return m, c.GetAndUnmarshal(path, &m)
 }
