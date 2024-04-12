@@ -3,7 +3,6 @@ package payloadcms
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -12,83 +11,65 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"strings"
-	"time"
 
 	"github.com/gabriel-vasile/mimetype"
-	"github.com/goccy/go-json"
-
-	"github.com/ainsleydev/webkit/pkg/util/httputil"
 )
 
-type (
-	// MediaService represents a service for managing media within Payload.
-	MediaService struct {
-		Client *Client
-	}
-	// UploadRequest represents a request to the media upload endpoint.
-	UploadRequest struct {
-		Alt     string `json:"alt"`
-		Caption string `json:"caption"`
-	}
-	// UploadResponse represents a response from the media upload endpoint.
-	UploadResponse struct {
-		ID        int         `json:"id"`
-		Alt       string      `json:"alt"`
-		Caption   interface{} `json:"caption"`
-		UpdatedAt time.Time   `json:"updatedAt"`
-		CreatedAt time.Time   `json:"createdAt"`
-		Url       string      `json:"url"`
-		Filename  string      `json:"filename"`
-		MimeType  string      `json:"mimeType"`
-		Filesize  int         `json:"filesize"`
-		Width     interface{} `json:"width"`
-		Height    interface{} `json:"height"`
-	}
-)
-
-// Upload uploads a file to the media endpoint.
-func (m MediaService) Upload(ctx context.Context, f *os.File, request UploadRequest) (*CreateResponse[UploadResponse], error) {
-	values := map[string]io.Reader{
-		"file":    f,
-		"alt":     strings.NewReader("fuck"),
-		"caption": strings.NewReader(request.Caption),
-	}
-	return m.upload(ctx, values)
+// MediaService represents a service for managing media within Payload.
+type MediaService struct {
+	Client *Client
 }
 
-func (m MediaService) UploadFromURL(ctx context.Context, url string, request UploadRequest) (*CreateResponse[UploadResponse], error) {
-	// Download the file from the URL
-	resp, err := m.Client.client.Get(url)
+// Upload uploads a file to the media endpoint.
+func (s MediaService) Upload(ctx context.Context, f *os.File, collection string, in, out any) (Response, error) {
+	values, err := getUploadValues(f, in)
 	if err != nil {
-		return nil, err
+		return Response{}, err
+	}
+	return s.uploadFile(ctx, collection, values, out)
+}
+
+func (s MediaService) UploadFromURL(ctx context.Context, url string, collection string, in, out any) (Response, error) {
+	// Download the file from the URL
+	resp, err := s.Client.client.Get(url)
+	if err != nil {
+		return Response{}, err
 	}
 	defer resp.Body.Close()
 
 	// Check if the response status is OK
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to download file: status code %d", resp.StatusCode)
+		return Response{}, fmt.Errorf("failed to download file: status code %d", resp.StatusCode)
 	}
 
 	// Create a temporary file to store the downloaded content
-	tmpfile, err := os.Create(filepath.Join(os.TempDir(), GetFileNameFromURL(url)))
+	tmpfile, err := os.Create(filepath.Join(os.TempDir(), fileNameFromURL(url)))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create temporary file: %v", err)
+		return Response{}, fmt.Errorf("failed to create temporary file: %v", err)
 	}
 	defer os.Remove(tmpfile.Name()) // Clean up the temporary file
 
 	// Write the downloaded content to the temporary file
 	_, err = io.Copy(tmpfile, resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to write to temporary file: %v", err)
+		return Response{}, fmt.Errorf("failed to write to temporary file: %v", err)
 	}
 
-	// Pass the response body (file content) to the Upload method
-	return m.Upload(ctx, tmpfile, request)
+	values, err := getUploadValues(tmpfile, in)
+	if err != nil {
+		return Response{}, err
+	}
+
+	return s.uploadFile(ctx, collection, values, out)
 }
 
-func (m MediaService) upload(ctx context.Context, values map[string]io.Reader) (*CreateResponse[UploadResponse], error) {
-	// Prepare a form that you will submit to that URL.
+// uploadFile prepares a multipart form and performs the upload request
+//   - Takes the context, collection name, map of form values (including the file), and optional output struct
+//   - Returns a Response object and any errors encountered
+func (s MediaService) uploadFile(ctx context.Context, collection string, values map[string]io.Reader, out any) (Response, error) {
+	// Prepare a multipart form
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 	for key, r := range values {
@@ -97,54 +78,56 @@ func (m MediaService) upload(ctx context.Context, values map[string]io.Reader) (
 		}
 		if x, ok := r.(*os.File); ok {
 			if err := handleFileUpload(w, key, x); err != nil {
-				return nil, err
+				return Response{}, err
 			}
 		} else {
 			// Add other fields
 			fw, err := w.CreateFormField(key)
 			if err != nil {
-				return nil, err
+				return Response{}, err
 			}
 			if _, err := io.Copy(fw, r); err != nil {
-				return nil, err
+				return Response{}, err
 			}
 		}
 	}
 
-	// Close the multipart writer or the request may
-	// be missing the terminating boundary.
-	w.Close()
+	// Close the multipart writer
+	if err := w.Close(); err != nil {
+		return Response{}, fmt.Errorf("failed to close multipart writer: %v", err)
+	}
 
-	// Now that you have a form, you can submit it to your handler.
-	path := fmt.Sprintf("%s/api/%s", m.Client.baseURL, CollectionMedia)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, path, &b)
+	p := fmt.Sprintf("/api/%s", collection)
+	req, err := s.Client.newFormRequest(ctx, http.MethodPost, p, &b, w.FormDataContentType())
 	if err != nil {
-		return nil, err
+		return Response{}, err
 	}
 
-	// Set the content type, this will contain the boundary.
-	req.Header.Set("Content-Type", w.FormDataContentType())
-	req.Header.Add("Authorization", "users API-Key "+m.Client.apiKey)
+	return s.Client.DoWithRequest(ctx, req, &out)
+}
 
-	// Submit the request
-	res, err := m.Client.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	if !httputil.Is2xx(res.StatusCode) {
-		return nil, errors.New("failed to upload media, status code: " + res.Status)
+func getUploadValues(f *os.File, v any) (map[string]io.Reader, error) {
+	if f == nil {
+		return nil, fmt.Errorf("file is required")
 	}
 
-	buf, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
+	values := map[string]io.Reader{
+		"file": f,
 	}
 
-	var response CreateResponse[UploadResponse]
-	err = json.Unmarshal(buf, &response)
-	return &response, err
+	// If 'in' is a struct, iterate over its fields and get the JSON tags
+	m := reflect.ValueOf(v)
+	if m.Kind() == reflect.Struct {
+		for i := 0; i < m.NumField(); i++ {
+			field := m.Type().Field(i)
+			tag := field.Tag.Get("json")
+			if tag != "" {
+				values[tag] = strings.NewReader(fmt.Sprintf("%v", m.Field(i).Interface()))
+			}
+		}
+	}
+
+	return values, nil
 }
 
 // handleFileUpload adds a file to the multipart writer.
@@ -180,9 +163,7 @@ func handleFileUpload(w *multipart.Writer, key string, f *os.File) error {
 	return err
 }
 
-// GetFileNameFromURL extracts the filename from a given URL.
-func GetFileNameFromURL(url string) string {
-	// Split URL by '/'
+func fileNameFromURL(url string) string {
 	parts := strings.Split(url, "/")
 
 	// Get the last part of the URL which contains the filename
