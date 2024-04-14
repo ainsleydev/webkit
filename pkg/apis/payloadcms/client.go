@@ -78,8 +78,6 @@ func (c Client) Do(ctx context.Context, method, path string, body io.Reader, v a
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "users API-Key "+c.apiKey)
 
-	fmt.Println(url)
-
 	r, err := c.performRequest(req)
 	if err != nil {
 		return Response{}, err

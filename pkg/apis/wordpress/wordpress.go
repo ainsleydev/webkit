@@ -12,18 +12,22 @@ import (
 
 // Client is a WordPress API client.
 type Client struct {
-	client  *http.Client
-	baseURL string
-	reader  func(io.Reader) ([]byte, error)
+	opts   Options
+	client *http.Client
+	reader func(io.Reader) ([]byte, error)
 }
 
 // New creates a new WordPress API client.
-func New(baseURL string) *Client {
-	return &Client{
-		client:  &http.Client{},
-		baseURL: baseURL,
-		reader:  io.ReadAll,
+func New(opts Options) (*Client, error) {
+	err := opts.Validate()
+	if err != nil {
+		return nil, err
 	}
+	return &Client{
+		opts:   opts,
+		client: &http.Client{},
+		reader: io.ReadAll,
+	}, err
 }
 
 // Collection names for WordPress that are used in the API
@@ -46,7 +50,16 @@ const (
 // The base URL is prepended to the URL, for example:
 // https://wordpress/wp-json/wp/v2/posts/21
 func (c *Client) Get(url string) ([]byte, error) {
-	resp, err := c.client.Get(fmt.Sprintf("%s/%s", c.baseURL, strings.TrimLeft(url, "/")))
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", c.opts.baseURL, strings.TrimLeft(url, "/")), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.opts.hasBasicAuth {
+		req.SetBasicAuth(c.opts.authPassword, c.opts.authPassword)
+	}
+
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

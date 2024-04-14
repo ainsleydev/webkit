@@ -13,15 +13,15 @@ import (
 func Setup(t *testing.T, serverResponse string, serverStatus int) (*Client, func()) {
 	t.Helper()
 
-	client := New("")
-
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(serverStatus)
 		_, err := io.WriteString(w, serverResponse)
 		require.NoError(t, err)
 	}))
 
-	client.baseURL = server.URL
+	opts := NewOptions().WithBaseURL(server.URL)
+	client, err := New(opts)
+	require.NoError(t, err)
 
 	teardown := func() {
 		server.Close()
