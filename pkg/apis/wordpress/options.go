@@ -30,9 +30,9 @@ func (o Options) WithBaseURL(baseURL string) Options {
 }
 
 // WithBasicAuth sets the basic authentication credentials for the WordPress client.
-func (o Options) WithBasicAuth(consumerKey, consumerSecret string) Options {
-	o.authUser = consumerKey
-	o.authPassword = consumerSecret
+func (o Options) WithBasicAuth(user, password string) Options {
+	o.authUser = user
+	o.authPassword = password
 	o.hasBasicAuth = true
 	return o
 }

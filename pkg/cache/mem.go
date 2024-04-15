@@ -32,12 +32,12 @@ func NewInMemory(defaultExpiration time.Duration) *MemCache {
 	}
 }
 
-func (c *MemCache) Ping(ctx context.Context) error {
+func (c *MemCache) Ping(_ context.Context) error {
 	// In-memory cache doesn't need to be pinged
 	return nil
 }
 
-func (c *MemCache) Get(ctx context.Context, key string, value interface{}) error {
+func (c *MemCache) Get(_ context.Context, key string, value interface{}) error {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 

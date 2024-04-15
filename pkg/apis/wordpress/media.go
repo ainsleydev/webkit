@@ -1,6 +1,7 @@
 package wordpress
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -64,8 +65,8 @@ type (
 )
 
 // Media retrieves information about a media item by its ID.
-func (c *Client) Media(id int) (Media, error) {
-	path := fmt.Sprintf("/%s/%d", CollectionMedia, id)
+func (c *Client) Media(ctx context.Context, id int) (Media, error) {
+	path := fmt.Sprintf("/wp-json/wp/v2/%s/%d", CollectionMedia, id)
 	var m Media
-	return m, c.GetAndUnmarshal(path, &m)
+	return m, c.GetAndUnmarshal(ctx, path, &m)
 }

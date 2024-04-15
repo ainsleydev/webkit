@@ -1,6 +1,7 @@
 package wordpress
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -49,14 +50,15 @@ const (
 // Get sends a GET request to the specified WordPress URL and returns the response body.
 // The base URL is prepended to the URL, for example:
 // https://wordpress/wp-json/wp/v2/posts/21
-func (c *Client) Get(url string) ([]byte, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", c.opts.baseURL, strings.TrimLeft(url, "/")), nil)
+func (c *Client) Get(ctx context.Context, url string) ([]byte, error) {
+	path := fmt.Sprintf("%s/%s", c.opts.baseURL, strings.TrimLeft(url, "/"))
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	if c.opts.hasBasicAuth {
-		req.SetBasicAuth(c.opts.authPassword, c.opts.authPassword)
+		req.SetBasicAuth(c.opts.authUser, c.opts.authPassword)
 	}
 
 	resp, err := c.client.Do(req)
@@ -79,8 +81,8 @@ func (c *Client) Get(url string) ([]byte, error) {
 
 // GetAndUnmarshal performs an HTTP GET request to the specified WordPress URL,
 // unmarshal the response body into the provided struct type, and returns any error.
-func (c *Client) GetAndUnmarshal(url string, v any) error {
-	body, err := c.Get(url)
+func (c *Client) GetAndUnmarshal(ctx context.Context, url string, v any) error {
+	body, err := c.Get(ctx, url)
 	if err != nil {
 		return err
 	}
