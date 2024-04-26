@@ -87,11 +87,7 @@ func (c Client) Do(ctx context.Context, method, path string, body io.Reader, v a
 		return r, nil
 	}
 
-	if err := json.Unmarshal(r.Content, v); err != nil {
-		return r, err
-	}
-
-	return r, nil
+	return r, json.Unmarshal(r.Content, v)
 }
 
 // DoWithRequest sends an API request using the provided http.Request and returns the API response.
@@ -102,12 +98,10 @@ func (c Client) DoWithRequest(_ context.Context, req *http.Request, v any) (Resp
 	if err != nil {
 		return Response{}, err
 	}
-
-	if err := json.Unmarshal(r.Content, v); err != nil {
-		return r, err
+	if v == nil {
+		return r, nil
 	}
-
-	return r, nil
+	return r, json.Unmarshal(r.Content, v)
 }
 
 // Get sends an HTTP GET request and returns the API response.

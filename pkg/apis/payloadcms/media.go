@@ -22,16 +22,25 @@ type MediaService struct {
 	Client *Client
 }
 
+// MediaOptions represents non-required options for uploading media.
+type MediaOptions struct {
+	// The collection to upload the media to, defaults to "media"
+	Collection string
+	// If set, the file name of the media will be overridden from the file name.
+	// Note, this will not change the file extension.
+	FileNameOverride string
+}
+
 // Upload uploads a file to the media endpoint.
-func (s MediaService) Upload(ctx context.Context, f *os.File, collection string, in, out any) (Response, error) {
+func (s MediaService) Upload(ctx context.Context, f *os.File, in, out any, opts MediaOptions) (Response, error) {
 	values, err := getUploadValues(f, in)
 	if err != nil {
 		return Response{}, err
 	}
-	return s.uploadFile(ctx, collection, values, out)
+	return s.uploadFile(ctx, values, out, opts)
 }
 
-func (s MediaService) UploadFromURL(ctx context.Context, url string, collection string, in, out any) (Response, error) {
+func (s MediaService) UploadFromURL(ctx context.Context, url string, in, out any, opts MediaOptions) (Response, error) {
 	// Download the file from the URL
 	resp, err := s.Client.client.Get(url)
 	if err != nil {
@@ -62,13 +71,17 @@ func (s MediaService) UploadFromURL(ctx context.Context, url string, collection 
 		return Response{}, err
 	}
 
-	return s.uploadFile(ctx, collection, values, out)
+	return s.uploadFile(ctx, values, out, opts)
 }
 
 // uploadFile prepares a multipart form and performs the upload request
 //   - Takes the context, collection name, map of form values (including the file), and optional output struct
 //   - Returns a Response object and any errors encountered
-func (s MediaService) uploadFile(ctx context.Context, collection string, values map[string]io.Reader, out any) (Response, error) {
+func (s MediaService) uploadFile(ctx context.Context, values map[string]io.Reader, out any, opts MediaOptions) (Response, error) {
+	if opts.Collection == "" {
+		opts.Collection = "media"
+	}
+
 	// Prepare a multipart form
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
@@ -77,7 +90,7 @@ func (s MediaService) uploadFile(ctx context.Context, collection string, values 
 			defer x.Close()
 		}
 		if x, ok := r.(*os.File); ok {
-			if err := handleFileUpload(w, key, x); err != nil {
+			if err := handleFileUpload(w, key, x, opts); err != nil {
 				return Response{}, err
 			}
 		} else {
@@ -97,13 +110,13 @@ func (s MediaService) uploadFile(ctx context.Context, collection string, values 
 		return Response{}, fmt.Errorf("failed to close multipart writer: %v", err)
 	}
 
-	p := fmt.Sprintf("/api/%s", collection)
+	p := fmt.Sprintf("/api/%s", opts.Collection)
 	req, err := s.Client.newFormRequest(ctx, http.MethodPost, p, &b, w.FormDataContentType())
 	if err != nil {
 		return Response{}, err
 	}
 
-	return s.Client.DoWithRequest(ctx, req, &out)
+	return s.Client.DoWithRequest(ctx, req, out)
 }
 
 func getUploadValues(f *os.File, v any) (map[string]io.Reader, error) {
@@ -131,7 +144,7 @@ func getUploadValues(f *os.File, v any) (map[string]io.Reader, error) {
 }
 
 // handleFileUpload adds a file to the multipart writer.
-func handleFileUpload(w *multipart.Writer, key string, f *os.File) error {
+func handleFileUpload(w *multipart.Writer, key string, f *os.File, opts MediaOptions) error {
 	// Open the file to read its contents and detect the MIME type.
 	file, err := os.Open(f.Name())
 	if err != nil {
@@ -145,13 +158,18 @@ func handleFileUpload(w *multipart.Writer, key string, f *os.File) error {
 		return err
 	}
 
+	fileName := f.Name()
+	if opts.FileNameOverride != "" {
+		fileName = opts.FileNameOverride + "." + filepath.Ext(f.Name())[1:]
+	}
+
 	// Create a new form part
 	fw, err := w.CreatePart(textproto.MIMEHeader{
 		"Content-Type": {
 			mime.String(),
 		},
 		"Content-Disposition": {
-			fmt.Sprintf(`form-data; name="%s"; filename="%s"`, key, f.Name()),
+			fmt.Sprintf(`form-data; name="%s"; filename="%s"`, key, fileName),
 		},
 	})
 	if err != nil {

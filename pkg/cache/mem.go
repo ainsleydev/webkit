@@ -72,14 +72,14 @@ func (c *MemCache) Set(ctx context.Context, key string, value interface{}, opts 
 	return nil
 }
 
-func (c *MemCache) Delete(ctx context.Context, key string) error {
+func (c *MemCache) Delete(_ context.Context, key string) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	delete(c.cache, key)
 	return nil
 }
 
-func (c *MemCache) Invalidate(ctx context.Context, tags []string) {
+func (c *MemCache) Invalidate(_ context.Context, tags []string) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	for key, item := range c.cache {
@@ -94,7 +94,7 @@ func (c *MemCache) Invalidate(ctx context.Context, tags []string) {
 	}
 }
 
-func (c *MemCache) Flush(ctx context.Context) {
+func (c *MemCache) Flush(_ context.Context) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	c.cache = make(map[string]inMemCacheItem)
