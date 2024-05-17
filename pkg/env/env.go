@@ -19,7 +19,20 @@ const (
 
 // ParseConfig loads the environment variables from the .env file and parses the
 // environment variables into the provided struct. It returns an error if the
-// .env file cannot be loaded or if the environment variables cannot be parsed.
+// .env file cannot be loaded or if the environment variables cannot be parsed.\
+//
+//	For example:
+//
+//	type Config struct {
+//		Home         string         `env:"HOME"`
+//		Port         int            `env:"PORT" envDefault:"3000"`
+//		Password     string         `env:"PASSWORD,unset"`
+//		IsProduction bool           `env:"PRODUCTION"`
+//		Duration     time.Duration  `env:"DURATION"`
+//		Hosts        []string       `env:"HOSTS" envSeparator:":"`
+//		TempFolder   string         `env:"TEMP_FOLDER,expand" envDefault:"${HOME}/tmp"`
+//		StringInts   map[string]int `env:"MAP_STRING_INT"`
+//	}
 func ParseConfig(cfg any, filenames ...string) error {
 	if err := godotenv.Load(filenames...); err != nil {
 		return err

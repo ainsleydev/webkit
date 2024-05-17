@@ -86,6 +86,16 @@ func (c *Context) JSON(status int, v any) error {
 	return json.NewEncoder(c.Response).Encode(v)
 }
 
+// HTML writes an HTML response with the provided status code and data.
+// The header is set to text/html; charset=utf-8
+// TODO: Unit test this func.
+func (c *Context) HTML(status int, v string) error {
+	c.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	c.Response.WriteHeader(status)
+	_, err := c.Response.Write([]byte(v))
+	return err
+}
+
 // IsTLS returns true if HTTP connection is TLS otherwise false.
 func (c *Context) IsTLS() bool {
 	return c.Request.TLS != nil

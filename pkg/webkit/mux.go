@@ -1,9 +1,15 @@
 package webkit
 
 import (
+	"context"
+	"errors"
 	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 )
 
 type (
@@ -66,8 +72,39 @@ func (a *Kit) Plug(plugs ...Plug) {
 
 // Start starts the HTTP server.
 func (a *Kit) Start(address string) error {
-	slog.Info("App listening on address: " + address)
-	return http.ListenAndServe(address, a.mux)
+	server := &http.Server{
+		Addr:    address,
+		Handler: a.mux,
+	}
+
+	// Create a channel to receive signals
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start the server in a goroutine
+	go func() {
+		slog.Info("App listening on address: " + address)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("HTTP server error: " + err.Error())
+		}
+	}()
+
+	// Block until a signal is received
+	<-sigChan
+
+	// Log that shutdown signal is received
+	slog.Info("Received shutdown signal. Shutting down...")
+
+	// Create a context with a timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Shutdown the server gracefully
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error("HTTP shutdown error: " + err.Error())
+	}
+
+	return nil
 }
 
 // ErrorKey is the key used to store the error in the context.
