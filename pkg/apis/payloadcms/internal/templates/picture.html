@@ -1,0 +1,17 @@
+<!-- =====================
+    Picture
+    ===================== -->
+<picture class="TODO">
+	{{ range .Sizes.SortByWidth -}}
+		<source srcset="{{ .URL }}"
+			{{- if and (ne .Size "avif") (ne .Size "webp") }} media="{{ .MediaSrc }}" {{- end }}
+			{{ with .MimeType }} type="{{ . }}" {{- end }}
+			{{ with .Width -}} width="{{ .}}" {{- end }}
+			{{ with .Height -}} height="{{ .}}" {{- end }}
+			{{ with .Size -}} data-payload-size="{{ . }}" {{- end }}
+		/>
+	{{- end }}
+	{{ if .URL -}}
+		<img src="{{ .URL }}" alt="{{ .Alt }}">
+	{{- end }}
+</picture>
