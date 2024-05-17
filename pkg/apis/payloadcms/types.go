@@ -8,12 +8,12 @@ import "time"
 // The SEO plugin appears in the majority of collections and in both
 // the Global Settings and Page level fields.
 type Meta struct {
-	Title          *string     `json:"title,omitempty"`
-	Description    *string     `json:"description,omitempty"`
-	Image          *int        `json:"image,omitempty"`
-	Private        *bool       `json:"private,omitempty"`
-	CanonicalURL   *string     `json:"canonicalURL,omitempty"`
-	StructuredData interface{} `json:"structuredData,omitempty"`
+	Title          *string `json:"title,omitempty"`
+	Description    *string `json:"description,omitempty"`
+	Image          *int    `json:"image,omitempty"`
+	Private        *bool   `json:"private,omitempty"`
+	CanonicalURL   *string `json:"canonicalURL,omitempty"`
+	StructuredData any     `json:"structuredData,omitempty"`
 }
 
 // Settings defines the common global collection type within Payload
