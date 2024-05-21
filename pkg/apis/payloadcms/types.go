@@ -12,7 +12,7 @@ import (
 type Meta struct {
 	Title          *string `json:"title,omitempty"`
 	Description    *string `json:"description,omitempty"`
-	Image          *int    `json:"image,omitempty"`
+	Image          *int    `json:"image,omitempty"` // TODO: This perhaps is an image struct.
 	Private        *bool   `json:"private,omitempty"`
 	CanonicalURL   *string `json:"canonicalURL,omitempty"`
 	StructuredData any     `json:"structuredData,omitempty"`

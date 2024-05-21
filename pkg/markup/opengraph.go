@@ -1,4 +1,4 @@
-package seo
+package markup
 
 import (
 	"bytes"
@@ -7,8 +7,6 @@ import (
 // OpenGraph represents web page information according to OGP.
 // See https://ogp.me/ for more details.
 type OpenGraph struct {
-	// SiteName
-
 	// Basic Metadata - https://ogp.me/#metadata
 	Title string           `json:"title"`
 	Type  string           `json:"type"`
@@ -21,8 +19,8 @@ type OpenGraph struct {
 	Determiner  string           `json:"determiner"`
 	Locale      string           `json:"locale"`
 	LocaleAlt   []string         `json:"locale_alternate"`
-	SiteName    string           `json:"site_name"`
 	Video       []OpengraphVideo `json:"video"`
+	SiteName    string           `json:"site_name"`
 }
 
 // OpengraphImage represents a structure of "og:image".
@@ -74,7 +72,7 @@ func (og OpenGraph) Render() string {
 	b := bytes.Buffer{}
 
 	if og.Title != "" {
-		b.WriteString("<meta property=\"og:title\" content=\"")
+		b.WriteString(`<meta property="og:title" content=""`)
 	}
 	return ""
 }

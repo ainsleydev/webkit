@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Environment definitions.
 const (
 	// Development env definition.
 	Development string = "development"
@@ -15,6 +16,12 @@ const (
 	Staging = "staging"
 	// Production env definition.
 	Production = "production"
+)
+
+// Common keys
+const (
+	// AppEnvironmentKey is the key for the app environment, i.e. prod/dev
+	AppEnvironmentKey = "APP_ENVIRONMENT"
 )
 
 // ParseConfig loads the environment variables from the .env file and parses the
@@ -62,7 +69,7 @@ func GetOrError(key string) (string, error) {
 
 // AppEnvironment returns the app environment.
 func AppEnvironment() string {
-	return Get("APP_ENVIRONMENT", "")
+	return Get(AppEnvironmentKey, "")
 }
 
 // IsDevelopment returns whether we are running the app in development.

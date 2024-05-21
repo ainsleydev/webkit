@@ -1,0 +1,47 @@
+<!-- =====================
+    Head/Meta
+    ===================== -->
+<!-- No Index - Private -->
+{{ if .Private -}}
+	<meta name="robots" content="noindex">
+{{- end }}
+<!-- Title -->
+{{ with .Title -}}
+	<title>{{ . }}</title>
+{{- end }}
+<!-- Description -->
+{{ with .Description -}}
+	<meta name="description" content="{{ . }}" />
+{{- end }}
+<!-- Canonical -->
+{{ with .Canonical -}}
+	<link rel="canonical" href="{{ . }}" />
+{{- end }}
+<!-- Preload JS -->
+{{ range .Scripts -}}
+	<link rel="preload" href="{{ . }}?{{ $.Hash }}" as="script">
+{{- end }}
+<!-- OpenGraph -->
+
+<!-- Twitter -->
+
+<!-- =====================
+    Schema
+    ===================== -->
+<meta itemprop="name" content="{{ .Title }}">
+<meta itemprop="description"
+	  content="{{ with .Description }} {{ . }} {{- end }}">
+{{- if .IsPage -}}
+    {{- $iso8601 := "2006-01-02T15:04:05-07:00" -}}
+	<!-- Dates -->
+    {{ with .DatePublished -}}
+		<meta itemprop="datePublished" {{ .Format $iso8601 | printf "content=%q" | safeHTMLAttr }} />
+    {{ end -}}
+    {{ with .DateModified -}}
+		<meta itemprop="dateModified" {{ .Format $iso8601 | printf "content=%q" | safeHTMLAttr }} />
+    {{- end }}
+	<!-- Word Count -->
+	<meta itemprop="wordCount" content="{{ .WordCount }}">
+	<!-- Image -->
+{{/*	<meta itemprop="image" content="{{  . }}">*/}}
+{{- end -}}
