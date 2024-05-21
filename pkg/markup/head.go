@@ -11,7 +11,10 @@ var headTpl string
 
 // HeadTemplate is the template for the head of the HTML document.
 // It requires a HeadProps struct to be passed in when executing the template.
-var HeadTemplate = template.Must(template.New("").Parse(headTpl))
+var HeadTemplate = template.Must(template.New("").ParseFiles(
+	"./head.html",
+	"./opengraph.html",
+))
 
 // HeadProps defines the properties that should be included in the
 // head of the document.

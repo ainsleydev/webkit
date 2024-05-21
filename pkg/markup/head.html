@@ -1,32 +1,34 @@
 <!-- =====================
     Head/Meta
     ===================== -->
-<!-- No Index - Private -->
 {{ if .Private -}}
 	<meta name="robots" content="noindex">
 {{- end }}
-<!-- Title -->
 {{ with .Title -}}
 	<title>{{ . }}</title>
 {{- end }}
-<!-- Description -->
 {{ with .Description -}}
 	<meta name="description" content="{{ . }}" />
 {{- end }}
-<!-- Canonical -->
 {{ with .Canonical -}}
 	<link rel="canonical" href="{{ . }}" />
 {{- end }}
-<!-- Preload JS -->
 {{ range .Scripts -}}
 	<link rel="preload" href="{{ . }}?{{ $.Hash }}" as="script">
 {{- end }}
-<!-- OpenGraph -->
-
-<!-- Twitter -->
-
 <!-- =====================
-    Schema
+    Opengraph
+    ===================== -->
+{{ with .OpenGraph }}
+
+{{- end }}
+
+{{ with .Twitter -}}
+
+
+{{- end }}
+<!-- =====================
+    Schema - Page
     ===================== -->
 <meta itemprop="name" content="{{ .Title }}">
 <meta itemprop="description"
@@ -45,3 +47,16 @@
 	<!-- Image -->
 {{/*	<meta itemprop="image" content="{{  . }}">*/}}
 {{- end -}}
+<!-- =====================
+    Schema - Organisation
+    ===================== -->
+{{ with .Organisation -}}
+
+{{- end }}
+
+<!-- =====================
+    Schema - Navigational
+    ===================== -->
+{{ with .Navigational -}}
+
+{{- end }}
