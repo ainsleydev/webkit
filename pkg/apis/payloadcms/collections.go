@@ -27,6 +27,9 @@ const (
 	CollectionUsers Collection = "users"
 )
 
+// AllItems is a constant that can be used to retrieve all items from a collection.
+const AllItems = 99999999
+
 type (
 	// ListParams represents additional query parameters for the find endpoint.
 	ListParams struct {
@@ -84,7 +87,7 @@ func (s CollectionService) List(ctx context.Context, collection Collection, para
 	if err != nil {
 		return Response{}, err
 	}
-	path := fmt.Sprintf("/api/%s?%s", collection, v)
+	path := fmt.Sprintf("/api/%s?%s", collection, v.Encode())
 	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
 }
 

@@ -9,7 +9,6 @@ import (
 
 //go:generate mockgen -destination=mocks_redis.go . RedisStore
 
-
 // RedisStore is an abstraction of a *redis.Client used
 // for testing.
 type RedisStore interface {

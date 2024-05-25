@@ -13,7 +13,7 @@ type (
 	// when using Set().
 	Options struct {
 		// Expiration allows to specify a global expiration
-		// time hen setting a value.
+		// time when setting a value.
 		Expiration time.Duration
 		// Tags allows specifying associated tags to the
 		// current value.
@@ -42,3 +42,6 @@ type (
 		io.Closer
 	}
 )
+
+// Forever defines an infinite expiration time.
+const Forever = -1

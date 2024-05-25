@@ -1,11 +1,16 @@
 {
-	"name": "@adev-payload-helper",
+	"name": "adev-payload-helper",
 	"version": "0.0.1",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ainsleydev/webkit.git",
+		"directory": "packages/payload-helper"
 	},
 	"author": {
 		"name": "ainsley.dev LTD",

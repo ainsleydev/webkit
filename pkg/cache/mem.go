@@ -20,6 +20,7 @@ type (
 		value      any
 		expiration time.Time
 		tags       []string
+		noExpiry   bool
 	}
 )
 
@@ -41,12 +42,17 @@ func (c *MemCache) Get(_ context.Context, key string, value interface{}) error {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
+	// Check if value is a pointer
+	if reflect.TypeOf(value).Kind() != reflect.Ptr {
+		return errors.New("value must be a pointer")
+	}
+
 	item, found := c.cache[key]
 	if !found {
 		return errors.New("key not found")
 	}
 
-	if time.Now().After(item.expiration) {
+	if !item.noExpiry && time.Now().After(item.expiration) {
 		// Item has expired, delete it from the cache
 		delete(c.cache, key)
 		return errors.New("key expired")
@@ -68,6 +74,7 @@ func (c *MemCache) Set(ctx context.Context, key string, value interface{}, opts 
 		value:      value,
 		expiration: time.Now().Add(opts.Expiration),
 		tags:       opts.Tags,
+		noExpiry:   opts.Expiration == Forever,
 	}
 	return nil
 }

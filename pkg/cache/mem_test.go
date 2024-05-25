@@ -63,6 +63,28 @@ func TestMem_SetAndGet(t *testing.T) {
 			assert.Equal(t, test.wantValue, value)
 		})
 	}
+
+	t.Run("Returns error if value is not a pointer", func(t *testing.T) {
+		store := NewInMemory(time.Second * 5)
+		err := store.Set(context.Background(), "key", "value", Options{})
+		require.NoError(t, err)
+
+		var value string
+		err = store.Get(context.Background(), "key", value)
+		assert.Error(t, err)
+	})
+
+	t.Run("Works with slices", func(t *testing.T) {
+		store := NewInMemory(time.Second * 5)
+		s := []string{"1", "2", "3"}
+		err := store.Set(context.Background(), "key", s, Options{})
+		require.NoError(t, err)
+
+		var got []string
+		err = store.Get(context.Background(), "key", &got)
+		require.NoError(t, err)
+		require.Equal(t, s, got)
+	})
 }
 
 func TestMem_Delete(t *testing.T) {

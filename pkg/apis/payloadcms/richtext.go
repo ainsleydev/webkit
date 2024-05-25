@@ -56,7 +56,6 @@ func (h *HeadingElement) Children() []Element {
 }
 
 type HelloElement struct {
-
 }
 
 // CustomNode is the generic interface for nodes in your schema
