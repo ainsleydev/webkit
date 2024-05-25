@@ -10,6 +10,9 @@ import (
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
+// TODO: We need a way for the cache to be invalidated when a new page is published, edited or
+// deleted, we could do this by using Payload Hooks.
+
 // cachePageExpiry is the time that a page will be cached for.
 const cachePageExpiry = time.Hour * 24 * 7 * 4
 
@@ -32,19 +35,21 @@ func CacheMiddleware(store cache.Store) webkit.Plug {
 			cacheKey := fmt.Sprintf("page:%s", c.Request.URL.RequestURI())
 
 			var page string
-			err := store.Get(ctx, cacheKey, &page)
-			if err == nil {
+			if err := store.Get(ctx, cacheKey, &page); err == nil {
 				// Cache hit, serve from cache
+				c.Set("cache_hit", "HIT")
 				c.Response.Header().Set("X-Cache", "HIT")
 				c.Response.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%f", cachePageExpiry.Seconds()))
 				return c.HTML(http.StatusOK, page)
 			}
 
 			rr := httputil.NewResponseRecorder(c.Response)
+			c.Set("cache_hit", "MISS")
 			c.Response.Header().Set("X-Cache", "MISS")
 			c.Response = rr
 
-			if err = next(c); err != nil {
+			// Process next request in chain.
+			if err := next(c); err != nil {
 				return err
 			}
 

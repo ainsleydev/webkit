@@ -45,7 +45,7 @@ func TestMem_SetAndGet(t *testing.T) {
 		},
 		"Expired": {
 			key:       key,
-			opts:      Options{Expiration: -time.Nanosecond},
+			opts:      Options{Expiration: time.Nanosecond},
 			wantValue: "",
 			wantErr:   true,
 		},
@@ -57,10 +57,10 @@ func TestMem_SetAndGet(t *testing.T) {
 			err := store.Set(context.Background(), test.key, value, test.opts)
 			require.NoError(t, err)
 
-			var value string
-			err = store.Get(context.Background(), key, &value)
+			var got string
+			err = store.Get(context.Background(), key, &got)
 			assert.Equal(t, test.wantErr, err != nil)
-			assert.Equal(t, test.wantValue, value)
+			assert.Equal(t, test.wantValue, got)
 		})
 	}
 

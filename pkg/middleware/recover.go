@@ -20,10 +20,10 @@ func Recover(next webkit.Handler) webkit.Handler {
 	return func(ctx *webkit.Context) error {
 		defer func() {
 			if err := recover(); err != nil {
-				sentry.CurrentHub().RecoverWithContext(ctx.Context(), err)
+				sentry.CurrentHub().RecoverWithContext(ctx.Request.Context(), err)
 				sentry.Flush(time.Second * 5)
 
-				slog.ErrorContext(ctx.Context(), "Panic recovered", slog.Any("error", err))
+				slog.ErrorContext(ctx.Request.Context(), "Panic recovered", slog.Any("error", err))
 
 				if ctx.Request.Header.Get("Connection") != "Upgrade" {
 					ctx.Response.WriteHeader(http.StatusInternalServerError)

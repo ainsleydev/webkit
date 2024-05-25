@@ -1,6 +1,7 @@
 package wordpress
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -41,7 +42,7 @@ func TestClient_Media(t *testing.T) {
 			client, teardown := Setup(t, test.serverResponse, test.serverStatus)
 			defer teardown()
 
-			gotMedia, err := client.Media(test.id)
+			gotMedia, err := client.Media(context.TODO(), test.id)
 
 			assert.Equal(t, test.wantMedia, gotMedia)
 			assert.Equal(t, test.wantErr, err != nil)

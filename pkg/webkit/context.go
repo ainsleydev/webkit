@@ -15,7 +15,6 @@ import (
 type Context struct {
 	Response http.ResponseWriter
 	Request  *http.Request
-	ctx      context.Context
 	webKit   *Kit
 }
 
@@ -24,23 +23,23 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 	return &Context{
 		Response: w,
 		Request:  r,
-		ctx:      r.Context(),
 	}
 }
 
 // Get retrieves a value from the context using a key.
 func (c *Context) Get(key string) any {
-	return c.ctx.Value(key)
+	return c.Request.Context().Value(key)
 }
 
 // Set sets a value into the context using a key.
 func (c *Context) Set(key string, value any) {
-	c.ctx = context.WithValue(c.ctx, key, value)
+	ctx := context.WithValue(c.Request.Context(), key, value)
+	c.Request = c.Request.WithContext(ctx)
 }
 
-// Context returns the underlying standard context.
+// Context returns the original request context.
 func (c *Context) Context() context.Context {
-	return c.ctx
+	return c.Request.Context()
 }
 
 // Param retrieves a parameter from the route parameters.
@@ -52,7 +51,7 @@ func (c *Context) Param(key string) string {
 func (c *Context) Render(component templ.Component) error {
 	c.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
 	c.Response.WriteHeader(http.StatusOK)
-	return component.Render(c.ctx, c.Response)
+	return component.Render(c.Request.Context(), c.Response)
 }
 
 // Redirect performs an HTTP redirect to the specified URL with the given status code.

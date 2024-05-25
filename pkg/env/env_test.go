@@ -9,31 +9,32 @@ import (
 )
 
 func TestParseConfig(t *testing.T) {
-	tt := map[string]struct {
-		input any
-		want  string
-	}{
-		"Existing Key": {
-			input: "ENV_KEY",
-			want:  "existing_value",
-		},
-		"Non Existing Key": {
-			input: "NON_EXISTING_KEY",
-			want:  "",
-		},
+	type env struct {
+		Key string `env:"ENV_KEY,required"`
 	}
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			err := os.WriteFile(".env", []byte("ENV_KEY=existing_value"), os.ModePerm)
-			require.NoError(t, err)
-			t.Cleanup(func() {
-				require.NoError(t, os.Remove(".env"))
-			})
-			got := ParseConfig(test.input)
-			assert.Equal(t, test.want, got)
-		})
-	}
+	err := os.WriteFile(".env", []byte("ENV_KEY=test"), os.ModePerm)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, os.Remove(".env"))
+	})
+
+	t.Run("No File", func(t *testing.T) {
+		err := ParseConfig(&env{}, "wrong")
+		require.Error(t, err)
+	})
+
+	t.Run("Parse error", func(t *testing.T) {
+		err = ParseConfig("wrong", ".env")
+		require.Error(t, err)
+	})
+
+	t.Run("OK", func(t *testing.T) {
+		var cfg env
+		err = ParseConfig(&cfg, ".env")
+		require.NoError(t, err)
+		assert.Equal(t, "test", cfg.Key)
+	})
 }
 
 func TestGet_WithExistingKey(t *testing.T) {
@@ -62,34 +63,34 @@ func TestGet_WithExistingKey(t *testing.T) {
 	}
 }
 
-func TestGetOrError(t *testing.T) {
-	tt := map[string]struct {
-		input   string
-		wantErr bool
-		want    string
-	}{
-		"Existing Key": {
-			input:   "EXISTING_KEY",
-			wantErr: false,
-			want:    "existing_value",
-		},
-		"Non Existing Key": {
-			input:   "NON_EXISTING_KEY",
-			wantErr: true,
-			want:    "",
-		},
-	}
+func TestGet(t *testing.T) {
+	fallback := "fallback"
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			if test.want != "" {
-				t.Setenv(test.input, test.want)
-			}
-			got, err := GetOrError(test.input)
-			assert.Equal(t, test.wantErr, err != nil)
-			assert.Equal(t, test.want, got)
-		})
-	}
+	t.Run("Empty", func(t *testing.T) {
+		got := Get("", fallback)
+		assert.Equal(t, fallback, got)
+	})
+
+	t.Run("OK", func(t *testing.T) {
+		t.Setenv("EXISTING_KEY", "existing_value")
+		got := Get("EXISTING_KEY", fallback)
+		assert.Equal(t, "existing_value", got)
+	})
+}
+
+func TestGetOrError(t *testing.T) {
+	t.Run("Error", func(t *testing.T) {
+		got, err := GetOrError("NON_EXISTING_KEY")
+		assert.Error(t, err)
+		assert.Empty(t, got)
+	})
+
+	t.Run("OK", func(t *testing.T) {
+		t.Setenv("EXISTING_KEY", "existing_value")
+		got, err := GetOrError("EXISTING_KEY")
+		assert.NoError(t, err)
+		assert.Equal(t, "existing_value", got)
+	})
 }
 
 func TestAppEnvironment(t *testing.T) {

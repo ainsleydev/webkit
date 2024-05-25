@@ -36,7 +36,7 @@ func TestRedirects(t *testing.T) {
 		"API error returns nil": {
 			mock: func(cols *payloadfakes.MockCollectionService, store cache.Store) {
 				cols.EXPECT().
-					List(context.Background(), payloadcms.CollectionRedirects, gomock.Any(), &payloadcms.ListResponse[Redirect]{}).
+					List(context.Background(), CollectionRedirects, gomock.Any(), &payloadcms.ListResponse[Redirect]{}).
 					Return(payloadcms.Response{}, errors.New("error"))
 			},
 			wantStatus: http.StatusOK,
@@ -63,7 +63,7 @@ func TestRedirects(t *testing.T) {
 		"Redirects 301 from API": {
 			mock: func(cols *payloadfakes.MockCollectionService, store cache.Store) {
 				cols.EXPECT().
-					List(context.Background(), payloadcms.CollectionRedirects, gomock.Any(), &payloadcms.ListResponse[Redirect]{}).
+					List(context.Background(), CollectionRedirects, gomock.Any(), &payloadcms.ListResponse[Redirect]{}).
 					Do(func(_ context.Context, _ payloadcms.Collection, _ any, out any) error {
 						*out.(*payloadcms.ListResponse[Redirect]) = payloadcms.ListResponse[Redirect]{
 							Docs: redirects,

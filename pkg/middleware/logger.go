@@ -10,6 +10,7 @@ import (
 	"github.com/logrusorgru/aurora"
 
 	"github.com/ainsleydev/webkit/pkg/env"
+	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -29,24 +30,24 @@ import (
 func Logger(next webkit.Handler) webkit.Handler {
 	return func(ctx *webkit.Context) error {
 		start := time.Now()
-		rw := &responseWrapper{ResponseWriter: ctx.Response}
+		rr := httputil.NewResponseRecorder(ctx.Response)
 		req := ctx.Request
 
 		if strings.Contains(req.URL.Path, "favicon.ico") {
 			return next(ctx)
 		}
 
-		next.ServeHTTP(rw, ctx.Request)
+		next.ServeHTTP(rr, ctx.Request)
 
 		scheme := "http"
 		if req.TLS != nil {
 			scheme = "https"
 		}
 
-		level := statusLevel(rw.status)
+		level := statusLevel(rr.Status)
 
 		msg := fmt.Sprintf("%s [%s] - %s://%s%s",
-			statusLabel(rw.status),
+			statusLabel(rr.Status),
 			strings.ToUpper(req.Method),
 			scheme,
 			req.Host,
@@ -59,23 +60,24 @@ func Logger(next webkit.Handler) webkit.Handler {
 				slog.String("url", req.URL.Path),
 				slog.String("proto", req.Proto),
 				slog.String("method", req.Method),
-				slog.Int("status", rw.status),
+				slog.Int("status", rr.Status),
 				slog.String("remote_addr", req.RemoteAddr),
 				slog.Duration("latency", time.Now().Sub(start)),
 				slog.Any(RequestIDContextKey, ctx.Get(RequestIDContextKey)),
 				slog.String("user_agent", req.UserAgent()),
 				slog.Any(webkit.ErrorKey, ctx.Get("error")),
+				slog.Any("cache", rr.Header().Get("X-Cache")),
 			}
 		} else {
-			msg = fmt.Sprintf("%s - %s", msg, aurora.Gray(10, fmt.Sprintf("Path: %s, Status: %d, Proto: %s, Latency: %d",
+			msg = fmt.Sprintf("%s - %s", msg, aurora.Gray(10, fmt.Sprintf("Path: %s, Status: %d, Cache: %v, Latency: %d",
 				req.URL.Path,
-				rw.status,
-				req.Proto,
+				rr.Status,
+				rr.Header().Get("X-Cache"),
 				time.Now().Sub(start).Milliseconds(),
 			)))
 		}
 
-		slog.Log(ctx.Context(), level, msg, fields...)
+		slog.Log(ctx.Request.Context(), level, msg, fields...)
 
 		return nil
 	}

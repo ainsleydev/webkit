@@ -1,6 +1,7 @@
 package wordpress
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -70,7 +71,7 @@ func TestClient_Get(t *testing.T) {
 			client, teardown := Setup(t, test.serverResponse, test.serverStatus)
 			defer teardown()
 
-			got, err := client.Get(test.url)
+			got, err := client.Get(context.TODO(), test.url)
 			assert.Equal(t, test.wantBody, got)
 			assert.Equal(t, test.wantErr, err != nil)
 		})
@@ -85,7 +86,7 @@ func TestClient_Get_ReadError(t *testing.T) {
 		return nil, assert.AnError
 	}
 
-	_, err := client.Get("/test")
+	_, err := client.Get(context.TODO(), "/test")
 	assert.Error(t, err)
 }
 
@@ -129,7 +130,7 @@ func TestClient_GetAndUnmarshal(t *testing.T) {
 			defer teardown()
 
 			var result TestStruct
-			err := client.GetAndUnmarshal(test.url, &result)
+			err := client.GetAndUnmarshal(context.TODO(), test.url, &result)
 
 			assert.Equal(t, test.wantStruct, result)
 			assert.Equal(t, test.wantErr, err != nil)

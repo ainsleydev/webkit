@@ -42,20 +42,19 @@ func (c *MemCache) Get(_ context.Context, key string, value interface{}) error {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
-	// Check if value is a pointer
-	if reflect.TypeOf(value).Kind() != reflect.Ptr {
-		return errors.New("value must be a pointer")
-	}
-
 	item, found := c.cache[key]
 	if !found {
 		return errors.New("key not found")
 	}
-
 	if !item.noExpiry && time.Now().After(item.expiration) {
 		// Item has expired, delete it from the cache
 		delete(c.cache, key)
 		return errors.New("key expired")
+	}
+
+	// Check if value is a pointer
+	if reflect.TypeOf(value).Kind() != reflect.Ptr {
+		return errors.New("value must be a pointer")
 	}
 
 	// Copy value to the provided interface

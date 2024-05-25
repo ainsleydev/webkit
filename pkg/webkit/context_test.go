@@ -72,7 +72,7 @@ func TestContext_Render(t *testing.T) {
 	t.Run("Errors", func(t *testing.T) {
 		app := New()
 		app.Get("/redirect", func(c *Context) error {
-			require.NoError(t, c.Redirect(500, "/location"))
+			require.NoError(t, c.Redirect(301, "/location"))
 			return nil
 		})
 		app.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", "/redirect", nil))
