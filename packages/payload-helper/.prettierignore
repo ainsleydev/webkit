@@ -1,0 +1,9 @@
+.tmp
+**/.git
+**/.hg
+**/.pnp.*
+**/.svn
+**/build
+**/dist/**
+**/node_modules
+**/temp

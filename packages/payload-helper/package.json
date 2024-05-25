@@ -1,5 +1,5 @@
 {
-	"name": "adev-payload-helper",
+	"name": "@adev-payload-helper",
 	"version": "0.0.1",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",

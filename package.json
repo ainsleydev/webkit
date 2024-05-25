@@ -1,0 +1,27 @@
+{
+	"name": "@adev-web-kit",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepare": "husky",
+		"lint-staged": "lint-staged"
+	},
+	"engines": {
+		"node": ">=18",
+		"pnpm": ">=9"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"husky": "^9.0.11",
+		"lint-staged": "^15.2.4"
+	},
+	"lint-staged": {
+		"*.{js,jsx,ts,tsx}": [
+			"prettier --write"
+		]
+	}
+}
