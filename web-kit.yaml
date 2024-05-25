@@ -1,10 +1,10 @@
-name: 'Test'
-title: 'Test'
-description: 'Test'
-version: '1.0.0'
-baseURL: ''
-titleSuffix: ''
-favicon: ''
-logo: ''
+name: "Test"
+title: "Test"
+description: "Test"
+version: "1.0.0"
+baseURL: ""
+titleSuffix: ""
+favicon: ""
+logo: ""
 payload:
     enabled: true

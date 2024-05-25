@@ -21,7 +21,7 @@
 		"packages/*"
 	],
 	"scripts": {
-		"precommit": "lint-staged",
+		"precommit": "npx lint-staged",
 		"prepare": "husky",
 		"fix": "eslint . --fix && prettier --write .",
 		"lint": "eslint .",
