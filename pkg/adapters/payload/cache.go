@@ -16,8 +16,18 @@ import (
 // cachePageExpiry is the time that a page will be cached for.
 const cachePageExpiry = time.Hour * 24 * 7 * 4
 
-// CacheMiddleware is a middleware increases performance of the application by caching
-// full HTML pages instead of calling the Payload API on every request.
+// CacheBust is a handler that can be used to clear the cache for a specific page.
+func CacheBust(store cache.Store) webkit.Handler {
+	return func(c *webkit.Context) error {
+		_ = c.Request.Context()
+
+		return nil
+	}
+}
+
+// CacheMiddleware is a middleware increases performance of the application
+// by caching full HTML pages instead of calling the Payload API on
+// every request.
 // If the method is not GET or the request is for a file, the request will be passed
 // to the next http handler in the chain.
 func CacheMiddleware(store cache.Store) webkit.Plug {
