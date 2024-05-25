@@ -45,13 +45,12 @@ func Logger(next webkit.Handler) webkit.Handler {
 
 		level := statusLevel(rw.status)
 
-		msg := fmt.Sprintf("%s [%s] - %s://%s%s %s",
+		msg := fmt.Sprintf("%s [%s] - %s://%s%s",
 			statusLabel(rw.status),
 			strings.ToUpper(req.Method),
 			scheme,
 			req.Host,
 			req.RequestURI,
-			req.Proto,
 		)
 
 		var fields []any
