@@ -1,6 +1,6 @@
-import path from 'path'
-import {slateEditor} from '@payloadcms/richtext-slate'
-import type {CollectionConfig, Field} from 'payload/types'
+import path from 'path';
+import { slateEditor } from '@payloadcms/richtext-slate';
+import type { CollectionConfig, Field } from 'payload/types';
 
 /**
  * Media Collection Configuration
@@ -26,7 +26,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 						options: {
 							quality: 80,
 						},
-					}
+					},
 				},
 				{
 					name: 'avif',
@@ -37,7 +37,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 						options: {
 							quality: 80,
 						},
-					}
+					},
 				},
 				// Thumbnail Sizes
 				{
@@ -56,7 +56,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 						options: {
 							quality: 80,
 						},
-					}
+					},
 				},
 				{
 					name: 'thumbnail_avif',
@@ -68,7 +68,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 						options: {
 							quality: 80,
 						},
-					}
+					},
 				},
 				// Mobile Sizes
 				{
@@ -85,7 +85,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 						options: {
 							quality: 80,
 						},
-					}
+					},
 				},
 				{
 					name: 'mobile_avif',
@@ -96,7 +96,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 						options: {
 							quality: 80,
 						},
-					}
+					},
 				},
 				// Tablet Sizes
 				{
@@ -113,7 +113,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 						options: {
 							quality: 80,
 						},
-					}
+					},
 				},
 				{
 					name: 'tablet_avif',
@@ -124,7 +124,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 						options: {
 							quality: 80,
 						},
-					}
+					},
 				},
 			],
 		},
@@ -145,5 +145,5 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 			},
 			...(additionalFields ? additionalFields : []),
 		],
-	}
-}
+	};
+};

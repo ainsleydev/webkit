@@ -1,7 +1,7 @@
-import type {GlobalConfig, Tab} from 'payload/types'
-import {validatePostcode, validateURL} from "../util/validation";
-import {languages} from "./locales";
-import {countries} from "./countries";
+import type { GlobalConfig, Tab } from 'payload/types';
+import { validatePostcode, validateURL } from '../util/validation';
+import { languages } from './locales';
+import { countries } from './countries';
 
 /**
  * Settings Global Configuration
@@ -39,24 +39,26 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 										label: 'Site Name',
 										admin: {
 											width: '50%',
-											description: 'Add a site name for the website, this will be outputted in the Open Graph schema as well as a suffix for the meta title.',
-										}
+											description:
+												'Add a site name for the website, this will be outputted in the Open Graph schema as well as a suffix for the meta title.',
+										},
 									},
 									{
 										name: 'locale',
 										type: 'select',
 										label: 'Locale',
 										defaultValue: 'en_GB',
-										options: languages.map(l => {
+										options: languages.map((l) => {
 											return {
 												label: l.name,
 												value: l.code,
-											}
+											};
 										}),
 										admin: {
 											width: '50%',
-											description: 'Add a locale for the website, this will be outputted in the Open Graph schema and the top level HTML tag. Defaults to en_GB.',
-										}
+											description:
+												'Add a locale for the website, this will be outputted in the Open Graph schema and the top level HTML tag. Defaults to en_GB.',
+										},
 									},
 								],
 							},
@@ -66,7 +68,7 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 								label: 'Tag Line',
 								admin: {
 									description: 'In a few words, explain what this site is about',
-								}
+								},
 							},
 							{
 								name: 'logo',
@@ -78,7 +80,8 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 									},
 								},
 								admin: {
-									description: 'Add a logo for the website that will be displayed in the header & across the website.',
+									description:
+										'Add a logo for the website that will be displayed in the header & across the website.',
 								},
 							},
 							{
@@ -86,14 +89,16 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 								type: 'textarea',
 								label: 'Robots.txt',
 								admin: {
-									description: 'Robots.txt is a text file webmasters create to instruct web robots (typically search engine robots) how to crawl pages on their website.',
-								}
-							}
-						]
+									description:
+										'Robots.txt is a text file webmasters create to instruct web robots (typically search engine robots) how to crawl pages on their website.',
+								},
+							},
+						],
 					},
 					{
 						label: 'Code Injection',
-						description: 'Code injection allows you to inject a small snippet of HTML into your site. It can be a css override, analytics of a block javascript.',
+						description:
+							'Code injection allows you to inject a small snippet of HTML into your site. It can be a css override, analytics of a block javascript.',
 						fields: [
 							{
 								name: 'codeInjection',
@@ -106,8 +111,9 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 										label: 'Head',
 										admin: {
 											language: 'html',
-											description: 'Outputs code within the <head> of the website.',
-										}
+											description:
+												'Outputs code within the <head> of the website.',
+										},
 									},
 									{
 										name: 'footer',
@@ -115,12 +121,13 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 										label: 'Footer',
 										admin: {
 											language: 'html',
-											description: 'Outputs code in the footer of the website.',
-										}
+											description:
+												'Outputs code in the footer of the website.',
+										},
 									},
-								]
-							}
-						]
+								],
+							},
+						],
 					},
 					{
 						label: 'Contact Details',
@@ -131,7 +138,8 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 								interfaceName: 'Contact',
 								admin: {
 									hideGutter: true,
-									description: 'Add global contact details for the website that will be used in schema & contact pages.',
+									description:
+										'Add global contact details for the website that will be used in schema & contact pages.',
 								},
 								fields: [
 									{
@@ -153,7 +161,7 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 													width: '50%',
 												},
 											},
-										]
+										],
 									},
 								],
 							},
@@ -215,19 +223,19 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 												name: 'country',
 												type: 'select',
 												label: 'Country',
-												options: countries.map(c => {
+												options: countries.map((c) => {
 													return {
 														label: c,
 														value: c,
-													}
+													};
 												}),
 												admin: {
 													width: '50%',
 												},
 											},
-										]
+										],
 									},
-								]
+								],
 							},
 							{
 								type: 'group',
@@ -296,10 +304,10 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 													width: '50%',
 												},
 											},
-										]
-									}
-								]
-							}
+										],
+									},
+								],
+							},
 						],
 					},
 					{
@@ -315,7 +323,8 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 										type: 'checkbox',
 										label: 'Enable',
 										admin: {
-											description: 'Enable maintenance mode for the site, this will use a maintenance page template and not include any of the sites functioanlity.',
+											description:
+												'Enable maintenance mode for the site, this will use a maintenance page template and not include any of the sites functioanlity.',
 										},
 									},
 									{
@@ -324,23 +333,24 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 										label: 'Title',
 										admin: {
 											description: 'Add a title for the maintenance page.',
-										}
+										},
 									},
 									{
 										name: 'content',
 										type: 'textarea',
 										label: 'Content',
 										admin: {
-											description: 'Add content for the maintenance page, it will appear beneath the title.',
-										}
-									}
-								]
-							}
-						]
+											description:
+												'Add content for the maintenance page, it will appear beneath the title.',
+										},
+									},
+								],
+							},
+						],
 					},
 					...(additionalTabs ? additionalTabs : []),
 				],
-			}
+			},
 		],
-	}
-}
+	};
+};

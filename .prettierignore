@@ -32,3 +32,6 @@
 **/*.go
 **/*.gohtml
 **/*.tmpl
+
+# Project Specific
+**/plugins/**

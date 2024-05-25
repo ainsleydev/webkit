@@ -1,21 +1,21 @@
 run:
-  go: 1.22
+    go: 1.22
 linters:
-  enable:
-    - thelper
-    - gofumpt
-    - tparallel
-    - unconvert
-    - unparam
-    - wastedassign
-    - revive
-    - forbidigo
-    - tagliatelle
-    - misspell
+    enable:
+        - thelper
+        - gofumpt
+        - tparallel
+        - unconvert
+        - unparam
+        - wastedassign
+        - revive
+        - forbidigo
+        - tagliatelle
+        - misspell
 linters-settings:
-  tagliatelle:
-    case:
-      use-field-name: false
-      rules:
-        yaml: snake
-        json: snake
+    tagliatelle:
+        case:
+            use-field-name: false
+            rules:
+                yaml: snake
+                json: snake

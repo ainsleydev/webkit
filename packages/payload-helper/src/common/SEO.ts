@@ -1,5 +1,5 @@
-import {Field} from "payload/types";
-import {validateURL} from "../util/validation";
+import { Field } from 'payload/types';
+import { validateURL } from '../util/validation';
 
 /**
  * SEO Fields define the additional fields that appear
@@ -16,7 +16,8 @@ export const SEOFields: Field[] = [
 				defaultValue: false,
 				admin: {
 					width: '50%',
-					description: 'Enable private mode to prevent robots from crawling the page or website. When enabled it will output <meta name="robots" content="noindex" /> on the frontend.',
+					description:
+						'Enable private mode to prevent robots from crawling the page or website. When enabled it will output <meta name="robots" content="noindex" /> on the frontend.',
 				},
 			},
 			{
@@ -25,18 +26,20 @@ export const SEOFields: Field[] = [
 				label: 'Canonical',
 				admin: {
 					width: '50%',
-					description: 'A canonical URL is the version of a webpage chosen by search engines like Google as the main version when there are duplicates.',
+					description:
+						'A canonical URL is the version of a webpage chosen by search engines like Google as the main version when there are duplicates.',
 				},
 				validate: validateURL,
-			}
-		]
+			},
+		],
 	},
 	{
 		name: 'structuredData',
 		type: 'json',
 		label: 'Structured Data',
 		admin: {
-			description: 'Structured data is a standardized format for providing information about a page and classifying the page content. The site Schema.org contains a standardised list of markup that the major search engines — Google, Bing, Yahoo and Yandex — have collectively agreed to support.',
-		}
+			description:
+				'Structured data is a standardized format for providing information about a page and classifying the page content. The site Schema.org contains a standardised list of markup that the major search engines — Google, Bing, Yahoo and Yandex — have collectively agreed to support.',
+		},
 	},
-]
+];

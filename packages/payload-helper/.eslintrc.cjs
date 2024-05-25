@@ -16,7 +16,7 @@ module.exports = {
 	],
 	rules: {
 		// Disable some default ESLint rules that conflict with TypeScript
-		'semi': ['error', 'never'], // Enforce no semicolons (code style preference)
+		semi: ['error', 'never'], // Enforce no semicolons (code style preference)
 		'no-undef': 'off', // TypeScript handles undefined checks
 		'no-unused-vars': 'off', // TypeScript handles unused variable checks
 

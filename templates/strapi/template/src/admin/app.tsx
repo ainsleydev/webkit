@@ -27,9 +27,7 @@ export default {
 		theme: {
 			light: {
 				// NOTE: 100s include the background colour, 500+ is the text.
-				colors: {
-
-				},
+				colors: {},
 			},
 		},
 	},
