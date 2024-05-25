@@ -1,25 +1,23 @@
 /** @type {import("prettier").Config} */
-const config = {
+module.exports = {
 	useTabs: true,
 	tabWidth: 4,
 	singleQuote: true,
-	trailingComma: "all",
+	trailingComma: 'all',
 	printWidth: 100,
 	editorconfig: true,
 	overrides: [
 		{
-			files: "*.yaml",
+			files: '*.yaml',
 			options: {
-				"singleQuote": false
-			}
+				singleQuote: false,
+			},
 		},
 		{
-			files: "*.yml",
+			files: '*.yml',
 			options: {
-				"singleQuote": false
-			}
+				singleQuote: false,
+			},
 		},
-	]
-}
-
-export default config;
+	],
+};
