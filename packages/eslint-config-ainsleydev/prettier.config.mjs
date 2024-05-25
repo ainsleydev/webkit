@@ -1,11 +1,10 @@
 /** @type {import("prettier").Config} */
-const confiug = {
+const config = {
 	useTabs: true,
 	tabWidth: 4,
 	singleQuote: true,
 	trailingComma: 'all',
 	printWidth: 100,
-	editorconfig: true,
 	overrides: [
 		{
 			files: '*.yaml',

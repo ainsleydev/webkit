@@ -1,0 +1,5 @@
+packages:
+    # All packages in direct subdirectories of packages/
+    - 'packages/*'
+    # Exclude packages that are inside test directories
+    - '!**/test/**'
