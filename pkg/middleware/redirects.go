@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -16,7 +17,7 @@ func TrailingSlashRedirect(next webkit.Handler) webkit.Handler {
 	return func(ctx *webkit.Context) error {
 		r := ctx.Request
 		path := r.URL.Path
-		if strings.Contains(path, ".") && !strings.HasSuffix(path, "/") {
+		if httputil.IsFileRequest(r) {
 			return next(ctx) // A file
 		}
 		if len(path) > 1 && path[len(path)-1] != '/' {

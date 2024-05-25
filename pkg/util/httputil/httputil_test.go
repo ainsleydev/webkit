@@ -1,6 +1,8 @@
 package httputil
 
 import (
+	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -130,32 +132,41 @@ func TestIs5xx(t *testing.T) {
 	}
 }
 
-func TestIsError(t *testing.T) {
+func TestIsFileRequest(t *testing.T) {
 	tt := map[string]struct {
-		input int
+		input string
 		want  bool
 	}{
-		"400": {
-			input: 400,
+		"CSS file": {
+			input: "/styles/main.css",
 			want:  true,
 		},
-		"500": {
-			input: 500,
+		"JS file": {
+			input: "/scripts/app.js",
 			want:  true,
 		},
-		"200": {
-			input: 200,
+		"Root": {
+			input: "/",
 			want:  false,
 		},
-		"599": {
-			input: 599,
-			want:  true,
+		"Page Path": {
+			input: "/about",
+			want:  false,
+		},
+		"Trailing slash": {
+			input: "/about/team",
+			want:  false,
 		},
 	}
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			got := IsError(test.input)
+			req := &http.Request{
+				URL: &url.URL{
+					Path: test.input,
+				},
+			}
+			got := IsFileRequest(req)
 			assert.Equal(t, test.want, got)
 		})
 	}

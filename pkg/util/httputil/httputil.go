@@ -1,5 +1,10 @@
 package httputil
 
+import (
+	"net/http"
+	"strings"
+)
+
 // Is2xx returns true if the status code is in the 2xx range.
 func Is2xx(statusCode int) bool {
 	return statusCode >= 200 && statusCode < 300
@@ -23,4 +28,11 @@ func Is5xx(statusCode int) bool {
 // IsError returns true if the status code is in the 4xx or 5xx range.
 func IsError(statusCode int) bool {
 	return Is4xx(statusCode) || Is5xx(statusCode)
+}
+
+// IsFileRequest returns true if the request is for a file instead
+// of a page, i.e /about.
+func IsFileRequest(req *http.Request) bool {
+	path := req.URL.Path
+	return strings.Contains(path, ".") && !strings.HasSuffix(path, "/")
 }

@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/logrusorgru/aurora"
+
 	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
@@ -52,19 +54,26 @@ func Logger(next webkit.Handler) webkit.Handler {
 			req.Proto,
 		)
 
-		fields := []any{
-			slog.String("url", req.URL.Path),
-			slog.String("method", req.Method),
-			slog.Int("status", rw.status),
-			slog.String("remote_addr", req.RemoteAddr),
-			slog.Duration("latency", time.Now().Sub(start)),
-			slog.Any(RequestIDContextKey, ctx.Get(RequestIDContextKey)),
-			slog.String("user_agent", req.UserAgent()),
-			slog.Any(webkit.ErrorKey, ctx.Get("error")),
-		}
-
-		if !env.IsProduction() {
-			fields = fields[2:]
+		var fields []any
+		if env.IsProduction() {
+			fields = []any{
+				slog.String("url", req.URL.Path),
+				slog.String("proto", req.Proto),
+				slog.String("method", req.Method),
+				slog.Int("status", rw.status),
+				slog.String("remote_addr", req.RemoteAddr),
+				slog.Duration("latency", time.Now().Sub(start)),
+				slog.Any(RequestIDContextKey, ctx.Get(RequestIDContextKey)),
+				slog.String("user_agent", req.UserAgent()),
+				slog.Any(webkit.ErrorKey, ctx.Get("error")),
+			}
+		} else {
+			msg = fmt.Sprintf("%s - %s", msg, aurora.Gray(10, fmt.Sprintf("Path: %s, Status: %d, Proto: %s, Latency: %d",
+				req.URL.Path,
+				rw.status,
+				req.Proto,
+				time.Now().Sub(start).Milliseconds(),
+			)))
 		}
 
 		slog.Log(ctx.Context(), level, msg, fields...)
@@ -85,6 +94,15 @@ func (rw *responseWrapper) WriteHeader(statusCode int) {
 	rw.ResponseWriter.WriteHeader(statusCode)
 }
 
+// Write intercepts the response and ensures the status code is set if WriteHeader was not called
+func (rw *responseWrapper) Write(b []byte) (int, error) {
+	// If WriteHeader hasn't been called yet, call it with status 200
+	if rw.status == 0 {
+		rw.WriteHeader(http.StatusOK)
+	}
+	return rw.ResponseWriter.Write(b)
+}
+
 // statusLevel returns a slog.Level based on the HTTP status code.
 func statusLevel(status int) slog.Level {
 	switch {
@@ -94,7 +112,8 @@ func statusLevel(status int) slog.Level {
 		return slog.LevelInfo
 	case status >= 400 && status < 500:
 		// switching to info level to be less noisy
-		return slog.LevelInfo
+		//return slog.LevelInfo
+		return slog.LevelError
 	case status >= 500:
 		return slog.LevelError
 	default:
