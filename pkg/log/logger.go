@@ -18,8 +18,8 @@ func Bootstrap(prefix string) {
 }
 
 func resolveLogHandler(prefix string) slog.Handler {
-	enviro := env.AppEnvironment()
-	if enviro == env.Staging || enviro == env.Production {
+	e := env.AppEnvironment()
+	if e == env.Staging || e == env.Production {
 		return slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 			AddSource:   false,
 			Level:       slog.LevelInfo,

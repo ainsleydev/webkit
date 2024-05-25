@@ -1,4 +1,4 @@
-package payloadcms
+package payload
 
 import (
 	"time"

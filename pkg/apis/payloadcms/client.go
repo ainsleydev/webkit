@@ -23,7 +23,7 @@ type Client struct {
 	// Globals cannot be created or deleted, so there are only two REST endpoints opened:
 	// For more info, visit: https://payloadcms.com/docs/rest-api/overview#globals
 	Globals GlobalsService
-	// Media is a seperate service used to upload and manage media files.
+	// Media is a separate service used to upload and manage media files.
 	// For more info, visit: https://payloadcms.com/docs/upload/overview
 	Media MediaService
 
@@ -58,7 +58,7 @@ func New(baseURL, apiKey string) *Client {
 		baseURL: baseURL,
 		apiKey:  apiKey,
 	}
-	c.Collections = CollectionService{Client: c}
+	c.Collections = CollectionServiceOp{Client: c}
 	c.Globals = GlobalsService{Client: c}
 	c.Media = MediaService{Client: c}
 	return c

@@ -10,9 +10,24 @@ import (
 	"github.com/google/go-querystring/query"
 )
 
-// CollectionService handles communication with the collect related methods of
-// the Shopify API.
-type CollectionService struct {
+//go:generate mockgen -package=payloadfakes -destination=payloadfakes/collection.go . CollectionService
+
+// CollectionService is an interface for interfacing with the collection endpoints
+// of the Payload API.
+//
+// See: https://payloadcms.com/docs/rest-api/overview#collections
+type CollectionService interface {
+	FindById(ctx context.Context, collection Collection, id int, out any) (Response, error)
+	FindBySlug(ctx context.Context, collection Collection, slug string, out any) (Response, error)
+	List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error)
+	Create(ctx context.Context, collection Collection, in any) (Response, error)
+	UpdateByID(ctx context.Context, collection Collection, id int, in any) (Response, error)
+	DeleteByID(ctx context.Context, collection Collection, id int) (Response, error)
+}
+
+// CollectionServiceOp handles communication with the collection related
+// methods of the Payload API.
+type CollectionServiceOp struct {
 	Client *Client
 }
 
@@ -25,6 +40,8 @@ const (
 	CollectionMedia Collection = "media"
 	// CollectionUsers defines the Payload users collection slug.
 	CollectionUsers Collection = "users"
+	// CollectionRedirects defines the Payload redirects collection slug.
+	CollectionRedirects Collection = "redirects"
 )
 
 // AllItems is a constant that can be used to retrieve all items from a collection.
@@ -70,19 +87,19 @@ type (
 )
 
 // FindById finds a collection entity by its ID.
-func (s CollectionService) FindById(ctx context.Context, collection Collection, id int, out any) (Response, error) {
+func (s CollectionServiceOp) FindById(ctx context.Context, collection Collection, id int, out any) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%d", collection, id)
 	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
 }
 
 // FindBySlug finds a collection entity by its slug.
-func (s CollectionService) FindBySlug(ctx context.Context, collection Collection, slug string, out any) (Response, error) {
+func (s CollectionServiceOp) FindBySlug(ctx context.Context, collection Collection, slug string, out any) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%s", collection, slug)
 	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
 }
 
 // List lists all collection entities.
-func (s CollectionService) List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error) {
+func (s CollectionServiceOp) List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error) {
 	v, err := query.Values(params)
 	if err != nil {
 		return Response{}, err
@@ -92,7 +109,7 @@ func (s CollectionService) List(ctx context.Context, collection Collection, para
 }
 
 // Create creates a new collection entity.
-func (s CollectionService) Create(ctx context.Context, collection Collection, in any) (Response, error) {
+func (s CollectionServiceOp) Create(ctx context.Context, collection Collection, in any) (Response, error) {
 	path := fmt.Sprintf("/api/%s", collection)
 	buf, err := json.Marshal(in)
 	if err != nil {
@@ -102,7 +119,7 @@ func (s CollectionService) Create(ctx context.Context, collection Collection, in
 }
 
 // UpdateByID updates a collection entity by its ID.
-func (s CollectionService) UpdateByID(ctx context.Context, collection Collection, id int, in any) (Response, error) {
+func (s CollectionServiceOp) UpdateByID(ctx context.Context, collection Collection, id int, in any) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%d", collection, id)
 	buf, err := json.Marshal(in)
 	if err != nil {
@@ -112,7 +129,7 @@ func (s CollectionService) UpdateByID(ctx context.Context, collection Collection
 }
 
 // DeleteByID deletes a collection entity by its ID.
-func (s CollectionService) DeleteByID(ctx context.Context, collection Collection, id int) (Response, error) {
+func (s CollectionServiceOp) DeleteByID(ctx context.Context, collection Collection, id int) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%d", collection, id)
 	return s.Client.Do(ctx, http.MethodDelete, path, nil, nil)
 }

@@ -1,4 +1,4 @@
-package temp
+package adapters
 
 // Adapter for on different platforms such as Payload & Static
 type Adapter interface {

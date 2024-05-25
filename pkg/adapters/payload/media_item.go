@@ -1,4 +1,4 @@
-package payloadcms
+package payload
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/ainsleydev/webkit/pkg/apis/payloadcms/internal/templates"
+	"github.com/ainsleydev/webkit/pkg/adapters/payload/internal/templates"
 )
 
 // Media defines the fields for media when they are uploaded to PayloadCMS.

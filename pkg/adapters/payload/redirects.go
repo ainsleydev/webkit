@@ -1,4 +1,4 @@
-package payloadcms
+package payload
 
 import (
 	"log/slog"
@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ainsleydev/webkit/pkg/apis/payloadcms"
 	"github.com/ainsleydev/webkit/pkg/cache"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
@@ -25,6 +26,7 @@ type Redirect struct {
 // available within the Payload UI.
 type RedirectCode string
 
+// The redirects available in the select dropdown within the Payload UI.
 const (
 	// RedirectsCode301 - Moved Permanently
 	RedirectsCode301 RedirectCode = "301"
@@ -40,13 +42,13 @@ const (
 	RedirectsCode451 RedirectCode = "451"
 )
 
+const redirectCacheKey = "payload_redirects"
+
 // RedirectMiddleware is a middleware that checks for redirects within the Payload CMS.
 // If a redirect is found, it will redirect the user to the new location according
 // to the HTTP status specified. Cache is used to store the redirects to avoid
 // making requests to the Payload API on every request.
-func RedirectMiddleware(client *Client, store cache.Store) webkit.Plug {
-	const cacheKey = "payload_redirects"
-
+func RedirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plug {
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
 			var (
@@ -55,13 +57,13 @@ func RedirectMiddleware(client *Client, store cache.Store) webkit.Plug {
 				path      = c.Request.URL.Path
 			)
 
-			err := store.Get(ctx, cacheKey, &redirects)
+			err := store.Get(ctx, redirectCacheKey, &redirects)
 			if err != nil {
 				slog.Debug("Redirects not found in cache, fetching from Payload")
 
-				lr := ListResponse[Redirect]{}
-				_, err := client.Collections.List(ctx, "redirects", ListParams{
-					Limit: AllItems,
+				lr := payloadcms.ListResponse[Redirect]{}
+				_, err := client.Collections.List(ctx, payloadcms.CollectionRedirects, payloadcms.ListParams{
+					Limit: payloadcms.AllItems,
 				}, &lr)
 
 				if err != nil {
@@ -70,7 +72,7 @@ func RedirectMiddleware(client *Client, store cache.Store) webkit.Plug {
 				}
 				redirects = lr.Docs
 
-				err = store.Set(ctx, cacheKey, lr.Docs, cache.Options{
+				err = store.Set(ctx, redirectCacheKey, lr.Docs, cache.Options{
 					Expiration: time.Second * 30,
 				})
 				if err != nil {

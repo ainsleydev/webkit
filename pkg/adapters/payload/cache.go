@@ -1,4 +1,4 @@
-package payloadcms
+package payload
 
 import (
 	"log/slog"
@@ -10,10 +10,6 @@ import (
 
 type CacheManager struct {
 	Store cache.Store
-}
-
-func (c *CacheManager) Hmmmm() {
-
 }
 
 func (c *CacheManager) Clear() {
@@ -46,8 +42,4 @@ func (c *CacheManager) Middle(next webkit.Handler) webkit.Handler {
 
 		return nil
 	}
-}
-
-func (c *CacheManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 }

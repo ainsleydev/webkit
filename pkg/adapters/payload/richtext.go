@@ -1,4 +1,4 @@
-package payloadcms
+package payload
 
 // See: https://docs.slatejs.org/concepts/12-typescript
 
