@@ -1,0 +1,31 @@
+# Editor/OS
+**/.DS_Store
+**/.cache
+**/.idea
+**/.vscode
+
+# Common Ignores
+**/.tmp
+**/.git/**
+**/.hg/**
+**/.pnp.*
+**/.svn
+**/.pnpm/**
+**/build/**
+**/dist/**
+**/node_modules/**
+**/temp/**
+**/docs/**
+
+# Ignore files for PNPM, NPM and YARN
+**/pnpm-lock.yaml
+**/package-lock.json
+**/yarn.lock
+
+# Sensitive
+**/.env
+**/.env.*
+!**/.env.example
+
+# Go
+**/*.go
