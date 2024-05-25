@@ -37,10 +37,10 @@
     {{- $iso8601 := "2006-01-02T15:04:05-07:00" -}}
 	<!-- Dates -->
     {{ with .DatePublished -}}
-		<meta itemprop="datePublished" {{ .Format $iso8601 | printf "content=%q" | safeHTMLAttr }} />
+{{/*		<meta itemprop="datePublished" {{ .Format $iso8601 | printf "content=%q" | safeHTMLAttr }} />*/}}
     {{ end -}}
     {{ with .DateModified -}}
-		<meta itemprop="dateModified" {{ .Format $iso8601 | printf "content=%q" | safeHTMLAttr }} />
+{{/*		<meta itemprop="dateModified" {{ .Format $iso8601 | printf "content=%q" | safeHTMLAttr }} />*/}}
     {{- end }}
 	<!-- Word Count -->
 	<meta itemprop="wordCount" content="{{ .WordCount }}">
