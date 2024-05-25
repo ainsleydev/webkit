@@ -18,3 +18,15 @@ export const validateURL: Validate<string> = async (value, options) => {
     }
     return true;
 };
+
+
+export const validatePostcode: Validate<string> = async (value, options) => {
+	if (!value) {
+		return true;
+	}
+	const postcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i;
+	if (!postcodeRegex.test(value)) {
+		return 'Invalid postcode format';
+	}
+	return true;
+};
