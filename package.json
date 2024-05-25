@@ -4,9 +4,10 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"precommit": "lint-staged",
 		"prepare": "husky",
-		"lint-staged": "lint-staged"
+		"lint": "prettier --write --plugin-search-dir . --check . && eslint . --fix --quiet",
+		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"engines": {
 		"node": ">=18",
@@ -21,8 +22,9 @@
 		"prettier": "^3.2.5"
 	},
 	"lint-staged": {
-		"*.{js,jsx,ts,tsx}": [
+		"*.{js,jsx,ts,tsx,css,scss,json}": [
 			"prettier --write"
-		]
+		],
+		"*.{js,ts,svelte}": "eslint --fix"
 	}
 }
