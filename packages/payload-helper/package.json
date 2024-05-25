@@ -20,7 +20,7 @@
 		"url": "https://ainsley.dev"
 	},
 	"scripts": {
-		"test": "jest"
+		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
