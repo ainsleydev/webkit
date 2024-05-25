@@ -6,7 +6,8 @@
 	"scripts": {
 		"precommit": "lint-staged",
 		"prepare": "husky",
-		"lint": "prettier --write --plugin-search-dir . --check . && eslint . --fix --quiet",
+		"lint": "eslint . --fix --quiet",
+		"format": "prettier --write .",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"engines": {
