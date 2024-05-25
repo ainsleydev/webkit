@@ -28,26 +28,22 @@
 		"format": "prettier --write .",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
+	"dependencies": {},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
-		"@biomejs/biome": "1.7.3",
-		"@eslint/js": "^9.3.0",
-		"eslint": "^9.3.0",
-		"eslint-config-prettier": "^9.1.0",
 		"globals": "^15.3.0",
 		"husky": "^9.0.11",
 		"lint-staged": "^15.2.4",
-		"prettier": "^3.2.5",
-		"typescript-eslint": "^7.10.0"
-	},
-	"engines": {
-		"node": ">=18",
-		"pnpm": ">=9"
+		"prettier": "^3.2.5"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,css,scss,json}": [
 			"prettier --write ."
 		],
 		"*.{js,ts}": "eslint --fix"
+	},
+	"engines": {
+		"node": ">=18",
+		"pnpm": ">=9"
 	}
 }
