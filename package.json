@@ -3,6 +3,20 @@
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
+	"license": "MIT",
+	"keywords": [],
+	"author": {
+		"name": "ainsley.dev LTD",
+		"email": "hello@ainsley.dev",
+		"url": "https://ainsley.dev"
+	},
+	"maintainers": [
+		{
+			"name": "Ainsley Clark",
+			"email": "hello@ainsley.dev",
+			"url": "https://ainsley.dev"
+		}
+	],
 	"scripts": {
 		"precommit": "lint-staged",
 		"prepare": "husky",
@@ -11,21 +25,20 @@
 		"format": "prettier --write .",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"engines": {
-		"node": ">=18",
-		"pnpm": ">=9"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
 	"devDependencies": {
+		"@biomejs/biome": "1.7.3",
 		"@eslint/js": "^9.3.0",
 		"eslint": "^9.3.0",
+		"eslint-config-prettier": "^9.1.0",
 		"globals": "^15.3.0",
 		"husky": "^9.0.11",
 		"lint-staged": "^15.2.4",
 		"prettier": "^3.2.5",
 		"typescript-eslint": "^7.10.0"
+	},
+	"engines": {
+		"node": ">=18",
+		"pnpm": ">=9"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,css,scss,json}": [
