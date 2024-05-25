@@ -1,24 +1,16 @@
-import { Validate } from 'payload/dist/fields/config/types';
-
-const isValidUrl = (url: string): boolean => {
-    try {
-        new URL(url);
-        return true;
-    } catch (error) {
-        return false;
-    }
-}
+import {Validate} from 'payload/dist/fields/config/types';
 
 export const validateURL: Validate<string> = async (value, options) => {
-    if (!value) {
-        return true;
-    }
-    if (!isValidUrl(value)) {
-        return 'Please enter a valid URL';
-    }
-    return true;
+	if (!value) {
+		return true;
+	}
+	try {
+		new URL(value);
+		return true;
+	} catch (error) {
+		return 'Please enter a valid URL';
+	}
 };
-
 
 export const validatePostcode: Validate<string> = async (value, options) => {
 	if (!value) {

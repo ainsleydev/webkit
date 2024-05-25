@@ -1,5 +1,4 @@
 import type {GlobalConfig, Tab} from 'payload/types'
-import {TelephoneField} from '@nouance/payload-better-fields-plugin'
 import {validatePostcode, validateURL} from "../util/validation";
 import {languages} from "./locales";
 import {countries} from "./countries";
