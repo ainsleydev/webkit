@@ -95,10 +95,6 @@ func (rw *responseWrapper) WriteHeader(statusCode int) {
 
 // Write intercepts the response and ensures the status code is set if WriteHeader was not called
 func (rw *responseWrapper) Write(b []byte) (int, error) {
-	// If WriteHeader hasn't been called yet, call it with status 200
-	if rw.status == 0 {
-		rw.WriteHeader(http.StatusOK)
-	}
 	return rw.ResponseWriter.Write(b)
 }
 

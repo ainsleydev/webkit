@@ -37,6 +37,7 @@ func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 
 				err = store.Set(ctx, settingsCacheKey, settings, cache.Options{
 					Expiration: cache.Forever,
+					Tags:       []string{"payload"},
 				})
 				if err != nil {
 					slog.Error("Setting settings in cache: " + err.Error())

@@ -50,6 +50,8 @@ func (c *Context) Param(key string) string {
 
 // Render renders a templated component to the response writer.
 func (c *Context) Render(component templ.Component) error {
+	c.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	c.Response.WriteHeader(http.StatusOK)
 	return component.Render(c.ctx, c.Response)
 }
 

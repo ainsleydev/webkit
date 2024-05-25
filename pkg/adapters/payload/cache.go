@@ -1,45 +1,62 @@
 package payload
 
 import (
-	"log/slog"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
+	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
-type CacheManager struct {
-	Store cache.Store
-}
+// cachePageExpiry is the time that a page will be cached for.
+const cachePageExpiry = time.Hour * 24 * 7 * 4
 
-func (c *CacheManager) Clear() {
+// CacheMiddleware is a middleware increases performance of the application by caching
+// full HTML pages instead of calling the Payload API on every request.
+// If the method is not GET or the request is for a file, the request will be passed
+// to the next http handler in the chain.
+func CacheMiddleware(store cache.Store) webkit.Plug {
+	return func(next webkit.Handler) webkit.Handler {
+		return func(c *webkit.Context) error {
+			ctx := c.Request.Context()
 
-}
+			if c.Request.Method != http.MethodGet {
+				return next(c)
+			}
+			if httputil.IsFileRequest(c.Request) {
+				return next(c)
+			}
 
-// Need a way of obtaining the page contents so we can cache it after the
-// request has been processed.
-func (c *CacheManager) Middle(next webkit.Handler) webkit.Handler {
-	return func(ctx *webkit.Context) error {
-		if ctx.Request.Method != http.MethodGet {
-			return next(ctx)
+			cacheKey := fmt.Sprintf("page:%s", c.Request.URL.RequestURI())
+
+			var page string
+			err := store.Get(ctx, cacheKey, &page)
+			if err == nil {
+				// Cache hit, serve from cache
+				c.Response.Header().Set("X-Cache", "HIT")
+				c.Response.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%f", cachePageExpiry.Seconds()))
+				return c.HTML(http.StatusOK, page)
+			}
+
+			rr := httputil.NewResponseRecorder(c.Response)
+			c.Response.Header().Set("X-Cache", "MISS")
+			c.Response = rr
+
+			if err = next(c); err != nil {
+				return err
+			}
+
+			if rr.Status != http.StatusOK {
+				return nil
+			}
+
+			// Store the response in cache for future page requests.
+			return store.Set(ctx, cacheKey, rr.Body.String(), cache.Options{
+				Expiration: cachePageExpiry,
+				Tags:       []string{"payload"},
+			})
 		}
-		// If its HTML, not if it's css or anything
-		path := ctx.Request.URL.Path
-
-		var page string
-		err := c.Store.Get(ctx.Context(), path, &page)
-		if err != nil {
-			slog.Debug("Cache miss: %v", err)
-			return next(ctx)
-		}
-
-		ctx.Response.Header().Set("X-Cache", "HIT")
-
-		_, err = ctx.Response.Write([]byte(page))
-		if err != nil {
-			return err
-		}
-
-		return nil
 	}
 }

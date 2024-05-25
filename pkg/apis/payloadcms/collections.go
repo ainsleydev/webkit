@@ -36,12 +36,8 @@ type CollectionServiceOp struct {
 type Collection string
 
 const (
-	// CollectionMedia defines the Payload media collection slug.
-	CollectionMedia Collection = "media"
 	// CollectionUsers defines the Payload users collection slug.
 	CollectionUsers Collection = "users"
-	// CollectionRedirects defines the Payload redirects collection slug.
-	CollectionRedirects Collection = "redirects"
 )
 
 // AllItems is a constant that can be used to retrieve all items from a collection.
