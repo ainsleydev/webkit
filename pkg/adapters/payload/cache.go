@@ -24,12 +24,14 @@ func CacheBust(store cache.Store) webkit.Handler {
 	}
 }
 
+// https://github.com/ainsleydev/audits.com/blob/691badc3cc142f13122a3ed6e86b4a0046824916/backend/config/plugins.ts#L69
+
 // CacheMiddleware is a middleware increases performance of the application
 // by caching full HTML pages instead of calling the Payload API on
 // every request.
 // If the method is not GET or the request is for a file, the request will be passed
 // to the next http handler in the chain.
-func CacheMiddleware(store cache.Store) webkit.Plug {
+func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
 			ctx := c.Request.Context()

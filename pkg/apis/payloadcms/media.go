@@ -17,8 +17,16 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 )
 
-// MediaService represents a service for managing media within Payload.
-type MediaService struct {
+// MediaService is an interface for uploading media to the Payload API.
+//
+// See: https://payloadcms.com/docs/upload/overview
+type MediaService interface {
+	Upload(ctx context.Context, f *os.File, in, out any, opts MediaOptions) (Response, error)
+	UploadFromURL(ctx context.Context, url string, in, out any, opts MediaOptions) (Response, error)
+}
+
+// MediaServiceOp represents a service for managing media within Payload.
+type MediaServiceOp struct {
 	Client *Client
 }
 
@@ -32,7 +40,7 @@ type MediaOptions struct {
 }
 
 // Upload uploads a file to the media endpoint.
-func (s MediaService) Upload(ctx context.Context, f *os.File, in, out any, opts MediaOptions) (Response, error) {
+func (s MediaServiceOp) Upload(ctx context.Context, f *os.File, in, out any, opts MediaOptions) (Response, error) {
 	values, err := getUploadValues(f, in)
 	if err != nil {
 		return Response{}, err
@@ -40,7 +48,7 @@ func (s MediaService) Upload(ctx context.Context, f *os.File, in, out any, opts 
 	return s.uploadFile(ctx, values, out, opts)
 }
 
-func (s MediaService) UploadFromURL(ctx context.Context, url string, in, out any, opts MediaOptions) (Response, error) {
+func (s MediaServiceOp) UploadFromURL(ctx context.Context, url string, in, out any, opts MediaOptions) (Response, error) {
 	// Download the file from the URL
 	resp, err := s.Client.client.Get(url)
 	if err != nil {
@@ -77,7 +85,7 @@ func (s MediaService) UploadFromURL(ctx context.Context, url string, in, out any
 // uploadFile prepares a multipart form and performs the upload request
 //   - Takes the context, collection name, map of form values (including the file), and optional output struct
 //   - Returns a Response object and any errors encountered
-func (s MediaService) uploadFile(ctx context.Context, values map[string]io.Reader, out any, opts MediaOptions) (Response, error) {
+func (s MediaServiceOp) uploadFile(ctx context.Context, values map[string]io.Reader, out any, opts MediaOptions) (Response, error) {
 	if opts.Collection == "" {
 		opts.Collection = "media"
 	}
@@ -111,7 +119,7 @@ func (s MediaService) uploadFile(ctx context.Context, values map[string]io.Reade
 	}
 
 	p := fmt.Sprintf("/api/%s", opts.Collection)
-	req, err := s.Client.newFormRequest(ctx, http.MethodPost, p, &b, w.FormDataContentType())
+	req, err := s.Client.NewFormRequest(ctx, http.MethodPost, p, &b, w.FormDataContentType())
 	if err != nil {
 		return Response{}, err
 	}

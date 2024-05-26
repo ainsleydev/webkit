@@ -12,8 +12,8 @@ import (
 
 //go:generate mockgen -package=payloadfakes -destination=payloadfakes/collection.go . CollectionService
 
-// CollectionService is an interface for interfacing with the collection endpoints
-// of the Payload API.
+// CollectionService is an interface for interacting with the collection
+// endpoints of the Payload API.
 //
 // See: https://payloadcms.com/docs/rest-api/overview#collections
 type CollectionService interface {
@@ -23,6 +23,7 @@ type CollectionService interface {
 	Create(ctx context.Context, collection Collection, in any) (Response, error)
 	UpdateByID(ctx context.Context, collection Collection, id int, in any) (Response, error)
 	DeleteByID(ctx context.Context, collection Collection, id int) (Response, error)
+	// TODO: Need to finalise the Delete endpoint which takes in where query params.
 }
 
 // CollectionServiceOp handles communication with the collection related
@@ -41,7 +42,8 @@ const (
 )
 
 // AllItems is a constant that can be used to retrieve all items from a collection.
-const AllItems = 99999999
+// It's defined as 0 in the Payload API.
+const AllItems = 0
 
 type (
 	// ListParams represents additional query parameters for the find endpoint.
