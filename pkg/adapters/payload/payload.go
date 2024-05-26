@@ -20,6 +20,7 @@ type Options struct {
 
 func NewAdapter(
 	opts Options,
+	env string,
 	kit *webkit.Kit,
 	client *payloadcms.Client,
 	cache cache.Store,
@@ -50,9 +51,3 @@ const (
 	// GlobalSettings defines the Payload settings global settings slug.
 	GlobalSettings payloadcms.Global = "settings"
 )
-
-func (a Adapter) Sitemap() webkit.Handler {
-	return func(c *webkit.Context) error {
-		return nil
-	}
-}

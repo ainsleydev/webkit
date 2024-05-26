@@ -20,7 +20,6 @@ const cachePageExpiry = time.Hour * 24 * 7 * 4
 func CacheBust(store cache.Store) webkit.Handler {
 	return func(c *webkit.Context) error {
 		_ = c.Request.Context()
-
 		return nil
 	}
 }

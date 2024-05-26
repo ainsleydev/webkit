@@ -11,14 +11,18 @@ import (
 // based on the default Payload settings.
 func (a Adapter) Robots() webkit.Handler {
 	return func(c *webkit.Context) error {
-		settings := getSettings(c)
+		robots := getSettings(c.Context()).Robots
 
-		if env.IsProduction() && settings.Robots == nil {
-			return c.String(http.StatusOK, "User-agent: *\nDisallow:")
-		} else if settings.Robots == nil {
-			return c.String(http.StatusOK, "User-agent: *\nDisallow: /")
+		if robots != nil {
+			return c.String(http.StatusOK, *robots)
 		}
 
-		return c.String(http.StatusOK, *settings.Robots)
+		// Always allow robots in production
+		if env.IsProduction() {
+			return c.String(http.StatusOK, "User-agent: *\nDisallow:")
+		}
+
+		// Disallow all robots in development or staging environments
+		return c.String(http.StatusOK, "User-agent: *\nDisallow: /")
 	}
 }

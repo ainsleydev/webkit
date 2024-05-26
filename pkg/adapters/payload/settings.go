@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/ainsleydev/webkit/pkg/apis/payloadcms"
@@ -55,8 +56,8 @@ func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 	}
 }
 
-func getSettings(c *webkit.Context) *Settings {
-	s := c.Get(SettingsContextKey)
+func getSettings(ctx context.Context) *Settings {
+	s := ctx.Value(SettingsContextKey)
 	if s == nil {
 		return &Settings{}
 	}
