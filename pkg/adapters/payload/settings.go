@@ -13,6 +13,7 @@ const settingsCacheKey = "payload_settings"
 
 const SettingsContextKey = "payload_settings"
 
+// Settings defines the structure of the settings within the Payload UI.
 func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plug {
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
@@ -26,22 +27,25 @@ func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 			)
 
 			err := store.Get(ctx, settingsCacheKey, &settings)
+			if err == nil {
+				c.Set(SettingsContextKey, settings)
+				return next(c)
+			}
+
+			slog.Debug("Settings not found in cache, fetching from Payload")
+
+			_, err = client.Globals.Get(ctx, GlobalSettings, &settings)
 			if err != nil {
-				slog.Debug("Settings not found in cache, fetching from Payload")
+				slog.Error("Fetching redirects from Payload: " + err.Error())
+				return nil
+			}
 
-				_, err := client.Globals.Get(ctx, "settings", &settings)
-				if err != nil {
-					slog.Error("Fetching redirects from Payload: " + err.Error())
-					return nil
-				}
-
-				err = store.Set(ctx, settingsCacheKey, settings, cache.Options{
-					Expiration: cache.Forever,
-					Tags:       []string{"payload"},
-				})
-				if err != nil {
-					slog.Error("Setting settings in cache: " + err.Error())
-				}
+			err = store.Set(ctx, settingsCacheKey, settings, cache.Options{
+				Expiration: cache.Forever,
+				Tags:       []string{"payload"},
+			})
+			if err != nil {
+				slog.Error("Setting settings in cache: " + err.Error())
 			}
 
 			c.Set(SettingsContextKey, settings)
@@ -49,4 +53,12 @@ func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 			return next(c)
 		}
 	}
+}
+
+func getSettings(c *webkit.Context) *Settings {
+	s := c.Get(SettingsContextKey)
+	if s == nil {
+		return &Settings{}
+	}
+	return s.(*Settings)
 }

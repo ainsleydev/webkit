@@ -18,7 +18,7 @@ import (
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
-func TestRedirects(t *testing.T) {
+func TestSettingsMiddleware(t *testing.T) {
 	t.Parallel()
 
 	var (
