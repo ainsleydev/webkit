@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -16,7 +14,9 @@ var (
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, err := w.Write([]byte(defaultBody))
-			assert.NoError(t, err)
+			if err != nil {
+				t.Errorf("failed to write response: %v", err)
+			}
 		})
 	}
 )
@@ -126,9 +126,11 @@ func TestClientDo(t *testing.T) {
 	}
 }
 
-func TestErrors_Error(t *testing.T) {
-	t.Parallel()
+func TestClient_NewRequest(t *testing.T) {
 
+}
+
+func TestErrors_Error(t *testing.T) {
 	err := Errors{
 		{Message: "error 1"},
 		{Message: "error 2"},

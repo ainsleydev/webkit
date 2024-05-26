@@ -186,6 +186,7 @@ func (c *Client) Delete(ctx context.Context, path string, v any) (Response, erro
 // be resolved to the BaseURL of the Client. Relative URLS should always be
 // specified without a preceding slash. If specified, the value pointed to by
 // body is JSON encoded and included as the request body.
+// TODO: Clean up these comments.
 func (c *Client) NewRequest(ctx context.Context, path, method string, body io.Reader) (*http.Request, error) {
 	url := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
