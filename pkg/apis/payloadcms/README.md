@@ -18,16 +18,17 @@
 
 </div>
 
-
 [![GoDoc](https://godoc.org/github.com/payloadcms/go-payload?status.svg)](https://godoc.org/github.com/payloadcms/go-payload)
 [![Go Report Card](https://goreportcard.com/badge/github.com/payloadcms/go-payload)](https://goreportcard.com/report/github.com/payloadcms/go-payload)
 [![Build Status](https://travis-ci.org/payloadcms/go-payload.svg?branch=master)](https://travis-ci.org/payloadcms/go-payload)
 [![codecov](https://codecov.io/gh/payloadcms/go-payload/branch/master/graph/badge.svg)](https://codecov.io/gh/payloadcms/go-payload)
+
+## TODOs
+
 ## Open Source
 
 [ainsley.dev](https://ainsley.dev) permits the use of any code found within the repository for use with external
 projects.
-
 
 ## Trademark
 
