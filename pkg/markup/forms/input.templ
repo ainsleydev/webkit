@@ -42,7 +42,7 @@ templ InputField(props InputFieldProps) {
 		type={ string(props.GetType()) }
 		name={ props.Name }
 		value={ props.Value }
-		class={ RootClassName, props.Classes }
+		class={ InputFieldClassName, props.Classes }
 		if props.Id != "" {
 			id={ props.Id }
 		}
