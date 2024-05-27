@@ -1,0 +1,22 @@
+package scratch
+
+import (
+	"github.com/ainsleydev/webkit/pkg/markup/forms"
+)
+
+
+templ Render() {
+	@forms.InputField(forms.InputFieldProps{
+		Label: "Name",
+		Name: "name",
+		Type: "text",
+		Placeholder: "Enter your name",
+		Required: true,
+	})
+
+
+
+	@inputfield.Render(inputfield.Props{
+		
+	})
+}

@@ -1,0 +1,50 @@
+package payloadforms
+
+import (
+	"fmt"
+)
+
+templ PayloadFormFields(fields []FormField) {
+	for _, field := range fields {
+		<fieldset if field.Width != nil {
+	width={ fmt.Sprintf("%d%%", *field.Width) }
+}>
+			if field.Label != nil && *field.Label != "" {
+				<label for={ field.Name }>{ *field.Label }</label>
+			}
+			switch field.BlockType {
+				case FormBlockTypeCheckbox:
+					<input type="checkbox" name={ field.Name }/>
+				case FormBlockTypeCountry:
+				case FormBlockTypeEmail:
+				case FormBlockTypeMessage:
+				case FormBlockTypeNumber:
+				case FormBlockTypeSelect:
+					SelectField(field)
+				case FormBlockTypeState:
+				case FormBlockTypeText:
+				case FormBlockTypeTextarea:
+			}
+		</fieldset>
+	}
+}
+
+templ TextField(field FormField) {
+	<input type="text" name={ field.Name }/>
+}
+
+templ TextareaField(field FormField) {
+	<textarea name={ field.Name } rows="8"></textarea>
+}
+
+templ SelectField(field FormField) {
+	<select class="form-field-select">
+		for _, option := range field.Options {
+			<option value={ option.Value } if option.ID != nil {
+	id={ *option.ID }
+}>
+				{ option.Label }
+			</option>
+		}
+	</select>
+}

@@ -8,6 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// TODO: Remove logrus, replace with Slog
+
 // severityMap is a mapping of logrus log level to sentry log level.
 var severityMap = map[logrus.Level]sentry.Level{
 	logrus.DebugLevel: sentry.LevelDebug,
