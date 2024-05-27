@@ -1,11 +1,13 @@
 package payloadforms
 
-// Form Builder Plugin
+// Forms mimic the Form Builder Plugin:
 // https://payloadcms.com/docs/plugins/form-builder
-// TODO: Payment not currently supported
-// See below for an example of the form builder plugin being rendered on the front-end.
+//
+// Blocks example within the frontend:
 // https://github.com/payloadcms/payload/tree/main/examples/form-builder/next-pages/components/Blocks
 //
+// TypeScript Bindings:
+// https://github.com/payloadcms/payload/blob/main/packages/plugin-form-builder/src/types.ts
 
 // Form defines a singular form collection type in the Form Builder Plugin
 // within Payload CMS.
@@ -89,44 +91,3 @@ type FormEmail struct {
 	Subject   string           `json:"subject"`
 	Message   []map[string]any `json:"message,omitempty"`
 }
-
-func (f Form) Validate() error {
-
-}
-
-/**
- 	High level example:
-	{
-		"id": 1,
-		"title": "My Form",
-		"fields": [
-			{
-				"id": "66544ca23d2ccf267279c9e6",
-				"name": "name",
-				"label": "Label",
-				"width": 10,
-				"required": null,
-				"defaultValue": true,
-				"blockName": null,
-				"blockType": "checkbox"
-			}
-		],
-		"submitButtonLabel": null,
-		"confirmationType": "message",
-		"confirmationMessage": [
-			{
-				"children": [
-					{
-						"text": "jkhkghjghjkkghj"
-					}
-				]
-			}
-		],
-		"redirect": {
-			"url": null
-		},
-		"emails": [],
-		"updatedAt": "2024-05-27T09:04:34.702Z",
-		"createdAt": "2024-05-27T09:04:34.702Z"
-	}
-*/

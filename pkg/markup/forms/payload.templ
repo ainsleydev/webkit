@@ -1,10 +1,12 @@
-package payloadforms
+package forms
 
 import (
 	"fmt"
+
+    "github.com/ainsleydev/webkit/pkg/adapters/payload/payloadforms"
 )
 
-templ PayloadFormFields(fields []FormField) {
+templ PayloadFormFields(fields []payloadforms.FormField) {
 	for _, field := range fields {
 		<fieldset if field.Width != nil {
 	width={ fmt.Sprintf("%d%%", *field.Width) }
@@ -27,24 +29,4 @@ templ PayloadFormFields(fields []FormField) {
 			}
 		</fieldset>
 	}
-}
-
-templ TextField(field FormField) {
-	<input type="text" name={ field.Name }/>
-}
-
-templ TextareaField(field FormField) {
-	<textarea name={ field.Name } rows="8"></textarea>
-}
-
-templ SelectField(field FormField) {
-	<select class="form-field-select">
-		for _, option := range field.Options {
-			<option value={ option.Value } if option.ID != nil {
-	id={ *option.ID }
-}>
-				{ option.Label }
-			</option>
-		}
-	</select>
 }

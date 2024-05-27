@@ -1,4 +1,4 @@
-package payloadforms
+package forms
 
 // Country defines a key-value pair for a countr to be
 // used in a select field.
