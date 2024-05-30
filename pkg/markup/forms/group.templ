@@ -1,0 +1,48 @@
+package forms
+
+import (
+	"fmt"
+)
+
+const (
+	FormGroupClassName = "form-group"
+)
+
+type FormGroupProps struct {
+	Label       string
+	Description string
+	ID          string
+	Error       string
+	Width       *int
+}
+
+func width(percent *int) string {
+	return fmt.Sprintf("%d%%", percent)
+}
+
+templ FormGroup(props FormGroupProps) {
+	<fieldset
+		class={ FormGroupClassName }
+	>
+		<!-- Label -->
+		if props.Label != "" {
+			<label for={ props.ID } class="form-label">
+				{ props.Label }
+			</label>
+		}
+		<!-- Description -->
+		if props.Description != "" {
+			<p class={ "form-description" }>
+				{ props.Description }
+			</p>
+		}
+		<!-- Child Inputs -->
+		{ children... }
+		<!-- Error -->
+		if props.Error != "" {
+			<span class="form-error">
+				{ props.Error }
+			</span>
+		}
+	</fieldset>
+}

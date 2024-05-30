@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ainsleydev/webkit/pkg/apis/payloadcms"
+	"github.com/ainsleyclark/go-payloadcms"
+
 	"github.com/ainsleydev/webkit/pkg/cache"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )

@@ -4,7 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/ainsleydev/webkit/pkg/apis/payloadcms"
+	"github.com/ainsleyclark/go-payloadcms"
+
 	"github.com/ainsleydev/webkit/pkg/cache"
 	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"

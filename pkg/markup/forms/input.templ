@@ -1,16 +1,12 @@
 package forms
 
-import (
-	"github.com/ainsleydev/webkit/pkg/markup/base"
-)
-
 const InputFieldClassName = "form-input"
 
 type InputFieldProps struct {
 	ID              string
 	Classes         []string
-	Value           string
 	Name            string
+	Value           string
 	Type            InputType
 	Placeholder     string
 	Required        bool
@@ -43,8 +39,8 @@ templ InputField(props InputFieldProps) {
 		name={ props.Name }
 		value={ props.Value }
 		class={ InputFieldClassName, props.Classes }
-		if props.Id != "" {
-			id={ props.Id }
+		if props.ID != "" {
+			id={ props.ID }
 		}
 		if props.Placeholder != "" {
 			placeholder={ props.Placeholder }

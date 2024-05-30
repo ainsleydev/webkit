@@ -1,1 +1,29 @@
 package forms
+
+import "strconv"
+
+const RangeClassName = "form-range"
+
+type RangeProps struct {
+	ID      string
+	Classes []string
+	Min     float32
+	Max     float32
+	Step    float32
+	Value   float32
+}
+
+func floatToString(v float32) string {
+	return strconv.FormatFloat(float64(v), 'f', -1, 32)
+}
+
+templ Range(props RangeProps) {
+	<input
+		type="range"
+		class={ RangeClassName, props.Classes }
+		min={ floatToString(props.Min) }
+		max={ floatToString(props.Max) }
+		step={ floatToString(props.Step) }
+		value={ floatToString(props.Value) }
+	/>
+}

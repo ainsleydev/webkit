@@ -1,1 +1,42 @@
 package forms
+
+import (
+	"fmt"
+)
+
+const TextAreaClassName = "form-textarea"
+
+type TextAreaProps struct {
+	ID              string
+	Classes         []string
+	Name            string
+	Value           string
+	Rows            int
+	Placeholder     string
+	Required        bool
+	ReadOnly        bool
+	Disabled        bool
+	ExtraAttributes map[string]any
+}
+
+templ TextArea(props TextAreaProps) {
+	<textarea
+		name={ props.Name }
+		class={ InputFieldClassName, props.Classes }
+		rows={ fmt.Sprint(props.Rows) }
+		if props.ID != "" {
+			id={ props.ID }
+		}
+		if props.Placeholder != "" {
+			placeholder={ props.Placeholder }
+		}
+		required?={ props.Required }
+		readonly?={ props.ReadOnly }
+		disabled?={ props.Disabled }
+		{ props.ExtraAttributes... }
+	>
+		if props.Value != "" {
+			{ props.Value }
+		}
+	</textarea>
+}

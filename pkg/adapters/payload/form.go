@@ -1,16 +1,14 @@
-package payloadforms
+package payload
 
-// Forms mimic the Form Builder Plugin:
-// https://payloadcms.com/docs/plugins/form-builder
+// Form defines a singular form collection type in the Form Builder Plugin
+// within Payload CMS
+// See: https://payloadcms.com/docs/plugins/form-builder
 //
 // Blocks example within the frontend:
 // https://github.com/payloadcms/payload/tree/main/examples/form-builder/next-pages/components/Blocks
 //
 // TypeScript Bindings:
 // https://github.com/payloadcms/payload/blob/main/packages/plugin-form-builder/src/types.ts
-
-// Form defines a singular form collection type in the Form Builder Plugin
-// within Payload CMS.
 type Form struct {
 	ID                int                  `json:"id"`
 	Title             string               `json:"title"`

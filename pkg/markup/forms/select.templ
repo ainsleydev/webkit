@@ -3,36 +3,42 @@ package forms
 const SelectClassName = "form-select"
 
 type SelectProps struct {
-	ID       string
-	Classes  []string
-	Name     string
-	Options  []SelectOption
-	Required bool
-	Multiple bool
-	Disabled bool
+	ID              string
+	Classes         []string
+	Name            string
+	Options         []SelectOption
+	Required        bool
+	Multiple        bool
+	Disabled        bool
+	ExtraAttributes map[string]any
 }
 
 type SelectOption struct {
-	Value    string
-	Text     string
-	Selected bool
-	Disabled bool
+	Value           string
+	Text            string
+	Selected        bool
+	Disabled        bool
+	ExtraAttributes map[string]any
 }
 
 templ Select(props SelectProps) {
 	<select
 		name={ props.Name }
-		id={ props.ID }
+		if props.ID != "" {
+			id={ props.ID }
+		}
 		class={ InputFieldClassName, props.Classes }
 		required?={ props.Required }
 		multiple?={ props.Multiple }
 		disabled?={ props.Disabled }
+		{ props.ExtraAttributes... }
 	>
 		for _, option := range props.Options {
 			<option
 				value={ option.Value }
 				selected?={ option.Selected }
 				disabled?={ option.Disabled }
+				{ option.ExtraAttributes... }
 			>
 				{ option.Text }
 			</option>

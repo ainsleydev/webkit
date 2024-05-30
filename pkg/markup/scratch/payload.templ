@@ -3,14 +3,16 @@ package forms
 import (
 	"fmt"
 
-    "github.com/ainsleydev/webkit/pkg/adapters/payload/payloadforms"
+	"github.com/ainsleydev/webkit/pkg/adapters/payload/payloadforms"
 )
 
 templ PayloadFormFields(fields []payloadforms.FormField) {
 	for _, field := range fields {
-		<fieldset if field.Width != nil {
-	width={ fmt.Sprintf("%d%%", *field.Width) }
-}>
+		<fieldset
+			if field.Width != nil {
+				width={ fmt.Sprintf("%d%%", *field.Width) }
+			}
+		>
 			if field.Label != nil && *field.Label != "" {
 				<label for={ field.Name }>{ *field.Label }</label>
 			}
