@@ -3,6 +3,7 @@ package webkit
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,10 +20,11 @@ type (
 	// fields from handlers/middlewares and changing field values at the same time leads to data-races.
 	// Adding new routes after the server has been started is also not safe!
 	Kit struct {
-		ErrorHandler ErrorHandler
-		mux          *http.ServeMux
-		routes       []Route
-		plugs        []Plug
+		ErrorHandler    ErrorHandler
+		NotFoundHandler Handler
+		mux             *http.ServeMux
+		routes          []Route
+		plugs           []Plug
 	}
 	// Route contains a handler and information for matching against requests.
 	Route struct {
@@ -41,21 +43,38 @@ type (
 // New creates a new WebKit instance.
 func New() *Kit {
 	return &Kit{
-		ErrorHandler: DefaultErrorHandler,
-		mux:          http.NewServeMux(),
-		plugs:        []Plug{},
+		ErrorHandler:    DefaultErrorHandler,
+		NotFoundHandler: DefaultNotFoundHandler,
+		mux:             http.NewServeMux(),
+		plugs:           []Plug{},
 	}
 }
 
 // ServeHTTP implements the http.Handler interface.
 func (a *Kit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	a.mux.ServeHTTP(w, r)
+	found := false
+	for _, route := range a.routes {
+		if route.Method == r.Method && route.Path == r.URL.Path {
+			found = true
+			a.mux.ServeHTTP(w, r)
+			break
+		}
+	}
+
+	if !found {
+		// TODO: Check if NotFoundHandler is set
+		// No matching route found, call NotFoundHandler
+		if err := a.NotFoundHandler(NewContext(w, r)); err != nil {
+			slog.Error("Handling not found request: " + err.Error())
+		}
+	}
 }
 
 // ServeHTTP wraps the Handler function to a Handler so that
 // it satisfies the http.Handler interface.
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	err := h(NewContext(w, r))
+	ctx := NewContext(w, r)
+	err := h(ctx)
 	if err != nil {
 		slog.Error("Handling HTTP route: " + err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -74,7 +93,7 @@ func (a *Kit) Plug(plugs ...Plug) {
 func (a *Kit) Start(address string) error {
 	server := &http.Server{
 		Addr:    address,
-		Handler: a.mux,
+		Handler: a,
 	}
 
 	// Create a channel to receive signals
@@ -109,6 +128,12 @@ func (a *Kit) Start(address string) error {
 
 // ErrorKey is the key used to store the error in the context.
 const ErrorKey = "error"
+
+// DefaultNotFoundHandler is the default handler that is called when no route
+// matches the request.
+var DefaultNotFoundHandler = func(ctx *Context) error {
+	return ctx.String(http.StatusNotFound, "Not Found")
+}
 
 // DefaultErrorHandler is the default error handler that is called when a route
 // handler returns an error.
@@ -147,6 +172,7 @@ func (a *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug)
 			h = a.plugs[i](h)
 		}
 		if err := h(ctx); err != nil {
+			fmt.Println("here")
 			if handleErr := a.ErrorHandler(ctx, err); handleErr != nil {
 				slog.Error("Handling error: %v", handleErr)
 			}
