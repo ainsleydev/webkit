@@ -17,7 +17,7 @@ func (a Adapter) Robots() webkit.Handler {
 			return c.String(http.StatusOK, *robots)
 		}
 
-		// Always allow robots in production
+		// Always allow robots in production if it's not found via settings
 		if env.IsProduction() {
 			return c.String(http.StatusOK, "User-agent: *\nDisallow:")
 		}
