@@ -44,9 +44,9 @@ type HeadProps struct {
 	Canonical string // The canonical URL of the page.
 
 	// Schema, SEO & Opengraph
-	OpenGraph *OpenGraph
-	Twitter   *TwitterCard
-	Org       *SchemaOrgOrganisation
+	//OpenGraph *OpenGraph
+	Twitter *TwitterCard
+	Org     *SchemaOrgOrganisation
 	//Navigation *SchemaOrgItemList
 
 	// Other (Code Injection)

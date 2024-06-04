@@ -1,4 +1,4 @@
-package seo
+package markup
 
 // OpenGraph represents web page information according to OGP.
 // See https://ogp.me/ for more details.
@@ -90,14 +90,16 @@ templ OpenGraph(props OpenGraphProps) {
     if props.Determiner != "" {
         <meta property="og:determiner" content="{ .Determiner }" />
     }
+
     if props.Locale != "" {
         <meta property="og:locale" content="{ .Locale }" />
     }
+    <!--
     if len(props.LocaleAlt) > 0 {
         for _, locale := range props.LocaleAlt {
-            <meta property="og:locale:alternate" content="{ locale }" />
+            <meta property="og:locale:alternate" content="{ .locale }" />
         }
-    }
+    } -->
     if props.SiteName != "" {
         <meta property="og:site_name" content="{ .SiteName }" />
     }

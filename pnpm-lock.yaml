@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      prettier:
-        specifier: ^3.2.5
-        version: 3.2.5
     devDependencies:
       '@ainsleydev/eslint-config':
         specifier: workspace:*
@@ -24,6 +20,9 @@ importers:
       lint-staged:
         specifier: ^15.2.4
         version: 15.2.4
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
 
   packages/eslint-config-ainsleydev:
     dependencies:

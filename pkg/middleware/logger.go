@@ -3,7 +3,6 @@ package middleware
 import (
 	"fmt"
 	"log/slog"
-	"net/http"
 	"strings"
 	"time"
 
@@ -31,13 +30,16 @@ func Logger(next webkit.Handler) webkit.Handler {
 	return func(ctx *webkit.Context) error {
 		start := time.Now()
 		rr := httputil.NewResponseRecorder(ctx.Response)
+		ctx.Response = rr
 		req := ctx.Request
 
 		if strings.Contains(req.URL.Path, "favicon.ico") {
 			return next(ctx)
 		}
 
-		next.ServeHTTP(rr, ctx.Request)
+		if err := next(ctx); err != nil {
+			return err
+		}
 
 		scheme := "http"
 		if req.TLS != nil {
@@ -81,23 +83,6 @@ func Logger(next webkit.Handler) webkit.Handler {
 
 		return nil
 	}
-}
-
-// responseWrapper is a struct that wraps a http.ResponseWriter to intercept the status code
-type responseWrapper struct {
-	http.ResponseWriter
-	status int
-}
-
-// WriteHeader intercepts and stores the status code before writing it to the client
-func (rw *responseWrapper) WriteHeader(statusCode int) {
-	rw.status = statusCode
-	rw.ResponseWriter.WriteHeader(statusCode)
-}
-
-// Write intercepts the response and ensures the status code is set if WriteHeader was not called
-func (rw *responseWrapper) Write(b []byte) (int, error) {
-	return rw.ResponseWriter.Write(b)
 }
 
 // statusLevel returns a slog.Level based on the HTTP status code.

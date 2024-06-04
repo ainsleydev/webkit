@@ -15,7 +15,6 @@ import (
 type Context struct {
 	Response http.ResponseWriter
 	Request  *http.Request
-	webKit   *Kit
 }
 
 // NewContext creates a new Context instance.

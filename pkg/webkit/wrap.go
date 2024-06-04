@@ -19,3 +19,26 @@ func WrapHandler(h http.Handler) Handler {
 		return nil
 	}
 }
+
+// WrapMiddleware wraps `func(http.Handler) http.Handler` into `webkit.Plug“
+func WrapMiddleware(m func(http.Handler) http.Handler) Plug {
+	return func(next Handler) Handler {
+		return func(c *Context) (err error) {
+			m(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				err = next(c)
+			})).ServeHTTP(c.Response, c.Request)
+			return
+		}
+	}
+}
+
+func WrapMiddelewareHandler(next Handler, m func(http.Handler) http.Handler) Handler {
+	return func(c *Context) (err error) {
+		m(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			c.Response = w
+			c.Request = r
+			err = next(c)
+		})).ServeHTTP(c.Response, c.Request)
+		return
+	}
+}

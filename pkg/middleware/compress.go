@@ -2,26 +2,40 @@ package middleware
 
 import (
 	"compress/gzip"
-
-	"github.com/klauspost/compress/gzhttp"
-
 	"github.com/ainsleydev/webkit/pkg/webkit"
+	"github.com/klauspost/compress/gzhttp"
+	"net/http"
 )
 
 // Gzip returns a middleware that compresses HTTP responses using gzip compression.
 // It wraps the provided handler, adding gzip compression to responses
 // based on the specified configuration.
 func Gzip(next webkit.Handler) webkit.Handler {
+	//return webkit.WrapMiddelewareHandler(next, middleware.Compress(5))
+
 	wrapper, _ := gzhttp.NewWrapper( //nolint Only returns on validation error.
-		// Use the best compression level so that the gzip header is always added.
 		gzhttp.CompressionLevel(gzip.BestCompression),
-		// Compress responses larger than 512 bytes
-		gzhttp.MinSize(512),
-		// TODO: Add more content types to compress such as CSS & JS.
+		gzhttp.MinSize(0), // Compress responses larger than 512 bytes
 		gzhttp.ContentTypes([]string{
-			"text/plain",
 			"text/html",
+			"text/css",
+			"text/plain",
+			"text/javascript",
+			"application/javascript",
+			"application/x-javascript",
+			"application/json",
+			"application/atom+xml",
+			"application/rss+xml",
+			"image/svg+xml",
 		}),
 	)
-	return webkit.WrapHandler(wrapper(next))
+
+	return func(c *webkit.Context) (err error) {
+		wrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			c.Response = w
+			c.Request = r
+			err = next(c)
+		})).ServeHTTP(c.Response, c.Request)
+		return
+	}
 }

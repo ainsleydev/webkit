@@ -7,7 +7,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-//go:generate mockgen -destination=mocks_redis.go . RedisStore
+//go:generate mockgen -package=internal -destination=mocks_redis.go . RedisStore
 
 // RedisStore is an abstraction of a *redis.Client used
 // for testing.

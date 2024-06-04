@@ -4,8 +4,10 @@ go 1.22.3
 
 require (
 	github.com/a-h/templ v0.2.707
+	github.com/ainsleyclark/go-payloadcms v0.0.1
 	github.com/caarlos0/env/v7 v7.1.0
 	github.com/getsentry/sentry-go v0.27.0
+	github.com/go-chi/chi/v5 v5.0.12
 	github.com/goccy/go-json v0.10.2
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
@@ -19,7 +21,6 @@ require (
 )
 
 require (
-	github.com/ainsleyclark/go-payloadcms v0.0.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

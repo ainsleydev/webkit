@@ -1,4 +1,3 @@
-import payload from 'payload';
 import { PayloadHandler } from 'payload/config';
 
 /**
@@ -9,9 +8,13 @@ import { PayloadHandler } from 'payload/config';
 export const findBySlug = (collection: string): PayloadHandler => {
 	return async (req, res) => {
 		try {
-			const data = await payload.find({
+			const data = await req.payload.find({
 				collection,
-				where: { slug: { equals: req.params.slug } },
+				where: {
+					slug: {
+						equals: req.params.slug,
+					},
+				},
 				limit: 1,
 			});
 			if (data.docs.length === 0) {

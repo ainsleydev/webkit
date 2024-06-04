@@ -9,10 +9,10 @@ import (
 
 // Static registers a new route with path prefix to serve static files from
 // the provided root directory.
-func (a *Kit) Static(pattern string, staticDir string, plugs ...Plug) {
+func (k *Kit) Static(pattern string, staticDir string, plugs ...Plug) {
 	fs := http.FileServer(noDirListingFileSystem{http.Dir(staticDir)})
 	handler := http.StripPrefix(pattern, fs)
-	a.Get(pattern+"*", WrapHandler(handler), plugs...)
+	k.Get(pattern+"*", WrapHandler(handler), plugs...)
 }
 
 // noDirListingFileSystem is a custom file system wrapper that prevents
