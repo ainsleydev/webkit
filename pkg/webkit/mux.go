@@ -22,13 +22,6 @@ type (
 		ErrorHandler    ErrorHandler
 		NotFoundHandler Handler
 		mux             *chi.Mux
-		routes          []Route
-	}
-	// Route contains a handler and information for matching against requests.
-	Route struct {
-		Path   string
-		Method string
-		Name   string
 	}
 	// Handler is a function that handles HTTP requests.
 	Handler func(c *Context) error
@@ -50,6 +43,14 @@ func New() *Kit {
 // ServeHTTP implements the http.Handler interface.
 func (k *Kit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	k.mux.ServeHTTP(w, r)
+}
+
+// Add registers a new route for an HTTP method and path with matching handler
+// in the router with optional route-level plugs.
+func (k *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug) {
+	k.mux.MethodFunc(method, pattern, func(w http.ResponseWriter, r *http.Request) {
+		k.handle(w, r, handler, plugs...)
+	})
 }
 
 // Plug adds a middleware function to the chain. These are called after
@@ -123,14 +124,8 @@ var PingHandler = func(ctx *Context) error {
 	return ctx.String(http.StatusOK, "PONG")
 }
 
-// Add registers a new route for an HTTP method and path with matching handler
-// in the router with optional route-level plugs.
-func (k *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug) {
-	k.mux.MethodFunc(method, pattern, func(w http.ResponseWriter, r *http.Request) {
-		k.handle(w, r, handler, plugs...)
-	})
-}
-
+// handle is a helper function that wraps the handler with plugs and executes
+// the handler alongside any middleware functions.
 func (k *Kit) handle(w http.ResponseWriter, r *http.Request, handler Handler, plugs ...Plug) {
 	ctx := NewContext(w, r)
 
@@ -200,4 +195,12 @@ func (k *Kit) Patch(pattern string, handler Handler, plugs ...Plug) {
 // router with optional route-level plugs.
 func (k *Kit) Trace(pattern string, handler Handler, plugs ...Plug) {
 	k.Add(http.MethodTrace, pattern, handler, plugs...)
+}
+
+// NotFound sets a custom http.HandlerFunc for routing paths that could
+// not be found. The default 404 handler is `http.NotFound`.
+func (k *Kit) NotFound(handler Handler) {
+	k.mux.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		k.handle(w, r, handler)
+	})
 }

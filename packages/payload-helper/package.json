@@ -25,7 +25,9 @@
 	"dependencies": {
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
 		"@payloadcms/richtext-slate": "^1.5.2",
-		"payload": "^2.18.3"
+		"json-schema": "^0.4.0",
+		"payload": "^2.18.3",
+		"pluralize": "^8.0.0"
 	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*"

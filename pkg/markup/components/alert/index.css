@@ -1,10 +1,10 @@
 .alert {
-    position: relative;
-    display: flex;
-    align-items: center;
+	position: relative;
+	display: flex;
+	align-items: center;
 
-    .alert-dismiss {
-        cursor: pointer;
-        margin-left: auto;
-    }
+	.alert-dismiss {
+		cursor: pointer;
+		margin-left: auto;
+	}
 }

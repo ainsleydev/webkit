@@ -44,6 +44,23 @@ func TestAdd(t *testing.T) {
 	})
 }
 
+func TestKit_Plug(t *testing.T) {
+	app := New()
+	app.Plug(func(next Handler) Handler {
+		return func(ctx *Context) error {
+			ctx.Set("test", "test")
+			return next(ctx)
+		}
+	})
+	app.Get("/", func(ctx *Context) error {
+		assert.Equal(t, "test", ctx.Get("test"))
+		return ctx.String(http.StatusOK, "test")
+	})
+	rr := httptest.NewRecorder()
+	app.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
 func TestKit_Connect(t *testing.T) {
 	app := New()
 	app.Connect("/", handler)

@@ -43,13 +43,21 @@ func (c *Context) Context() context.Context {
 
 // Param retrieves a parameter from the route parameters.
 func (c *Context) Param(key string) string {
-	return c.Request.PathValue(key)
+	return c.Request.PathValue(key) // TODO, need to use chi
 }
 
 // Render renders a templated component to the response writer.
 func (c *Context) Render(component templ.Component) error {
 	c.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
 	c.Response.WriteHeader(http.StatusOK)
+	return component.Render(c.Request.Context(), c.Response)
+}
+
+// RenderWithStatus renders a templated component to the response writer with the
+// specified status code.
+func (c *Context) RenderWithStatus(status int, component templ.Component) error {
+	c.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	c.Response.WriteHeader(status)
 	return component.Render(c.Request.Context(), c.Response)
 }
 
