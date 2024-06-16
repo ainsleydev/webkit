@@ -82,8 +82,8 @@ func TestRedirects(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, fromURL, nil)
 			rr := httptest.NewRecorder()
 
-			collections := payloadfakes.NewMockCollectionService()
 			store := cache.NewInMemory(time.Hour)
+			collections := payloadfakes.NewMockCollectionService()
 			payload := &payloadcms.Client{
 				Collections: collections,
 			}

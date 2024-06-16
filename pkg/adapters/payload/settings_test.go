@@ -25,25 +25,25 @@ func TestSettingsMiddleware(t *testing.T) {
 
 	tt := map[string]struct {
 		url  string
-		mock func(cols *payloadfakes.MockGlobalsService, store cache.Store)
+		mock func(gb *payloadfakes.MockGlobalsService, store cache.Store)
 		want any
 	}{
 		"File Request": {
 			url:  "/favicon.ico",
-			mock: func(cols *payloadfakes.MockGlobalsService, store cache.Store) {},
+			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {},
 			want: nil,
 		},
 		"From Cache": {
 			url: "/want",
-			mock: func(cols *payloadfakes.MockGlobalsService, store cache.Store) {
+			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
 				store.Set(context.TODO(), settingsCacheKey, settings, cache.Options{})
 			},
 			want: settings,
 		},
 		"API Error": {
 			url: "/want",
-			mock: func(cols *payloadfakes.MockGlobalsService, store cache.Store) {
-				cols.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
+			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
+				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
 					return payloadcms.Response{}, assert.AnError
 				}
 			},
@@ -51,8 +51,8 @@ func TestSettingsMiddleware(t *testing.T) {
 		},
 		"From API": {
 			url: "/want",
-			mock: func(cols *payloadfakes.MockGlobalsService, store cache.Store) {
-				cols.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
+			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
+				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
 					*out.(*Settings) = settings
 					return payloadcms.Response{}, nil
 				}
@@ -68,9 +68,12 @@ func TestSettingsMiddleware(t *testing.T) {
 			rr := httptest.NewRecorder()
 
 			store := cache.NewInMemory(time.Hour)
-			payload := &payloadfakes.MockGlobalsService{}
+			globals := payloadfakes.NewMockGlobalsService()
+			payload := &payloadcms.Client{
+				Globals: globals,
+			}
 
-			test.mock(payload, store)
+			test.mock(globals, store)
 
 			app.Plug(SettingsMiddleware(payload, store))
 			app.Get(test.url, func(c *webkit.Context) error {

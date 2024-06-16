@@ -36,6 +36,13 @@ func TestAdapter_Robots(t *testing.T) {
 			env:  env.Development,
 			want: "Custom",
 		},
+		"Settings No Robots Set": {
+			ctx: func(c *webkit.Context) {
+				c.Set(SettingsContextKey, &Settings{})
+			},
+			env:  env.Development,
+			want: "User-agent: *\nDisallow: /",
+		},
 	}
 
 	for name, test := range tt {

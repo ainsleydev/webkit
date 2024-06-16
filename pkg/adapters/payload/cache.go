@@ -14,8 +14,6 @@ import (
 // cachePageExpiry is the time that a page will be cached for.
 const cachePageExpiry = time.Hour * 24 * 7 * 4
 
-// https://github.com/ainsleydev/audits.com/blob/691badc3cc142f13122a3ed6e86b4a0046824916/backend/config/plugins.ts#L69
-
 // CacheMiddleware is a middleware increases performance of the application
 // by caching full HTML pages instead of calling the Payload API on
 // every request.

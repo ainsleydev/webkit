@@ -1,6 +1,8 @@
 package adapters
 
 import (
+	"context"
+
 	"github.com/ainsleydev/webkit/pkg/adapters/payload"
 	"github.com/ainsleydev/webkit/pkg/markup"
 	"github.com/ainsleydev/webkit/pkg/webkit"
@@ -12,7 +14,7 @@ type Adapter interface {
 	//
 	//Redirect()
 
-	Head() markup.HeadProps
+	Head(ctx context.Context) (markup.HeadProps, error)
 	Robots() webkit.Handler
 	Sitemap() webkit.Handler
 }
