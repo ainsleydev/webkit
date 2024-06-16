@@ -172,6 +172,44 @@ func TestInt64Ptr(t *testing.T) {
 	assert.Equal(t, val, *ptr)
 }
 
+func TestFloat32(t *testing.T) {
+	t.Run("Nil", func(t *testing.T) {
+		var i *float32
+		assert.Equal(t, float32(0), Float32(i))
+	})
+
+	t.Run("Non Nil", func(t *testing.T) {
+		val := float32(42.2)
+		ptr := &val
+		assert.Equal(t, val, Float32(ptr))
+	})
+}
+
+func TestFloat32Ptr(t *testing.T) {
+	val := float32(42.2)
+	ptr := Float32Ptr(val)
+	assert.Equal(t, val, *ptr)
+}
+
+func TestFloat64(t *testing.T) {
+	t.Run("Nil", func(t *testing.T) {
+		var i *float64
+		assert.Equal(t, float64(0), Float64(i))
+	})
+
+	t.Run("Non Nil", func(t *testing.T) {
+		val := 42.2
+		ptr := &val
+		assert.Equal(t, val, Float64(ptr))
+	})
+}
+
+func TestFloat64Ptr(t *testing.T) {
+	val := 42.2
+	ptr := Float64Ptr(val)
+	assert.Equal(t, val, *ptr)
+}
+
 func TestUint(t *testing.T) {
 	t.Run("Nil", func(t *testing.T) {
 		var u *uint

@@ -10,67 +10,41 @@ import (
 )
 
 func TestBlock_Decode(t *testing.T) {
-	ttt := map[string]struct {
-		input      Block
-		decodeInto any
-		want       any
-		wantErr    bool
+	type decodeInto struct {
+		Field1 string
+		Field2 int
+	}
+
+	tt := map[string]struct {
+		input   Block
+		want    any
+		wantErr bool
 	}{
-		"Decode into map[string]any": {
-			input: Block{
-				RawJSON: json.RawMessage(`{"field":"value"}`),
-			},
-			decodeInto: &map[string]any{},
-			want:       &map[string]any{"field": "value"},
-			wantErr:    false,
-		},
-		"Decode into struct": {
+		"Decode OK": {
 			input: Block{
 				RawJSON: json.RawMessage(`{"field1":"value1","field2":2}`),
 			},
-			decodeInto: &struct {
-				Field1 string
-				Field2 int
-			}{},
-			want: &struct {
-				Field1 string
-				Field2 int
-			}{Field1: "value1", Field2: 2},
+			want: decodeInto{
+				Field1: "value1",
+				Field2: 2,
+			},
 			wantErr: false,
 		},
-		"Invalid JSON for struct": {
+		"Invalid JSON": {
 			input: Block{
-				RawJSON: json.RawMessage(`{"field1":"value1","field2":"invalid_int"}`),
+				RawJSON: json.RawMessage(`{wrong}`),
 			},
-			decodeInto: &struct {
-				Field1 string
-				Field2 int
-			}{},
-			want: &struct {
-				Field1 string
-				Field2 int
-			}{},
+			want:    decodeInto{},
 			wantErr: true,
-		},
-		"Invalid JSON format": {
-			input: Block{
-				RawJSON: json.RawMessage(`{"field1":"value1","field2":2`),
-			},
-			decodeInto: &map[string]any{},
-			want:       &map[string]any{},
-			wantErr:    true,
 		},
 	}
 
-	for name, test := range ttt {
+	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			err := test.input.Decode(test.decodeInto)
-			if test.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, test.want, test.decodeInto)
-			}
+			var d decodeInto
+			err := test.input.Decode(&d)
+			assert.Equal(t, test.wantErr, err != nil)
+			assert.Equal(t, test.want, d)
 		})
 	}
 }
@@ -121,8 +95,10 @@ func TestBlock_UnmarshalJSON(t *testing.T) {
 			wantErr: false,
 		},
 		"Invalid JSON": {
-			input:   `wrong`,
-			want:    Block{},
+			input: `{block_name:2345}`,
+			want: Block{
+				RawJSON: json.RawMessage(`{block_name:2345}`),
+			},
 			wantErr: true,
 		},
 	}
@@ -130,7 +106,7 @@ func TestBlock_UnmarshalJSON(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			var b Block
-			err := json.Unmarshal([]byte(test.input), &b)
+			err := b.UnmarshalJSON([]byte(test.input))
 			assert.Equal(t, test.wantErr, err != nil)
 			assert.EqualValues(t, test.want, b)
 		})

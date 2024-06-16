@@ -2,23 +2,23 @@ package payload
 
 import (
 	"fmt"
-	"html/template"
-	"io"
 	"sort"
 
-	"github.com/ainsleydev/webkit/pkg/adapters/payload/internal/templates"
+	"github.com/perimeterx/marshmallow"
 )
 
 // Media defines the fields for media when they are uploaded to PayloadCMS.
 type Media struct {
-	Id  float64 `json:"id"`
-	Alt string  `json:"alt"`
-	// TODO, need to parse RichText
-	Caption   []map[string]any `json:"caption,omitempty"`
-	MediaSize                  // The original
-	Sizes     MediaSizes       `json:"sizes,omitempty"`
-	CreatedAt string           `json:"createdAt"`
-	UpdatedAt string           `json:"updatedAt" `
+	Id        float64    `json:"id"`
+	MediaSize            // The original
+	Alt       string     `json:"alt,omitempty"`
+	Sizes     MediaSizes `json:"sizes,omitempty"`
+	CreatedAt string     `json:"createdAt"`
+	UpdatedAt string     `json:"updatedAt"`
+
+	// Key-value pairs of the media's fields, these pairs are defined by the block's
+	// schema and vary depending on the block type.
+	Fields map[string]any `json:"-"`
 }
 
 // MediaSizes defines a dictionary of media sizes by size name
@@ -29,13 +29,27 @@ type MediaSizes map[string]MediaSize
 // are uploaded to PayloadCMS.
 type MediaSize struct {
 	Size     string   `json:"-"` // Name of the media size 	e.g. (thumbnail, small, medium, large)
-	MediaSrc string   `json:"-"` // The media attribute 	e.g. (min-width: 600px)
-	URL      *string  `json:"url,omitempty"`
+	URL      string   `json:"url,omitempty"`
 	Filename *string  `json:"filename,omitempty"`
 	Filesize *float64 `json:"filesize,omitempty"`
 	MimeType *string  `json:"mimeType,omitempty"`
 	Width    *float64 `json:"width,omitempty"`
 	Height   *float64 `json:"height,omitempty"`
+}
+
+// UnmarshalJSON unmarshals the JSON data into the Media type.
+// This method is used to extract known fields and assign the remaining
+// fields to the fields map.
+func (m *Media) UnmarshalJSON(data []byte) error {
+	var temp Media
+	result, err := marshmallow.Unmarshal(data, &temp)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	*m = temp
+	m.Fields = result
+	return nil
 }
 
 // mediaByWidth implements sort.Interface for sorting MediaSize by Width.
@@ -65,7 +79,6 @@ func (ms MediaSizes) SortByWidth() []MediaSize {
 	sorted := make(mediaByWidth, 0, len(ms))
 	for key, mediaSize := range ms {
 		mediaSize.Size = key
-		mediaSize.MediaSrc = fmt.Sprintf("(min-width: %vpx)", *mediaSize.Width+50)
 		sorted = append(sorted, mediaSize)
 	}
 	sort.Sort(sorted)
@@ -76,13 +89,4 @@ func (ms MediaSizes) SortByWidth() []MediaSize {
 		result[i] = m
 	}
 	return result
-}
-
-// TODO: - Caption on Media
-func (m Media) Render(w io.Writer) error {
-	tpl, err := template.New("").Parse(templates.Picture)
-	if err != nil {
-		return err
-	}
-	return tpl.Execute(w, m)
 }

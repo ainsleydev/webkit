@@ -22,7 +22,7 @@ type Block struct {
 
 	// Key-value pairs of the block's fields, these pairs are defined by the block's
 	// schema and vary depending on the block type.
-	Fields map[string]any
+	Fields map[string]any `json:"-"`
 
 	// RawJSON is the raw byte slice of the block, which can be used to decode
 	// the block into a specific type.
@@ -39,7 +39,7 @@ func (b *Block) Decode(v any) error {
 	return json.Unmarshal(b.RawJSON, v)
 }
 
-// UnmarshalJSON unmarshals the JSON data into the Block struct.
+// UnmarshalJSON unmarshals the JSON data into the Block type.
 // This method is used to extract known fields and assign the remaining
 // fields to the fields map.
 func (b *Block) UnmarshalJSON(data []byte) error {
@@ -47,7 +47,8 @@ func (b *Block) UnmarshalJSON(data []byte) error {
 
 	// Create a map to hold the JSON object
 	var m map[string]any
-	if err := json.Unmarshal(data, &m); err != nil {
+	err := json.Unmarshal(data, &m)
+	if err != nil {
 		return err
 	}
 

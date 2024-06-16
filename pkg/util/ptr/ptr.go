@@ -112,6 +112,34 @@ func Int64Ptr(v int64) *int64 {
 	return &v
 }
 
+// Float32 returns the float32 value of a pointer float32.
+// If the pointer is nil, it returns 0.
+func Float32(v *float32) float32 {
+	if v == nil {
+		return 0
+	}
+	return *v
+}
+
+// Float32Ptr returns a pointer to the provided float32 value.
+func Float32Ptr(v float32) *float32 {
+	return &v
+}
+
+// Float64 returns the float64 value of a pointer float64.
+// If the pointer is nil, it returns 0.
+func Float64(v *float64) float64 {
+	if v == nil {
+		return 0
+	}
+	return *v
+}
+
+// Float64Ptr returns a pointer to the provided float64 value.
+func Float64Ptr(v float64) *float64 {
+	return &v
+}
+
 // Uint returns the uint value of a pointer to uint.
 // If the pointer is nil, it returns 0.
 func Uint(v *uint) uint {
