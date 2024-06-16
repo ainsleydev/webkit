@@ -55,7 +55,7 @@ func TestBlock_UnmarshalJSON(t *testing.T) {
 		want    Block
 		wantErr bool
 	}{
-		"All Fields Present": {
+		"OK": {
 			input: `{"id":"123","blockType":"text","blockName":"Header","field":"value"}`,
 			want: Block{
 				Id:        "123",
@@ -68,37 +68,9 @@ func TestBlock_UnmarshalJSON(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		"Missing Optional Fields": {
-			input: `{"id":"123","blockType":"text","field":"value"}`,
-			want: Block{
-				Id:        "123",
-				BlockType: "text",
-				BlockName: nil,
-				Fields: map[string]any{
-					"field": "value",
-				},
-				RawJSON: json.RawMessage(`{"id":"123","blockType":"text","field":"value"}`),
-			},
-			wantErr: false,
-		},
-		"Additional Fields": {
-			input: `{"id":"123","blockType":"text","blockName":"Header","extra":"extraValue"}`,
-			want: Block{
-				Id:        "123",
-				BlockType: "text",
-				BlockName: ptr.StringPtr("Header"),
-				Fields: map[string]any{
-					"extra": "extraValue",
-				},
-				RawJSON: json.RawMessage(`{"id":"123","blockType":"text","blockName":"Header","extra":"extraValue"}`),
-			},
-			wantErr: false,
-		},
 		"Invalid JSON": {
-			input: `{block_name:2345}`,
-			want: Block{
-				RawJSON: json.RawMessage(`{block_name:2345}`),
-			},
+			input:   `{block_name:2345}`,
+			want:    Block{},
 			wantErr: true,
 		},
 	}

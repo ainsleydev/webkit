@@ -2,6 +2,7 @@ package payload
 
 import (
 	"github.com/goccy/go-json"
+	"github.com/perimeterx/marshmallow"
 )
 
 // Block defines a common structure of a singular block layout
@@ -13,12 +14,12 @@ type Block struct {
 	// uniquely identify the block.
 	Id string `json:"id,omitempty"`
 
-	// The lockType is saved as the slug of the block that has been selected.
-	BlockType any `json:"block_type"`
+	// The block type is saved as the slug of the block that has been selected.
+	BlockType any `json:"blockType"`
 
 	// The Admin panel provides each block with a blockName field which optionally
 	// allows editors to label their blocks for better readability.
-	BlockName *string `json:"block_name,omitempty"`
+	BlockName *string `json:"blockName,omitempty"`
 
 	// Key-value pairs of the block's fields, these pairs are defined by the block's
 	// schema and vary depending on the block type.
@@ -43,35 +44,18 @@ func (b *Block) Decode(v any) error {
 // This method is used to extract known fields and assign the remaining
 // fields to the fields map.
 func (b *Block) UnmarshalJSON(data []byte) error {
-	b.RawJSON = data
-
-	// Create a map to hold the JSON object
-	var m map[string]any
-	err := json.Unmarshal(data, &m)
+	var temp Block
+	result, err := marshmallow.Unmarshal(data,
+		&temp,
+		marshmallow.WithExcludeKnownFieldsFromMap(true),
+	)
 	if err != nil {
 		return err
 	}
 
-	// Extract known fields and remove them from the map
-	if blockType, ok := m["blockType"].(string); ok {
-		b.BlockType = blockType
-	}
-
-	if blockName, ok := m["blockName"].(string); ok {
-		b.BlockName = &blockName
-	}
-
-	if id, ok := m["id"].(string); ok {
-		b.Id = id
-	}
-
-	// Remove the known fields from the map
-	delete(m, "blockType")
-	delete(m, "blockName")
-	delete(m, "id")
-
-	// Assign the remaining fields to the Other map
-	b.Fields = m
+	*b = temp
+	b.RawJSON = data
+	b.Fields = result
 
 	return nil
 }

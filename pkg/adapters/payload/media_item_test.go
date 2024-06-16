@@ -115,58 +115,59 @@ var media = `
 `
 
 func TestMedia_UnmarshalJSON(t *testing.T) {
+	in := `{
+		"id": 15,
+			"alt": "Alt Text",
+			"caption": null,
+			"updatedAt": "2024-05-17T18:01:52.169Z",
+			"createdAt": "2024-05-17T18:01:52.169Z",
+			"url": "/media/image.png",
+			"filename": "image.png",
+			"mimeType": "image/png",
+			"filesize": 743837,
+			"width": 1440,
+			"height": 4894,
+			"sizes": {
+			"webp": {
+				"url": "/media/image-1440x4894.webp"
+			}
+		}
+	}`
+
 	tt := map[string]struct {
 		input   string
 		want    Media
 		wantErr bool
 	}{
 		"OK": {
-			input: `{
-			   "id": 15,
-			   "alt": "Alt Text",
-			   "caption": null,
-			   "updatedAt": "2024-05-17T18:01:52.169Z",
-			   "createdAt": "2024-05-17T18:01:52.169Z",
-			   "url": "/media/image.png",
-			   "filename": "image.png",
-			   "mimeType": "image/png",
-			   "filesize": 743837,
-			   "width": 1440,
-			   "height": 4894,
-			   "sizes": {
-				   "webp": {
-					   "url": "/media/image-1440x4894.webp"
-				   }
-			   }
-			}`,
+			input: in,
 			want: Media{
 				Id:        15,
-				Alt:       "Alt Text",
 				CreatedAt: "2024-05-17T18:01:52.169Z",
 				UpdatedAt: "2024-05-17T18:01:52.169Z",
-				MediaSize: MediaSize{
-					URL:      "/media/image.png",
-					Filename: ptr.StringPtr("image.png"),
-					MimeType: ptr.StringPtr("image/png"),
-					Filesize: ptr.Float64Ptr(743837),
-				},
+				URL:       "/media/image.png",
+				Filename:  "image.png",
+				MimeType:  "image/png",
+				Filesize:  743837,
+				Width:     ptr.Float64Ptr(1440),
+				Height:    ptr.Float64Ptr(4894),
 				Sizes: MediaSizes{
 					"webp": MediaSize{
 						URL: "/media/image-1440x4894.webp",
 					},
 				},
-				Fields: map[string]interface{}{
-					"alt":       "Alt Text",
-					"updatedAt": "2024-05-17T18:01:52.169Z",
-					"createdAt": "2024-05-17T18:01:52.169Z",
+				Fields: map[string]any{
+					"alt":     "Alt Text",
+					"caption": nil,
 				},
+				RawJSON: []byte(in),
 			},
 			wantErr: false,
 		},
-		"Error": {
+		"Invalid JSON": {
 			input:   `{wrong}`,
 			want:    Media{},
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 
@@ -178,7 +179,6 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 			assert.EqualValues(t, test.want, m)
 		})
 	}
-	//fmt.Println(m)
 }
 
 func TestMediaSizes_SortByWidth(t *testing.T) {
