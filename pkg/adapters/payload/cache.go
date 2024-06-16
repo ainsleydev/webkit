@@ -26,13 +26,10 @@ func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 		return func(c *webkit.Context) error {
 			ctx := c.Request.Context()
 
-			if c.Request.Method != http.MethodGet {
-				return next(c)
-			}
-			if httputil.IsFileRequest(c.Request) {
-				return next(c)
-			}
-			if slices.Contains(ignorePaths, c.Request.URL.Path) {
+			// Skip caching for non-GET requests, file requests and ignored paths.
+			if c.Request.Method != http.MethodGet ||
+				httputil.IsFileRequest(c.Request) ||
+				slices.Contains(ignorePaths, c.Request.URL.Path) {
 				return next(c)
 			}
 

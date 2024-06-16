@@ -116,7 +116,7 @@ func TestCacheMiddleware(t *testing.T) {
 			}
 
 			app.Plug(CacheMiddleware(store, test.ignore))
-			app.Get(test.url, handler)
+			app.Add(test.method, test.url, handler)
 			app.ServeHTTP(rr, req)
 
 			test.assertFn(rr, store)
