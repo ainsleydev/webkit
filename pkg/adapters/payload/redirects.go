@@ -69,7 +69,7 @@ func RedirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 
 				if err != nil {
 					slog.Error("Fetching redirects from Payload: " + err.Error())
-					return nil
+					return next(c)
 				}
 				redirects = lr.Docs
 

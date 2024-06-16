@@ -39,7 +39,7 @@ func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 			_, err = client.Globals.Get(ctx, GlobalSettings, &settings)
 			if err != nil {
 				slog.Error("Fetching redirects from Payload: " + err.Error())
-				return nil
+				return next(c)
 			}
 
 			err = store.Set(ctx, settingsCacheKey, settings, cache.Options{
