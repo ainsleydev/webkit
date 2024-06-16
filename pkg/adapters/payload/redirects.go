@@ -73,13 +73,10 @@ func RedirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 				}
 				redirects = lr.Docs
 
-				err = store.Set(ctx, redirectCacheKey, lr.Docs, cache.Options{
+				store.Set(ctx, redirectCacheKey, lr.Docs, cache.Options{
 					Expiration: time.Second * 30,
 					Tags:       []string{"payload"},
 				})
-				if err != nil {
-					slog.Error("Setting redirects in cache: " + err.Error())
-				}
 			}
 
 			for _, r := range redirects {

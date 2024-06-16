@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
-	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
@@ -35,10 +34,6 @@ func CacheBust(store cache.Store) webkit.Handler {
 func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
-			if env.IsDevelopment() {
-				return next(c)
-			}
-
 			ctx := c.Request.Context()
 
 			if c.Request.Method != http.MethodGet {
@@ -74,10 +69,12 @@ func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 			}
 
 			// Store the response in cache for future page requests.
-			return store.Set(ctx, cacheKey, rr.Body.String(), cache.Options{
+			store.Set(ctx, cacheKey, rr.Body.String(), cache.Options{
 				Expiration: cachePageExpiry,
 				Tags:       []string{"payload"},
 			})
+
+			return nil
 		}
 	}
 }

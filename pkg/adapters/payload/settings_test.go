@@ -2,7 +2,6 @@ package payload
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,97 +10,74 @@ import (
 	"github.com/ainsleyclark/go-payloadcms"
 	payloadfakes "github.com/ainsleyclark/go-payloadcms/fakes"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
 func TestSettingsMiddleware(t *testing.T) {
 	t.Parallel()
 
-	var (
-		fromURL   = "/test"
-		redirects = []Redirect{
-			{From: fromURL, To: "/new", Code: RedirectsCode301},
-		}
-	)
+	settings := Settings{
+		SiteName: ptr.StringPtr("Site Name"),
+	}
 
 	tt := map[string]struct {
-		mock       func(cols *payloadfakes.MockCollectionService, store cache.Store)
-		wantURL    string
-		wantStatus int
+		url  string
+		mock func(cols *payloadfakes.MockGlobalsService, store cache.Store)
+		want any
 	}{
-		"API error returns nil": {
-			mock: func(cols *payloadfakes.MockCollectionService, store cache.Store) {
-				cols.ListFunc = func(_ context.Context, _ payloadcms.Collection, _ payloadcms.ListParams, _ any) (payloadcms.Response, error) {
-					return payloadcms.Response{}, errors.New("error")
+		"File Request": {
+			url:  "/favicon.ico",
+			mock: func(cols *payloadfakes.MockGlobalsService, store cache.Store) {},
+			want: nil,
+		},
+		"From Cache": {
+			url: "/want",
+			mock: func(cols *payloadfakes.MockGlobalsService, store cache.Store) {
+				store.Set(context.TODO(), settingsCacheKey, settings, cache.Options{})
+			},
+			want: settings,
+		},
+		"API Error": {
+			url: "/want",
+			mock: func(cols *payloadfakes.MockGlobalsService, store cache.Store) {
+				cols.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
+					return payloadcms.Response{}, assert.AnError
 				}
 			},
-			wantStatus: http.StatusOK,
+			want: nil,
 		},
-		"Invalid number defaults to 301": {
-			mock: func(_ *payloadfakes.MockCollectionService, store cache.Store) {
-				err := store.Set(context.TODO(), redirectCacheKey, []Redirect{
-					{From: fromURL, To: "/new", Code: "wrong"},
-				}, cache.Options{})
-				require.NoError(t, err)
-			},
-			wantStatus: http.StatusMovedPermanently,
-			wantURL:    "/new",
-		},
-		"No Matches": {
-			mock: func(_ *payloadfakes.MockCollectionService, store cache.Store) {
-				err := store.Set(context.TODO(), redirectCacheKey, []Redirect{
-					{From: "/wrong", To: "/new", Code: RedirectsCode301},
-				}, cache.Options{})
-				require.NoError(t, err)
-			},
-			wantStatus: http.StatusOK,
-		},
-		"Redirects 301 from API": {
-			mock: func(cols *payloadfakes.MockCollectionService, store cache.Store) {
-				cols.ListFunc = func(_ context.Context, _ payloadcms.Collection, _ payloadcms.ListParams, out any) (payloadcms.Response, error) {
-					*out.(*payloadcms.ListResponse[Redirect]) = payloadcms.ListResponse[Redirect]{
-						Docs: redirects,
-					}
+		"From API": {
+			url: "/want",
+			mock: func(cols *payloadfakes.MockGlobalsService, store cache.Store) {
+				cols.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
+					*out.(*Settings) = settings
 					return payloadcms.Response{}, nil
 				}
 			},
-			wantStatus: http.StatusMovedPermanently,
-			wantURL:    "/new",
-		},
-		"Redirects 301 from Cache": {
-			mock: func(_ *payloadfakes.MockCollectionService, store cache.Store) {
-				err := store.Set(context.TODO(), redirectCacheKey, redirects, cache.Options{})
-				require.NoError(t, err)
-			},
-			wantStatus: http.StatusMovedPermanently,
-			wantURL:    "/new",
+			want: settings,
 		},
 	}
+
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			app := webkit.New()
-			req := httptest.NewRequest(http.MethodGet, fromURL, nil)
+			req := httptest.NewRequest(http.MethodGet, test.url, nil)
 			rr := httptest.NewRecorder()
 
-			collections := payloadfakes.NewMockCollectionService()
 			store := cache.NewInMemory(time.Hour)
-			payload := &payloadcms.Client{
-				Collections: collections,
-			}
+			payload := &payloadfakes.MockGlobalsService{}
 
-			test.mock(collections, store)
+			test.mock(payload, store)
 
-			app.Plug(RedirectMiddleware(payload, store))
-			app.Get(fromURL, func(c *webkit.Context) error {
-				return c.String(http.StatusOK, "Middleware")
+			app.Plug(SettingsMiddleware(payload, store))
+			app.Get(test.url, func(c *webkit.Context) error {
+				assert.Equal(t, test.want, c.Get(SettingsContextKey))
+				return nil
 			})
 			app.ServeHTTP(rr, req)
-
-			assert.Equal(t, test.wantStatus, rr.Code)
-			assert.Equal(t, test.wantURL, rr.Header().Get("Location"))
 		})
 	}
 }

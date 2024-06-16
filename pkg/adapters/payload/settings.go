@@ -11,12 +11,14 @@ import (
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
-const settingsCacheKey = "payload_settings"
-
+// SettingsContextKey defines the key for obtaining the settings
+// from the context.
 const SettingsContextKey = "payload_settings"
 
 // SettingsMiddleware defines the structure of the settings within the Payload UI.
-func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plug {
+func SettingsMiddleware(client payloadcms.GlobalsService, store cache.Store) webkit.Plug {
+	const settingsCacheKey = "payload_settings"
+
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
 			if httputil.IsFileRequest(c.Request) {
@@ -36,19 +38,16 @@ func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 
 			slog.Debug("Settings not found in cache, fetching from Payload")
 
-			_, err = client.Globals.Get(ctx, GlobalSettings, &settings)
+			_, err = client.Get(ctx, GlobalSettings, &settings)
 			if err != nil {
 				slog.Error("Fetching redirects from Payload: " + err.Error())
 				return next(c)
 			}
 
-			err = store.Set(ctx, settingsCacheKey, settings, cache.Options{
+			store.Set(ctx, settingsCacheKey, settings, cache.Options{
 				Expiration: cache.Forever,
 				Tags:       []string{"payload"},
 			})
-			if err != nil {
-				slog.Error("Setting settings in cache: " + err.Error())
-			}
 
 			c.Set(SettingsContextKey, settings)
 

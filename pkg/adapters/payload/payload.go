@@ -35,8 +35,8 @@ func NewAdapter(
 }
 
 func (a Adapter) initMiddleware() {
-	a.kit.Plug(SettingsMiddleware(a.client, a.cache))
-	a.kit.Plug(RedirectMiddleware(a.client, a.cache))
+	//a.kit.Plug(SettingsMiddleware(a.client, a.cache))
+	//a.kit.Plug(RedirectMiddleware(a.client, a.cache))
 }
 
 const (
