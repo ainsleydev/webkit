@@ -22,7 +22,10 @@ func WrapHandler(h http.Handler) Handler {
 
 func WrapKitHandler(h Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		h(NewContext(w, r))
+		err := h(NewContext(w, r))
+		if err != nil {
+			return
+		}
 	}
 }
 

@@ -15,9 +15,11 @@ import (
 // from the context.
 const SettingsContextKey = "payload_settings"
 
+// settingsCacheKey is the key used to store the settings in the cache.
+const settingsCacheKey = "payload_settings"
+
 // SettingsMiddleware defines the structure of the settings within the Payload UI.
 func SettingsMiddleware(client payloadcms.GlobalsService, store cache.Store) webkit.Plug {
-	const settingsCacheKey = "payload_settings"
 
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {

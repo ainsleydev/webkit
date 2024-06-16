@@ -3,13 +3,14 @@ package webkit
 import (
 	"context"
 	"errors"
-	"github.com/go-chi/chi/v5"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type (
@@ -22,6 +23,7 @@ type (
 		ErrorHandler    ErrorHandler
 		NotFoundHandler Handler
 		mux             *chi.Mux
+		plugs           []Plug
 	}
 	// Handler is a function that handles HTTP requests.
 	Handler func(c *Context) error
@@ -37,6 +39,7 @@ func New() *Kit {
 		ErrorHandler:    DefaultErrorHandler,
 		NotFoundHandler: DefaultNotFoundHandler,
 		mux:             chi.NewRouter(),
+		plugs:           []Plug{},
 	}
 }
 
@@ -58,13 +61,7 @@ func (k *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug)
 //
 // For example: app.Plug(middleware.Logger)
 func (k *Kit) Plug(plugs ...Plug) {
-	for _, plug := range plugs {
-		k.mux.Use(func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				k.handle(w, r, plug(WrapHandlerFunc(next.ServeHTTP)))
-			})
-		})
-	}
+	k.plugs = append(k.plugs, plugs...)
 }
 
 // Start starts the HTTP server.
@@ -134,12 +131,19 @@ func (k *Kit) handle(w http.ResponseWriter, r *http.Request, handler Handler, pl
 		h = plugs[i](h)
 	}
 
+	for i := len(k.plugs) - 1; i >= 0; i-- {
+		h = k.plugs[i](h)
+	}
+
 	if err := h(ctx); err != nil {
-		ctx.Set(ErrorKey, err)
-		if handleErr := k.ErrorHandler(ctx, err); handleErr != nil {
-			slog.Error("Handling error: %v", handleErr)
-		}
-		return
+		k.handleError(ctx, err)
+	}
+}
+
+func (k *Kit) handleError(ctx *Context, err error) {
+	ctx.Set(ErrorKey, err)
+	if handleErr := k.ErrorHandler(ctx, err); handleErr != nil {
+		slog.Error("Handling error: %v", handleErr)
 	}
 }
 

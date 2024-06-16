@@ -26,50 +26,51 @@ type Element interface {
 	Children() []Element
 }
 
-// ParagraphElement represents a paragraph element
-type ParagraphElement struct {
-	nodeType string
-	children []Element
-}
-
-func (p *ParagraphElement) Type() string {
-	return p.nodeType
-}
-
-func (p *ParagraphElement) Children() []Element {
-	return p.children
-}
-
-// HeadingElement represents a heading element (example)
-type HeadingElement struct {
-	nodeType string
-	level    int
-	children []Element
-}
-
-func (h *HeadingElement) Type() string {
-	return h.nodeType
-}
-
-func (h *HeadingElement) Children() []Element {
-	return h.children
-}
-
-type HelloElement struct {
-}
-
-// CustomNode is the generic interface for nodes in your schema
-type CustomNode interface {
-	ParagraphElement | HeadingElement
-}
+//
+//// ParagraphElement represents a paragraph element
+//type ParagraphElement struct {
+//	nodeType string
+//	children []Element
+//}
+//
+//func (p *ParagraphElement) Type() string {
+//	return p.nodeType
+//}
+//
+//func (p *ParagraphElement) Children() []Element {
+//	return p.children
+//}
+//
+//// HeadingElement represents a heading element (example)
+//type HeadingElement struct {
+//	nodeType string
+//	level    int
+//	children []Element
+//}
+//
+//func (h *HeadingElement) Type() string {
+//	return h.nodeType
+//}
+//
+//func (h *HeadingElement) Children() []Element {
+//	return h.children
+//}
+//
+//type HelloElement struct {
+//}
+//
+//// CustomNode is the generic interface for nodes in your schema
+//type CustomNode interface {
+//	ParagraphElement | HeadingElement
+//}
 
 // Node represents a node in the Slate editor content
-type Node[T CustomNode] struct {
-	Type     string    `json:"type"`
-	Children []Node[T] `json:"children"`
-	Values   T
-	// Add other relevant fields from your schema here
-}
+//type Node[T CustomNode] struct {
+//	Type     string    `json:"type"`
+//	Children []Node[T] `json:"children"`
+//	Values   T
+//	// Add other relevant fields from your schema here
+//}
 
 type RichTextTextProps struct {
 	Bold          bool `json:"bold,omitempty"`
@@ -85,12 +86,12 @@ type RichTextTextProps struct {
 }
 
 // Walk iterates over a Node and its children, calling the provided function for each node
-func (n *Node[T]) Walk(fn func(node *Node[T])) {
-	fn(n)
-	for _, child := range n.Children {
-		child.Walk(fn)
-	}
-}
+//func (n *Node[T]) Walk(fn func(node *Node[T])) {
+//	fn(n)
+//	for _, child := range n.Children {
+//		child.Walk(fn)
+//	}
+//}
 
 type RichTextBlock struct {
 	Type     RichTextType    `json:"type,omitempty"`

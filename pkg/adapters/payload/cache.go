@@ -3,6 +3,7 @@ package payload
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
@@ -10,19 +11,8 @@ import (
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
-// TODO: We need a way for the cache to be invalidated when a new page is published, edited or
-// deleted, we could do this by using Payload Hooks.
-
 // cachePageExpiry is the time that a page will be cached for.
 const cachePageExpiry = time.Hour * 24 * 7 * 4
-
-// CacheBust is a handler that can be used to clear the cache for a specific page.
-func CacheBust(store cache.Store) webkit.Handler {
-	return func(c *webkit.Context) error {
-		_ = c.Request.Context()
-		return nil
-	}
-}
 
 // https://github.com/ainsleydev/audits.com/blob/691badc3cc142f13122a3ed6e86b4a0046824916/backend/config/plugins.ts#L69
 
@@ -42,6 +32,9 @@ func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 			if httputil.IsFileRequest(c.Request) {
 				return next(c)
 			}
+			if slices.Contains(ignorePaths, c.Request.URL.Path) {
+				return next(c)
+			}
 
 			cacheKey := fmt.Sprintf("page:%s", c.Request.URL.RequestURI())
 
@@ -50,7 +43,7 @@ func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 				// Cache hit, serve from cache
 				c.Set("cache_hit", "HIT")
 				c.Response.Header().Set("X-Cache", "HIT")
-				c.Response.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%f", cachePageExpiry.Seconds()))
+				c.Response.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", int(cachePageExpiry.Seconds())))
 				return c.String(http.StatusOK, page)
 			}
 
@@ -64,7 +57,7 @@ func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 				return err
 			}
 
-			if rr.Status != http.StatusOK {
+			if !httputil.Is2xx(rr.Status) {
 				return nil
 			}
 
@@ -76,5 +69,21 @@ func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 
 			return nil
 		}
+	}
+}
+
+// CacheBust is a handler that can be used to clear the cache for a specific page.
+func CacheBust(store cache.Store) webkit.Handler {
+	return func(c *webkit.Context) error {
+		ctx := c.Request.Context()
+
+		// TODO:
+		// We need a way for the cache to be invalidated when a new page is published, edited or
+		// deleted, we could do this by using Payload Hooks. At the moment we're just
+		// flushing everything instead of invalidating a specific page.
+
+		store.Invalidate(ctx, []string{"payload"})
+
+		return nil
 	}
 }
