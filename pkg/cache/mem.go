@@ -63,7 +63,7 @@ func (c *MemCache) Get(_ context.Context, key string, value interface{}) error {
 	return nil
 }
 
-func (c *MemCache) Set(ctx context.Context, key string, value interface{}, opts Options) error {
+func (c *MemCache) Set(ctx context.Context, key string, value interface{}, opts Options) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if opts.Expiration == 0 {
@@ -75,7 +75,6 @@ func (c *MemCache) Set(ctx context.Context, key string, value interface{}, opts 
 		tags:       opts.Tags,
 		noExpiry:   opts.Expiration == Forever,
 	}
-	return nil
 }
 
 func (c *MemCache) Delete(_ context.Context, key string) error {

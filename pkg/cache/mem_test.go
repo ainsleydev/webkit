@@ -54,11 +54,10 @@ func TestMem_SetAndGet(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			store := NewInMemory(time.Second * 5)
-			err := store.Set(context.Background(), test.key, value, test.opts)
-			require.NoError(t, err)
+			store.Set(context.Background(), test.key, value, test.opts)
 
 			var got string
-			err = store.Get(context.Background(), key, &got)
+			err := store.Get(context.Background(), key, &got)
 			assert.Equal(t, test.wantErr, err != nil)
 			assert.Equal(t, test.wantValue, got)
 		})
@@ -66,22 +65,20 @@ func TestMem_SetAndGet(t *testing.T) {
 
 	t.Run("Returns error if value is not a pointer", func(t *testing.T) {
 		store := NewInMemory(time.Second * 5)
-		err := store.Set(context.Background(), "key", "value", Options{})
-		require.NoError(t, err)
+		store.Set(context.Background(), "key", "value", Options{})
 
 		var value string
-		err = store.Get(context.Background(), "key", value)
+		err := store.Get(context.Background(), "key", value)
 		assert.Error(t, err)
 	})
 
 	t.Run("Works with slices", func(t *testing.T) {
 		store := NewInMemory(time.Second * 5)
 		s := []string{"1", "2", "3"}
-		err := store.Set(context.Background(), "key", s, Options{})
-		require.NoError(t, err)
+		store.Set(context.Background(), "key", s, Options{})
 
 		var got []string
-		err = store.Get(context.Background(), "key", &got)
+		err := store.Get(context.Background(), "key", &got)
 		require.NoError(t, err)
 		require.Equal(t, s, got)
 	})
@@ -91,10 +88,9 @@ func TestMem_Delete(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemory(time.Second * 5)
-	err := store.Set(context.Background(), "key1", "value1", Options{})
-	require.NoError(t, err)
+	store.Set(context.Background(), "key1", "value1", Options{})
 
-	err = store.Delete(context.Background(), "key1")
+	err := store.Delete(context.Background(), "key1")
 	require.NoError(t, err)
 
 	err = store.Get(context.Background(), "key1", nil)
@@ -105,11 +101,10 @@ func TestMem_Flush(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemory(time.Second * 5)
-	err := store.Set(context.Background(), "key1", "value1", Options{})
-	require.NoError(t, err)
+	store.Set(context.Background(), "key1", "value1", Options{})
 
 	store.Flush(context.Background())
-	err = store.Get(context.Background(), "key1", nil)
+	err := store.Get(context.Background(), "key1", nil)
 	assert.Error(t, err)
 }
 

@@ -30,7 +30,7 @@ type (
 		// Set stores a singular item in memory by key, value
 		// and options (tags and expiration time). Values are automatically
 		// marshalled for use with Redis & Memcache.
-		Set(context.Context, string, any, Options) error
+		Set(context.Context, string, any, Options)
 		// Delete removes a singular item from the cache by
 		// a specific key.
 		Delete(context.Context, string) error

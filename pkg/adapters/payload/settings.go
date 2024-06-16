@@ -15,7 +15,7 @@ const settingsCacheKey = "payload_settings"
 
 const SettingsContextKey = "payload_settings"
 
-// Settings defines the structure of the settings within the Payload UI.
+// SettingsMiddleware defines the structure of the settings within the Payload UI.
 func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plug {
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {

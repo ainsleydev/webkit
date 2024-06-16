@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -47,25 +48,25 @@ func (r *Redis) Get(ctx context.Context, key string, v any) error {
 	return nil
 }
 
-func (r *Redis) Set(ctx context.Context, key string, value any, options Options) error {
+func (r *Redis) Set(ctx context.Context, key string, value any, options Options) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
 	buf, err := json.Marshal(value)
 	if err != nil {
-		return err
+		slog.Error("marshalling cache value: " + err.Error())
+		return
 	}
 
 	err = r.client.Set(ctx, key, buf, options.Expiration).Err()
 	if err != nil {
-		return err
+		slog.Error("setting cache value: " + err.Error())
+		return
 	}
 
 	if len(options.Tags) > 0 {
 		r.setTags(ctx, key, options.Tags)
 	}
-
-	return nil
 }
 
 func (r *Redis) Delete(ctx context.Context, key string) error {

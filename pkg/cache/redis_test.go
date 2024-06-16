@@ -1,8 +1,10 @@
 package cache
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"log/slog"
 	"sync"
 	"testing"
 	"time"
@@ -193,7 +195,7 @@ func TestCache_Set(t *testing.T) {
 	tt := map[string]struct {
 		value   any
 		mock    func(m *internal.MockRedisStore)
-		wantErr bool
+		wantLog string
 	}{
 		"Success": {
 			key,
@@ -210,7 +212,7 @@ func TestCache_Set(t *testing.T) {
 					Expire(ctx, tag, 720*time.Hour).
 					Return(redis.NewBoolCmd(ctx, true))
 			},
-			false,
+			"",
 		},
 		"Redis Error": {
 			"key",
@@ -222,24 +224,28 @@ func TestCache_Set(t *testing.T) {
 					Set(ctx, "key", gomock.Any(), gomock.Any()).
 					Return(cmd)
 			},
-			true,
+			"setting cache value",
 		},
 		"Encode Error": {
 			make(chan string),
 			func(m *internal.MockRedisStore) {
 			},
-			true,
+			"marshalling cache value",
 		},
 	}
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			var buf bytes.Buffer
+			slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+
 			c := Setup(t, test.mock)
-			err := c.Set(ctx, key, test.value, Options{
+			c.Set(ctx, key, test.value, Options{
 				Expiration: -1,
 				Tags:       []string{tag},
 			})
-			assert.Equal(t, test.wantErr, err != nil)
+
+			assert.Contains(t, buf.String(), test.wantLog)
 		})
 	}
 }

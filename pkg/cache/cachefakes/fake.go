@@ -120,11 +120,9 @@ func (mr *MockStoreMockRecorder) Ping(arg0 any) *gomock.Call {
 }
 
 // Set mocks base method.
-func (m *MockStore) Set(arg0 context.Context, arg1 string, arg2 any, arg3 cache.Options) error {
+func (m *MockStore) Set(arg0 context.Context, arg1 string, arg2 any, arg3 cache.Options) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
+	m.ctrl.Call(m, "Set", arg0, arg1, arg2, arg3)
 }
 
 // Set indicates an expected call of Set.

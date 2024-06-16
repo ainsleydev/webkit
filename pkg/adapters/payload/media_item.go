@@ -20,10 +20,10 @@ type Media struct {
 	//
 	// As per the Payload docs: filename, mimeType, and filesize fields
 	// will be automatically added to the upload Collection.
-	URL      string   `json:"url,omitempty"`
-	Filename string   `json:"filename,omitempty"`
-	Filesize float64  `json:"filesize,omitempty"`
-	MimeType string   `json:"mimeType,omitempty"`
+	URL      string   `json:"url"`
+	Filename string   `json:"filename"`
+	Filesize float64  `json:"filesize"`
+	MimeType string   `json:"mimeType"`
 	Width    *float64 `json:"width,omitempty"`
 	Height   *float64 `json:"height,omitempty"`
 
