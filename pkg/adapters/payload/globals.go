@@ -7,6 +7,7 @@ import (
 	"github.com/ainsleyclark/go-payloadcms"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
+	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
@@ -23,23 +24,25 @@ func GlobalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 			}
 
 			var (
-				ctx       = c.Request.Context()
-				t         = new(T)
-				globalFmt = strings.ToTitle(global)
-				cacheKey  = GlobalContextKey(global)
+				ctx      = c.Request.Context()
+				t        = new(T)
+				cacheKey = GlobalContextKey(global)
 			)
 
-			err := store.Get(ctx, cacheKey, t)
-			if err == nil {
-				c.Set(cacheKey, t)
-				return next(c)
+			if !env.IsDevelopment() {
+				err := store.Get(ctx, cacheKey, t)
+				if err == nil {
+					c.Set(cacheKey, t)
+					return next(c)
+				}
 			}
 
-			slog.Debug(globalFmt + " not found in cache, fetching from Payload")
+			// TODO: Use golang.org/x/text/cases instead & create string util package in WebKit.
+			slog.Debug(strings.Title(global) + " not found in cache, fetching from Payload")
 
-			_, err = client.Globals.Get(ctx, payloadcms.Global(global), t)
+			_, err := client.Globals.Get(ctx, payloadcms.Global(global), t)
 			if err != nil {
-				slog.Error("Fetching " + globalFmt + " global from Payload: " + err.Error())
+				slog.Error("Fetching " + global + " global from Payload: " + err.Error())
 				return next(c)
 			}
 

@@ -73,10 +73,10 @@ func CacheBust(store cache.Store) webkit.Handler {
 		ctx := c.Request.Context()
 
 		// TODO:
+		//
 		// We need a way for the cache to be invalidated when a new page is published, edited or
 		// deleted, we could do this by using Payload Hooks. At the moment we're just
 		// flushing everything instead of invalidating a specific page.
-
 		store.Invalidate(ctx, []string{"payload"})
 
 		return nil

@@ -4,14 +4,17 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/ainsleyclark/go-payloadcms"
 	payloadfakes "github.com/ainsleyclark/go-payloadcms/fakes"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
+	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
@@ -26,6 +29,9 @@ func TestGlobalsMiddleware(t *testing.T) {
 
 func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client, store cache.Store) webkit.Plug) {
 	t.Helper()
+
+	err := os.Setenv(env.AppEnvironmentKey, env.Production)
+	require.NoError(t, err)
 
 	settings := Settings{
 		SiteName: ptr.StringPtr("Site Name"),
