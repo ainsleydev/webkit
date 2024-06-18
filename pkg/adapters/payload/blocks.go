@@ -15,7 +15,7 @@ type Block struct {
 	Id string `json:"id,omitempty"`
 
 	// The block type is saved as the slug of the block that has been selected.
-	BlockType any `json:"blockType"`
+	BlockType string `json:"blockType"`
 
 	// The Admin panel provides each block with a blockName field which optionally
 	// allows editors to label their blocks for better readability.
@@ -42,7 +42,7 @@ func (b *Block) Decode(v any) error {
 
 // UnmarshalJSON unmarshals the JSON data into the Block type.
 // This method is used to extract known fields and assign the remaining
-// fields to the fields map.
+// fields to the Fields map.
 func (b *Block) UnmarshalJSON(data []byte) error {
 	var temp Block
 	result, err := marshmallow.Unmarshal(data,

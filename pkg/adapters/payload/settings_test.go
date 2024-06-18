@@ -1,14 +1,12 @@
 package payload
 
 import (
+	"bytes"
 	"context"
-	"net/http"
-	"net/http/httptest"
+	"log/slog"
 	"testing"
-	"time"
 
 	"github.com/ainsleyclark/go-payloadcms"
-	payloadfakes "github.com/ainsleyclark/go-payloadcms/fakes"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
@@ -19,68 +17,99 @@ import (
 func TestSettingsMiddleware(t *testing.T) {
 	t.Parallel()
 
-	settings := Settings{
+	GlobalMiddlewareTestHelper(t, func(client *payloadcms.Client, store cache.Store) webkit.Plug {
+		return SettingsMiddleware(client, store)
+	})
+}
+
+func TestGetSettings(t *testing.T) {
+	t.Parallel()
+
+	s := &Settings{
+		Id:       123,
 		SiteName: ptr.StringPtr("Site Name"),
 	}
 
+	t.Run("OK", func(t *testing.T) {
+		ctx := context.WithValue(context.Background(), SettingsContextKey, s)
+		got, err := GetSettings(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, s, got)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		got, err := GetSettings(context.TODO())
+		assert.ErrorIs(t, err, ErrSettingsNotFound)
+		assert.Nil(t, got)
+	})
+}
+
+func TestMustGetSettings(t *testing.T) {
+	t.Parallel()
+
+	s := &Settings{
+		Id:       123,
+		SiteName: ptr.StringPtr("Site Name"),
+	}
+
+	t.Run("OK", func(t *testing.T) {
+		ctx := context.WithValue(context.Background(), SettingsContextKey, s)
+		got, err := GetSettings(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, s, got)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		var buf bytes.Buffer
+		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+
+		got := MustGetSettings(context.TODO())
+
+		assert.Contains(t, buf.String(), ErrSettingsNotFound.Error())
+		assert.Nil(t, got)
+	})
+}
+
+func TestSettings_UnmarshalJSON(t *testing.T) {
 	tt := map[string]struct {
-		url  string
-		mock func(gb *payloadfakes.MockGlobalsService, store cache.Store)
-		want any
+		input   string
+		want    Settings
+		wantErr bool
 	}{
-		"File Request": {
-			url:  "/favicon.ico",
-			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {},
-			want: nil,
-		},
-		"From Cache": {
-			url: "/want",
-			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
-				store.Set(context.TODO(), settingsCacheKey, settings, cache.Options{})
+		"OK": {
+			input: `{
+				"id": 1,
+				"siteName": "Example Site",
+				"tagLine": "An example tagline",
+				"locale": "en_GB",
+				"logo": 10,
+				"extraField": "extraValue"
+			}`,
+			want: Settings{
+				Id:       1,
+				SiteName: ptr.StringPtr("Example Site"),
+				TagLine:  ptr.StringPtr("An example tagline"),
+				Locale:   "en_GB",
+				Logo:     ptr.IntPtr(10),
+				Extra: map[string]any{
+					"extraField": "extraValue",
+				},
 			},
-			want: settings,
+			wantErr: false,
 		},
-		"API Error": {
-			url: "/want",
-			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
-				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
-					return payloadcms.Response{}, assert.AnError
-				}
-			},
-			want: nil,
-		},
-		"From API": {
-			url: "/want",
-			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
-				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
-					*out.(*Settings) = settings
-					return payloadcms.Response{}, nil
-				}
-			},
-			want: settings,
+		"Invalid JSON": {
+			input:   `{id: 1, siteName: "Example Site"}`,
+			want:    Settings{},
+			wantErr: true,
 		},
 	}
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			app := webkit.New()
-			req := httptest.NewRequest(http.MethodGet, test.url, nil)
-			rr := httptest.NewRecorder()
-
-			store := cache.NewInMemory(time.Hour)
-			globals := payloadfakes.NewMockGlobalsService()
-			payload := &payloadcms.Client{
-				Globals: globals,
-			}
-
-			test.mock(globals, store)
-
-			app.Plug(SettingsMiddleware(payload, store))
-			app.Get(test.url, func(c *webkit.Context) error {
-				assert.Equal(t, test.want, c.Get(SettingsContextKey))
-				return nil
-			})
-			app.ServeHTTP(rr, req)
+			var s Settings
+			err := s.UnmarshalJSON([]byte(test.input))
+			assert.Equal(t, test.wantErr, err != nil)
+			assert.EqualValues(t, test.want, s)
 		})
 	}
 }

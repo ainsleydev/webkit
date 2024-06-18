@@ -39,7 +39,7 @@ func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 				c.Set("cache_hit", "HIT")
 				c.Response.Header().Set("X-Cache", "HIT")
 				c.Response.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", int(cachePageExpiry.Seconds())))
-				return c.String(http.StatusOK, page)
+				return c.HTML(http.StatusOK, page)
 			}
 
 			rr := httputil.NewResponseRecorder(c.Response)

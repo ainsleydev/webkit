@@ -21,7 +21,7 @@ func (a Adapter) Robots() webkit.Handler {
 	}
 
 	return func(c *webkit.Context) error {
-		settings, err := getSettings(c.Context())
+		settings, err := GetSettings(c.Context())
 		if err != nil {
 			return defaultRobots(c)
 		}

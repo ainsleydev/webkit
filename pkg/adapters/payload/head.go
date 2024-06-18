@@ -8,7 +8,7 @@ import (
 )
 
 func (a Adapter) Head(ctx context.Context) (markup.HeadProps, error) {
-	settings, err := getSettings(ctx)
+	settings, err := GetSettings(ctx)
 	if err != nil {
 		return markup.HeadProps{}, err
 	}
