@@ -71,10 +71,9 @@ func Logger(next webkit.Handler) webkit.Handler {
 				slog.Any("cache", rr.Header().Get("X-Cache")),
 			}
 		} else {
-			msg = fmt.Sprintf("%s - %s", msg, aurora.Gray(10, fmt.Sprintf("Path: %s, Status: %d, Cache: %v, Latency: %d",
+			msg = fmt.Sprintf("%s - %s", msg, aurora.Gray(10, fmt.Sprintf("Path: %s, Status: %d, Latency: %d",
 				req.URL.Path,
 				rr.Status,
-				rr.Header().Get("X-Cache"),
 				time.Now().Sub(start).Milliseconds(),
 			)))
 		}

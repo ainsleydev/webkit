@@ -14,7 +14,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 		slug: 'media',
 		upload: {
 			staticURL: '/media',
-			staticDir: path.resolve(__dirname, '../../../media'),
+			staticDir: path.resolve(__dirname, '../../../media'), // TODO: Bug, currently resolves to Webkits Folder
 			imageSizes: [
 				// Original Size (for WebP & Avif)
 				{
