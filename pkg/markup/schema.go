@@ -1,5 +1,7 @@
 package markup
 
+import "encoding/json"
+
 // SchemaOrgOrganisation represents a structured data definition for an organisation
 // according to schema.org. This can be used to provide details about the
 // organisation and improve search engine understanding.
@@ -8,13 +10,21 @@ package markup
 type SchemaOrgOrganisation struct {
 	Context     string                       `json:"@context"`    // Always "https://schema.org"
 	Type        string                       `json:"@type"`       // Always "Organization"
-	Id          string                       `json:"@id"`         // Full URL
-	Url         string                       `json:"url"`         // Full URL
+	ID          string                       `json:"@id"`         // Full URL
+	URL         string                       `json:"url"`         // Full URL
 	LegalName   string                       `json:"legalName"`   // The legal name of the organisation
 	Description string                       `json:"description"` // A description of the organisation, can be the same as the tagline.
 	Logo        string                       `json:"logo"`        // Full URL, no SVGs
 	SameAs      []string                     `json:"sameAs"`      // An array of full social media URLs
 	Address     SchemaOrgOrganisationAddress `json:"address"`
+}
+
+// MarshalJSON is a custom JSON marshaller for the SchemaOrgOrganisation struct.
+// It sets the context and type to the correct values before marshalling.
+func (o *SchemaOrgOrganisation) MarshalJSON() ([]byte, error) {
+	o.Context = "https://schema.org"
+	o.Type = "Organization"
+	return json.Marshal(o)
 }
 
 // SchemaOrgOrganisationAddress represents a structured data definition for the
@@ -40,6 +50,14 @@ type SchemaOrgItemList struct {
 	ItemListElement []SchemaOrgItemListElement `json:"itemListElement"` // The list of items
 }
 
+// MarshalJSON is a custom JSON marshaller for the SchemaOrgItemList struct.
+// It sets the context and type to the correct values before marshalling.
+func (o *SchemaOrgItemList) MarshalJSON() ([]byte, error) {
+	o.Context = "https://schema.org"
+	o.Type = "ItemList"
+	return json.Marshal(o)
+}
+
 // SchemaOrgItemListElement represents a single item within a navigational
 // list on a webpage.
 //
@@ -49,5 +67,5 @@ type SchemaOrgItemListElement struct {
 	Position    int    `json:"position"`    // I.e 1, 2, 3
 	Name        string `json:"name"`        // I.e "Home"
 	Description string `json:"description"` // I.e "The homepage of the website" usually the same as the description tag.
-	Url         string `json:"url"`         // Full URL
+	URL         string `json:"url"`         // Full URL
 }

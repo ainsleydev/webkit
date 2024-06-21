@@ -110,6 +110,7 @@ type Address struct {
 	Postcode *string `json:"postcode,omitempty"`
 }
 
+// Social defines the fields for social media links.
 type Social struct {
 	Facebook  *string `json:"facebook,omitempty"`
 	Instagram *string `json:"instagram,omitempty"`

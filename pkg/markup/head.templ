@@ -1,0 +1,50 @@
+package markup
+
+import (
+	"log/slog"
+	"encoding/json"
+)
+
+func marshal(v any) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		slog.Error(err.Error())
+		return ""
+	}
+	return `<script type="application/ld+json">` + string(b) + `</script>`
+}
+
+templ Head(props HeadProps) {
+	<!-- Meta -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<!-- Title -->
+	if props.Title != "" {
+		<title>{props.Title}</title>
+	}
+	<!-- Description -->
+	if props.Description != "" {
+		<meta name="description" content={ props.Description } />
+	}
+	<!-- No Robots -->
+	if props.Private {
+		<meta name="robots" content="noindex, nofollow" />
+	}
+	<!-- Canonical -->
+	if props.Canonical != "" {
+		<link rel="canonical" href={ templ.URL(props.Canonical) } />
+	}
+	<!-- Schema - Organisation -->
+	if props.Org != nil {
+		{ marshal(props.Org) }
+	}
+	<!-- Schema - Navigation -->
+	if props.Navigation != nil {
+		{ marshal(props.Navigation) }
+	}
+	<!-- Other -->
+	if props.Other != "" {
+		{ props.Other }
+	}
+}

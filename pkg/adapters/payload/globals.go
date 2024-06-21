@@ -26,7 +26,7 @@ func GlobalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 			var (
 				ctx      = c.Request.Context()
 				t        = new(T)
-				cacheKey = GlobalContextKey(global)
+				cacheKey = GlobalsContextKey(global)
 			)
 
 			if !env.IsDevelopment() {
@@ -58,8 +58,8 @@ func GlobalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 	}
 }
 
-// GlobalContextKey returns the cache & context key for the global that
+// GlobalsContextKey returns the cache & context key for the global that
 // resides in the context.
-func GlobalContextKey(global string) string {
+func GlobalsContextKey(global string) string {
 	return "payload_" + strings.ToLower(global)
 }

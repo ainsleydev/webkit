@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
+	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
@@ -34,12 +35,14 @@ func CacheMiddleware(store cache.Store, ignorePaths []string) webkit.Plug {
 			cacheKey := fmt.Sprintf("page:%s", c.Request.URL.RequestURI())
 
 			var page string
-			if err := store.Get(ctx, cacheKey, &page); err == nil {
-				// Cache hit, serve from cache
-				c.Set("cache_hit", "HIT")
-				c.Response.Header().Set("X-Cache", "HIT")
-				c.Response.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", int(cachePageExpiry.Seconds())))
-				return c.HTML(http.StatusOK, page)
+			if !env.IsDevelopment() {
+				if err := store.Get(ctx, cacheKey, &page); err == nil {
+					// Cache hit, serve from cache
+					c.Set("cache_hit", "HIT")
+					c.Response.Header().Set("X-Cache", "HIT")
+					c.Response.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", int(cachePageExpiry.Seconds())))
+					return c.HTML(http.StatusOK, page)
+				}
 			}
 
 			rr := httputil.NewResponseRecorder(c.Response)

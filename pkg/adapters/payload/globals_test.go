@@ -50,7 +50,7 @@ func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client,
 		"From Cache": {
 			url: "/want",
 			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
-				store.Set(context.TODO(), GlobalContextKey("settings"), settings, cache.Options{})
+				store.Set(context.TODO(), GlobalsContextKey("settings"), settings, cache.Options{})
 			},
 			want: &settings,
 		},

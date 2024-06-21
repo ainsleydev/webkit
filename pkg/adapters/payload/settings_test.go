@@ -39,7 +39,7 @@ func TestGetSettings(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		got, err := GetSettings(context.TODO())
-		assert.ErrorIs(t, err, ErrSettingsNotFound)
+		assert.Error(t, err, ErrSettingsNotFound)
 		assert.Nil(t, got)
 	})
 }

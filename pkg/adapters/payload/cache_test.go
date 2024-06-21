@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
+	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -21,6 +23,9 @@ func TestCacheMiddleware(t *testing.T) {
 	defaultHandler := func(c *webkit.Context) error {
 		return c.String(http.StatusOK, "Cache")
 	}
+
+	err := os.Setenv(env.AppEnvironmentKey, env.Production)
+	require.NoError(t, err)
 
 	tt := map[string]struct {
 		url      string

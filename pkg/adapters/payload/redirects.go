@@ -10,6 +10,7 @@ import (
 	"github.com/ainsleyclark/go-payloadcms"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
+	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -59,7 +60,7 @@ func RedirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 			)
 
 			err := store.Get(ctx, redirectCacheKey, &redirects)
-			if err != nil {
+			if err != nil || env.IsDevelopment() {
 				slog.Debug("Redirects not found in cache, fetching from Payload")
 
 				lr := payloadcms.ListResponse[Redirect]{}
