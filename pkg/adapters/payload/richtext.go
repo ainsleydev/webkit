@@ -2,29 +2,29 @@ package payload
 
 // See: https://docs.slatejs.org/concepts/12-typescript
 
-type T struct {
-	Content []struct {
-		Type     string `json:"type,omitempty"`
-		Children []struct {
-			Text string `json:"text,omitempty"`
-
-			// Link
-			Url      string `json:"url,omitempty"`
-			NewTab   bool   `json:"newTab,omitempty"`
-			LinkType string `json:"linkType,omitempty"`
-		} `json:"children"`
-		Value struct {
-			Id int `json:"id"`
-		} `json:"value,omitempty"`
-		RelationTo string `json:"relationTo,omitempty"`
-	} `json:"content"`
-}
-
-// CustomElement defines the interface for elements in your schema
-type Element interface {
-	Type() string
-	Children() []Element
-}
+//type T struct {
+//	Content []struct {
+//		Type     string `json:"type,omitempty"`
+//		Children []struct {
+//			Text string `json:"text,omitempty"`
+//
+//			// Link
+//			Url      string `json:"url,omitempty"`
+//			NewTab   bool   `json:"newTab,omitempty"`
+//			LinkType string `json:"linkType,omitempty"`
+//		} `json:"children"`
+//		Value struct {
+//			Id int `json:"id"`
+//		} `json:"value,omitempty"`
+//		RelationTo string `json:"relationTo,omitempty"`
+//	} `json:"content"`
+//}
+//
+//// CustomElement defines the interface for elements in your schema
+//type Element interface {
+//	Type() string
+//	Children() []Element
+//}
 
 //
 //// ParagraphElement represents a paragraph element

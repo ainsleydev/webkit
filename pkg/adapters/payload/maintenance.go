@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/ainsleydev/webkit/pkg/util/httputil"
@@ -34,9 +35,13 @@ func shouldSkipMiddleware(c *webkit.Context) bool {
 	return false
 }
 
-// MaintenanceMiddleware is a middleware that checks if the site is in maintenance mode.
+var defaultMaintenanceRenderer = func(c *webkit.Context, _ Maintenance) error {
+	return c.String(503, fmt.Sprintf("Site is under maintenance. Please check back soon"))
+}
+
+// maintenanceMiddleware is a middleware that checks if the site is in maintenance mode.
 // If it is, it will render the maintenance page as defined by the renderer function.
-func MaintenanceMiddleware(fn MaintenanceRendererFunc) webkit.Plug {
+func maintenanceMiddleware(fn MaintenanceRendererFunc) webkit.Plug {
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
 			if shouldSkipMiddleware(c) {

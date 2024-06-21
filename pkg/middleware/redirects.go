@@ -17,9 +17,15 @@ func TrailingSlashRedirect(next webkit.Handler) webkit.Handler {
 	return func(ctx *webkit.Context) error {
 		r := ctx.Request
 		path := r.URL.Path
-		if httputil.IsFileRequest(r) {
-			return next(ctx) // A file
+
+		if path == "/" {
+			return next(ctx)
 		}
+
+		if httputil.IsFileRequest(r) {
+			return next(ctx)
+		}
+
 		if len(path) > 1 && path[len(path)-1] != '/' {
 			if r.URL.RawQuery != "" {
 				path = fmt.Sprintf("%s/?%s", path, r.URL.RawQuery)
@@ -29,6 +35,7 @@ func TrailingSlashRedirect(next webkit.Handler) webkit.Handler {
 			redirectURL := fmt.Sprintf("//%s%s", r.Host, path)
 			return ctx.Redirect(301, redirectURL)
 		}
+
 		return next(ctx)
 	}
 }

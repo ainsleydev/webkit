@@ -12,11 +12,17 @@ import (
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
-// GlobalsMiddleware is a middleware that checks for globals within the Payload CMS.
+// GlobalsContextKey returns the cache & context key for the global that
+// resides in the context.
+func GlobalsContextKey(global string) string {
+	return "payload_" + strings.ToLower(global)
+}
+
+// globalsMiddleware is a middleware that checks for globals within the Payload CMS.
 // If a global is found, it will store it in the cache and in the context for
 // easy access. Cache is used to store the globals to avoid making requests to
 // the Payload API on every request.
-func GlobalsMiddleware[T any](client *payloadcms.Client, store cache.Store, global string) webkit.Plug {
+func globalsMiddleware[T any](client *payloadcms.Client, store cache.Store, global string) webkit.Plug {
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
 			if httputil.IsFileRequest(c.Request) {
@@ -53,10 +59,4 @@ func GlobalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 			return next(c)
 		}
 	}
-}
-
-// GlobalsContextKey returns the cache & context key for the global that
-// resides in the context.
-func GlobalsContextKey(global string) string {
-	return "payload_" + strings.ToLower(global)
 }

@@ -1,10 +1,5 @@
 package markup
 
-import (
-	"log/slog"
-	"encoding/json"
-)
-
 templ Head(props HeadProps) {
 	<!-- Meta -->
 	<meta charset="utf-8">
@@ -12,7 +7,7 @@ templ Head(props HeadProps) {
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<!-- Title -->
 	if props.Title != "" {
-		<title>{props.Title}</title>
+		<title>{ props.Title }</title>
 	}
 	<!-- Description -->
 	if props.Description != "" {
@@ -24,18 +19,18 @@ templ Head(props HeadProps) {
 	}
 	<!-- Canonical -->
 	if props.Canonical != "" {
-		<link rel="canonical" href={ templ.URL(props.Canonical) } />
+		<link rel="canonical" href={ props.Canonical } />
 	}
 	<!-- Schema - Organisation -->
 	if props.Org != nil {
-		{ MarshalLDJSONScript(props.Org) }
+		<!-- @templ.JSONScript(props.Org).WithType("application/ld+json") -->
 	}
 	<!-- Schema - Navigation -->
 	if props.Navigation != nil {
-		{ MarshalLDJSONScript(props.Navigation) }
+		<!-- @templ.JSONScript(props.Navigation).WithType("application/ld+json") -->
 	}
 	<!-- Other -->
 	if props.Other != "" {
-		{ props.Other }
+		@templ.Raw(props.Other)
 	}
 }

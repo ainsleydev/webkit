@@ -12,9 +12,9 @@ import (
 type Adapter interface {
 	//Head() string
 	//
-	//Redirect()
+	//redirect()
 
-	Head(ctx context.Context) (markup.HeadProps, error)
+	Head(context.Context) markup.HeadProps
 	Robots() webkit.Handler
 	Sitemap() webkit.Handler
 }
@@ -22,6 +22,17 @@ type Adapter interface {
 func Scratch() {
 	app := webkit.New()
 	p := &payload.Adapter{}
+
+	app.Get("/robots.txt", p.Robots())
+	app.Get("/sitemap.xml", p.Sitemap())
+}
+
+func PayloadScratch() {
+	app := webkit.New()
+	p, _ := payload.NewAdapter(
+		payload.WithBaseURL("https://api.payloadcms.com"),
+		payload.WithAPIKey(""),
+	)
 
 	app.Get("/robots.txt", p.Robots())
 	app.Get("/sitemap.xml", p.Sitemap())

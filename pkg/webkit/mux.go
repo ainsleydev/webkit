@@ -77,7 +77,7 @@ func (k *Kit) Start(address string) error {
 
 	// Start the server in a goroutine
 	go func() {
-		slog.Info("App listening on address: " + address)
+		slog.Info("App listening on address " + address)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("HTTP server error: " + err.Error())
 		}

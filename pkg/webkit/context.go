@@ -50,7 +50,7 @@ func (c *Context) Param(key string) string {
 func (c *Context) Render(component templ.Component) error {
 	c.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
 	c.Response.WriteHeader(http.StatusOK)
-	return component.Render(c.Request.Context(), c.Response)
+	return component.Render(c.Context(), c.Response)
 }
 
 // RenderWithStatus renders a templated component to the response writer with the
@@ -58,7 +58,7 @@ func (c *Context) Render(component templ.Component) error {
 func (c *Context) RenderWithStatus(status int, component templ.Component) error {
 	c.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
 	c.Response.WriteHeader(status)
-	return component.Render(c.Request.Context(), c.Response)
+	return component.Render(c.Context(), c.Response)
 }
 
 // Redirect performs an HTTP redirect to the specified URL with the given status code.

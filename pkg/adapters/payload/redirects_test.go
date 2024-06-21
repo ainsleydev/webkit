@@ -21,7 +21,7 @@ func TestRedirects(t *testing.T) {
 
 	var (
 		fromURL   = "/test"
-		redirects = []Redirect{
+		redirects = []redirect{
 			{From: fromURL, To: "/new", Code: RedirectsCode301},
 		}
 	)
@@ -41,7 +41,7 @@ func TestRedirects(t *testing.T) {
 		},
 		"Invalid number defaults to 301": {
 			mock: func(_ *payloadfakes.MockCollectionService, store cache.Store) {
-				store.Set(context.TODO(), redirectCacheKey, []Redirect{
+				store.Set(context.TODO(), redirectCacheKey, []redirect{
 					{From: fromURL, To: "/new", Code: "wrong"},
 				}, cache.Options{})
 			},
@@ -50,7 +50,7 @@ func TestRedirects(t *testing.T) {
 		},
 		"No Matches": {
 			mock: func(_ *payloadfakes.MockCollectionService, store cache.Store) {
-				store.Set(context.TODO(), redirectCacheKey, []Redirect{
+				store.Set(context.TODO(), redirectCacheKey, []redirect{
 					{From: "/wrong", To: "/new", Code: RedirectsCode301},
 				}, cache.Options{})
 			},
@@ -59,7 +59,7 @@ func TestRedirects(t *testing.T) {
 		"Redirects 301 from API": {
 			mock: func(cols *payloadfakes.MockCollectionService, store cache.Store) {
 				cols.ListFunc = func(_ context.Context, _ payloadcms.Collection, _ payloadcms.ListParams, out any) (payloadcms.Response, error) {
-					*out.(*payloadcms.ListResponse[Redirect]) = payloadcms.ListResponse[Redirect]{
+					*out.(*payloadcms.ListResponse[redirect]) = payloadcms.ListResponse[redirect]{
 						Docs: redirects,
 					}
 					return payloadcms.Response{}, nil
@@ -90,7 +90,7 @@ func TestRedirects(t *testing.T) {
 
 			test.mock(collections, store)
 
-			app.Plug(RedirectMiddleware(payload, store))
+			app.Plug(redirectMiddleware(payload, store))
 			app.Get(fromURL, func(c *webkit.Context) error {
 				return c.String(http.StatusOK, "Middleware")
 			})

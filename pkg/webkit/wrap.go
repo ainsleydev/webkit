@@ -24,12 +24,11 @@ func WrapHandler(h http.Handler) Handler {
 
 // WrapMiddleware wraps `func(http.Handler) http.Handler` into `webkit.Plug“
 func WrapMiddleware(next Handler, mw func(http.Handler) http.Handler) Handler {
-	return func(ctx *Context) (err error) {
+	return func(ctx *Context) error {
+		var err error
 		mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx.Response = w
-			ctx.Request = r
-			err = next(ctx) // Call the next handler with updated context
+			err = next(NewContext(w, r)) // Call the next handler with updated context
 		})).ServeHTTP(ctx.Response, ctx.Request)
-		return
+		return err
 	}
 }

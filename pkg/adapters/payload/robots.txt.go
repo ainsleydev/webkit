@@ -7,12 +7,12 @@ import (
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
-// Robots returns a handler function that generates the robots.txt content
+// robots returns a handler function that generates the robots.txt content
 // based on the default Payload settings.
-func (a Adapter) Robots() webkit.Handler {
+func robots(appEnv string) webkit.Handler {
 	defaultRobots := func(c *webkit.Context) error {
 		// Always allow robots in production if it's not found via settings
-		if env.IsProduction() {
+		if appEnv == env.Production {
 			return c.String(http.StatusOK, "User-agent: *\nDisallow:")
 		}
 

@@ -82,7 +82,7 @@ func TestMaintenanceMiddleware(t *testing.T) {
 				return nil
 			}
 
-			app.Plug(MaintenanceMiddleware(handler))
+			app.Plug(maintenanceMiddleware(handler))
 			app.Get(test.url, func(c *webkit.Context) error {
 				return c.String(http.StatusOK, "OK")
 			})

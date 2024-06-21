@@ -23,7 +23,7 @@ func TestGlobalsMiddleware(t *testing.T) {
 	t.Parallel()
 
 	GlobalMiddlewareTestHelper(t, func(client *payloadcms.Client, store cache.Store) webkit.Plug {
-		return GlobalsMiddleware[Settings](client, store, "settings")
+		return globalsMiddleware[Settings](client, store, "settings")
 	})
 }
 

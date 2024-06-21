@@ -23,6 +23,11 @@ func TestAddTrailingSlash(t *testing.T) {
 		wantLocation string
 		wantStatus   int
 	}{
+		"Home": {
+			url:          "/",
+			wantLocation: "",
+			wantStatus:   http.StatusOK,
+		},
 		"With Redirect": {
 			url:          "/test",
 			wantLocation: "//" + host + "/test/",
@@ -50,6 +55,7 @@ func TestAddTrailingSlash(t *testing.T) {
 			require.NoError(t, err)
 
 			app.Plug(TrailingSlashRedirect)
+			app.Get("/", noContextHandler)
 			app.Get("/test", noContextHandler)
 			app.Get("/test/", noContextHandler)
 			app.ServeHTTP(rr, req)

@@ -2,8 +2,11 @@ package payload
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 	"time"
+
+	"dario.cat/mergo"
 
 	"github.com/ainsleydev/webkit/pkg/markup"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
@@ -13,13 +16,23 @@ import (
 // TODO:
 // - Merge page meta and settings meta, where page meta takes precedence.
 
-func Head(ctx context.Context) markup.HeadProps {
-	settings := MustGetSettings(ctx)
+const ContextKeyPageMeta = "payload_page_meta"
 
-	var pageMeta Meta
-	pm, ok := ctx.Value("meta").(Meta)
+func Head(ctx context.Context) markup.HeadProps {
+	settings, err := GetSettings(ctx)
+	if err != nil {
+		return markup.HeadProps{}
+	}
+
+	pageMeta := &Meta{}
+	pm, ok := ctx.Value(ContextKeyPageMeta).(*Meta)
 	if ok {
 		pageMeta = pm
+	}
+
+	err = mergo.Merge(&settings.Meta, pageMeta, mergo.WithOverride, mergo.WithoutDereference)
+	if err != nil {
+		slog.Error("Merging page meta with settings meta: " + err.Error())
 	}
 
 	props := markup.HeadProps{
@@ -30,7 +43,6 @@ func Head(ctx context.Context) markup.HeadProps {
 		Private:     ptr.Bool(settings.Meta.Private),
 		Canonical:   ptr.String(settings.Meta.CanonicalURL),
 		Org:         schemaOrganisation(settings, "TODO - Full URL"),
-		Other:       "",
 	}
 
 	if settings.Meta.Image != nil {
@@ -38,12 +50,18 @@ func Head(ctx context.Context) markup.HeadProps {
 	}
 
 	if settings.Meta.StructuredData != nil { // Type is a map[string]any
-		props.Other += "<!-- Payload Structured Data -->\n" + markup.MarshalLDJSONScript(settings.Meta.StructuredData)
+		props.Other += "<!-- Global Structured Data -->\n" + markup.MarshalLDJSONScript(settings.Meta.StructuredData)
+	}
+
+	if pageMeta.StructuredData != nil { // Type is a map[string]any
+		props.Other += "<!-- Page Structured Data -->\n" + markup.MarshalLDJSONScript(pageMeta.StructuredData)
 	}
 
 	if settings.CodeInjection != nil && stringutil.IsNotEmpty(settings.CodeInjection.Head) {
-		props.Other += "<!-- Payload Head Code Injection -->\n" + *settings.CodeInjection.Head
+		props.Other += "<!-- Global Head Code Injection -->\n" + *settings.CodeInjection.Head
 	}
+
+	// TODO: We need to add code injection for page meta here.
 
 	return props
 }

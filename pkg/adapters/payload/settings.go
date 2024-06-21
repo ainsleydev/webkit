@@ -22,11 +22,6 @@ const SettingsContextKey = "payload_settings"
 // ErrSettingsNotFound is returned when the settings are not found in the context.
 var ErrSettingsNotFound = errors.New("settings not found in context")
 
-// SettingsMiddleware defines the structure of the settings within the Payload UI.
-func SettingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plug {
-	return GlobalsMiddleware[Settings](client, store, "settings")
-}
-
 // GetSettings is a helper function to get the settings from the context.
 // If the settings are not found, it returns an error.
 func GetSettings(ctx context.Context) (*Settings, error) {
@@ -45,6 +40,11 @@ func MustGetSettings(ctx context.Context) *Settings {
 		slog.Error("Obtaining settings: " + err.Error())
 	}
 	return s
+}
+
+// settingsMiddleware defines the structure of the settings within the Payload UI.
+func settingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plug {
+	return globalsMiddleware[Settings](client, store, "settings")
 }
 
 // Settings defines the common global collection type within Payload

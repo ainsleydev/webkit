@@ -12,17 +12,19 @@ import (
 )
 
 func TestAdapter_Robots(t *testing.T) {
+	t.Parallel()
+
 	tt := map[string]struct {
 		ctx  func(c *webkit.Context)
 		env  string
 		want string
 	}{
-		"Nil Robots Production": {
+		"Nil robots Production": {
 			ctx:  func(c *webkit.Context) {},
 			env:  env.Production,
 			want: "User-agent: *\nDisallow:",
 		},
-		"Nil Robots Dev": {
+		"Nil robots Dev": {
 			ctx:  func(c *webkit.Context) {},
 			env:  env.Development,
 			want: "User-agent: *\nDisallow: /",
@@ -36,7 +38,7 @@ func TestAdapter_Robots(t *testing.T) {
 			env:  env.Development,
 			want: "Custom",
 		},
-		"Settings No Robots Set": {
+		"Settings No robots Set": {
 			ctx: func(c *webkit.Context) {
 				c.Set(SettingsContextKey, &Settings{})
 			},
@@ -48,17 +50,13 @@ func TestAdapter_Robots(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			app := webkit.New()
-			a := Adapter{}
-
-			t.Setenv(env.AppEnvironmentKey, test.env)
-
 			app.Plug(func(next webkit.Handler) webkit.Handler {
 				return func(c *webkit.Context) error {
 					test.ctx(c)
 					return next(c)
 				}
 			})
-			app.Get("/robots.txt", a.Robots())
+			app.Get("/robots.txt", robots(test.env))
 			rr := httptest.NewRecorder()
 			app.ServeHTTP(rr, httptest.NewRequest("GET", "/robots.txt", nil))
 
