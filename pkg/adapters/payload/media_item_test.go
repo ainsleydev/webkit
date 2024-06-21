@@ -115,24 +115,27 @@ var media = `
 `
 
 func TestMedia_UnmarshalJSON(t *testing.T) {
-	in := `{
-		"id": 15,
-			"alt": "Alt Text",
-			"caption": null,
-			"updatedAt": "2024-05-17T18:01:52.169Z",
-			"createdAt": "2024-05-17T18:01:52.169Z",
-			"url": "/media/image.png",
-			"filename": "image.png",
-			"mimeType": "image/png",
-			"filesize": 743837,
-			"width": 1440,
-			"height": 4894,
-			"sizes": {
-			"webp": {
-				"url": "/media/image-1440x4894.webp"
+	var (
+		payloadURL = "https://example.com"
+		in         = `{
+			"id": 15,
+				"alt": "Alt Text",
+				"caption": null,
+				"updatedAt": "2024-05-17T18:01:52.169Z",
+				"createdAt": "2024-05-17T18:01:52.169Z",
+				"url": "/media/image.png",
+				"filename": "image.png",
+				"mimeType": "image/png",
+				"filesize": 743837,
+				"width": 1440,
+				"height": 4894,
+				"sizes": {
+				"webp": {
+					"url": "/media/image-1440x4894.webp"
+				}
 			}
-		}
-	}`
+		}`
+	)
 
 	tt := map[string]struct {
 		input   string
@@ -145,7 +148,7 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 				Id:        15,
 				CreatedAt: "2024-05-17T18:01:52.169Z",
 				UpdatedAt: "2024-05-17T18:01:52.169Z",
-				URL:       "/media/image.png",
+				URL:       "https://example.com/media/image.png",
 				Filename:  "image.png",
 				MimeType:  "image/png",
 				Filesize:  743837,
@@ -153,7 +156,7 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 				Height:    ptr.Float64Ptr(4894),
 				Sizes: MediaSizes{
 					"webp": MediaSize{
-						URL: "/media/image-1440x4894.webp",
+						URL: "https://example.com/media/image-1440x4894.webp",
 					},
 				},
 				Fields: map[string]any{
@@ -173,12 +176,19 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Setenv(EnvPayloadURL, payloadURL)
 			var m Media
 			err := m.UnmarshalJSON([]byte(test.input))
 			assert.Equal(t, test.wantErr, err != nil)
 			assert.EqualValues(t, test.want, m)
 		})
 	}
+
+	t.Run("No Env", func(t *testing.T) {
+		var m Media
+		err := m.UnmarshalJSON([]byte(in))
+		assert.Error(t, err)
+	})
 }
 
 func TestMediaSizes_SortByWidth(t *testing.T) {

@@ -37,7 +37,7 @@ type HeadProps struct {
 		Link string
 		Type string
 	}
-	Hash uint // Unix now
+	Hash int64 // Unix now
 
 	// Additional meta properties
 	Private   bool   // If true, the page should not be indexed by search engines.

@@ -1,6 +1,8 @@
 package payload
 
 import (
+	"errors"
+	"os"
 	"sort"
 
 	"github.com/goccy/go-json"
@@ -41,7 +43,7 @@ type Media struct {
 
 	// RawJSON is the raw byte slice of the block, which can be used to decode
 	// the block into a specific type.
-	RawJSON json.RawMessage
+	RawJSON json.RawMessage `json:"-"`
 }
 
 // MediaSizes defines a dictionary of media sizes by size name
@@ -73,9 +75,20 @@ func (m *Media) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
+	url := os.Getenv(EnvPayloadURL)
+	if url == "" {
+		return errors.New("env var: " + EnvPayloadURL + " is not set")
+	}
+
 	*m = temp
 	m.RawJSON = data
 	m.Fields = result
+	m.URL = url + m.URL
+
+	for k, v := range m.Sizes {
+		v.URL = url + v.URL
+		m.Sizes[k] = v
+	}
 
 	return nil
 }

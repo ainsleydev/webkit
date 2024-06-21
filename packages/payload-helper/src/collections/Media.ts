@@ -1,20 +1,20 @@
-import path from 'path';
-import { slateEditor } from '@payloadcms/richtext-slate';
+// import { slateEditor } from '@payloadcms/richtext-slate';
 import type { CollectionConfig, Field } from 'payload/types';
 
 /**
  * Media Collection Configuration
  * Additional fields will be appended to the media collection.
  *
+ * @param filePath
  * @param additionalFields
  * @constructor
  */
-export const Media = (additionalFields?: Field[]): CollectionConfig => {
+export const Media = (filePath: string, additionalFields?: Field[]): CollectionConfig => {
 	return {
 		slug: 'media',
 		upload: {
 			staticURL: '/media',
-			staticDir: path.resolve(__dirname, '../../../media'), // TODO: Bug, currently resolves to Webkits Folder
+			staticDir: filePath,
 			imageSizes: [
 				// Original Size (for WebP & Avif)
 				{
@@ -137,11 +137,11 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 			{
 				name: 'caption',
 				type: 'richText',
-				editor: slateEditor({
-					admin: {
-						elements: ['link'],
-					},
-				}),
+				// editor: slateEditor({
+				// 		admin: {
+				// 			elements: ['link'],
+				// 		},
+				// 	}),
 			},
 			...(additionalFields ? additionalFields : []),
 		],

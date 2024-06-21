@@ -1,6 +1,8 @@
 package webkit
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // WrapHandlerFunc is a helper function for wrapping http.HandlerFunc
 // and returns a WebKit middleware.
@@ -20,34 +22,14 @@ func WrapHandler(h http.Handler) Handler {
 	}
 }
 
-func WrapKitHandler(h Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		err := h(NewContext(w, r))
-		if err != nil {
-			return
-		}
-	}
-}
-
 // WrapMiddleware wraps `func(http.Handler) http.Handler` into `webkit.Plug“
-func WrapMiddleware(m func(http.Handler) http.Handler) Plug {
-	return func(next Handler) Handler {
-		return func(c *Context) (err error) {
-			m(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				err = next(c)
-			})).ServeHTTP(c.Response, c.Request)
-			return
-		}
-	}
-}
-
-func WrapMiddelewareHandler(next Handler, m func(http.Handler) http.Handler) Handler {
-	return func(c *Context) (err error) {
-		m(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c.Response = w
-			c.Request = r
-			err = next(c)
-		})).ServeHTTP(c.Response, c.Request)
+func WrapMiddleware(next Handler, mw func(http.Handler) http.Handler) Handler {
+	return func(ctx *Context) (err error) {
+		mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx.Response = w
+			ctx.Request = r
+			err = next(ctx) // Call the next handler with updated context
+		})).ServeHTTP(ctx.Response, ctx.Request)
 		return
 	}
 }

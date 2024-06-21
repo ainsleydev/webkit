@@ -420,6 +420,20 @@ export function fieldsToJSONSchema(
 					}
 
 					case 'group': {
+						// If the group name is Meta (SEO) assign to payload type.
+						if (field.name === 'meta') {
+							fieldSchema = {
+								type: 'object',
+								additionalProperties: false,
+								goJSONSchema: {
+									imports: ['github.com/ainsleydev/webkit/pkg/adapters/payload'],
+									nillable: false,
+									type: 'payload.Meta',
+								},
+							};
+							break;
+						}
+
 						fieldSchema = {
 							type: 'object',
 							additionalProperties: false,
@@ -439,6 +453,7 @@ export function fieldsToJSONSchema(
 								$ref: `#/definitions/${field.interfaceName}`,
 							};
 						}
+
 						break;
 					}
 

@@ -52,3 +52,7 @@ const (
 	// GlobalSettings defines the Payload settings global settings slug.
 	GlobalSettings payloadcms.Global = "settings"
 )
+
+const (
+	EnvPayloadURL = "PAYLOAD_URL"
+)

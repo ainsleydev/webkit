@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/ainsleyclark/go-payloadcms"
+	"github.com/goccy/go-json"
 	"github.com/perimeterx/marshmallow"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
@@ -52,7 +54,7 @@ type Settings struct {
 	SiteName      *string        `json:"siteName,omitempty"`
 	TagLine       *string        `json:"tagLine,omitempty"`
 	Locale        string         `json:"locale,omitempty"` // In en_GB format
-	Logo          *int           `json:"logo,omitempty"`
+	Logo          *Media         `json:"logo,omitempty"`
 	Meta          Meta           `json:"meta"`
 	Robots        *string        `json:"robots,omitempty"`
 	CodeInjection *CodeInjection `json:"codeInjection,omitempty"`
@@ -73,7 +75,7 @@ type Settings struct {
 type Meta struct {
 	Title          *string `json:"title,omitempty"`
 	Description    *string `json:"description,omitempty"`
-	Image          Media   `json:"image,omitempty"` // TODO: This perhaps is an image struct.
+	Image          *Media  `json:"image,omitempty"`
 	Private        *bool   `json:"private,omitempty"`
 	CanonicalURL   *string `json:"canonicalURL,omitempty"`
 	StructuredData any     `json:"structuredData,omitempty"`
@@ -89,9 +91,9 @@ type CodeInjection struct {
 // Maintenance defines the fields for displaying an offline page to
 // the front-end when it's been enabled within PayloadCMS.
 type Maintenance struct {
-	Content *string `json:"content,omitempty"`
-	Enabled *bool   `json:"enabled,omitempty"`
-	Title   *string `json:"title,omitempty"`
+	Enabled bool   `json:"enabled,omitempty"`
+	Title   string `json:"title,omitempty"`
+	Content string `json:"content,omitempty"`
 }
 
 // Contact defines the fields for contact details for the company.
@@ -102,11 +104,11 @@ type Contact struct {
 
 // Address defines the fields for a company address.
 type Address struct {
+	Line1    *string `json:"line1,omitempty"`
+	Line2    *string `json:"line2,omitempty"`
 	City     *string `json:"city,omitempty"`
 	Country  *string `json:"country,omitempty"`
 	County   *string `json:"county,omitempty"`
-	Line1    *string `json:"line1,omitempty"`
-	Line2    *string `json:"line2,omitempty"`
 	Postcode *string `json:"postcode,omitempty"`
 }
 
@@ -137,4 +139,42 @@ func (s *Settings) UnmarshalJSON(data []byte) error {
 	s.Extra = result
 
 	return nil
+}
+
+// UnmarshalJSON implements the custom unmarshalling logic for the Maintenance struct
+// to make sure enabled is set to false if it's not present in the JSON data.
+func (m *Maintenance) UnmarshalJSON(data []byte) error {
+	m.Enabled = false
+	m.Title = ""
+	m.Content = ""
+
+	// Define a struct to temporarily unmarshal into
+	type alias Maintenance
+	temp := (*alias)(m)
+
+	return json.Unmarshal(data, &temp)
+}
+
+// Format returns the address as a comma-delimited string, excluding nil fields.
+func (a Address) Format() string {
+	var parts []string
+	addr := []*string{a.Line1, a.Line2, a.City, a.County, a.Postcode, a.Country}
+	for _, field := range addr {
+		if field != nil && *field != "" {
+			parts = append(parts, *field)
+		}
+	}
+	return strings.Join(parts, ", ")
+}
+
+// ToStringArray returns the social media links as an array of strings.
+func (s Social) ToStringArray() []string {
+	var parts []string
+	fields := []*string{s.Facebook, s.Instagram, s.LinkedIn, s.Tiktok, s.X, s.Youtube}
+	for _, field := range fields {
+		if field != nil && *field != "" {
+			parts = append(parts, *field)
+		}
+	}
+	return parts
 }

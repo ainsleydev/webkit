@@ -24,6 +24,7 @@ type SchemaOrgOrganisation struct {
 func (o *SchemaOrgOrganisation) MarshalJSON() ([]byte, error) {
 	o.Context = "https://schema.org"
 	o.Type = "Organization"
+	o.Address.Type = "PostalAddress"
 	return json.Marshal(o)
 }
 
@@ -33,10 +34,11 @@ func (o *SchemaOrgOrganisation) MarshalJSON() ([]byte, error) {
 // See: https://schema.org/PostalAddress
 type SchemaOrgOrganisationAddress struct {
 	Type            string `json:"@type"`           // Always "PostalAddress"
+	StreetAddress   string `json:"streetAddress"`   // I.e ainsley.dev, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
 	AddressLocality string `json:"addressLocality"` // I.e London
+	AddressRegion   string `json:"addressRegion"`   // I.e Greater London
 	AddressCountry  string `json:"addressCountry"`  // I.e UK
 	PostalCode      string `json:"postalCode"`      // I.e WC2H 9JQ
-	StreetAddress   string `json:"streetAddress"`   // I.e ainsley.dev, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
 }
 
 // SchemaOrgItemList defines a structured data representation for a navigational list

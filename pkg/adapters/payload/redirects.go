@@ -61,8 +61,6 @@ func RedirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 
 			err := store.Get(ctx, redirectCacheKey, &redirects)
 			if err != nil || env.IsDevelopment() {
-				slog.Debug("Redirects not found in cache, fetching from Payload")
-
 				lr := payloadcms.ListResponse[Redirect]{}
 				_, err := client.Collections.List(ctx, CollectionRedirects, payloadcms.ListParams{
 					Limit: payloadcms.AllItems,

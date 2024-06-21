@@ -5,15 +5,6 @@ import (
 	"encoding/json"
 )
 
-func marshal(v any) string {
-	b, err := json.Marshal(v)
-	if err != nil {
-		slog.Error(err.Error())
-		return ""
-	}
-	return `<script type="application/ld+json">` + string(b) + `</script>`
-}
-
 templ Head(props HeadProps) {
 	<!-- Meta -->
 	<meta charset="utf-8">
@@ -37,11 +28,11 @@ templ Head(props HeadProps) {
 	}
 	<!-- Schema - Organisation -->
 	if props.Org != nil {
-		{ marshal(props.Org) }
+		{ MarshalLDJSONScript(props.Org) }
 	}
 	<!-- Schema - Navigation -->
 	if props.Navigation != nil {
-		{ marshal(props.Navigation) }
+		{ MarshalLDJSONScript(props.Navigation) }
 	}
 	<!-- Other -->
 	if props.Other != "" {

@@ -37,9 +37,6 @@ func GlobalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 				}
 			}
 
-			// TODO: Use golang.org/x/text/cases instead & create string util package in WebKit.
-			slog.Debug(strings.Title(global) + " not found in cache, fetching from Payload")
-
 			_, err := client.Globals.Get(ctx, payloadcms.Global(global), t)
 			if err != nil {
 				slog.Error("Fetching " + global + " global from Payload: " + err.Error())
