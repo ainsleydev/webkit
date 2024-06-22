@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	// FS embeds all the html files within the tpl package.
 	//go:embed *
 	FS embed.FS
 

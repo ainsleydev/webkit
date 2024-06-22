@@ -1,5 +1,12 @@
 package payload
 
+import (
+	"context"
+	"io"
+
+	"github.com/ainsleydev/webkit/pkg/adapters/payload/internal/tpl"
+)
+
 // Form defines a singular form collection type in the Form Builder Plugin
 // within Payload CMS
 // See: https://payloadcms.com/docs/plugins/form-builder
@@ -88,4 +95,10 @@ type FormEmail struct {
 	EmailFrom *string          `json:"emailFrom,omitempty"`
 	Subject   string           `json:"subject"`
 	Message   []map[string]any `json:"message,omitempty"`
+}
+
+// Render renders the form block to the provided writer as
+// a form element.
+func (f *Form) Render(_ context.Context, w io.Writer) error {
+	return tpl.Templates.ExecuteTemplate(w, "form.html", f)
 }

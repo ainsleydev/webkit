@@ -70,6 +70,9 @@ type MediaSize struct {
 
 // Render renders the media block to the provided writer as a
 // picture element.
+//
+// Note: It does not include the <picture> element and it
+// expects the caller to wrap the output.
 func (m *Media) Render(_ context.Context, w io.Writer) error {
 	return tpl.Templates.ExecuteTemplate(w, "picture.html", m)
 }
