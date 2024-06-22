@@ -7,6 +7,8 @@ import (
 	"html/template"
 	"io"
 	"time"
+
+	"github.com/ainsleydev/webkit/pkg/tpl"
 )
 
 //go:embed *.html
@@ -14,7 +16,7 @@ var templatesFS embed.FS
 
 // headTemplate is the template for the head of the HTML document.
 // It requires a HeadProps struct to be passed in when executing the template.
-var headTemplate = template.Must(template.ParseFS(templatesFS,
+var headTemplate = template.Must(template.New("").Funcs(tpl.Funcs).ParseFS(templatesFS,
 	"head.html",
 	"opengraph.html",
 	"twitter.html",
@@ -40,10 +42,10 @@ type HeadProps struct {
 	Canonical string // The canonical URL of the page.
 
 	// Schema, Meta & Opengraph
-	OpenGraph  *OpenGraph
-	Twitter    *TwitterCard
-	Org        *SchemaOrgOrganisation
-	Navigation *SchemaOrgItemList
+	OpenGraph    *OpenGraph
+	Twitter      *TwitterCard
+	Organisation *SchemaOrgOrganisation
+	Navigation   *SchemaOrgItemList
 
 	// Other (Code Injection)
 	Other string

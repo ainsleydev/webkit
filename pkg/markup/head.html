@@ -10,3 +10,9 @@
 {{- with .OpenGraph }}{{ template "opengraph.html" . }}{{ end }}
 <!-- Twitter -->
 {{- with .Twitter -}}{{ template "twitter.html" . }}{{ end -}}
+<!-- Schema - Organization -->
+{{- with .Organisation -}}
+<script type="application/ld+json">
+	{{ jsonPretty . }}
+</script>
+{{ end -}}

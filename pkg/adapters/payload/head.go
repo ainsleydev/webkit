@@ -41,14 +41,14 @@ func Head(ctx context.Context) markup.HeadProps {
 	}
 
 	props := markup.HeadProps{
-		Title:       ptr.String(settings.Meta.Title),
-		Description: ptr.String(settings.Meta.Description),
-		Locale:      settings.Locale,
-		Private:     ptr.Bool(settings.Meta.Private),
-		Canonical:   ptr.String(settings.Meta.CanonicalURL),
-		OpenGraph:   settings.MarkupOpenGraph(url),
-		Twitter:     settings.MarkupTwitterCard(),
-		Org:         settings.MarkupSchemaOrganisation(url),
+		Title:        ptr.String(settings.Meta.Title),
+		Description:  ptr.String(settings.Meta.Description),
+		Locale:       settings.Locale,
+		Private:      ptr.Bool(settings.Meta.Private),
+		Canonical:    ptr.String(settings.Meta.CanonicalURL),
+		OpenGraph:    settings.MarkupOpenGraph(url),
+		Twitter:      settings.MarkupTwitterCard(),
+		Organisation: settings.MarkupSchemaOrganisation(url),
 	}
 
 	if settings.Meta.Image != nil {

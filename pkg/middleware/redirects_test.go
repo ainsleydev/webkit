@@ -16,6 +16,8 @@ var noContextHandler = func(ctx *webkit.Context) error {
 }
 
 func TestAddTrailingSlash(t *testing.T) {
+	t.Parallel()
+
 	host := "test.com"
 
 	tt := map[string]struct {
@@ -67,6 +69,8 @@ func TestAddTrailingSlash(t *testing.T) {
 }
 
 func TestWWWRedirect(t *testing.T) {
+	t.Parallel()
+
 	tt := map[string]struct {
 		host         string
 		wantLocation string
@@ -99,6 +103,8 @@ func TestWWWRedirect(t *testing.T) {
 }
 
 func TestNonWWWRedirect(t *testing.T) {
+	t.Parallel()
+
 	tt := map[string]struct {
 		host         string
 		wantLocation string

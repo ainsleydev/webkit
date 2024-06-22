@@ -42,7 +42,7 @@ var props = HeadProps{
 		Description: "Description",
 		Image:       "https://example.com/simage.png",
 	},
-	Org: &SchemaOrgOrganisation{
+	Organisation: &SchemaOrgOrganisation{
 		Context:     "https://schema.org",
 		Type:        "Organization",
 		ID:          "https://example.com",

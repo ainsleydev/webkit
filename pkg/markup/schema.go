@@ -22,10 +22,12 @@ type SchemaOrgOrganisation struct {
 // MarshalJSON is a custom JSON marshaller for the SchemaOrgOrganisation struct.
 // It sets the context and type to the correct values before marshalling.
 func (o *SchemaOrgOrganisation) MarshalJSON() ([]byte, error) {
-	o.Context = "https://schema.org"
-	o.Type = "Organization"
-	o.Address.Type = "PostalAddress"
-	return json.Marshal(o)
+	type Alias SchemaOrgOrganisation // Alias to prevent stack overflow
+	alias := (*Alias)(o)
+	alias.Context = "https://schema.org"
+	alias.Type = "Organization"
+	alias.Address.Type = "PostalAddress"
+	return json.Marshal(alias)
 }
 
 // SchemaOrgOrganisationAddress represents a structured data definition for the
@@ -55,9 +57,11 @@ type SchemaOrgItemList struct {
 // MarshalJSON is a custom JSON marshaller for the SchemaOrgItemList struct.
 // It sets the context and type to the correct values before marshalling.
 func (o *SchemaOrgItemList) MarshalJSON() ([]byte, error) {
-	o.Context = "https://schema.org"
-	o.Type = "ItemList"
-	return json.Marshal(o)
+	type Alias SchemaOrgItemList // Alias to prevent stack overflow
+	alias := (*Alias)(o)
+	alias.Context = "https://schema.org"
+	alias.Type = "ItemList"
+	return json.Marshal(alias)
 }
 
 // SchemaOrgItemListElement represents a single item within a navigational
