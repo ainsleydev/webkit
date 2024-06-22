@@ -3,7 +3,6 @@ package payload
 import (
 	"context"
 	"log/slog"
-	"strings"
 	"time"
 
 	"dario.cat/mergo"
@@ -35,6 +34,8 @@ func Head(ctx context.Context) markup.HeadProps {
 		slog.Error("Merging page meta with settings meta: " + err.Error())
 	}
 
+	url := "TODO - Full URL"
+
 	props := markup.HeadProps{
 		Title:       ptr.String(settings.Meta.Title),
 		Description: ptr.String(settings.Meta.Description),
@@ -42,7 +43,9 @@ func Head(ctx context.Context) markup.HeadProps {
 		Hash:        time.Now().Unix(),
 		Private:     ptr.Bool(settings.Meta.Private),
 		Canonical:   ptr.String(settings.Meta.CanonicalURL),
-		Org:         schemaOrganisation(settings, "TODO - Full URL"),
+		OpenGraph:   settings.MarkupOpenGraph(url),
+		Twitter:     settings.MarkupTwitterCard(),
+		Org:         settings.MarkupSchemaOrganisation(url),
 	}
 
 	if settings.Meta.Image != nil {
@@ -77,42 +80,4 @@ func Foot(ctx context.Context) (string, error) {
 	}
 
 	return "", nil
-}
-
-func schemaOrganisation(settings *Settings, url string) *markup.SchemaOrgOrganisation {
-	org := markup.SchemaOrgOrganisation{
-		Context: "https://schema.org",
-		Type:    "Organization",
-		ID:      url,
-		URL:     url,
-	}
-
-	if stringutil.IsNotEmpty(settings.SiteName) {
-		org.LegalName = *settings.SiteName
-	}
-
-	if stringutil.IsNotEmpty(settings.TagLine) {
-		org.Description = strings.ReplaceAll(*settings.TagLine, "\n", " ")
-	}
-
-	if settings.Logo != nil {
-		org.Logo = settings.Logo.URL
-	}
-
-	if settings.Social != nil {
-		org.SameAs = settings.Social.ToStringArray()
-	}
-
-	if settings.Address != nil {
-		org.Address = markup.SchemaOrgOrganisationAddress{
-			Type:            "PostalAddress",
-			StreetAddress:   settings.Address.Format(),
-			AddressLocality: ptr.String(settings.Address.City),
-			AddressRegion:   ptr.String(settings.Address.County),
-			AddressCountry:  ptr.String(settings.Address.Country),
-			PostalCode:      ptr.String(settings.Address.Postcode),
-		}
-	}
-
-	return &org
 }

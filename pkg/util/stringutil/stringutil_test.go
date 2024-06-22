@@ -20,3 +20,16 @@ func TestIsNotEmpty(t *testing.T) {
 		assert.True(t, IsNotEmpty(ptr.StringPtr("hello")))
 	})
 }
+
+func TestIsEmpty(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Empty", func(t *testing.T) {
+		assert.True(t, IsEmpty(nil))
+		assert.True(t, IsEmpty(ptr.StringPtr("")))
+	})
+
+	t.Run("Non Empty", func(t *testing.T) {
+		assert.False(t, IsEmpty(ptr.StringPtr("hello")))
+	})
+}

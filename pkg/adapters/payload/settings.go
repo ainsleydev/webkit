@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"net/url"
+	"path"
 	"strings"
 	"time"
 
@@ -12,6 +14,9 @@ import (
 	"github.com/perimeterx/marshmallow"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
+	"github.com/ainsleydev/webkit/pkg/markup"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
+	"github.com/ainsleydev/webkit/pkg/util/stringutil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -150,7 +155,7 @@ func (m *Maintenance) UnmarshalJSON(data []byte) error {
 // Format returns the address as a comma-delimited string, excluding nil fields.
 func (a SettingsAddress) Format() string {
 	var parts []string
-	addr := []*string{a.Line1, a.Line2, a.City, a.County, a.Postcode, a.Country}
+	addr := []*string{a.Line1, a.Line2, a.City, a.County, a.Country, a.Postcode}
 	for _, field := range addr {
 		if field != nil && *field != "" {
 			parts = append(parts, *field)
@@ -169,4 +174,100 @@ func (s SettingsSocial) ToStringArray() []string {
 		}
 	}
 	return parts
+}
+
+// MarkupOpenGraph transforms the settings into an Open Graph object
+// for use in the head of the frontend.
+func (s *Settings) MarkupOpenGraph(url string) *markup.OpenGraph {
+	m := &markup.OpenGraph{
+		Type:        "website",
+		SiteName:    ptr.String(s.SiteName),
+		Title:       ptr.String(s.Meta.Title),
+		Description: ptr.String(s.Meta.Description),
+		URL:         url,
+		Locale:      s.Locale,
+	}
+	if s.Meta.Image != nil {
+		m.Image = append(m.Image, markup.OpengraphImage{
+			URL:    s.Meta.Image.URL,
+			Type:   s.Meta.Image.MimeType,
+			Width:  int(ptr.Float64(s.Meta.Image.Width)),
+			Height: int(ptr.Float64(s.Meta.Image.Height)),
+			Alt:    s.Meta.Image.Fields["alt"].(string),
+		})
+	}
+	return m
+}
+
+// MarkupTwitterCard transforms the settings into a Twitter Card
+// for use in the head of the frontend.
+func (s *Settings) MarkupTwitterCard() *markup.TwitterCard {
+	card := &markup.TwitterCard{
+		Title:       ptr.String(s.Meta.Title),
+		Description: ptr.String(s.Meta.Description),
+	}
+
+	if s.Meta.Image != nil {
+		card.Image = s.Meta.Image.URL
+		card.ImageAlt = s.Meta.Image.Fields["alt"].(string)
+	}
+
+	if s.Social == nil || stringutil.IsEmpty(s.Social.X) {
+		return card
+	}
+
+	u, err := url.Parse(*s.Social.X)
+	if err != nil {
+		slog.Error("Parsing Twitter URL: " + err.Error())
+		return card
+	}
+
+	// Assumes that the username is the last part of the path
+	// For example: https://x.com/user (@user Tag)
+	p := path.Base(strings.TrimSuffix(u.Path, "/"))
+	p = strings.TrimPrefix(p, "@")
+	card.Site = "@" + p
+	card.Creator = "@" + p
+
+	return card
+}
+
+// MarkupSchemaOrganisation transforms the settings into a Schema.org Organisation
+// structure for use in the head of the frontend.
+func (s *Settings) MarkupSchemaOrganisation(url string) *markup.SchemaOrgOrganisation {
+	org := markup.SchemaOrgOrganisation{
+		Context: "https://schema.org",
+		Type:    "Organization",
+		ID:      url,
+		URL:     url,
+	}
+
+	if stringutil.IsNotEmpty(s.SiteName) {
+		org.LegalName = *s.SiteName
+	}
+
+	if stringutil.IsNotEmpty(s.TagLine) {
+		org.Description = strings.ReplaceAll(*s.TagLine, "\n", " ")
+	}
+
+	if s.Logo != nil {
+		org.Logo = s.Logo.URL
+	}
+
+	if s.Social != nil {
+		org.SameAs = s.Social.ToStringArray()
+	}
+
+	if s.Address != nil {
+		org.Address = markup.SchemaOrgOrganisationAddress{
+			Type:            "PostalAddress",
+			StreetAddress:   s.Address.Format(),
+			AddressLocality: ptr.String(s.Address.City),
+			AddressRegion:   ptr.String(s.Address.County),
+			AddressCountry:  ptr.String(s.Address.Country),
+			PostalCode:      ptr.String(s.Address.Postcode),
+		}
+	}
+
+	return &org
 }

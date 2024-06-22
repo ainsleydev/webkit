@@ -12,7 +12,7 @@ import (
 )
 
 var noContextHandler = func(ctx *webkit.Context) error {
-	return ctx.NoContext(http.StatusOK)
+	return ctx.NoContent(http.StatusOK)
 }
 
 func TestAddTrailingSlash(t *testing.T) {

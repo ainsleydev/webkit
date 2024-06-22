@@ -71,8 +71,8 @@ func (c *Context) Redirect(code int, url string) error {
 	return nil
 }
 
-// NoContext sends a response with no response body and the provided status code.
-func (c *Context) NoContext(status int) error {
+// NoContent sends a response with no response body and the provided status code.
+func (c *Context) NoContent(status int) error {
 	c.Response.WriteHeader(status)
 	return nil
 }
@@ -102,6 +102,12 @@ func (c *Context) HTML(status int, v string) error {
 	c.Response.WriteHeader(status)
 	_, err := c.Response.Write([]byte(v))
 	return err
+}
+
+// BindJSON decodes the JSON request body and stores the result
+// in the value pointed to by v.
+func (c *Context) BindJSON(v any) error {
+	return json.NewDecoder(c.Request.Body).Decode(v)
 }
 
 // IsTLS returns true if HTTP connection is TLS otherwise false.

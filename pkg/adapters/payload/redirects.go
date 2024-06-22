@@ -29,18 +29,18 @@ type redirectCode string
 
 // The redirects available in the select dropdown within the Payload UI.
 const (
-	// RedirectsCode301 - Moved Permanently
-	RedirectsCode301 redirectCode = "301"
-	// RedirectsCode302 - Found
-	RedirectsCode302 redirectCode = "302"
-	// RedirectsCode307 - Temporary redirect
-	RedirectsCode307 redirectCode = "307"
-	// RedirectsCode308 - Permanent redirect
-	RedirectsCode308 redirectCode = "308"
-	// RedirectsCode410 - Content Gone (Deleted)
-	RedirectsCode410 redirectCode = "410"
-	// RedirectsCode451 - Unavailable For Legal Reasons
-	RedirectsCode451 redirectCode = "451"
+	// redirectsCode301 - Moved Permanently
+	redirectsCode301 redirectCode = "301"
+	// redirectsCode302 - Found
+	redirectsCode302 redirectCode = "302"
+	// redirectsCode307 - Temporary redirect
+	redirectsCode307 redirectCode = "307"
+	// redirectsCode308 - Permanent redirect
+	redirectsCode308 redirectCode = "308"
+	// redirectsCode410 - Content Gone (Deleted)
+	redirectsCode410 redirectCode = "410"
+	// redirectsCode451 - Unavailable For Legal Reasons
+	redirectsCode451 redirectCode = "451"
 )
 
 const redirectCacheKey = "payload_redirects"

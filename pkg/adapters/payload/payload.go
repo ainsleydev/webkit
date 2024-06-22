@@ -113,6 +113,7 @@ func (a Adapter) attachHandlers() {
 	// Routes
 	a.kit.Get("/robots.txt", robots(a.env[env.AppEnvironmentKey]))
 	a.kit.Get("/sitemap.xml", sitemap())
+	a.kit.Post("/cache/", cacheBust(a.cache))
 
 	// Plugs
 	a.kit.Plug(redirectMiddleware(a.Client, a.cache))

@@ -82,7 +82,7 @@ func TestContext_Render(t *testing.T) {
 func TestContext_NoContext(t *testing.T) {
 	app := New()
 	app.Get("/nocontext", func(c *Context) error {
-		require.NoError(t, c.NoContext(http.StatusOK))
+		require.NoError(t, c.NoContent(http.StatusOK))
 		return nil
 	})
 	rr := httptest.NewRecorder()
@@ -104,7 +104,6 @@ func TestContext_String(t *testing.T) {
 
 func TestContext_JSON(t *testing.T) {
 	app := New()
-
 	app.Get("/json", func(c *Context) error {
 		require.NoError(t, c.JSON(http.StatusOK, map[string]any{"test": 1}))
 		return nil
@@ -116,6 +115,30 @@ func TestContext_JSON(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code)
 	assert.Equal(t, "application/json", rr.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{"test": 1}`, strings.TrimSpace(rr.Body.String()))
+}
+
+func TestContext_HTML(t *testing.T) {
+	app := New()
+	app.Get("/html", func(c *Context) error {
+		require.NoError(t, c.HTML(http.StatusOK, "<html></html>"))
+		return nil
+	})
+	rr := httptest.NewRecorder()
+	app.ServeHTTP(rr, httptest.NewRequest("GET", "/html", nil))
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "<html></html>", rr.Body.String())
+}
+
+func TestContext_DecodeJSON(t *testing.T) {
+	app := New()
+	app.Post("/json", func(c *Context) error {
+		var data map[string]any
+		require.NoError(t, c.BindJSON(&data))
+		assert.Equal(t, "test", data["test"])
+		return nil
+	})
+	rr := httptest.NewRecorder()
+	app.ServeHTTP(rr, httptest.NewRequest("POST", "/json", strings.NewReader(`{"test": "test"}`)))
 }
 
 func TestContext_IsTLS(t *testing.T) {

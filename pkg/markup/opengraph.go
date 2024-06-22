@@ -8,19 +8,19 @@ import (
 // See https://ogp.me/ for more details.
 type OpenGraph struct {
 	// Basic Metadata - https://ogp.me/#metadata
-	Title string           `json:"title"`
 	Type  string           `json:"type"`
-	Image []OpengraphImage `json:"image"`
+	Title string           `json:"title"`
 	URL   string           `json:"url"`
+	Image []OpengraphImage `json:"image"`
 
 	// Optional Metadata - https://ogp.me/#optional
-	Audio       []OpengraphAudio `json:"audio"`
-	Description string           `json:"description"`
-	Determiner  string           `json:"determiner"`
-	Locale      string           `json:"locale"`
-	LocaleAlt   []string         `json:"locale_alternate"`
-	Video       []OpengraphVideo `json:"video"`
-	SiteName    string           `json:"site_name"`
+	Audio       []OpengraphAudio `json:"audio,omitempty"`
+	Description string           `json:"description,omitempty"`
+	Determiner  string           `json:"determiner,omitempty"`
+	Locale      string           `json:"locale,omitempty"`
+	LocaleAlt   []string         `json:"locale_alternate,omitempty"`
+	Video       []OpengraphVideo `json:"video,omitempty"`
+	SiteName    string           `json:"site_name,omitempty"`
 }
 
 // OpengraphImage represents a structure of "og:image".
@@ -32,12 +32,12 @@ type OpenGraph struct {
 //   - og:image:height
 //   - og:image:alt
 type OpengraphImage struct {
-	URL       string `json:"url"`
-	SecureURL string `json:"secure_url"`
-	Type      string `json:"type"` // Content-Type
-	Width     int    `json:"width"`
-	Height    int    `json:"height"`
-	Alt       string `json:"alt"`
+	URL       string `json:"url,omitempty"`
+	SecureURL string `json:"secure_url,omitempty"`
+	Type      string `json:"type,omitempty"` // Content-Type
+	Width     int    `json:"width,omitempty"`
+	Height    int    `json:"height,omitempty"`
+	Alt       string `json:"alt,omitempty"`
 }
 
 // OpengraphVideo represents a structure of "og:video".
@@ -48,13 +48,13 @@ type OpengraphImage struct {
 //   - og:video:width
 //   - og:video:height
 type OpengraphVideo struct {
-	URL       string `json:"url"`
-	SecureURL string `json:"secure_url"`
-	Type      string `json:"type"` // Content-Type
-	Width     int    `json:"width"`
-	Height    int    `json:"height"`
+	URL       string `json:"url,omitempty"`
+	SecureURL string `json:"secure_url,omitempty"`
+	Type      string `json:"type,omitempty"` // Content-Type
+	Width     int    `json:"width,omitempty"`
+	Height    int    `json:"height,omitempty"`
 	// Duration in seconds
-	Duration int `json:"duration"`
+	Duration int `json:"duration,omitempty"`
 }
 
 // OpengraphAudio represents a structure of "og:audio".

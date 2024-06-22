@@ -2,6 +2,7 @@ package payload
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -67,16 +68,45 @@ func cacheMiddleware(store cache.Store) webkit.Plug {
 
 // CacheBust is a handler that can be used to clear the cache for a specific page.
 func cacheBust(store cache.Store) webkit.Handler {
+	type webhookRequest struct {
+		Slug string `json:"slug,omitempty"`
+	}
+
 	return func(c *webkit.Context) error {
 		ctx := c.Request.Context()
+
+		//all, err := io.ReadAll(c.Request.Body)
+		//if err != nil {
+		//	return err
+		//}
+		//
+		//fmt.Println(string(all))
+
+		var w webhookRequest
+		if err := c.BindJSON(&w); err != nil {
+			return err
+		}
+
+		slog.Info("Payload cache busting for: " + w.Slug)
 
 		// TODO:
 		//
 		// We need a way for the cache to be invalidated when a new page is published, edited or
 		// deleted, we could do this by using Payload Hooks. At the moment we're just
 		// flushing everything instead of invalidating a specific page.
-		store.Invalidate(ctx, []string{"payload"})
+		var err error
+		switch w.Slug {
+		case string(CollectionRedirects):
+			err = store.Delete(ctx, redirectCacheKey)
+		default:
+			store.Invalidate(ctx, []string{"payload"})
+		}
 
-		return nil
+		if err != nil {
+			slog.Error("Cache busting error: " + err.Error())
+			return c.NoContent(http.StatusInternalServerError)
+		}
+
+		return c.NoContent(http.StatusAccepted)
 	}
 }

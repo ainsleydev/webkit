@@ -22,7 +22,7 @@ func TestRedirects(t *testing.T) {
 	var (
 		fromURL   = "/test"
 		redirects = []redirect{
-			{From: fromURL, To: "/new", Code: RedirectsCode301},
+			{From: fromURL, To: "/new", Code: redirectsCode301},
 		}
 	)
 
@@ -51,7 +51,7 @@ func TestRedirects(t *testing.T) {
 		"No Matches": {
 			mock: func(_ *payloadfakes.MockCollectionService, store cache.Store) {
 				store.Set(context.TODO(), redirectCacheKey, []redirect{
-					{From: "/wrong", To: "/new", Code: RedirectsCode301},
+					{From: "/wrong", To: "/new", Code: redirectsCode301},
 				}, cache.Options{})
 			},
 			wantStatus: http.StatusOK,
