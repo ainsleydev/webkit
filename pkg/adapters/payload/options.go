@@ -7,23 +7,20 @@ import (
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
-//type Options struct {
-//	Redirects bool
-//	Settings  bool
-//}
-
 // Option is a functional option type that allows us to configure the Client.
 type Option func(a *Adapter)
 
-func WithCache(cache cache.Store) Option {
-	return func(a *Adapter) {
-		a.cache = cache
-	}
-}
-
+// WithWebkit is a functional option to set the Webkit instance.
 func WithWebkit(kit *webkit.Kit) Option {
 	return func(a *Adapter) {
 		a.kit = kit
+	}
+}
+
+// WithCache is a functional option to set the cache store for the adapter.
+func WithCache(cache cache.Store) Option {
+	return func(a *Adapter) {
+		a.cache = cache
 	}
 }
 
@@ -32,18 +29,6 @@ func WithWebkit(kit *webkit.Kit) Option {
 func WithBaseURL(url string) Option {
 	return func(a *Adapter) {
 		a.baseURL = url
-	}
-}
-
-func WithEnvirons(environs map[string]string) Option {
-	return func(a *Adapter) {
-		a.env = environs
-	}
-}
-
-func WithMaintenanceHandler(fn MaintenanceRendererFunc) Option {
-	return func(a *Adapter) {
-		a.maintenanceHandler = fn
 	}
 }
 
@@ -58,7 +43,22 @@ func WithAPIKey(apiKey string) Option {
 	}
 }
 
-// WithGlobalMiddleware -- TODO
+// WithMaintenanceHandler is a functional option to set the maintenance handler
+// for the adapter. The maintenance handler is called when the site is in
+// maintenance mode.
+func WithMaintenanceHandler(fn MaintenanceRendererFunc) Option {
+	return func(a *Adapter) {
+		a.maintenanceHandler = fn
+	}
+}
+
+// WithGlobalMiddleware is a functional option to set the global middleware for the adapter.
+// The global middleware is applied to all requests and can be used to inject common data
+// into the context.
+//
+// Global data can be accessed by using GlobalsContextKey(global)
+//
+// Example: payload.WithGlobalMiddleware[types.Navigation]("navigation")
 func WithGlobalMiddleware[T any](global string) Option {
 	return func(a *Adapter) {
 		a.globalMiddlewares = append(a.globalMiddlewares, func(client *payloadcms.Client, store cache.Store) webkit.Plug {

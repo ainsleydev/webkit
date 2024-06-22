@@ -75,9 +75,9 @@ func (m *Media) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	url := os.Getenv(EnvPayloadURL)
+	url := os.Getenv(envPayloadURL)
 	if url == "" {
-		return errors.New("env var: " + EnvPayloadURL + " is not set")
+		return errors.New("env var: " + envPayloadURL + " is not set")
 	}
 
 	*m = temp

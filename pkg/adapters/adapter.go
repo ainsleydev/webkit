@@ -29,7 +29,7 @@ func Scratch() {
 
 func PayloadScratch() {
 	app := webkit.New()
-	p, _ := payload.NewAdapter(
+	p, _ := payload.New(
 		payload.WithBaseURL("https://api.payloadcms.com"),
 		payload.WithAPIKey(""),
 	)

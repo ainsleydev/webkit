@@ -43,7 +43,7 @@ type HeadProps struct {
 	Private   bool   // If true, the page should not be indexed by search engines.
 	Canonical string // The canonical URL of the page.
 
-	// Schema, SEO & Opengraph
+	// Schema, Meta & Opengraph
 	OpenGraph  *OpenGraph
 	Twitter    *TwitterCard
 	Org        *SchemaOrgOrganisation

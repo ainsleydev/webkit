@@ -10,7 +10,6 @@ import (
 	"github.com/ainsleyclark/go-payloadcms"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
-	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -19,31 +18,29 @@ type redirect struct {
 	Id        float64      `json:"id"`
 	From      string       `json:"from"`
 	To        string       `json:"to"`
-	Code      RedirectCode `json:"code"`
+	Code      redirectCode `json:"code"`
 	UpdatedAt time.Time    `json:"updated_at"`
 	CreatedAt time.Time    `json:"created_at"`
 }
 
-// TODO: Do we need these or to export them?
-
-// RedirectCode defines the available redirect codes that are
+// redirectCode defines the available redirect codes that are
 // available within the Payload UI.
-type RedirectCode string
+type redirectCode string
 
 // The redirects available in the select dropdown within the Payload UI.
 const (
 	// RedirectsCode301 - Moved Permanently
-	RedirectsCode301 RedirectCode = "301"
+	RedirectsCode301 redirectCode = "301"
 	// RedirectsCode302 - Found
-	RedirectsCode302 RedirectCode = "302"
+	RedirectsCode302 redirectCode = "302"
 	// RedirectsCode307 - Temporary redirect
-	RedirectsCode307 RedirectCode = "307"
+	RedirectsCode307 redirectCode = "307"
 	// RedirectsCode308 - Permanent redirect
-	RedirectsCode308 RedirectCode = "308"
+	RedirectsCode308 redirectCode = "308"
 	// RedirectsCode410 - Content Gone (Deleted)
-	RedirectsCode410 RedirectCode = "410"
+	RedirectsCode410 redirectCode = "410"
 	// RedirectsCode451 - Unavailable For Legal Reasons
-	RedirectsCode451 RedirectCode = "451"
+	RedirectsCode451 redirectCode = "451"
 )
 
 const redirectCacheKey = "payload_redirects"
@@ -62,7 +59,7 @@ func redirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 			)
 
 			err := store.Get(ctx, redirectCacheKey, &redirects)
-			if err != nil || env.IsDevelopment() {
+			if err != nil {
 				lr := payloadcms.ListResponse[redirect]{}
 				_, err := client.Collections.List(ctx, CollectionRedirects, payloadcms.ListParams{
 					Limit: payloadcms.AllItems,

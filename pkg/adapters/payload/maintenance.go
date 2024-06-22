@@ -2,9 +2,8 @@ package payload
 
 import (
 	"fmt"
-	"strings"
+	"net/http"
 
-	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -12,31 +11,18 @@ import (
 // should be rendered on the site.
 type MaintenanceRendererFunc func(c *webkit.Context, m Maintenance) error
 
-var skippable = []string{
-	"robots.txt",
-	"sitemap.xml",
-}
-
-func shouldSkipMiddleware(c *webkit.Context) bool {
-	if httputil.IsFileRequest(c.Request) {
-		return true
-	}
-	if c.Request.Method != "GET" {
-		return true
-	}
-
-	path := c.Request.URL.Path
-	for _, s := range skippable {
-		if strings.Contains(path, s) {
-			return true
-		}
-	}
-
-	return false
+// Maintenance defines the fields for displaying an offline page to
+// the front-end when it's been enabled within PayloadCMS.
+type Maintenance struct {
+	Enabled bool   `json:"enabled,omitempty"`
+	Title   string `json:"title,omitempty"`
+	Content string `json:"content,omitempty"`
 }
 
 var defaultMaintenanceRenderer = func(c *webkit.Context, _ Maintenance) error {
-	return c.String(503, fmt.Sprintf("Site is under maintenance. Please check back soon"))
+	return c.String(http.StatusServiceUnavailable,
+		fmt.Sprintf("Site is under maintenance. Please check back soon"),
+	)
 }
 
 // maintenanceMiddleware is a middleware that checks if the site is in maintenance mode.

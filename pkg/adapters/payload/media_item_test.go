@@ -176,7 +176,7 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			t.Setenv(EnvPayloadURL, payloadURL)
+			t.Setenv(envPayloadURL, payloadURL)
 			var m Media
 			err := m.UnmarshalJSON([]byte(test.input))
 			assert.Equal(t, test.wantErr, err != nil)

@@ -428,7 +428,7 @@ export function fieldsToJSONSchema(
 								goJSONSchema: {
 									imports: ['github.com/ainsleydev/webkit/pkg/adapters/payload'],
 									nillable: false,
-									type: 'payload.Meta',
+									type: 'payload.SettingsMeta',
 								},
 							};
 							break;

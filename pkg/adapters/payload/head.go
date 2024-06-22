@@ -24,8 +24,8 @@ func Head(ctx context.Context) markup.HeadProps {
 		return markup.HeadProps{}
 	}
 
-	pageMeta := &Meta{}
-	pm, ok := ctx.Value(ContextKeyPageMeta).(*Meta)
+	pageMeta := &SettingsMeta{}
+	pm, ok := ctx.Value(ContextKeyPageMeta).(*SettingsMeta)
 	if ok {
 		pageMeta = pm
 	}

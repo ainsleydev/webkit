@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
-	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -24,35 +22,16 @@ func TestCacheMiddleware(t *testing.T) {
 		return c.String(http.StatusOK, "Cache")
 	}
 
-	err := os.Setenv(env.AppEnvironmentKey, env.Production)
-	require.NoError(t, err)
-
 	tt := map[string]struct {
 		url      string
 		method   string
-		ignore   []string
 		mock     func(store cache.Store)
 		handler  webkit.Handler
 		assertFn func(rr *httptest.ResponseRecorder, store cache.Store)
 	}{
-		"Non GET Request Skipped": {
-			url:    "/page",
-			method: http.MethodPut,
-			assertFn: func(rr *httptest.ResponseRecorder, store cache.Store) {
-				assert.Equal(t, "", rr.Header().Get("X-Cache"))
-			},
-		},
-		"File Request Skipped": {
+		"Skipped": {
 			url:    "/favicon.ico",
 			method: http.MethodGet,
-			assertFn: func(rr *httptest.ResponseRecorder, store cache.Store) {
-				assert.Equal(t, "", rr.Header().Get("X-Cache"))
-			},
-		},
-		"Ignore Paths Skipped": {
-			url:    "/page",
-			method: http.MethodGet,
-			ignore: []string{"/page"},
 			assertFn: func(rr *httptest.ResponseRecorder, store cache.Store) {
 				assert.Equal(t, "", rr.Header().Get("X-Cache"))
 			},
@@ -120,7 +99,7 @@ func TestCacheMiddleware(t *testing.T) {
 				handler = test.handler
 			}
 
-			app.Plug(CacheMiddleware(store, test.ignore))
+			app.Plug(cacheMiddleware(store))
 			app.Add(test.method, test.url, handler)
 			app.ServeHTTP(rr, req)
 
@@ -135,7 +114,7 @@ func TestCacheMiddleware(t *testing.T) {
 
 		store := cache.NewInMemory(time.Hour)
 
-		app.Plug(CacheMiddleware(store, nil))
+		app.Plug(cacheMiddleware(store))
 		app.Get("/page", func(c *webkit.Context) error {
 			return c.String(http.StatusOK, "Cache")
 		})
@@ -162,7 +141,7 @@ func TestCacheBust(t *testing.T) {
 	err := store.Get(context.TODO(), "page:/bust", &v)
 	require.NoError(t, err)
 
-	app.Get("/bust", CacheBust(store))
+	app.Get("/bust", cacheBust(store))
 
 	app.ServeHTTP(rr, req)
 	assert.Error(t, store.Get(context.TODO(), "page:/bust", &v))

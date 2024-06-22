@@ -160,11 +160,11 @@ func TestMaintenance_UnmarshalJSON(t *testing.T) {
 
 func TestFormat(t *testing.T) {
 	tt := map[string]struct {
-		input Address
+		input SettingsAddress
 		want  string
 	}{
 		"All Fields Present": {
-			input: Address{
+			input: SettingsAddress{
 				Line1:    ptr.StringPtr("123 Main St"),
 				Line2:    ptr.StringPtr("Suite 500"),
 				City:     ptr.StringPtr("Metropolis"),
@@ -175,7 +175,7 @@ func TestFormat(t *testing.T) {
 			want: "123 Main St, Suite 500, Metropolis, Gotham, 12345, UK",
 		},
 		"Some Fields Nil": {
-			input: Address{
+			input: SettingsAddress{
 				Line1:    ptr.StringPtr("123 Main St"),
 				City:     ptr.StringPtr("Metropolis"),
 				Postcode: ptr.StringPtr("12345"),
@@ -183,24 +183,24 @@ func TestFormat(t *testing.T) {
 			want: "123 Main St, Metropolis, 12345",
 		},
 		"No Fields": {
-			input: Address{},
+			input: SettingsAddress{},
 			want:  "",
 		},
 		"Only Line1 And Country": {
-			input: Address{
+			input: SettingsAddress{
 				Line1:   ptr.StringPtr("123 Main St"),
 				Country: ptr.StringPtr("UK"),
 			},
 			want: "123 Main St, UK",
 		},
 		"Only Line1": {
-			input: Address{
+			input: SettingsAddress{
 				Line1: ptr.StringPtr("123 Main St"),
 			},
 			want: "123 Main St",
 		},
 		"Only Country": {
-			input: Address{
+			input: SettingsAddress{
 				Country: ptr.StringPtr("UK"),
 			},
 			want: "UK",
@@ -217,15 +217,15 @@ func TestFormat(t *testing.T) {
 
 func TestToStringArray(t *testing.T) {
 	tt := map[string]struct {
-		input Social
+		input SettingsSocial
 		want  []string
 	}{
 		"Empty": {
-			input: Social{},
+			input: SettingsSocial{},
 			want:  []string{},
 		},
 		"All Fields": {
-			input: Social{
+			input: SettingsSocial{
 				Facebook:  ptr.StringPtr("https://facebook.com/user"),
 				Instagram: ptr.StringPtr("https://instagram.com/user"),
 				LinkedIn:  ptr.StringPtr("https://linkedin.com/user"),
@@ -243,7 +243,7 @@ func TestToStringArray(t *testing.T) {
 			},
 		},
 		"Some Fields Empty": {
-			input: Social{
+			input: SettingsSocial{
 				Facebook: ptr.StringPtr("https://facebook.com/user"),
 				Tiktok:   ptr.StringPtr("https://tiktok.com/@user"),
 			},

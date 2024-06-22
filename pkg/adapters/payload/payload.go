@@ -12,6 +12,11 @@ import (
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
+// Adapter is a client that is used to interact with the Payload API
+// and attach handlers and middleware to the HTTP Server.
+//
+// Implicitly, it ensures that redirects, caching, settings and
+// maintenance mode are handled natively.
 type Adapter struct {
 	*payloadcms.Client
 	kit                *webkit.Kit
@@ -23,10 +28,30 @@ type Adapter struct {
 	globalMiddlewares  []func(*payloadcms.Client, cache.Store) webkit.Plug
 }
 
-func NewAdapter(options ...Option) (*Adapter, error) {
+// New creates a new Payload adapter with the provided options.
+//
+// The function applies functional options to configure the adapter and
+// ensures that all required fields are set. It initializes the Payload
+// CMS client and attaches handlers and middleware.
+//
+// Example usage:
+//
+//	adapter, err := New(
+//	    WithWebkit(webkit.New()),
+//	    WithCache(cache.NewInMemory(time.Hour * 24)),
+//	    WithBaseURL("https://api.payloadcms.com"),
+//	    WithAPIKey("your-api-key"),
+//	)
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+func New(options ...Option) (*Adapter, error) {
 	a := &Adapter{
 		cache:              cache.NewInMemory(time.Hour * 24), // Default cache store.
 		maintenanceHandler: defaultMaintenanceRenderer,
+		env: map[string]string{
+			env.AppEnvironmentKey: env.Get(env.AppEnvironmentKey, env.Production),
+		},
 	}
 
 	// Apply all the functional options to configure the client.
@@ -51,31 +76,13 @@ func NewAdapter(options ...Option) (*Adapter, error) {
 
 	// Set the Payload URL in the environment just in case it's not defined
 	// in the env file. Used for media URLs and other utilities.
-	if err = os.Setenv(EnvPayloadURL, a.baseURL); err != nil {
+	if err = os.Setenv(envPayloadURL, a.baseURL); err != nil {
 		return nil, err
 	}
 
 	a.attachHandlers()
 
 	return a, nil
-}
-
-func (a Adapter) validate() error {
-	if a.kit == nil {
-		return errors.New("kit is required")
-	}
-	return nil
-}
-
-func (a Adapter) attachHandlers() {
-	a.kit.Get("/robots.txt", robots(a.env[env.AppEnvironmentKey]))
-	a.kit.Get("/sitemap.xml", sitemap())
-	a.kit.Plug(redirectMiddleware(a.Client, a.cache))
-	a.kit.Plug(settingsMiddleware(a.Client, a.cache))
-	a.kit.Plug(maintenanceMiddleware(a.maintenanceHandler))
-	for _, m := range a.globalMiddlewares {
-		a.kit.Plug(m(a.Client, a.cache))
-	}
 }
 
 const (
@@ -85,13 +92,35 @@ const (
 	CollectionUsers payloadcms.Collection = "users"
 	// CollectionRedirects defines the Payload redirects collection slug.
 	CollectionRedirects payloadcms.Collection = "redirects"
-)
 
-const (
 	// GlobalSettings defines the Payload settings global settings slug.
 	GlobalSettings payloadcms.Global = "settings"
 )
 
-const (
-	EnvPayloadURL = "PAYLOAD_URL"
+var (
+	// envPayloadURL is the environment key for the Payload URL.
+	envPayloadURL = "PAYLOAD_URL"
 )
+
+func (a Adapter) validate() error {
+	if a.kit == nil {
+		return errors.New("kit is required")
+	}
+	return nil
+}
+
+func (a Adapter) attachHandlers() {
+	// Routes
+	a.kit.Get("/robots.txt", robots(a.env[env.AppEnvironmentKey]))
+	a.kit.Get("/sitemap.xml", sitemap())
+
+	// Plugs
+	a.kit.Plug(redirectMiddleware(a.Client, a.cache))
+	a.kit.Plug(settingsMiddleware(a.Client, a.cache))
+	a.kit.Plug(cacheMiddleware(a.cache))
+	a.kit.Plug(maintenanceMiddleware(a.maintenanceHandler))
+
+	for _, m := range a.globalMiddlewares {
+		a.kit.Plug(m(a.Client, a.cache))
+	}
+}
