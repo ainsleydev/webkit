@@ -386,6 +386,14 @@ func TestSettings_MarkupTwitterCard(t *testing.T) {
 			},
 			want: markup.TwitterCard{},
 		},
+		"No Path": {
+			input: Settings{
+				Social: &SettingsSocial{
+					X: ptr.StringPtr("https://x.com"),
+				},
+			},
+			want: markup.TwitterCard{},
+		},
 		"Full": {
 			input: Settings{
 				SiteName: ptr.StringPtr("Example Site"),

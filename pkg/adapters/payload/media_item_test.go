@@ -1,9 +1,13 @@
 package payload
 
 import (
+	"bytes"
+	"context"
 	"testing"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
@@ -111,8 +115,38 @@ var media = `
            "filename": "image-1024x3480.avif"
        }
    }
+}`
+
+func TestMedia_Render(t *testing.T) {
+	t.Setenv(envPayloadURL, "https://example.com")
+
+	var m Media
+	err := m.UnmarshalJSON([]byte(media))
+	require.NoError(t, err)
+
+	r := &bytes.Buffer{}
+	err = m.Render(context.Background(), r)
+	require.NoError(t, err)
+
+	doc, err := goquery.NewDocumentFromReader(r)
+	require.NoError(t, err)
+
+	sources := []string{
+		`source[srcset="https://example.com/media/image-400x300.png"][media="(max-width: 450px)"][type="image/png"][width="400"][height="300"][data-payload-size="thumbnail"]`,
+		`source[srcset="https://example.com/media/image-400x300.avif"][media="(max-width: 450px)"][type="image/avif"][width="400"][height="300"][data-payload-size="thumbnail_avif"]`,
+		`source[srcset="https://example.com/media/image-400x300.webp"][media="(max-width: 450px)"][type="image/webp"][width="400"][height="300"][data-payload-size="thumbnail_webp"]`,
+		`source[srcset="https://example.com/media/image-768x2610.png"][media="(max-width: 818px)"][type="image/png"][width="768"][height="2610"][data-payload-size="mobile"]`,
+		`source[srcset="https://example.com/media/image-768x2610.avif"][media="(max-width: 818px)"][type="image/avif"][width="768"][height="2610"][data-payload-size="mobile_avif"]`,
+		`source[srcset="https://example.com/media/image-768x2610.webp"][media="(max-width: 818px)"][type="image/webp"][width="768"][height="2610"][data-payload-size="mobile_webp"]`,
+		`source[srcset="https://example.com/media/image-1024x3480.png"][media="(max-width: 1074px)"][type="image/png"][width="1024"][height="3480"][data-payload-size="tablet"]`,
+		`source[srcset="https://example.com/media/image-1024x3480.avif"][media="(max-width: 1074px)"][type="image/avif"][width="1024"][height="3480"][data-payload-size="tablet_avif"]`,
+		`source[srcset="https://example.com/media/image-1024x3480.webp"][media="(max-width: 1074px)"][type="image/webp"][width="1024"][height="3480"][data-payload-size="tablet_webp"]`,
+	}
+
+	for _, src := range sources {
+		assert.Equal(t, 1, doc.Find(src).Length())
+	}
 }
-`
 
 func TestMedia_UnmarshalJSON(t *testing.T) {
 	var (
@@ -255,33 +289,3 @@ func TestMediaSizes_SortByWidth(t *testing.T) {
 		})
 	}
 }
-
-//
-//func TestMedia_Render(t *testing.T) {
-//	var m Media
-//	err := json.Unmarshal([]byte(media), &m)
-//	require.NoError(t, err)
-//
-//	buf := bytes.Buffer{}
-//	err = m.Render(&buf)
-//	require.NoError(t, err)
-//
-//	want := `
-//<picture class="TODO">
-//	<source srcset="/media/image-400x300.png" media="(min-width: 450px)" type="image/png" width="400" height="300" data-payload-size="thumbnail" />
-//	<source srcset="/media/image-400x300.avif" media="(min-width: 450px)" type="image/avif" width="400" height="300" data-payload-size="thumbnail_avif" />
-//	<source srcset="/media/image-400x300.webp" media="(min-width: 450px)" type="image/webp" width="400" height="300" data-payload-size="thumbnail_webp" />
-//	<source srcset="/media/image-768x2610.png" media="(min-width: 818px)" type="image/png" width="768" height="2610" data-payload-size="mobile" />
-//	<source srcset="/media/image-768x2610.avif" media="(min-width: 818px)" type="image/avif" width="768" height="2610" data-payload-size="mobile_avif" />
-//	<source srcset="/media/image-768x2610.webp" media="(min-width: 818px)" type="image/webp" width="768" height="2610" data-payload-size="mobile_webp" />
-//	<source srcset="/media/image-1024x3480.png" media="(min-width: 1074px)" type="image/png" width="1024" height="3480" data-payload-size="tablet" />
-//	<source srcset="/media/image-1024x3480.avif" media="(min-width: 1074px)" type="image/avif" width="1024" height="3480" data-payload-size="tablet_avif" />
-//	<source srcset="/media/image-1024x3480.webp" media="(min-width: 1074px)" type="image/webp" width="1024" height="3480" data-payload-size="tablet_webp" />
-//	<source srcset="/media/image-1440x4894.avif" type="image/avif" width="1440" height="4894" data-payload-size="avif" />
-//	<source srcset="/media/image-1440x4894.webp" type="image/webp" width="1440" height="4894" data-payload-size="webp" />
-//	<img src="/media/image.png" alt="Alt Text">
-//</picture>
-//
-//`
-//	testutil.AssertHTML(t, want, buf.String())
-//}

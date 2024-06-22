@@ -1,12 +1,17 @@
 package payload
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"sort"
 
 	"github.com/goccy/go-json"
 	"github.com/perimeterx/marshmallow"
+
+	"github.com/ainsleydev/webkit/pkg/adapters/payload/internal/tpl"
 )
 
 // Media defines the fields for media when they are uploaded to PayloadCMS.
@@ -53,13 +58,20 @@ type MediaSizes map[string]MediaSize
 // MediaSize defines the fields for the different sizes of media when they
 // are uploaded to PayloadCMS.
 type MediaSize struct {
-	Size     string   `json:"-"` // Name of the media size 	e.g. (thumbnail, small, medium, large)
-	URL      string   `json:"url,omitempty"`
-	Filename *string  `json:"filename,omitempty"`
-	Filesize *float64 `json:"filesize,omitempty"`
-	MimeType *string  `json:"mimeType,omitempty"`
-	Width    *float64 `json:"width,omitempty"`
-	Height   *float64 `json:"height,omitempty"`
+	Size      string   `json:"-"` // Name of the media size 	e.g. (thumbnail, small, medium, large)
+	URL       string   `json:"url,omitempty"`
+	Filename  *string  `json:"filename,omitempty"`
+	Filesize  *float64 `json:"filesize,omitempty"`
+	MimeType  *string  `json:"mimeType,omitempty"`
+	Width     *float64 `json:"width,omitempty"`
+	Height    *float64 `json:"height,omitempty"`
+	MediaAttr string   `json:"media,omitempty"`
+}
+
+// Render renders the media block to the provided writer as a
+// picture element.
+func (m *Media) Render(_ context.Context, w io.Writer) error {
+	return tpl.Templates.ExecuteTemplate(w, "picture.html", m)
 }
 
 // UnmarshalJSON unmarshals the JSON data into the Media type.
@@ -120,6 +132,9 @@ func (ms MediaSizes) SortByWidth() []MediaSize {
 	sorted := make(mediaByWidth, 0, len(ms))
 	for key, mediaSize := range ms {
 		mediaSize.Size = key
+		if mediaSize.Width != nil {
+			mediaSize.MediaAttr = fmt.Sprintf("(max-width: %vpx)", *mediaSize.Width+50)
+		}
 		sorted = append(sorted, mediaSize)
 	}
 	sort.Sort(sorted)

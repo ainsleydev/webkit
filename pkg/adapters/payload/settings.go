@@ -222,6 +222,10 @@ func (s *Settings) MarkupTwitterCard() *markup.TwitterCard {
 		return card
 	}
 
+	if u.Path == "" {
+		return card
+	}
+
 	// Assumes that the username is the last part of the path
 	// For example: https://x.com/user (@user Tag)
 	p := path.Base(strings.TrimSuffix(u.Path, "/"))
