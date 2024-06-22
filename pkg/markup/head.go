@@ -1,19 +1,24 @@
 package markup
 
 import (
+	"context"
+	"embed"
 	_ "embed"
+	"html/template"
+	"io"
 	"time"
 )
 
-//go:embed head.html
-var headTpl string
+//go:embed *.html
+var templatesFS embed.FS
 
-// HeadTemplate is the template for the head of the HTML document.
+// headTemplate is the template for the head of the HTML document.
 // It requires a HeadProps struct to be passed in when executing the template.
-//var HeadTemplate = template.Must(template.New("").ParseFiles(
-//	"./head.html",
-//	"./opengraph.html",
-//))
+var headTemplate = template.Must(template.ParseFS(templatesFS,
+	"head.html",
+	"opengraph.html",
+	"twitter.html",
+))
 
 // HeadProps defines the properties that should be included in the
 // head of the document.
@@ -21,7 +26,7 @@ type HeadProps struct {
 	// Required meta properties
 	Title         string
 	Description   string
-	Image         string // TODO ???
+	Image         string
 	DatePublished time.Time
 	DateModified  time.Time
 	Locale        string // ISO 639-1 defaults to "en_GB"
@@ -29,15 +34,6 @@ type HeadProps struct {
 	// Other
 	URL    string // The full URL of the page.
 	IsPage bool   // If true, the page is a page, not a post.
-
-	// Resources
-	Scripts []string
-	Styles  []string
-	Fonts   []struct { // Remove inline
-		Link string
-		Type string
-	}
-	Hash int64 // Unix now
 
 	// Additional meta properties
 	Private   bool   // If true, the page should not be indexed by search engines.
@@ -51,4 +47,9 @@ type HeadProps struct {
 
 	// Other (Code Injection)
 	Other string
+}
+
+// Render renders the head of the document to the provided writer.
+func (h HeadProps) Render(_ context.Context, w io.Writer) error {
+	return headTemplate.ExecuteTemplate(w, "head.html", h)
 }

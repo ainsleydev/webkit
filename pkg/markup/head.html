@@ -1,62 +1,12 @@
-<!-- =====================
-    Head/Meta
-    ===================== -->
-{{ if .Private -}}
-	<meta name="robots" content="noindex">
-{{- end }}
-{{ with .Title -}}
-	<title>{{ . }}</title>
-{{- end }}
-{{ with .Description -}}
-	<meta name="description" content="{{ . }}" />
-{{- end }}
-{{ with .Canonical -}}
-	<link rel="canonical" href="{{ . }}" />
-{{- end }}
-{{ range .Scripts -}}
-	<link rel="preload" href="{{ . }}?{{ $.Hash }}" as="script">
-{{- end }}
-<!-- =====================
-    Opengraph
-    ===================== -->
-{{ with .OpenGraph }}
-
-{{- end }}
-
-{{ with .Twitter -}}
-
-
-{{- end }}
-<!-- =====================
-    Schema - Page
-    ===================== -->
-<meta itemprop="name" content="{{ .Title }}">
-<meta itemprop="description"
-	  content="{{ with .Description }} {{ . }} {{- end }}">
-{{- if .IsPage -}}
-    {{- $iso8601 := "2006-01-02T15:04:05-07:00" -}}
-	<!-- Dates -->
-    {{ with .DatePublished -}}
-{{/*		<meta itemprop="datePublished" {{ .Format $iso8601 | printf "content=%q" | safeHTMLAttr }} />*/}}
-    {{ end -}}
-    {{ with .DateModified -}}
-{{/*		<meta itemprop="dateModified" {{ .Format $iso8601 | printf "content=%q" | safeHTMLAttr }} />*/}}
-    {{- end }}
-	<!-- Word Count -->
-	<meta itemprop="wordCount" content="{{ .WordCount }}">
-	<!-- Image -->
-{{/*	<meta itemprop="image" content="{{  . }}">*/}}
-{{- end -}}
-<!-- =====================
-    Schema - Organisation
-    ===================== -->
-{{ with .Organisation -}}
-
-{{- end }}
-
-<!-- =====================
-    Schema - Navigational
-    ===================== -->
-{{ with .Navigational -}}
-
-{{- end }}
+<!-- Meta -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+{{ with .Title }}<title>{{ . }}</title>{{ end }}
+{{ with .Description }}<meta name="description" content="{{ . }}" />{{ end }}
+{{ with .Canonical }}<link rel="canonical" href="{{ . }}" />{{ end }}
+{{ if .Private -}}<meta name="robots" content="noindex">{{ end }}
+<!-- OpenGraph -->
+{{- with .OpenGraph }}{{ template "opengraph.html" . }}{{ end }}
+<!-- Twitter -->
+{{- with .Twitter -}}{{ template "twitter.html" . }}{{ end -}}

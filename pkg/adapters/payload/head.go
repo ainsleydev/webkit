@@ -3,11 +3,11 @@ package payload
 import (
 	"context"
 	"log/slog"
-	"time"
 
 	"dario.cat/mergo"
 
 	"github.com/ainsleydev/webkit/pkg/markup"
+	"github.com/ainsleydev/webkit/pkg/middleware"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 	"github.com/ainsleydev/webkit/pkg/util/stringutil"
 )
@@ -29,18 +29,21 @@ func Head(ctx context.Context) markup.HeadProps {
 		pageMeta = pm
 	}
 
+	url, ok := ctx.Value(middleware.URLContextKey).(string)
+	if !ok {
+		slog.Error("Error getting full URL from context under key: " + middleware.URLContextKey)
+		return markup.HeadProps{}
+	}
+
 	err = mergo.Merge(&settings.Meta, pageMeta, mergo.WithOverride, mergo.WithoutDereference)
 	if err != nil {
 		slog.Error("Merging page meta with settings meta: " + err.Error())
 	}
 
-	url := "TODO - Full URL"
-
 	props := markup.HeadProps{
 		Title:       ptr.String(settings.Meta.Title),
 		Description: ptr.String(settings.Meta.Description),
 		Locale:      settings.Locale,
-		Hash:        time.Now().Unix(),
 		Private:     ptr.Bool(settings.Meta.Private),
 		Canonical:   ptr.String(settings.Meta.CanonicalURL),
 		OpenGraph:   settings.MarkupOpenGraph(url),

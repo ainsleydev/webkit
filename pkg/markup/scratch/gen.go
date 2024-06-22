@@ -1,3 +1,3 @@
-package markup
+package scratch
 
 //go:generate templ generate

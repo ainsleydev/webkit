@@ -1,0 +1,21 @@
+<!-- =====================
+    Twitter
+    ===================== -->
+{{- with .Site }}
+	<meta name="twitter:site" content="{{ . }}" />
+{{- end }}
+{{- with .Creator }}
+	<meta name="twitter:creator" content="{{ . }}" />
+{{- end }}
+{{- with .Title }}
+	<meta name="twitter:title" content="{{ . }}" />
+{{- end }}
+{{- with .Description }}
+	<meta name="twitter:description" content="{{ . }}" />
+{{- end }}
+{{- with .Image }}
+	<meta name="twitter:image" content="{{ . }}" />
+{{- end }}
+{{- with .ImageAlt }}
+	<meta name="twitter:image:alt" content="{{ . }}" />
+{{- end }}
