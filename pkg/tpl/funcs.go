@@ -1,6 +1,7 @@
 package tpl
 
 import (
+	"fmt"
 	"html/template"
 	"log/slog"
 
@@ -19,11 +20,14 @@ var Funcs = template.FuncMap{
 		return template.JS(a)
 	},
 	"jsonPretty": func(v any) template.JS {
-		a, err := json.MarshalIndent(v, "", "  ")
+		a, err := json.MarshalIndent(v, "", "\t")
 		if err != nil {
 			slog.Error("Error marshalling JSON: " + err.Error())
 			return "{}"
 		}
 		return template.JS(a)
+	},
+	"safeHTML": func(v any) template.HTML {
+		return template.HTML(fmt.Sprint(v))
 	},
 }

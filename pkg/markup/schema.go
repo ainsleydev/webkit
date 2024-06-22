@@ -43,12 +43,12 @@ type SchemaOrgOrganisationAddress struct {
 	PostalCode      string `json:"postalCode"`      // I.e WC2H 9JQ
 }
 
-// SchemaOrgItemList defines a structured data representation for a navigational list
+// SchemaOrgNavItemList defines a structured data representation for a navigational list
 // of items on a webpage. This helps search engines understand the website's
 // structure and potentially improve search ranking.
 //
 // See: https://schema.org/WebPage
-type SchemaOrgItemList struct {
+type SchemaOrgNavItemList struct {
 	Context         string                     `json:"@context"`        // Always "https://schema.org"
 	Type            string                     `json:"@type"`           // Always "ItemList"
 	ItemListElement []SchemaOrgItemListElement `json:"itemListElement"` // The list of items
@@ -56,8 +56,8 @@ type SchemaOrgItemList struct {
 
 // MarshalJSON is a custom JSON marshaller for the SchemaOrgItemList struct.
 // It sets the context and type to the correct values before marshalling.
-func (o *SchemaOrgItemList) MarshalJSON() ([]byte, error) {
-	type Alias SchemaOrgItemList // Alias to prevent stack overflow
+func (o *SchemaOrgNavItemList) MarshalJSON() ([]byte, error) {
+	type Alias SchemaOrgNavItemList // Alias to prevent stack overflow
 	alias := (*Alias)(o)
 	alias.Context = "https://schema.org"
 	alias.Type = "ItemList"

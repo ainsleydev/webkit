@@ -1,18 +1,49 @@
-<!-- Meta -->
+<!-- =====================
+  	Meta
+    ===================== -->
+{{ safeHTML "<!-- Meta -->" }}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes" />
-{{ with .Title }}<title>{{ . }}</title>{{ end }}
-{{ with .Description }}<meta name="description" content="{{ . }}" />{{ end }}
-{{ with .Canonical }}<link rel="canonical" href="{{ . }}" />{{ end }}
-{{ if .Private -}}<meta name="robots" content="noindex">{{ end }}
-<!-- OpenGraph -->
-{{- with .OpenGraph }}{{ template "opengraph.html" . }}{{ end }}
-<!-- Twitter -->
-{{- with .Twitter -}}{{ template "twitter.html" . }}{{ end -}}
-<!-- Schema - Organization -->
+{{- with .Title }}
+	<title>{{ . }}</title>
+{{- end }}
+{{- with .Description }}
+	<meta name="description" content="{{ . }}" />
+{{- end }}
+{{- with .Canonical }}
+	<link rel="canonical" href="{{ . }}" />
+{{ end }}
+{{- if .Private -}}
+	<meta name="robots" content="noindex">
+{{- end }}
+<!-- =====================
+  	Opengraph
+    ===================== -->
+{{- with .OpenGraph }}
+	{{ template "opengraph.html" . }}
+{{- end }}
+<!-- =====================
+  	Twitter
+    ===================== -->
+{{- with .Twitter -}}
+	{{ template "twitter.html" . }}
+{{ end -}}
+<!-- =====================
+    Schema - Organisation
+    ===================== -->
+{{ safeHTML "<!-- Schema - Organisation -->" }}
 {{- with .Organisation -}}
-<script type="application/ld+json">
-	{{ jsonPretty . }}
-</script>
+	<script type="application/ld+json">
+{{ jsonPretty . }}
+	</script>
+{{ end -}}
+<!-- =====================
+    Schema - Navigation
+    ===================== -->
+{{ safeHTML "<!-- Schema - Navigation -->" }}
+{{- with .Navigation -}}
+	<script type="application/ld+json">
+{{ jsonPretty . }}
+	</script>
 {{ end -}}

@@ -15,6 +15,15 @@ import (
 // TODO:
 // - Merge page meta and settings meta, where page meta takes precedence.
 
+type Navigation struct {
+	Items []NavigationItem `json:"items"`
+}
+
+type NavigationItem struct {
+	Label string `json:"label"`
+	Link  string `json:"link"`
+}
+
 const ContextKeyPageMeta = "payload_page_meta"
 
 func Head(ctx context.Context) markup.HeadProps {
@@ -40,6 +49,8 @@ func Head(ctx context.Context) markup.HeadProps {
 		slog.Error("Merging page meta with settings meta: " + err.Error())
 	}
 
+	//ctx, ok := ctx.Value("navigation").(context.Context)
+
 	props := markup.HeadProps{
 		Title:        ptr.String(settings.Meta.Title),
 		Description:  ptr.String(settings.Meta.Description),
@@ -49,6 +60,7 @@ func Head(ctx context.Context) markup.HeadProps {
 		OpenGraph:    settings.MarkupOpenGraph(url),
 		Twitter:      settings.MarkupTwitterCard(),
 		Organisation: settings.MarkupSchemaOrganisation(url),
+		//Navigation:   ,
 	}
 
 	if settings.Meta.Image != nil {

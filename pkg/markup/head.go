@@ -45,7 +45,7 @@ type HeadProps struct {
 	OpenGraph    *OpenGraph
 	Twitter      *TwitterCard
 	Organisation *SchemaOrgOrganisation
-	Navigation   *SchemaOrgItemList
+	Navigation   *SchemaOrgNavItemList
 
 	// Other (Code Injection)
 	Other string
