@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/a-h/templ"
+	"github.com/go-chi/chi/v5"
 	"github.com/goccy/go-json"
 )
 
@@ -43,7 +44,7 @@ func (c *Context) Context() context.Context {
 
 // Param retrieves a parameter from the route parameters.
 func (c *Context) Param(key string) string {
-	return c.Request.PathValue(key) // TODO, need to use chi
+	return chi.URLParam(c.Request, key)
 }
 
 // Render renders a templated component to the response writer.

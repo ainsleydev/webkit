@@ -12,6 +12,10 @@ const (
 	// request identifier.
 	ContextKeyRequestID ContextKey = "request_id"
 
+	// ContextKeyURL is the key used to retrieve the full URL in
+	// the context.
+	ContextKeyURL = "url"
+
 	// ContextKeyHeadSnippets is the key used to define the head
 	// templates for a request.
 	ContextKeyHeadSnippets ContextKey = "head_snippets"
@@ -30,6 +34,17 @@ func RequestID(ctx context.Context) (string, bool) {
 // WithRequestID returns a new context with the given request identifier.
 func WithRequestID(ctx context.Context, requestID string) context.Context {
 	return context.WithValue(ctx, ContextKeyRequestID, requestID)
+}
+
+// URL extracts the full URL from a context.
+func URL(ctx context.Context) (string, bool) {
+	url, ok := ctx.Value(ContextKeyURL).(string)
+	return url, ok
+}
+
+// WithURL returns a new context with the given full URL.
+func WithURL(ctx context.Context, url string) context.Context {
+	return context.WithValue(ctx, ContextKeyURL, url)
 }
 
 // MarkupSnippet defines the structure of a piece of HTML content that

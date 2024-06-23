@@ -6,8 +6,8 @@ import (
 
 	"dario.cat/mergo"
 
+	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	"github.com/ainsleydev/webkit/pkg/markup"
-	"github.com/ainsleydev/webkit/pkg/middleware"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 	"github.com/ainsleydev/webkit/pkg/util/stringutil"
 )
@@ -38,9 +38,9 @@ func Head(ctx context.Context) markup.HeadProps {
 		pageMeta = pm
 	}
 
-	url, ok := ctx.Value(middleware.URLContextKey).(string)
+	url, ok := webkitctx.URL(ctx)
 	if !ok {
-		slog.Error("Error getting full URL from context under key: " + middleware.URLContextKey)
+		slog.Error("Error getting full URL from context")
 		return markup.HeadProps{}
 	}
 

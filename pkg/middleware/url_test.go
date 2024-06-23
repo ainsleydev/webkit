@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -62,8 +63,10 @@ func TestURL(t *testing.T) {
 			}()
 
 			app := webkit.New()
-			app.Get(test.path, func(ctx *webkit.Context) error {
-				assert.Equal(t, test.want, ctx.Get(URLContextKey).(string))
+			app.Get(test.path, func(c *webkit.Context) error {
+				got, ok := webkitctx.URL(c.Context())
+				assert.True(t, ok)
+				assert.Equal(t, test.want, got)
 				return nil
 			}, URL)
 

@@ -75,3 +75,140 @@ type SchemaOrgItemListElement struct {
 	Description string `json:"description"` // I.e "The homepage of the website" usually the same as the description tag.
 	URL         string `json:"url"`         // Full URL
 }
+
+// SchemaOrgFAQPage defines an FAQPage is a WebPage presenting one or more
+// "Frequently asked questions" (see also QAPage).
+//
+// Example as defined on: https://developers.google.com/search/docs/data-types/faqpage
+//
+//	{
+//	   "@context": "https://schema.org",
+//	   "@type": "FAQPage",
+//	   "mainEntity": [
+//	       {
+//	           "@type": "Question",
+//	           "name": "How to find an apprenticeship?",
+//	           "acceptedAnswer": {
+//	               "@type": "Answer",
+//	               "text": "<p>We provide an official service to search through available apprenticeships. To get started, create an account here, specify the desired region, and your preferences. You will be able to search through all officially registered open apprenticeships.</p>"
+//	           }
+//	       },
+//	       {
+//	           "@type": "Question",
+//	           "name": "Whom to contact?",
+//	           "acceptedAnswer": {
+//	               "@type": "Answer",
+//	               "text": "You can contact the apprenticeship office through our official phone hotline above, or with the web-form below. We generally respond to written requests within 7-10 days."
+//	           }
+//	       }
+//	   ]
+//	}
+//
+// See: https://schema.org/FAQPage
+type SchemaOrgFAQPage []SchemaOrgQuestionAnswer
+
+// SchemaOrgQuestionAnswer represents a single question and answer within an FAQPage.
+type SchemaOrgQuestionAnswer struct {
+	// The Question type defines a single answered question within the FAQ.
+	// Every Question instance must be contained within the mainEntity
+	// property array of the schema.org/FAQPage.
+	Question string `json:"-"`
+
+	// The full answer to the question. The answer may contain HTML content
+	// such as links and lists.
+	//
+	// Google Search displays the following HTML tags; all other tags are ignored:
+	// <h1> through <h6>, <br>, <ol>, <ul>, <li>, <a>, <p>, <div>, <b>, <strong>, <i>, and <em>.
+	Answer string `json:"-"`
+}
+
+// MarshalJSON is a custom JSON marshaller for the SchemaOrgFAQPage struct.
+func (s SchemaOrgFAQPage) MarshalJSON() ([]byte, error) {
+	type mainEntity struct {
+		Type           string `json:"@type"`
+		Name           string `json:"name"`
+		AcceptedAnswer struct {
+			Type string `json:"@type"`
+			Text string `json:"text"`
+		} `json:"acceptedAnswer"`
+	}
+
+	var entities []mainEntity
+	for _, qa := range s {
+		entities = append(entities, mainEntity{
+			Type: "Question",
+			Name: qa.Question,
+			AcceptedAnswer: struct {
+				Type string `json:"@type"`
+				Text string `json:"text"`
+			}{
+				Type: "Answer",
+				Text: qa.Answer,
+			},
+		})
+	}
+
+	marshal, err := json.MarshalIndent(entities, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+
+	b := `{
+	"@context": "https://schema.org",
+	"@type": "FAQPage",
+	"mainEntity":` + string(marshal) + `
+}`
+
+	return []byte(b), nil
+}
+
+// SchemaOrgBreadcrumbList is an ItemList consisting of a chain of linked Web pages,
+// typically described using at least their URL and their name, and usually ending
+// with the current page.
+//
+// Example as defined on: https://developers.google.com/search/docs/data-types/breadcrumb
+//
+//	{
+//	   "@context": "https://schema.org",
+//	   "@type": "BreadcrumbList",
+//	   "itemListElement": [
+//	       {
+//	           "@type": "ListItem",
+//	           "position": 1,
+//	           "name": "Books",
+//	           "item": "https://example.com/books"
+//	       },
+//	       {
+//	           "@type": "ListItem",
+//	           "position": 2,
+//	           "name": "Science Fiction",
+//	           "item": "https://example.com/books/sciencefiction"
+//	       }
+//	   ]
+//	}
+//
+// See: https://schema.org/BreadcrumbList
+type SchemaOrgBreadcrumbList struct {
+	Context string                    `json:"@context"`
+	Type    string                    `json:"@type"`
+	Items   []SchemaOrgBreadcrumbItem `json:"itemListElement"`
+}
+
+// SchemaOrgBreadcrumbItem contains details about an individual item in the list.
+// Google only supports item, name and position.
+//
+// See: https://schema.org/ListItem. wing:
+type SchemaOrgBreadcrumbItem struct {
+	// Always "ListItem"
+	Type string `json:"@type"`
+
+	// The position of the breadcrumb in the breadcrumb trail.
+	// Position 1 signifies the beginning of the trail.
+	Position int `json:"position"`
+
+	// The title of the breadcrumb displayed for the user.
+	Name string `json:"name"`
+
+	// The URL to the webpage that represents the breadcrumb.
+	Item string `json:"item,omitempty"`
+}

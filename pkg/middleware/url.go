@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
-
-// URLContextKey is the key used to retrieve the full URL in the context.
-const URLContextKey = "url"
 
 // URL is a middleware that sets the full URL of the request in the context.
 // The URL can be accessed using the URLContextKey.
@@ -29,7 +27,7 @@ func URL(next webkit.Handler) webkit.Handler {
 			}
 			url = fmt.Sprintf("%s://%s%s", c.Scheme(), host, path)
 		}
-		c.Set(URLContextKey, url)
+		c.Request = c.Request.WithContext(webkitctx.WithURL(c.Context(), url))
 		return next(c)
 	}
 }
