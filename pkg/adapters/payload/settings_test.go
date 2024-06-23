@@ -257,7 +257,7 @@ func TestToStringArray(t *testing.T) {
 	}
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			got := test.input.ToStringArray()
+			got := test.input.StringArray()
 			assert.ElementsMatch(t, test.want, got)
 		})
 	}
@@ -319,7 +319,7 @@ func TestSettings_MarkupOpenGraph(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			got := test.input.MarkupOpenGraph(url)
+			got := test.input.OpenGraph(url)
 			assert.Equal(t, &test.want, got)
 		})
 	}
@@ -429,7 +429,7 @@ func TestSettings_MarkupTwitterCard(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			got := test.input.MarkupTwitterCard()
+			got := test.input.TwitterCard()
 			assert.EqualValues(t, &test.want, got)
 		})
 	}
@@ -500,7 +500,7 @@ func TestSettings_MarkupSchemaOrganisation(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			got := test.input.MarkupSchemaOrganisation(url)
+			got := test.input.SchemaOrganisation(url)
 			assert.Equal(t, &test.want, got)
 		})
 	}

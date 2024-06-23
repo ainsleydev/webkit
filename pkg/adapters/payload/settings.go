@@ -120,7 +120,7 @@ type SettingsSocial struct {
 	Youtube   *string `json:"youtube,omitempty"`
 }
 
-// UnmarshalJSON unmarshals the JSON data into the Settings type.
+// UnmarshalJSON unmarshalls the JSON data into the Settings type.
 // This method is used to extract known fields and assign the remaining
 // fields to the Extra map.
 func (s *Settings) UnmarshalJSON(data []byte) error {
@@ -165,8 +165,8 @@ func (a SettingsAddress) Format() string {
 	return strings.Join(parts, ", ")
 }
 
-// ToStringArray returns the social media links as an array of strings.
-func (s SettingsSocial) ToStringArray() []string {
+// StringArray returns the social media links as an array of strings.
+func (s SettingsSocial) StringArray() []string {
 	var parts []string
 	fields := []*string{s.Facebook, s.Instagram, s.LinkedIn, s.Tiktok, s.X, s.Youtube}
 	for _, field := range fields {
@@ -177,9 +177,9 @@ func (s SettingsSocial) ToStringArray() []string {
 	return parts
 }
 
-// MarkupOpenGraph transforms the settings into an Open Graph object
+// OpenGraph transforms the settings into an Open Graph object
 // for use in the head of the frontend.
-func (s *Settings) MarkupOpenGraph(url string) *markup.OpenGraph {
+func (s *Settings) OpenGraph(url string) *markup.OpenGraph {
 	m := &markup.OpenGraph{
 		Type:        "website",
 		SiteName:    ptr.String(s.SiteName),
@@ -200,9 +200,9 @@ func (s *Settings) MarkupOpenGraph(url string) *markup.OpenGraph {
 	return m
 }
 
-// MarkupTwitterCard transforms the settings into a Twitter Card
+// TwitterCard transforms the settings into a Twitter Card
 // for use in the head of the frontend.
-func (s *Settings) MarkupTwitterCard() *markup.TwitterCard {
+func (s *Settings) TwitterCard() *markup.TwitterCard {
 	card := &markup.TwitterCard{
 		Title:       ptr.String(s.Meta.Title),
 		Description: ptr.String(s.Meta.Description),
@@ -237,9 +237,9 @@ func (s *Settings) MarkupTwitterCard() *markup.TwitterCard {
 	return card
 }
 
-// MarkupSchemaOrganisation transforms the settings into a Schema.org Organisation
+// SchemaOrganisation transforms the settings into a Schema.org Organisation
 // structure for use in the head of the frontend.
-func (s *Settings) MarkupSchemaOrganisation(url string) *schemaorg.Organisation {
+func (s *Settings) SchemaOrganisation(url string) *schemaorg.Organisation {
 	org := schemaorg.Organisation{
 		ID:  url,
 		URL: url,
@@ -258,7 +258,7 @@ func (s *Settings) MarkupSchemaOrganisation(url string) *schemaorg.Organisation 
 	}
 
 	if s.Social != nil {
-		org.SameAs = s.Social.ToStringArray()
+		org.SameAs = s.Social.StringArray()
 	}
 
 	if s.Address != nil {

@@ -46,9 +46,9 @@ func Head(ctx context.Context) markup.HeadProps {
 		Locale:       settings.Locale,
 		Private:      ptr.Bool(settings.Meta.Private),
 		Canonical:    ptr.String(settings.Meta.CanonicalURL),
-		OpenGraph:    settings.MarkupOpenGraph(url),
-		Twitter:      settings.MarkupTwitterCard(),
-		Organisation: settings.MarkupSchemaOrganisation(url),
+		OpenGraph:    settings.OpenGraph(url),
+		Twitter:      settings.TwitterCard(),
+		Organisation: settings.SchemaOrganisation(url),
 		//Navigation:   ,
 	}
 
