@@ -67,3 +67,50 @@ func (s *Article) MarshalJSON() ([]byte, error) {
 		Alias:   (*Alias)(s),
 	})
 }
+
+// https://www.hillwebcreations.com/article-structured-data/#:~:text=But%20if%20the%20page%20is,schema.org%2FBlogPosting).
+// It's currently news article, but can be changed to BlogPosting
+
+type TODO struct {
+	Context             string    `json:"@context"`
+	Type                string    `json:"@type"`
+	Url                 string    `json:"url"`
+	Headline            string    `json:"headline"`
+	Image               string    `json:"image"`
+	AlternativeHeadline string    `json:"alternativeHeadline"`
+	Description         string    `json:"description"`
+	DateCreated         time.Time `json:"dateCreated"`
+	DatePublished       time.Time `json:"datePublished"`
+	DateModified        time.Time `json:"dateModified"`
+	WordCount           string    `json:"wordCount"`
+	Keywords            []string  `json:"keywords"`
+	InLanguage          string    `json:"inLanguage"`
+	IsFamilyFriendly    string    `json:"isFamilyFriendly"`
+	Author              struct {
+		Type string `json:"@type"`
+		Name string `json:"name"`
+	} `json:"author"`
+	Creator struct {
+		Type string `json:"@type"`
+		Name string `json:"name"`
+	} `json:"creator"`
+	AccountablePerson struct {
+		Type string `json:"@type"`
+		Name string `json:"name"`
+	} `json:"accountablePerson"`
+	MainEntityOfPage struct {
+		Type string `json:"@type"`
+		Id   string `json:"@id"`
+	} `json:"mainEntityOfPage"`
+	Publisher struct {
+		Type string `json:"@type"`
+		Name string `json:"name"`
+		Url  string `json:"url"`
+		Logo struct {
+			Type string `json:"@type"`
+			Url  string `json:"url"`
+		} `json:"logo"`
+	} `json:"publisher"`
+	CopyrightHolder string `json:"copyrightHolder"`
+	CopyrightYear   string `json:"copyrightYear"`
+}

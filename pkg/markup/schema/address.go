@@ -3,7 +3,8 @@ package schemaorg
 // Address represents a structured data definition for the physical or mailing
 // address of an organization according to schema.org.
 //
-// See: https://schema.org/PostalAddress
+// See:
+// - https://schema.org/PostalAddress
 type Address struct {
 	// 	The street address.
 	//	For example, ainsley.dev, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ

@@ -37,7 +37,7 @@
     {{- with .SecureURL }}
 		<meta property="og:image:secure_url" content="{{ . }}" />
     {{- end }}
-    {{- with .Type }}
+    {{- with .ContentType }}
 		<meta property="og:image:type" content="{{ . }}" />
     {{- end }}
     {{- with .Width }}
@@ -58,7 +58,7 @@
     {{- with .SecureURL }}
 		<meta property="og:audio:secure_url" content="{{ . }}" />
     {{- end }}
-    {{- with .Type }}
+    {{- with .ContentType }}
 		<meta property="og:audio:type" content="{{ . }}" />
     {{- end }}
 {{- end }}
@@ -70,7 +70,7 @@
     {{- with .SecureURL }}
 		<meta property="og:video:secure_url" content="{{ . }}" />
     {{- end }}
-    {{- with .Type }}
+    {{- with .ContentType }}
 		<meta property="og:video:type" content="{{ . }}" />
     {{- end }}
     {{- with .Width }}

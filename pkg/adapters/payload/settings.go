@@ -190,11 +190,11 @@ func (s *Settings) MarkupOpenGraph(url string) *markup.OpenGraph {
 	}
 	if s.Meta.Image != nil {
 		m.Image = append(m.Image, markup.OpengraphImage{
-			URL:    s.Meta.Image.URL,
-			Type:   s.Meta.Image.MimeType,
-			Width:  int(ptr.Float64(s.Meta.Image.Width)),
-			Height: int(ptr.Float64(s.Meta.Image.Height)),
-			Alt:    s.Meta.Image.Fields["alt"].(string),
+			URL:         s.Meta.Image.URL,
+			ContentType: s.Meta.Image.MimeType,
+			Width:       int(ptr.Float64(s.Meta.Image.Width)),
+			Height:      int(ptr.Float64(s.Meta.Image.Height)),
+			Alt:         s.Meta.Image.Fields["alt"].(string),
 		})
 	}
 	return m

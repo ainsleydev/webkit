@@ -13,18 +13,6 @@ import (
 	"github.com/ainsleydev/webkit/pkg/util/stringutil"
 )
 
-// TODO:
-// - Merge page meta and settings meta, where page meta takes precedence.
-
-type Navigation struct {
-	Items []NavigationItem `json:"items"`
-}
-
-type NavigationItem struct {
-	Label string `json:"label"`
-	Link  string `json:"link"`
-}
-
 const ContextKeyPageMeta = "payload_page_meta"
 
 func Head(ctx context.Context) markup.HeadProps {
@@ -79,8 +67,6 @@ func Head(ctx context.Context) markup.HeadProps {
 	if settings.CodeInjection != nil && stringutil.IsNotEmpty(settings.CodeInjection.Head) {
 		props.Other += "<!-- Global Head Code Injection -->\n" + *settings.CodeInjection.Head
 	}
-
-	// TODO: We need to add code injection for page meta here.
 
 	return props
 }
