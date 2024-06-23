@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -15,7 +16,9 @@ func TestRequestID(t *testing.T) {
 		app := webkit.New()
 
 		app.Get("/", func(ctx *webkit.Context) error {
-			assert.NotEmpty(t, ctx.Get(RequestIDContextKey))
+			rid, ok := webkitctx.RequestID(ctx.Request.Context())
+			assert.True(t, ok)
+			assert.NotEmpty(t, rid)
 			return ctx.String(http.StatusOK, "test")
 		}, RequestID)
 
@@ -28,9 +31,10 @@ func TestRequestID(t *testing.T) {
 		req.Header.Set(RequestIDHeader, "123")
 
 		app.Get("/", func(ctx *webkit.Context) error {
-			assert.NotEmpty(t, ctx.Get(RequestIDContextKey))
+			rid, ok := webkitctx.RequestID(ctx.Request.Context())
+			assert.True(t, ok)
 			assert.Equal(t, ctx.Request.Header.Get(RequestIDHeader), "123")
-			assert.Equal(t, ctx.Request.Header.Get(RequestIDHeader), ctx.Get(RequestIDContextKey))
+			assert.Equal(t, ctx.Request.Header.Get(RequestIDHeader), rid)
 			return ctx.String(http.StatusOK, "test")
 		}, RequestID)
 

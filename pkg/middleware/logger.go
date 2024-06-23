@@ -8,6 +8,7 @@ import (
 
 	"github.com/logrusorgru/aurora"
 
+	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
@@ -21,6 +22,8 @@ import (
 //
 // IMPORTANT NOTE: Logger should go before any other middleware that may change
 // the response, such as middleware.Recover. Example:
+//
+// Example:
 //
 //	app := webkit.New()
 //	app.Plug(middleware.Logger)        // <--<< Logger should come before Recover
@@ -65,7 +68,7 @@ func Logger(next webkit.Handler) webkit.Handler {
 				slog.Int("status", rr.Status),
 				slog.String("remote_addr", req.RemoteAddr),
 				slog.Duration("latency", time.Now().Sub(start)),
-				slog.Any(RequestIDContextKey, ctx.Get(RequestIDContextKey)),
+				slog.Any(string(webkitctx.ContextKeyRequestID), ctx.Get(string(webkitctx.ContextKeyRequestID))),
 				slog.String("user_agent", req.UserAgent()),
 				slog.Any(webkit.ErrorKey, ctx.Get("error")),
 				slog.Any("cache", rr.Header().Get("X-Cache")),

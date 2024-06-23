@@ -22,6 +22,19 @@ var headTemplate = template.Must(template.New("").Funcs(tpl.Funcs).ParseFS(templ
 	"twitter.html",
 ))
 
+// TODO: This should be in markup tbh
+const ContextKeyPageAdditionalMeta = "payload_page_additional_meta"
+
+func AddToHead(ctx context.Context, tpl template.HTML) {
+	c, ok := ctx.Value(ContextKeyPageAdditionalMeta).([]template.HTML)
+	if !ok {
+		c = make([]template.HTML, 0)
+	}
+	c = append(c, tpl)
+	ctx = context.WithValue(ctx, ContextKeyPageAdditionalMeta, c)
+	return
+}
+
 // HeadProps defines the properties that should be included in the
 // head of the document.
 type HeadProps struct {

@@ -11,6 +11,18 @@ import (
 )
 
 // Minify is a middleware that minifies the response body of the request.
+// Only text/html content type is minified. Assets such as CSS & JS
+// should be minified when built (obviously).
+//
+// IMPORTANT NOTE: This middleware should be used after any caching
+// middleware to ensure that the response is minified before being cached.
+// In the event that this is called before the full page cache, it will
+// add unnecessary overhead to the response times.
+//
+//	app := webkit.New()
+//	app.Plug(middleware.Cache)        // <--<< Cache should come before Minifier
+//	app.Plug(middleware.Minify)
+//	r.Get("/", handler)
 func Minify(next webkit.Handler) webkit.Handler {
 	m := minify.New()
 	m.Add("text/html", &html.Minifier{
