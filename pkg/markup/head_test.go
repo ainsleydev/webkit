@@ -56,11 +56,11 @@ var props = HeadProps{
 			"https://linkedin.com/company/example",
 		},
 		Address: schemaorg.Address{
-			StreetAddress:   "123 Sample St",
-			AddressLocality: "Sample City",
-			AddressRegion:   "Sample State",
-			AddressCountry:  "UK",
-			PostalCode:      "12345",
+			StreetAddress: "123 Sample St",
+			Locality:      "Sample City",
+			Region:        "Sample State",
+			Country:       "UK",
+			PostalCode:    "12345",
 		},
 	},
 	//Navigation: &SchemaOrgNavItemList{

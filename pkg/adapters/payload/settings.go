@@ -263,11 +263,11 @@ func (s *Settings) MarkupSchemaOrganisation(url string) *schemaorg.Organisation 
 
 	if s.Address != nil {
 		org.Address = schemaorg.Address{
-			StreetAddress:   s.Address.Format(),
-			AddressLocality: ptr.String(s.Address.City),
-			AddressRegion:   ptr.String(s.Address.County),
-			AddressCountry:  ptr.String(s.Address.Country),
-			PostalCode:      ptr.String(s.Address.Postcode),
+			StreetAddress: s.Address.Format(),
+			Locality:      ptr.String(s.Address.City),
+			Region:        ptr.String(s.Address.County),
+			Country:       ptr.String(s.Address.Country),
+			PostalCode:    ptr.String(s.Address.Postcode),
 		}
 	}
 

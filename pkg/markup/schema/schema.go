@@ -7,6 +7,7 @@ import (
 
 // TODO:
 // - Add more structured data types (Product, Article, QA)
+// https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data
 
 const (
 	// Context is the schema.org context definition which is

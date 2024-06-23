@@ -58,28 +58,3 @@ func (s *Organisation) MarshalJSON() ([]byte, error) {
 		Alias:   (*Alias)(s),
 	})
 }
-
-// Address represents a structured data definition for the physical or mailing
-// address of an organization according to schema.org.
-//
-// See: https://schema.org/PostalAddress
-type Address struct {
-	StreetAddress   string `json:"streetAddress"`   // I.e ainsley.dev, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
-	AddressLocality string `json:"addressLocality"` // I.e London
-	AddressRegion   string `json:"addressRegion"`   // I.e Greater London
-	AddressCountry  string `json:"addressCountry"`  // I.e UK
-	PostalCode      string `json:"postalCode"`      // I.e WC2H 9JQ
-}
-
-// MarshalJSON implements the json.Marshaler interface to generate
-// the JSON-LD for the Address.
-func (s *Address) MarshalJSON() ([]byte, error) {
-	type Alias Address // Define an alias type to avoid stack overflow
-	return marshal(&struct {
-		Type string `json:"@type"`
-		*Alias
-	}{
-		Type:  "PostalAddress",
-		Alias: (*Alias)(s),
-	})
-}

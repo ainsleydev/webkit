@@ -31,25 +31,26 @@ import "time"
 type Article struct {
 	// The title of the article. Consider using a concise title,
 	// as long titles may be truncated on some devices.
-	Headline string `json:"headline"`
+	Headline string `json:"headline,omitempty"`
 
 	// The URL to an image that is representative of the article.
 	// Use images that are relevant to the article, rather than logos or captions.
 	// TODO: Use ImageObject type
-	Image []string `json:"image"`
+	Image []string `json:"image,omitempty"`
 
 	// The date and time the article was first published, in ISO 8601 format.
-	DatePublished time.Time `json:"datePublished"`
+	DatePublished time.Time `json:"datePublished,omitempty"`
 
 	// The date and time the article was most recently modified, in ISO 8601 format.
-	DateModified time.Time `json:"dateModified"`
+	DateModified time.Time `json:"dateModified,omitempty"`
 
 	// The author of the article. To help Google best understand authors
 	// across various features, we recommend following the
-	Author []Person `json:"author"`
+	Author []Person `json:"author,omitempty"`
 
 	// The number of words in the text of the Article.
-	WordCount int64 `json:"wordCount"`
+	// Note: Not currently supported by Google.
+	WordCount int64 `json:"wordCount,omitempty"`
 }
 
 // MarshalJSON implements the json.Marshaler interface to generate

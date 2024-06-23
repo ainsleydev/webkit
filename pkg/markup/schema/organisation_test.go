@@ -18,11 +18,11 @@ func TestOrganisation_MarshalJSON(t *testing.T) {
 			"https://example.org/example1234",
 		},
 		Address: Address{
-			StreetAddress:   "Rue Improbable 99",
-			AddressLocality: "Paris",
-			AddressRegion:   "Ile-de-France",
-			AddressCountry:  "FR",
-			PostalCode:      "75001",
+			StreetAddress: "Rue Improbable 99",
+			Locality:      "Paris",
+			Region:        "Ile-de-France",
+			Country:       "FR",
+			PostalCode:    "75001",
 		},
 	}
 
