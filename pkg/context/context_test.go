@@ -23,9 +23,9 @@ func TestHeadTemplate(t *testing.T) {
 	name := "test"
 	content := "<script>alert('test')</script>"
 
-	ctx = WithHTMLHeadTemplate(ctx, name, content)
+	ctx = WithHeadSnippet(ctx, name, content)
 
-	got, ok := HeadContent(ctx)
+	got, ok := HeadSnippets(ctx)
 	assert.True(t, ok)
 	assert.Len(t, got, 1)
 	assert.Equal(t, name, got[0].Name)
@@ -37,9 +37,9 @@ func TestFooterTemplate(t *testing.T) {
 	name := "test"
 	content := "<script>alert('test')</script>"
 
-	ctx = WithHTMLFooterTemplate(ctx, name, content)
+	ctx = WithFooterSnippet(ctx, name, content)
 
-	got, ok := FooterContent(ctx)
+	got, ok := FooterSnippets(ctx)
 	assert.True(t, ok)
 	assert.Len(t, got, 1)
 	assert.Equal(t, name, got[0].Name)

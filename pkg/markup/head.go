@@ -8,6 +8,7 @@ import (
 	"io"
 	"time"
 
+	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	"github.com/ainsleydev/webkit/pkg/tpl"
 )
 
@@ -21,19 +22,6 @@ var headTemplate = template.Must(template.New("").Funcs(tpl.Funcs).ParseFS(templ
 	"opengraph.html",
 	"twitter.html",
 ))
-
-// TODO: This should be in markup tbh
-const ContextKeyPageAdditionalMeta = "payload_page_additional_meta"
-
-func AddToHead(ctx context.Context, tpl template.HTML) {
-	c, ok := ctx.Value(ContextKeyPageAdditionalMeta).([]template.HTML)
-	if !ok {
-		c = make([]template.HTML, 0)
-	}
-	c = append(c, tpl)
-	ctx = context.WithValue(ctx, ContextKeyPageAdditionalMeta, c)
-	return
-}
 
 // HeadProps defines the properties that should be included in the
 // head of the document.
@@ -62,9 +50,16 @@ type HeadProps struct {
 
 	// Other (Code Injection)
 	Other string
+
+	// To define additional meta tags and any other HTML, see webkitctx.WithHeadSnippet
+	Snippets []webkitctx.MarkupSnippet
 }
 
 // Render renders the head of the document to the provided writer.
-func (h HeadProps) Render(_ context.Context, w io.Writer) error {
+func (h HeadProps) Render(ctx context.Context, w io.Writer) error {
+	s, ok := webkitctx.HeadSnippets(ctx)
+	if ok {
+		h.Snippets = s
+	}
 	return headTemplate.ExecuteTemplate(w, "head.html", h)
 }

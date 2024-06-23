@@ -12,13 +12,13 @@ const (
 	// request identifier.
 	ContextKeyRequestID ContextKey = "request_id"
 
-	// ContextKeyHeadTemplates is the key used to define the head
+	// ContextKeyHeadSnippets is the key used to define the head
 	// templates for a request.
-	ContextKeyHeadTemplates ContextKey = "head_templates"
+	ContextKeyHeadSnippets ContextKey = "head_snippets"
 
-	// ContextKeyFooterTemplates is the key used to define the head
+	// ContextKeyFooterSnippets is the key used to define the head
 	// templates for a request.
-	ContextKeyFooterTemplates ContextKey = "footer_templates"
+	ContextKeyFooterSnippets ContextKey = "footer_snippets"
 )
 
 // RequestID extracts a unique request identifier from a context
@@ -32,49 +32,49 @@ func WithRequestID(ctx context.Context, requestID string) context.Context {
 	return context.WithValue(ctx, ContextKeyRequestID, requestID)
 }
 
-// MarkupContent defines the structure of a piece of HTML content that
+// MarkupSnippet defines the structure of a piece of HTML content that
 // is to be injected into the head or body of a document.
-type MarkupContent struct {
+type MarkupSnippet struct {
 	Name    string
 	Content string
 }
 
-// WithHTMLHeadTemplate sets an HTML snippet to be injected into
+// WithHeadSnippet sets an HTML snippet to be injected into
 // the <head> of the document.
-func WithHTMLHeadTemplate(ctx context.Context, name, content string) context.Context {
-	c, ok := ctx.Value(ContextKeyHeadTemplates).([]MarkupContent)
+func WithHeadSnippet(ctx context.Context, name, content string) context.Context {
+	c, ok := ctx.Value(ContextKeyHeadSnippets).([]MarkupSnippet)
 	if !ok {
-		c = make([]MarkupContent, 0)
+		c = make([]MarkupSnippet, 0)
 	}
-	c = append(c, MarkupContent{
+	c = append(c, MarkupSnippet{
 		Name:    name,
 		Content: content,
 	})
-	return context.WithValue(ctx, ContextKeyHeadTemplates, c)
+	return context.WithValue(ctx, ContextKeyHeadSnippets, c)
 }
 
-// HeadContent returns the head content templates from the context.
-func HeadContent(ctx context.Context) ([]MarkupContent, bool) {
-	c, ok := ctx.Value(ContextKeyHeadTemplates).([]MarkupContent)
+// HeadSnippets returns the head content templates from the context.
+func HeadSnippets(ctx context.Context) ([]MarkupSnippet, bool) {
+	c, ok := ctx.Value(ContextKeyHeadSnippets).([]MarkupSnippet)
 	return c, ok
 }
 
-// WithHTMLFooterTemplate sets an HTML snippet to be injected into
+// WithFooterSnippet sets an HTML snippet to be injected into
 // the footer of the document.
-func WithHTMLFooterTemplate(ctx context.Context, name string, content string) context.Context {
-	c, ok := ctx.Value(ContextKeyFooterTemplates).([]MarkupContent)
+func WithFooterSnippet(ctx context.Context, name string, content string) context.Context {
+	c, ok := ctx.Value(ContextKeyFooterSnippets).([]MarkupSnippet)
 	if !ok {
-		c = make([]MarkupContent, 0)
+		c = make([]MarkupSnippet, 0)
 	}
-	c = append(c, MarkupContent{
+	c = append(c, MarkupSnippet{
 		Name:    name,
 		Content: content,
 	})
-	return context.WithValue(ctx, ContextKeyFooterTemplates, c)
+	return context.WithValue(ctx, ContextKeyFooterSnippets, c)
 }
 
-// FooterContent returns the footer content templates from the context.
-func FooterContent(ctx context.Context) ([]MarkupContent, bool) {
-	c, ok := ctx.Value(ContextKeyFooterTemplates).([]MarkupContent)
+// FooterSnippets returns the footer content templates from the context.
+func FooterSnippets(ctx context.Context) ([]MarkupSnippet, bool) {
+	c, ok := ctx.Value(ContextKeyFooterSnippets).([]MarkupSnippet)
 	return c, ok
 }

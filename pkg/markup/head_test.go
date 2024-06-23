@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 )
 
 var props = HeadProps{
@@ -63,7 +65,7 @@ var props = HeadProps{
 			PostalCode:      "12345",
 		},
 	},
-	Navigation: &SchemaOrgItemList{
+	Navigation: &SchemaOrgNavItemList{
 		Context: "https://schema.org",
 		Type:    "ItemList",
 		ItemListElement: []SchemaOrgItemListElement{
@@ -110,7 +112,10 @@ func TestHead(t *testing.T) {
 
 	t.Run("Full Head", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		err := props.Render(context.TODO(), &buf)
+		ctx := context.Background()
+		ctx = webkitctx.WithHeadSnippet(ctx, "Test", "<script>alert('Hello, World!');</script>")
+
+		err := props.Render(ctx, &buf)
 		assert.NoError(t, err)
 		fmt.Println(buf.String())
 	})

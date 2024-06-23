@@ -33,17 +33,26 @@
     Schema - Organisation
     ===================== -->
 {{ safeHTML "<!-- Schema - Organisation -->" }}
-{{- with .Organisation -}}
-	<script type="application/ld+json">
+{{- with .Organisation }}
+<script type="application/ld+json">
 {{ jsonPretty . }}
-	</script>
+</script>
 {{ end -}}
 <!-- =====================
     Schema - Navigation
     ===================== -->
 {{ safeHTML "<!-- Schema - Navigation -->" }}
-{{- with .Navigation -}}
-	<script type="application/ld+json">
+{{- with .Navigation }}
+<script type="application/ld+json">
 {{ jsonPretty . }}
-	</script>
+</script>
+{{ end -}}
+<!-- =====================
+    Snippets
+    ===================== -->
+{{- with .Snippets -}}
+	{{ range . }}
+        {{ printf "<!-- %s -->" .Name | safeHTML }}
+		{{ .Content | safeHTML }}
+	{{ end -}}
 {{ end -}}
