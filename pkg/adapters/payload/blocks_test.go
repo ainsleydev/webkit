@@ -59,7 +59,7 @@ func TestBlock_UnmarshalJSON(t *testing.T) {
 		"OK": {
 			input: `{"id":"123","blockType":"text","blockName":"Header","field":"value"}`,
 			want: Block{
-				Id:        "123",
+				ID:        "123",
 				BlockType: "text",
 				BlockName: ptr.StringPtr("Header"),
 				Fields: map[string]any{

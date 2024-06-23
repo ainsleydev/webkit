@@ -42,8 +42,8 @@ type Media struct {
 	CreatedAt string `json:"createdAt,omitempty"`
 	UpdatedAt string `json:"updatedAt,omitempty"`
 
-	// Key-value pairs of the media's fields, these pairs are defined by the block's
-	// schema and vary depending on the block type.
+	// Arbitrary key-value pairs of any other fields that appear within
+	// the schema but are not defined in the struct.
 	Fields map[string]any `json:"-"`
 
 	// RawJSON is the raw byte slice of the block, which can be used to decode
