@@ -8,6 +8,7 @@ import (
 
 	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	"github.com/ainsleydev/webkit/pkg/markup"
+	schemaorg "github.com/ainsleydev/webkit/pkg/markup/schema"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 	"github.com/ainsleydev/webkit/pkg/util/stringutil"
 )
@@ -68,11 +69,11 @@ func Head(ctx context.Context) markup.HeadProps {
 	}
 
 	if settings.Meta.StructuredData != nil { // Type is a map[string]any
-		props.Other += "<!-- Global Structured Data -->\n" + markup.MarshalLDJSONScript(settings.Meta.StructuredData)
+		props.Other += "<!-- Global Structured Data -->\n" + schemaorg.ToLDJSONScript(settings.Meta.StructuredData)
 	}
 
 	if pageMeta.StructuredData != nil { // Type is a map[string]any
-		props.Other += "<!-- Page Structured Data -->\n" + markup.MarshalLDJSONScript(pageMeta.StructuredData)
+		props.Other += "<!-- Page Structured Data -->\n" + schemaorg.ToLDJSONScript(pageMeta.StructuredData)
 	}
 
 	if settings.CodeInjection != nil && stringutil.IsNotEmpty(settings.CodeInjection.Head) {

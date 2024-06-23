@@ -15,6 +15,7 @@ import (
 
 	"github.com/ainsleydev/webkit/pkg/cache"
 	"github.com/ainsleydev/webkit/pkg/markup"
+	schemaorg "github.com/ainsleydev/webkit/pkg/markup/schema"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 	"github.com/ainsleydev/webkit/pkg/util/stringutil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
@@ -238,12 +239,10 @@ func (s *Settings) MarkupTwitterCard() *markup.TwitterCard {
 
 // MarkupSchemaOrganisation transforms the settings into a Schema.org Organisation
 // structure for use in the head of the frontend.
-func (s *Settings) MarkupSchemaOrganisation(url string) *markup.SchemaOrgOrganisation {
-	org := markup.SchemaOrgOrganisation{
-		Context: "https://schema.org",
-		Type:    "Organization",
-		ID:      url,
-		URL:     url,
+func (s *Settings) MarkupSchemaOrganisation(url string) *schemaorg.Organisation {
+	org := schemaorg.Organisation{
+		ID:  url,
+		URL: url,
 	}
 
 	if stringutil.IsNotEmpty(s.SiteName) {
@@ -263,8 +262,7 @@ func (s *Settings) MarkupSchemaOrganisation(url string) *markup.SchemaOrgOrganis
 	}
 
 	if s.Address != nil {
-		org.Address = markup.SchemaOrgOrganisationAddress{
-			Type:            "PostalAddress",
+		org.Address = schemaorg.Address{
 			StreetAddress:   s.Address.Format(),
 			AddressLocality: ptr.String(s.Address.City),
 			AddressRegion:   ptr.String(s.Address.County),

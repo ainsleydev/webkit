@@ -9,6 +9,7 @@ import (
 	"time"
 
 	webkitctx "github.com/ainsleydev/webkit/pkg/context"
+	schemaorg "github.com/ainsleydev/webkit/pkg/markup/schema"
 	"github.com/ainsleydev/webkit/pkg/tpl"
 )
 
@@ -45,8 +46,8 @@ type HeadProps struct {
 	// Schema, Meta & Opengraph
 	OpenGraph    *OpenGraph
 	Twitter      *TwitterCard
-	Organisation *SchemaOrgOrganisation
-	Navigation   *SchemaOrgNavItemList
+	Organisation *schemaorg.Organisation
+	Navigation   *schemaorg.BreadcrumbList
 
 	// Other (Code Injection)
 	Other string

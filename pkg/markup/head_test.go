@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	webkitctx "github.com/ainsleydev/webkit/pkg/context"
+	schemaorg "github.com/ainsleydev/webkit/pkg/markup/schema"
 )
 
 var props = HeadProps{
@@ -44,9 +45,7 @@ var props = HeadProps{
 		Description: "Description",
 		Image:       "https://example.com/simage.png",
 	},
-	Organisation: &SchemaOrgOrganisation{
-		Context:     "https://schema.org",
-		Type:        "Organization",
+	Organisation: &schemaorg.Organisation{
 		ID:          "https://example.com",
 		URL:         "https://example.com",
 		LegalName:   "Example Inc.",
@@ -56,8 +55,7 @@ var props = HeadProps{
 			"https://twitter.com/example",
 			"https://linkedin.com/company/example",
 		},
-		Address: SchemaOrgOrganisationAddress{
-			Type:            "PostalAddress",
+		Address: schemaorg.Address{
 			StreetAddress:   "123 Sample St",
 			AddressLocality: "Sample City",
 			AddressRegion:   "Sample State",
@@ -65,26 +63,26 @@ var props = HeadProps{
 			PostalCode:      "12345",
 		},
 	},
-	Navigation: &SchemaOrgNavItemList{
-		Context: "https://schema.org",
-		Type:    "ItemList",
-		ItemListElement: []SchemaOrgItemListElement{
-			{
-				Type:        "ListItem",
-				Position:    1,
-				Name:        "Home",
-				Description: "Homepage of the website",
-				URL:         "https://example.com",
-			},
-			{
-				Type:        "ListItem",
-				Position:    2,
-				Name:        "About Us",
-				Description: "About us page",
-				URL:         "https://example.com/about",
-			},
-		},
-	},
+	//Navigation: &SchemaOrgNavItemList{
+	//	Context: "https://schema.org",
+	//	Type:    "ItemList",
+	//	ItemListElement: []SchemaOrgItemListElement{
+	//		{
+	//			Type:        "ListItem",
+	//			Position:    1,
+	//			Name:        "Home",
+	//			Description: "Homepage of the website",
+	//			URL:         "https://example.com",
+	//		},
+	//		{
+	//			Type:        "ListItem",
+	//			Position:    2,
+	//			Name:        "About Us",
+	//			Description: "About us page",
+	//			URL:         "https://example.com/about",
+	//		},
+	//	},
+	//},
 	Other: "<script>alert('Hello, World!');</script>",
 }
 

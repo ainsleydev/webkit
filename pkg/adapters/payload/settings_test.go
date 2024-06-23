@@ -11,6 +11,7 @@ import (
 
 	"github.com/ainsleydev/webkit/pkg/cache"
 	"github.com/ainsleydev/webkit/pkg/markup"
+	schemaorg "github.com/ainsleydev/webkit/pkg/markup/schema"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
@@ -441,15 +442,13 @@ func TestSettings_MarkupSchemaOrganisation(t *testing.T) {
 
 	tt := map[string]struct {
 		input Settings
-		want  markup.SchemaOrgOrganisation
+		want  schemaorg.Organisation
 	}{
 		"Default": {
 			input: Settings{},
-			want: markup.SchemaOrgOrganisation{
-				Context: "https://schema.org",
-				Type:    "Organization",
-				ID:      url,
-				URL:     url,
+			want: schemaorg.Organisation{
+				ID:  url,
+				URL: url,
 			},
 		},
 		"Full": {
@@ -474,9 +473,7 @@ func TestSettings_MarkupSchemaOrganisation(t *testing.T) {
 					Country:  ptr.StringPtr("Country"),
 				},
 			},
-			want: markup.SchemaOrgOrganisation{
-				Context:     "https://schema.org",
-				Type:        "Organization",
+			want: schemaorg.Organisation{
 				ID:          url,
 				URL:         url,
 				LegalName:   "Site",
@@ -490,8 +487,7 @@ func TestSettings_MarkupSchemaOrganisation(t *testing.T) {
 					"https://x.com/example",
 					"https://youtube.com/example",
 				},
-				Address: markup.SchemaOrgOrganisationAddress{
-					Type:            "PostalAddress",
+				Address: schemaorg.Address{
 					StreetAddress:   "Line 1, Line 2, City, County, Country, 12345",
 					AddressLocality: "City",
 					AddressRegion:   "County",
