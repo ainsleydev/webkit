@@ -70,6 +70,7 @@ func TestNew_OK(t *testing.T) {
 		WithCache(cache.NewInMemory(time.Hour*24)),
 		WithBaseURL(baseURL),
 		WithAPIKey(apiKey),
+		WithNavigation(),
 		WithMaintenanceHandler(defaultMaintenanceRenderer),
 		WithGlobalMiddleware[string]("navigation"),
 	)

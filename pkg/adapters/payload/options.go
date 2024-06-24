@@ -66,3 +66,13 @@ func WithGlobalMiddleware[T any](global string) Option {
 		})
 	}
 }
+
+// WithNavigation is a functional option to set the navigation global middleware for the adapter.
+// The navigation middleware is used to inject the navigation data into the context.
+func WithNavigation() Option {
+	return func(a *Adapter) {
+		a.globalMiddlewares = append(a.globalMiddlewares, func(client *payloadcms.Client, store cache.Store) webkit.Plug {
+			return globalsMiddleware[Navigation](client, store, string(GlobalNavigation))
+		})
+	}
+}

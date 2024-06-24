@@ -165,7 +165,7 @@ func TestFormat(t *testing.T) {
 		input SettingsAddress
 		want  string
 	}{
-		"All Fields Present": {
+		"All Tabs Present": {
 			input: SettingsAddress{
 				Line1:    ptr.StringPtr("123 Main St"),
 				Line2:    ptr.StringPtr("Suite 500"),
@@ -176,7 +176,7 @@ func TestFormat(t *testing.T) {
 			},
 			want: "123 Main St, Suite 500, Metropolis, Gotham, UK, 12345",
 		},
-		"Some Fields Nil": {
+		"Some Tabs Nil": {
 			input: SettingsAddress{
 				Line1:    ptr.StringPtr("123 Main St"),
 				City:     ptr.StringPtr("Metropolis"),
@@ -184,7 +184,7 @@ func TestFormat(t *testing.T) {
 			},
 			want: "123 Main St, Metropolis, 12345",
 		},
-		"No Fields": {
+		"No Tabs": {
 			input: SettingsAddress{},
 			want:  "",
 		},
@@ -226,7 +226,7 @@ func TestToStringArray(t *testing.T) {
 			input: SettingsSocial{},
 			want:  []string{},
 		},
-		"All Fields": {
+		"All Tabs": {
 			input: SettingsSocial{
 				Facebook:  ptr.StringPtr("https://facebook.com/user"),
 				Instagram: ptr.StringPtr("https://instagram.com/user"),
@@ -244,7 +244,7 @@ func TestToStringArray(t *testing.T) {
 				"https://youtube.com/user",
 			},
 		},
-		"Some Fields Empty": {
+		"Some Tabs Empty": {
 			input: SettingsSocial{
 				Facebook: ptr.StringPtr("https://facebook.com/user"),
 				Tiktok:   ptr.StringPtr("https://tiktok.com/@user"),
@@ -306,11 +306,11 @@ func TestSettings_MarkupOpenGraph(t *testing.T) {
 				Locale:      "en_GB",
 				Image: []markup.OpengraphImage{
 					{
-						URL:    "https://example.com/image.jpg",
-						Type:   "image/jpeg",
-						Width:  1200,
-						Height: 630,
-						Alt:    "Alt",
+						URL:         "https://example.com/image.jpg",
+						ContentType: "image/jpeg",
+						Width:       1200,
+						Height:      630,
+						Alt:         "Alt",
 					},
 				},
 			},

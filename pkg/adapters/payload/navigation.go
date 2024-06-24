@@ -1,27 +1,28 @@
 package payload
 
 import (
-	"github.com/perimeterx/marshmallow"
 	"net/url"
+
+	"github.com/perimeterx/marshmallow"
 )
 
 // Navigation defines a common structure of a navigation layout
 type Navigation struct {
 	// Header navigational links that are typically required
 	// within Payload settings.
-	Header NavigationItem `json:"header,omitempty"`
+	Header NavigationItems `json:"header,omitempty"`
 
 	// Footer navigational links that are optionally required.
 	Footer NavigationItems `json:"footer,omitempty"`
 
-	// Arbitrary key-value pairs of any other fields that appear within
+	// Arbitrary key-value pairs of any other tabs that appear within
 	// the schema but are not defined in the struct.
-	Fields map[string]any `json:"-"`
+	Tabs map[string]any `json:"-"`
 }
 
 // UnmarshalJSON unmarshalls the JSON data into the Navigation type.
 // This method is used to extract known fields and assign the remaining
-// fields to the Fields map.
+// fields to the Tabs map.
 func (n *Navigation) UnmarshalJSON(data []byte) error {
 	var temp Navigation
 	result, err := marshmallow.Unmarshal(data,
@@ -33,13 +34,42 @@ func (n *Navigation) UnmarshalJSON(data []byte) error {
 	}
 
 	*n = temp
-	n.Fields = result
+	n.Tabs = result
 
 	return nil
 }
 
 // NavigationItems is a collection of NavigationItem types.
 type NavigationItems []NavigationItem
+
+// Len returns the length of the NavigationItems collection.
+func (n NavigationItems) Len() int {
+	return len(n)
+}
+
+// NavigationWalkerFunc defines the signature for the walker function.
+type NavigationWalkerFunc func(index int, item *NavigationItem)
+
+// Walk recursively visits each NavigationItem and its children.
+func (n NavigationItems) Walk(walker NavigationWalkerFunc) {
+	for i, item := range n {
+		walker(i+1, &item)
+		item.Children.Walk(walker)
+	}
+}
+
+// MaxDepth returns the maximum depth of the NavigationItems collection.
+// Index starts at 1, so if there is one nav menu with no children, the
+// depth is 1. If there is one nav menu with one child, the depth is 2.
+func (n NavigationItems) MaxDepth() int {
+	maxDepth := 0
+	n.Walk(func(index int, item *NavigationItem) {
+		if len(item.Children) > 0 {
+			maxDepth++
+		}
+	})
+	return maxDepth
+}
 
 // NavigationItem defines a common structure of a singular navigation item
 // from PayloadCMS.
@@ -52,9 +82,9 @@ type NavigationItem struct {
 	Title string `json:"title"`
 
 	// The URL that the navigation item should link to.
-	URL url.URL `json:"url"`
+	URL string `json:"url"`
 
-	// AN optional image media object associated with the link.
+	// An optional image media object associated with the link.
 	Image Media `json:"image,omitempty"`
 
 	// Optional children items of the navigation item. Maximum depth is
@@ -69,7 +99,7 @@ type NavigationItem struct {
 // UnmarshalJSON unmarshalls the JSON data into the NavigationItem type.
 // This method is used to extract known fields and assign the remaining
 // fields to the Fields map.
-func (i *NavigationItem) UnmarshalJSON(data []byte) error {
+func (n *NavigationItem) UnmarshalJSON(data []byte) error {
 	var temp NavigationItem
 	result, err := marshmallow.Unmarshal(data,
 		&temp,
@@ -79,8 +109,48 @@ func (i *NavigationItem) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*i = temp
-	i.Fields = result
+	*n = temp
+	n.Fields = result
 
 	return nil
+}
+
+// HasChildren returns true if the NavigationItem has children, false otherwise.
+func (n *NavigationItem) HasChildren() bool {
+	return len(n.Children) > 0
+}
+
+// IsRelativeURL checks if the URL is a relative URL.
+// It returns true if the URL is relative, false otherwise.
+func (n *NavigationItem) IsRelativeURL() bool {
+	parsedURL, err := url.Parse(n.URL)
+	if err != nil {
+		// If there's an error parsing the URL, we can assume
+		// it's not relative.
+		return false
+	}
+	return !parsedURL.IsAbs()
+}
+
+// IsActive checks if the provided path matches the URL of the NavigationItem
+// or any of its children recursively.
+//
+// This function is useful for highlighting the active navigation item in the UI.
+func (n *NavigationItem) IsActive(path string) bool {
+	// Check if the current path matches the NavigationItem's URL exactly
+	if n.URL == path {
+		return true
+	}
+
+	// Recursively check children if the NavigationItem has any
+	if n.HasChildren() {
+		for _, child := range n.Children {
+			if child.IsActive(path) {
+				return true
+			}
+		}
+	}
+
+	// Not active if path doesn't match current item or any children
+	return false
 }

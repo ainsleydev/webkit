@@ -93,8 +93,10 @@ const (
 	// CollectionRedirects defines the Payload redirects collection slug.
 	CollectionRedirects payloadcms.Collection = "redirects"
 
-	// GlobalSettings defines the Payload settings global settings slug.
+	// GlobalSettings defines the global settings slug.
 	GlobalSettings payloadcms.Global = "settings"
+	// GlobalNavigation defines the global navigation slug.
+	GlobalNavigation payloadcms.Global = "navigation"
 )
 
 var (

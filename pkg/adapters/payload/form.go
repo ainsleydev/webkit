@@ -59,7 +59,7 @@ const (
 
 // FormField represents a field in the Payload form builder.
 type FormField struct {
-	// Fields that appear in all block types.
+	// Tabs that appear in all block types.
 	ID        string        `json:"id,omitempty"`
 	BlockType FormBlockType `json:"blockType"`
 	Name      string        `json:"name"`
