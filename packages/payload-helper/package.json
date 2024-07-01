@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/payload-helper",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"keywords": [
@@ -20,7 +20,7 @@
 		"url": "https://ainsley.dev"
 	},
 	"scripts": {
-		"publish": "pnpm publish --access public",
+		"release": "npm publish --access public",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
