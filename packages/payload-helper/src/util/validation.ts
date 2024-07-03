@@ -1,6 +1,4 @@
-import { Validate } from 'payload/dist/fields/config/types';
-
-export const validateURL: Validate<string> = async (value) => {
+export const validateURL = async (value) => {
 	if (!value) {
 		return true;
 	}
@@ -12,7 +10,7 @@ export const validateURL: Validate<string> = async (value) => {
 	}
 };
 
-export const validatePostcode: Validate<string> = async (value) => {
+export const validatePostcode = async (value) => {
 	if (!value) {
 		return true;
 	}

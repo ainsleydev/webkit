@@ -1,4 +1,4 @@
-import type { GlobalConfig, Tab } from 'payload/types';
+import type { GlobalConfig, GroupField, Tab, UploadField } from 'payload';
 import { validatePostcode, validateURL } from '../util/validation';
 import { languages } from './locales';
 import { countries } from './countries';
@@ -10,7 +10,7 @@ import { countries } from './countries';
  * @param additionalTabs
  * @constructor
  */
-export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
+export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
 	return {
 		slug: 'settings',
 		typescript: {
@@ -83,7 +83,7 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 									description:
 										'Add a logo for the website that will be displayed in the header & across the website.',
 								},
-							},
+							} as UploadField,
 							{
 								name: 'robots',
 								type: 'textarea',
@@ -164,7 +164,7 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 										],
 									},
 								],
-							},
+							} as GroupField,
 							{
 								type: 'group',
 								name: 'address',
@@ -236,7 +236,7 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 										],
 									},
 								],
-							},
+							} as GroupField,
 							{
 								type: 'group',
 								name: 'social',
@@ -307,7 +307,7 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 										],
 									},
 								],
-							},
+							} as GroupField,
 						],
 					},
 					{

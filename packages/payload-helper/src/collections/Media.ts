@@ -1,5 +1,5 @@
-// import { slateEditor } from '@payloadcms/richtext-slate';
-import type { CollectionConfig, Field } from 'payload/types';
+import type { CollectionConfig, Field } from 'payload';
+import { lexicalEditor } from '@payloadcms/richtext-lexical';
 
 /**
  * Media Collection Configuration
@@ -9,12 +9,34 @@ import type { CollectionConfig, Field } from 'payload/types';
  * @param additionalFields
  * @constructor
  */
-export const Media = (filePath: string, additionalFields?: Field[]): CollectionConfig => {
+export const Media = (additionalFields?: Field[]): CollectionConfig => {
 	return {
 		slug: 'media',
+		access: {
+			read: () => true,
+		},
+		fields: [
+			{
+				name: 'alt',
+				type: 'text',
+				required: true,
+			},
+			{
+				name: 'caption',
+				type: 'richText',
+				required: false,
+				editor: lexicalEditor({
+					features: ({ defaultFeatures }) => {
+						return defaultFeatures.filter((feature) => {
+							return feature.key === 'paragraph' || feature.key === 'link';
+						});
+					},
+				}),
+			},
+			...(additionalFields ? additionalFields : []),
+		],
 		upload: {
-			staticURL: '/media',
-			staticDir: filePath,
+			staticDir: 'media',
 			imageSizes: [
 				// Original Size (for WebP & Avif)
 				{
@@ -128,22 +150,5 @@ export const Media = (filePath: string, additionalFields?: Field[]): CollectionC
 				},
 			],
 		},
-		fields: [
-			{
-				name: 'alt',
-				type: 'text',
-				required: true,
-			},
-			{
-				name: 'caption',
-				type: 'richText',
-				// editor: slateEditor({
-				// 		admin: {
-				// 			elements: ['link'],
-				// 		},
-				// 	}),
-			},
-			...(additionalFields ? additionalFields : []),
-		],
 	};
 };

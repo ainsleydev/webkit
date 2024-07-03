@@ -1,4 +1,4 @@
-import type { Field, GlobalConfig, Tab } from 'payload/types';
+import type { GlobalConfig, Tab, Field, ArrayField } from 'payload';
 
 /**
  * Navigation Configuration for the header and footer
@@ -111,7 +111,7 @@ export const Navigation = (config?: NavigationConfig): GlobalConfig => {
 					],
 				},
 			],
-		},
+		} as ArrayField,
 	];
 
 	if (config?.includeFooter) {
@@ -141,7 +141,7 @@ export const Navigation = (config?: NavigationConfig): GlobalConfig => {
 					],
 				},
 			],
-		});
+		} as ArrayField);
 	}
 
 	return {
@@ -158,7 +158,7 @@ export const Navigation = (config?: NavigationConfig): GlobalConfig => {
 		fields: [
 			{
 				type: 'tabs',
-				tabs: [...tabs, ...(config.additionalTabs ? config.additionalTabs : [])],
+				tabs: [...tabs, ...(config?.additionalTabs ? config.additionalTabs : [])],
 			},
 		],
 	};
