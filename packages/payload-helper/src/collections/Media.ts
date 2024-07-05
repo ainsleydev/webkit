@@ -1,15 +1,21 @@
 import type { CollectionConfig, Field } from 'payload';
-import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import {
+	LexicalEditorProps,
+	LexicalRichTextAdapterProvider,
+} from '@payloadcms/richtext-lexical/dist/types';
 
 /**
  * Media Collection Configuration
  * Additional fields will be appended to the media collection.
  *
- * @param filePath
- * @param additionalFields
  * @constructor
+ * @param editor
+ * @param additionalFields
  */
-export const Media = (additionalFields?: Field[]): CollectionConfig => {
+export const Media = (
+	editor: (props?: LexicalEditorProps) => LexicalRichTextAdapterProvider,
+	additionalFields?: Field[],
+): CollectionConfig => {
 	return {
 		slug: 'media',
 		access: {
@@ -25,7 +31,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 				name: 'caption',
 				type: 'richText',
 				required: false,
-				editor: lexicalEditor({
+				editor: editor({
 					features: ({ defaultFeatures }) => {
 						return defaultFeatures.filter((feature) => {
 							return feature.key === 'paragraph' || feature.key === 'link';

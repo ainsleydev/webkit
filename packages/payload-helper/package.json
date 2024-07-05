@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/payload-helper",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"keywords": [
@@ -25,7 +25,6 @@
 	},
 	"dependencies": {
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
-		"@payloadcms/richtext-slate": "beta",
 		"@payloadcms/richtext-lexical": "beta",
 		"json-schema": "^0.4.0",
 		"payload": "beta",
