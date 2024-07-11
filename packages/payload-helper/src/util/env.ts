@@ -2,7 +2,7 @@ function hasKey(key: string): boolean {
 	return Object.prototype.hasOwnProperty.call(process.env, key);
 }
 
-function envFn<T>(key: string, defaultValue?: T): string | T | undefined {
+function envFn<T>(key: string, defaultValue?: T): string | T {
 	return hasKey(key) ? process.env[key] : defaultValue;
 }
 

@@ -23,15 +23,19 @@
 		"release": "npm publish --access public",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
+	"bin": {
+		"payload-helper": "./src/gen/types.ts"
+	},
 	"dependencies": {
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
 		"@payloadcms/richtext-lexical": "beta",
-		"json-schema": "^0.4.0",
-		"payload": "beta",
+		"payload": "3.0.0-beta.59",
 		"pluralize": "^8.0.0"
 	},
 	"devDependencies": {
-		"@ainsleydev/eslint-config": "workspace:*"
+		"@ainsleydev/eslint-config": "workspace:*",
+		"json-schema": "^0.4.0",
+		"ts-node": "^10.9.2"
 	},
 	"engines": {
 		"node": ">=18",

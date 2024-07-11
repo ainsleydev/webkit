@@ -2,20 +2,22 @@ import type { JSONSchema4, JSONSchema4TypeName } from 'json-schema';
 
 import { singular } from 'pluralize';
 
-import type { Payload } from 'payload';
+import { deepCopyObject, getCollectionIDFieldTypes, Payload, toWords } from 'payload';
+import { fieldAffectsData, tabHasName } from 'payload/shared';
 import {
 	Field,
 	FieldAffectingData,
 	Option,
 	SanitizedGlobalConfig,
 	SanitizedCollectionConfig,
-} from 'payload/types';
-import { SanitizedConfig } from 'payload/config';
+} from 'payload';
+import { SanitizedConfig } from 'payload';
+// import {fieldAffectsData, tabHasName} from "payload/dist/fields/config/types";
 
-import { fieldAffectsData, tabHasName } from 'payload/dist/fields/config/types';
-import { deepCopyObject } from 'payload/dist/utilities/deepCopyObject';
-import { toWords } from 'payload/dist/utilities/formatLabels';
-import { getCollectionIDFieldTypes } from 'payload/dist/utilities/getCollectionIDFieldTypes';
+// import { fieldAffectsData, tabHasName } from 'payload/dist/fields/config/types';
+// import { deepCopyObject } from 'payload/dist/utilities/deepCopyObject';
+// import { toWords } from 'payload/dist/utilities/formatLabels';
+// import { getCollectionIDFieldTypes } from 'payload/dist/utilities/getCollectionIDFieldTypes';
 
 const fieldIsRequired = (field: Field) => {
 	const isConditional = Boolean(field?.admin && field?.admin?.condition);

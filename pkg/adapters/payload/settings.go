@@ -189,13 +189,16 @@ func (s *Settings) OpenGraph(url string) *markup.OpenGraph {
 		Locale:      s.Locale,
 	}
 	if s.Meta.Image != nil {
-		m.Image = append(m.Image, markup.OpengraphImage{
+		img := markup.OpengraphImage{
 			URL:         s.Meta.Image.URL,
 			ContentType: s.Meta.Image.MimeType,
 			Width:       int(ptr.Float64(s.Meta.Image.Width)),
 			Height:      int(ptr.Float64(s.Meta.Image.Height)),
-			Alt:         s.Meta.Image.Fields["alt"].(string),
-		})
+		}
+		if s.Meta.Image.Fields["alt"] != nil {
+			img.Alt = s.Meta.Image.Fields["alt"].(string)
+		}
+		m.Image = append(m.Image, img)
 	}
 	return m
 }
@@ -210,7 +213,9 @@ func (s *Settings) TwitterCard() *markup.TwitterCard {
 
 	if s.Meta.Image != nil {
 		card.Image = s.Meta.Image.URL
-		card.ImageAlt = s.Meta.Image.Fields["alt"].(string)
+		if s.Meta.Image.Fields["alt"] != nil {
+			card.ImageAlt = s.Meta.Image.Fields["alt"].(string)
+		}
 	}
 
 	if s.Social == nil || stringutil.IsEmpty(s.Social.X) {
