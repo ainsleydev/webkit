@@ -1,13 +1,34 @@
-/**
- * Payload Plugin
- */
-import type { Plugin, Config } from 'payload';
+import type { Config } from 'payload';
+import env from '../util/env';
+import { fieldMapper, schemas } from './schema';
 
 /**
- *
- * @param incomingConfig
- * @constructor
+ * Plugin Options
  */
-export const WebKitPlugin: Plugin = (incomingConfig: Config): Config => {
-	return incomingConfig;
-};
+export interface PluginOptions {
+	SEOFields: boolean;
+}
+
+/**
+ * Payload Helper Plugin for websites at ainsley.dev
+ *
+ * @constructor
+ * @param pluginOptions
+ */
+export const payloadHelper =
+	(pluginOptions: PluginOptions) =>
+	(incomingConfig: Config): Config => {
+		console.log(pluginOptions);
+
+		const genGoLang = env.bool('GEN_GOLANG', false);
+		if (genGoLang) {
+			incomingConfig.typescript.schema = schemas;
+			incomingConfig = fieldMapper(incomingConfig);
+		}
+
+		if (!incomingConfig.typescript || incomingConfig.typescript.outputFile === undefined) {
+			incomingConfig.typescript.outputFile = './types/payload.ts';
+		}
+
+		return incomingConfig;
+	};

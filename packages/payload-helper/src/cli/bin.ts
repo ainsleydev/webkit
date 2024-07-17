@@ -16,4 +16,6 @@ program
 		}
 	});
 
-await program.parseAsync(process.argv);
+export const bin = async () => {
+	await program.parseAsync(process.argv);
+};

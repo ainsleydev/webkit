@@ -36,6 +36,7 @@
 	"dependencies": {
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
 		"@payloadcms/richtext-lexical": "beta",
+		"@types/json-schema": "^7.0.15",
 		"chalk": "^5.3.0",
 		"commander": "^12.1.0",
 		"payload": "3.0.0-beta.59",
