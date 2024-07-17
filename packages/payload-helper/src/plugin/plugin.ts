@@ -22,7 +22,10 @@ export const payloadHelper =
 
 		const genGoLang = env.bool('GEN_GOLANG', false);
 		if (genGoLang) {
-			incomingConfig.typescript.schema = schemas;
+			incomingConfig.typescript = {
+				...incomingConfig.typescript,
+				schema: schemas(incomingConfig),
+			};
 			incomingConfig = fieldMapper(incomingConfig);
 		}
 

@@ -23,8 +23,7 @@
 	"scripts": {
 		"build": "pnpm clean && tsc",
 		"release": "npm publish --access public",
-		"clean": "rimraf {dist,*.tsbuildinfo}",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"clean": "rimraf {dist,*.tsbuildinfo}"
 	},
 	"bin": {
 		"payload-helper": "bin.js"

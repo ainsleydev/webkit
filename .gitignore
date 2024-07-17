@@ -29,6 +29,9 @@ dist/
 credentials.md
 CREDENTIALS.md
 
+# JS Build Files
+tsconfig.tsbuildinfo
+
 # Unit test reports
 TEST*.xml
 
