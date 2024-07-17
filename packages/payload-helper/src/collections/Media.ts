@@ -1,7 +1,10 @@
 import type { CollectionConfig, Field } from 'payload';
+
 import {
 	LexicalEditorProps,
 	LexicalRichTextAdapterProvider,
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
 } from '@payloadcms/richtext-lexical/dist/types';
 
 /**
@@ -32,7 +35,11 @@ export const Media = (
 				type: 'richText',
 				required: false,
 				editor: editor({
+					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+					// @ts-ignore
 					features: ({ defaultFeatures }) => {
+						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+						// @ts-ignore
 						return defaultFeatures.filter((feature) => {
 							return feature.key === 'paragraph' || feature.key === 'link';
 						});

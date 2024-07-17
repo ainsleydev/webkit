@@ -59,6 +59,11 @@ export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
 											description:
 												'Add a locale for the website, this will be outputted in the Open Graph schema and the top level HTML tag. Defaults to en_GB.',
 										},
+										typescriptSchema: [
+											() => ({
+												type: 'string',
+											}),
+										],
 									},
 								],
 							},

@@ -38,6 +38,11 @@ func GetSettings(ctx context.Context) (*Settings, error) {
 	return s.(*Settings), nil
 }
 
+// WithSettings is a helper function to set the Payload Settings in the context.
+func WithSettings(ctx context.Context, s *Settings) context.Context {
+	return context.WithValue(ctx, SettingsContextKey, s)
+}
+
 // MustGetSettings is a helper function to get the settings from the context.
 // If the settings are not found, it logs an error and returns nil.
 func MustGetSettings(ctx context.Context) *Settings {

@@ -12,7 +12,7 @@ export const findBySlug = (collection: string): PayloadHandler => {
 				collection,
 				where: {
 					slug: {
-						equals: req.routeParams.slug,
+						equals: req?.routeParams?.slug ?? '',
 					},
 				},
 				limit: 1,

@@ -3,6 +3,7 @@
 	"version": "0.0.3",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
+	"type": "module",
 	"keywords": [
 		"payload",
 		"payloadcms",
@@ -20,22 +21,32 @@
 		"url": "https://ainsley.dev"
 	},
 	"scripts": {
+		"build": "pnpm clean && tsc",
 		"release": "npm publish --access public",
+		"clean": "rimraf {dist,*.tsbuildinfo}",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"bin": {
-		"payload-helper": "./src/gen/types.ts"
+		"payload-helper": "bin.js"
 	},
+	"files": [
+		"dist",
+		"bin.js"
+	],
 	"dependencies": {
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
 		"@payloadcms/richtext-lexical": "beta",
+		"chalk": "^5.3.0",
+		"commander": "^12.1.0",
 		"payload": "3.0.0-beta.59",
 		"pluralize": "^8.0.0"
 	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
 		"json-schema": "^0.4.0",
-		"ts-node": "^10.9.2"
+		"rimraf": "3.0.2",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.5.3"
 	},
 	"engines": {
 		"node": ">=18",

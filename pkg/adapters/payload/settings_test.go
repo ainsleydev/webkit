@@ -46,6 +46,20 @@ func TestGetSettings(t *testing.T) {
 	})
 }
 
+func TestWithSettings(t *testing.T) {
+	t.Parallel()
+
+	s := &Settings{
+		Id:       123,
+		SiteName: ptr.StringPtr("Site Name"),
+	}
+
+	ctx := WithSettings(context.Background(), s)
+	got, err := GetSettings(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, s, got)
+}
+
 func TestMustGetSettings(t *testing.T) {
 	t.Parallel()
 

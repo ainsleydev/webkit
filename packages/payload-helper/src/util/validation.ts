@@ -1,4 +1,4 @@
-export const validateURL = async (value) => {
+export const validateURL = async (value: string) => {
 	if (!value) {
 		return true;
 	}
@@ -10,7 +10,7 @@ export const validateURL = async (value) => {
 	}
 };
 
-export const validatePostcode = async (value) => {
+export const validatePostcode = async (value: string) => {
 	if (!value) {
 		return true;
 	}
