@@ -85,7 +85,7 @@ export const fieldMapper = (config: Config) => {
 			case 'array':
 			case 'row':
 			case 'collapsible': {
-				if (field.type === 'group' && field.name == 'meta') {
+				if (field.type === 'group' && field.name === 'meta') {
 					field.typescriptSchema = [
 						() => ({ ...addGoJSONSchema('payload.SettingsMeta', true) }),
 					];
@@ -155,15 +155,10 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 		if (!jsonSchema.definitions) {
 			jsonSchema.definitions = {};
 		}
-		// biome-ignore lint/performance/noDelete: <explanation>
 		delete jsonSchema.properties.auth;
-		// biome-ignore lint/performance/noDelete: <explanation>
 		delete jsonSchema.definitions.media;
-		// biome-ignore lint/performance/noDelete: <explanation>
 		delete jsonSchema.properties?.collections?.properties?.media;
-		// biome-ignore lint/performance/noDelete: <explanation>
 		delete jsonSchema.definitions.redirects;
-		// biome-ignore lint/performance/noDelete: <explanation>
 		delete jsonSchema.properties?.collections?.properties?.redirects;
 		return jsonSchema;
 	},
@@ -216,7 +211,6 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 					};
 					return;
 				}
-				// biome-ignore lint/performance/noDelete:
 				delete property.oneOf;
 				property.$ref = `#/definitions/${property.payload.relationTo}`;
 			}
@@ -231,7 +225,6 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 		loopJSONSchemaProperties(jsonSchema, ({ property, key }) => {
 			if (key === 'blockType') {
 				property.type = 'string';
-				// biome-ignore lint/performance/noDelete:
 				delete property.const;
 			}
 		});
@@ -245,7 +238,6 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 		loopJSONSchemaProperties(jsonSchema, ({ property, key }) => {
 			const payload = property.payload;
 			if (payload && payload.type === 'relationship' && payload.name === 'form') {
-				// biome-ignore lint/performance/noDelete: <explanation>
 				delete property.$ref;
 			}
 		});
