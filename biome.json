@@ -1,0 +1,70 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+	"formatter": {
+		"enabled": true,
+		"formatWithErrors": false,
+		"indentStyle": "tab",
+		"indentWidth": 4,
+		"lineEnding": "lf",
+		"lineWidth": 100,
+		"attributePosition": "auto",
+		"ignore": [
+			"**/.DS_Store",
+			"**/.cache",
+			"**/.idea",
+			"**/.vscode",
+			"**/.tmp",
+			"**/.git/**",
+			"**/.hg/**",
+			"**/.pnp.*",
+			"**/.svn",
+			"**/.pnpm/**",
+			"**/build/**",
+			"**/dist/**",
+			"**/node_modules/**",
+			"**/temp/**",
+			"**/docs/**",
+			"**/*.html",
+			"**/pnpm-lock.yaml",
+			"**/package-lock.json",
+			"**/yarn.lock",
+			"**/.env",
+			"**/.env.*",
+			"**/*.go",
+			"**/*.gohtml",
+			"**/*.tmpl",
+			"**/.next",
+			"**/plugins/**"
+		]
+	},
+	"organizeImports": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"complexity": {
+				"noForEach": "off"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"include": ["*.yaml"],
+			"javascript": {
+				"formatter": {
+					"quoteStyle": "double"
+				}
+			}
+		},
+		{
+			"include": ["*.yml"],
+			"javascript": {
+				"formatter": {
+					"quoteStyle": "double"
+				}
+			}
+		}
+	]
+}

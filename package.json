@@ -24,7 +24,11 @@
 		"precommit": "npx lint-staged",
 		"prepare": "husky",
 		"fix": "eslint . --fix && prettier --write .",
-		"lint": "eslint .",
+
+		"lint": "pnpm lint:go && pnpm lint:js",
+		"lint:go": "golangci-lint run --fix ./...",
+		"lint:js": "biome lint --write .",
+
 		"format": "prettier --write .",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
