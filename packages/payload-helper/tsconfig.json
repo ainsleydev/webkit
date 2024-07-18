@@ -11,7 +11,7 @@
 		"noEmit": false,
 		"esModuleInterop": true,
 		"module": "NodeNext",
-		"moduleResolution": "nodenext",
+		"moduleResolution": "NodeNext",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"jsx": "preserve",
@@ -23,6 +23,6 @@
 		],
 		"target": "ES2020"
 	},
-	"include": ["src/cli"],
+	"include": ["src/cli/*.ts"],
 	"exclude": ["node_modules"]
 }

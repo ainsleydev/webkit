@@ -1,53 +1,54 @@
-import type { GlobalConfig, GroupField, Tab, UploadField } from 'payload';
-import { validatePostcode, validateURL } from '../util/validation';
-import { languages } from './locales';
-import { countries } from './countries';
+import type { GlobalConfig, GroupField, Tab, UploadField } from "payload";
+import { validatePostcode, validateURL } from "../util/validation";
+import { languages } from "./locales";
+import {countries} from "./countries";
 
 /**
  * Settings Global Configuration
  * Additional tabs will be appended to the settings page.
+ * TODO, type error in here somewhere.
  *
  * @param additionalTabs
  * @constructor
  */
 export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
 	return {
-		slug: 'settings',
+		slug: "settings",
 		typescript: {
-			interface: 'Settings',
+			interface: "Settings",
 		},
 		graphQL: {
-			name: 'Settings',
+			name: "Settings",
 		},
 		access: {
 			read: () => true,
 		},
 		fields: [
 			{
-				type: 'tabs',
+				type: "tabs",
 				tabs: [
 					{
-						label: 'Global',
-						description: 'Configure global settings for the website.',
+						label: "Global",
+						description: "Configure global settings for the website.",
 						fields: [
 							{
-								type: 'row',
+								type: "row",
 								fields: [
 									{
-										name: 'siteName',
-										type: 'text',
-										label: 'Site Name',
+										name: "siteName",
+										type: "text",
+										label: "Site Name",
 										admin: {
-											width: '50%',
+											width: "50%",
 											description:
-												'Add a site name for the website, this will be outputted in the Open Graph schema as well as a suffix for the meta title.',
+												"Add a site name for the website, this will be outputted in the Open Graph schema as well as a suffix for the meta title.",
 										},
 									},
 									{
-										name: 'locale',
-										type: 'select',
-										label: 'Locale',
-										defaultValue: 'en_GB',
+										name: "locale",
+										type: "select",
+										label: "Locale",
+										defaultValue: "en_GB",
 										options: languages.map((l) => {
 											return {
 												label: l.name,
@@ -55,79 +56,78 @@ export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
 											};
 										}),
 										admin: {
-											width: '50%',
+											width: "50%",
 											description:
-												'Add a locale for the website, this will be outputted in the Open Graph schema and the top level HTML tag. Defaults to en_GB.',
+												"Add a locale for the website, this will be outputted in the Open Graph schema and the top level HTML tag. Defaults to en_GB.",
 										},
 										typescriptSchema: [
 											() => ({
-												type: 'string',
+												type: "string",
 											}),
 										],
 									},
 								],
 							},
 							{
-								name: 'tagLine',
-								type: 'textarea',
-								label: 'Tag Line',
+								name: "tagLine",
+								type: "textarea",
+								label: "Tag Line",
 								admin: {
-									description: 'In a few words, explain what this site is about',
+									description:
+										"In a few words, explain what this site is about",
 								},
 							},
 							{
-								name: 'logo',
-								type: 'upload',
-								relationTo: 'media',
+								name: "logo",
+								type: "upload",
+								relationTo: "media",
 								filterOptions: {
 									mimeType: {
-										contains: 'image',
+										contains: "image",
 									},
 								},
 								admin: {
 									description:
-										'Add a logo for the website that will be displayed in the header & across the website.',
+										"Add a logo for the website that will be displayed in the header & across the website.",
 								},
 							} as UploadField,
 							{
-								name: 'robots',
-								type: 'textarea',
-								label: 'Robots.txt',
+								name: "robots",
+								type: "textarea",
+								label: "Robots.txt",
 								admin: {
 									description:
-										'Robots.txt is a text file webmasters create to instruct web robots (typically search engine robots) how to crawl pages on their website.',
+										"Robots.txt is a text file webmasters create to instruct web robots (typically search engine robots) how to crawl pages on their website.",
 								},
 							},
 						],
 					},
 					{
-						label: 'Code Injection',
+						label: "Code Injection",
 						description:
-							'Code injection allows you to inject a small snippet of HTML into your site. It can be a css override, analytics of a block javascript.',
+							"Code injection allows you to inject a small snippet of HTML into your site. It can be a css override, analytics of a block javascript.",
 						fields: [
 							{
-								name: 'codeInjection',
-								type: 'group',
-								interfaceName: 'CodeInjection',
+								name: "codeInjection",
+								type: "group",
 								fields: [
 									{
-										name: 'head',
-										type: 'code',
-										label: 'Head',
+										name: "head",
+										type: "code",
+										label: "Head",
 										admin: {
-											language: 'html',
+											language: "html",
 											description:
-												'Outputs code within the <head> of the website.',
+												"Outputs code within the <head> of the website.",
 										},
 									},
 									{
-										name: 'footer',
-										type: 'code',
-										label: 'Footer',
+										name: "footer",
+										type: "code",
+										label: "Footer",
 										admin: {
-											language: 'html',
-											description:
-												'Outputs code in the footer of the website.',
+											language: "html",
+											description: "Outputs code in the footer of the website.",
 										},
 									},
 								],
@@ -135,35 +135,34 @@ export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
 						],
 					},
 					{
-						label: 'Contact Details',
+						label: "Contact Details",
 						fields: [
 							{
-								name: 'contact',
-								type: 'group',
-								interfaceName: 'Contact',
+								name: "contact",
+								type: "group",
 								admin: {
 									hideGutter: true,
 									description:
-										'Add global contact details for the website that will be used in schema & contact pages.',
+										"Add global contact details for the website that will be used in schema & contact pages.",
 								},
 								fields: [
 									{
-										type: 'row',
+										type: "row",
 										fields: [
 											{
-												name: 'email',
-												type: 'email',
-												label: 'Email',
+												name: "email",
+												type: "email",
+												label: "Email",
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'telephone',
-												type: 'text',
-												label: 'Telephone',
+												name: "telephone",
+												type: "text",
+												label: "Telephone",
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 										],
@@ -171,63 +170,62 @@ export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
 								],
 							} as GroupField,
 							{
-								type: 'group',
-								name: 'address',
-								label: 'Address',
-								interfaceName: 'Address',
+								type: "group",
+								name: "address",
+								label: "Address",
 								admin: {
 									hideGutter: true,
-									description: 'Add an address for the website.',
+									description: "Add an address for the website.",
 								},
 								fields: [
 									{
-										type: 'row',
+										type: "row",
 										fields: [
 											{
-												name: 'line1',
-												type: 'text',
-												label: 'Line 1',
+												name: "line1",
+												type: "text",
+												label: "Line 1",
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'line2',
-												type: 'text',
-												label: 'Line 2',
+												name: "line2",
+												type: "text",
+												label: "Line 2",
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'city',
-												type: 'text',
-												label: 'City',
+												name: "city",
+												type: "text",
+												label: "City",
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'county',
-												type: 'text',
-												label: 'County',
+												name: "county",
+												type: "text",
+												label: "County",
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'postcode',
-												type: 'text',
-												label: 'Postcode',
+												name: "postcode",
+												type: "text",
+												label: "Postcode",
 												validate: validatePostcode,
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'country',
-												type: 'select',
-												label: 'Country',
+												name: "country",
+												type: "select",
+												label: "Country",
 												options: countries.map((c) => {
 													return {
 														label: c,
@@ -235,7 +233,7 @@ export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
 													};
 												}),
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 										],
@@ -243,70 +241,69 @@ export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
 								],
 							} as GroupField,
 							{
-								type: 'group',
-								name: 'social',
-								label: 'Social Links',
-								interfaceName: 'Social',
+								type: "group",
+								name: "social",
+								label: "Social Links",
 								admin: {
 									hideGutter: true,
-									description: 'Add social links for the website.',
+									description: "Add social links for the website.",
 								},
 								fields: [
 									{
-										type: 'row',
+										type: "row",
 										fields: [
 											{
-												name: 'linkedIn',
-												type: 'text',
-												label: 'LinkedIn',
+												name: "linkedIn",
+												type: "text",
+												label: "LinkedIn",
 												validate: validateURL,
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'x',
-												type: 'text',
-												label: 'X',
+												name: "x",
+												type: "text",
+												label: "X",
 												validate: validateURL,
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'facebook',
-												type: 'text',
-												label: 'Facebook',
+												name: "facebook",
+												type: "text",
+												label: "Facebook",
 												validate: validateURL,
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'instagram',
-												type: 'text',
-												label: 'Instagram',
+												name: "instagram",
+												type: "text",
+												label: "Instagram",
 												validate: validateURL,
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'youtube',
-												type: 'text',
-												label: 'Youtube',
+												name: "youtube",
+												type: "text",
+												label: "Youtube",
 												validate: validateURL,
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 											{
-												name: 'tiktok',
-												type: 'text',
-												label: 'TikTok',
+												name: "tiktok",
+												type: "text",
+												label: "TikTok",
 												validate: validateURL,
 												admin: {
-													width: '50%',
+													width: "50%",
 												},
 											},
 										],
@@ -316,37 +313,36 @@ export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
 						],
 					},
 					{
-						label: 'Maintenance',
+						label: "Maintenance",
 						fields: [
 							{
-								name: 'maintenance',
-								type: 'group',
-								interfaceName: 'Maintenance',
+								name: "maintenance",
+								type: "group",
 								fields: [
 									{
-										name: 'enabled',
-										type: 'checkbox',
-										label: 'Enable',
+										name: "enabled",
+										type: "checkbox",
+										label: "Enable",
 										admin: {
 											description:
-												'Enable maintenance mode for the site, this will use a maintenance page template and not include any of the sites functioanlity.',
+												"Enable maintenance mode for the site, this will use a maintenance page template and not include any of the sites functioanlity.",
 										},
 									},
 									{
-										name: 'title',
-										type: 'text',
-										label: 'Title',
+										name: "title",
+										type: "text",
+										label: "Title",
 										admin: {
-											description: 'Add a title for the maintenance page.',
+											description: "Add a title for the maintenance page.",
 										},
 									},
 									{
-										name: 'content',
-										type: 'textarea',
-										label: 'Content',
+										name: "content",
+										type: "textarea",
+										label: "Content",
 										admin: {
 											description:
-												'Add content for the maintenance page, it will appear beneath the title.',
+												"Add content for the maintenance page, it will appear beneath the title.",
 										},
 									},
 								],

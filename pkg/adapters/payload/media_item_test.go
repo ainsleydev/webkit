@@ -179,7 +179,7 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 		"OK": {
 			input: in,
 			want: Media{
-				Id:        15,
+				ID:        15,
 				CreatedAt: "2024-05-17T18:01:52.169Z",
 				UpdatedAt: "2024-05-17T18:01:52.169Z",
 				URL:       "https://example.com/media/image.png",
@@ -226,37 +226,33 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 }
 
 func TestMediaSizes_SortByWidth(t *testing.T) {
-	float64Ptr := func(v float64) *float64 {
-		return &v
-	}
-
 	tt := map[string]struct {
 		input MediaSizes
 		want  []string
 	}{
 		"Sorted widths": {
 			input: MediaSizes{
-				"size1": {Width: float64Ptr(100)},
-				"size2": {Width: float64Ptr(200)},
-				"size3": {Width: float64Ptr(300)},
+				"size1": {Width: ptr.Float64Ptr(100)},
+				"size2": {Width: ptr.Float64Ptr(200)},
+				"size3": {Width: ptr.Float64Ptr(300)},
 			},
 			want: []string{"size1", "size2", "size3"},
 		},
 		"Nil widths": {
 			input: MediaSizes{
-				"size1": {Width: float64Ptr(200)},
+				"size1": {Width: ptr.Float64Ptr(200)},
 				"size2": {Width: nil},
-				"size3": {Width: float64Ptr(100)},
+				"size3": {Width: ptr.Float64Ptr(100)},
 				"size4": {Width: nil},
 			},
 			want: []string{"size3", "size1", "size2", "size4"},
 		},
 		"Nil widths at end": {
 			input: MediaSizes{
-				"size1": {Width: float64Ptr(200)},
+				"size1": {Width: ptr.Float64Ptr(200)},
 				"size2": {Width: nil},
-				"size3": {Width: float64Ptr(100)},
-				"size4": {Width: float64Ptr(300)},
+				"size3": {Width: ptr.Float64Ptr(100)},
+				"size4": {Width: ptr.Float64Ptr(300)},
 				"size5": {Width: nil},
 			},
 			want: []string{"size3", "size1", "size4", "size2", "size5"},
@@ -271,7 +267,7 @@ func TestMediaSizes_SortByWidth(t *testing.T) {
 		},
 		"Nil width after non-nil width": {
 			input: MediaSizes{
-				"size1": {Width: float64Ptr(100)},
+				"size1": {Width: ptr.Float64Ptr(100)},
 				"size2": {Width: nil},
 			},
 			want: []string{"size1", "size2"},
@@ -286,6 +282,58 @@ func TestMediaSizes_SortByWidth(t *testing.T) {
 				sizes = append(sizes, size.Size)
 			}
 			assert.Equal(t, test.want, sizes)
+		})
+	}
+}
+
+func TestMediaFields_Alt(t *testing.T) {
+	ttt := map[string]struct {
+		input MediaFields
+		want  string
+	}{
+		"Alt Field Present": {
+			input: MediaFields{"alt": "Alt Text"},
+			want:  "Alt Text",
+		},
+		"Alt Field Missing": {
+			input: MediaFields{},
+			want:  "",
+		},
+		"Alt Field Not A String": {
+			input: MediaFields{"alt": 123},
+			want:  "",
+		},
+	}
+
+	for name, test := range ttt {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.want, test.input.Alt())
+		})
+	}
+}
+
+func TestMediaFields_Caption(t *testing.T) {
+	ttt := map[string]struct {
+		input MediaFields
+		want  string
+	}{
+		"Caption Field Present": {
+			input: MediaFields{"caption": "Caption Text"},
+			want:  "Caption Text",
+		},
+		"Caption Field Missing": {
+			input: MediaFields{},
+			want:  "",
+		},
+		"Caption Field Not A String": {
+			input: MediaFields{"caption": 123},
+			want:  "",
+		},
+	}
+
+	for name, test := range ttt {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.want, test.input.Caption())
 		})
 	}
 }

@@ -1,4 +1,5 @@
 import { Field } from 'payload';
+// @ts-ignore
 import { validateURL } from '../util/validation';
 
 /**
@@ -37,6 +38,9 @@ export const SEOFields: Field[] = [
 		name: 'structuredData',
 		type: 'json',
 		label: 'Structured Data',
+		// typescriptSchema: [
+		// 	() => ({...addGoJSONSchema('[]byte', false)}),
+		// ],
 		admin: {
 			description:
 				'Structured data is a standardized format for providing information about a page and classifying the page content. The site Schema.org contains a standardised list of markup that the major search engines — Google, Bing, Yahoo and Yandex — have collectively agreed to support.',

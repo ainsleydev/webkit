@@ -5,7 +5,7 @@ import { findConfig, importConfig } from 'payload/node';
 /**
  * Creates JSON schema types of Payloads Collections & Globals
  */
-export async function generateTypes(): Promise<void> {
+export async function generateTypes(outFile: string): Promise<void> {
 	console.log('Compiling JSON types for Collections and Globals...');
 
 	let configPath = '';

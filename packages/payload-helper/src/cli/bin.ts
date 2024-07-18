@@ -10,7 +10,7 @@ program
 	.description('Generate JSON schema types for Payload CMS')
 	.action(async () => {
 		try {
-			await generateTypes();
+			await generateTypes('');
 		} catch (error) {
 			console.log(chalk.red(error));
 		}

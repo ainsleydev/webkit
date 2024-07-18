@@ -2,6 +2,37 @@ import type { JSONSchema4 } from 'json-schema';
 import type { Config, Field } from 'payload';
 
 /**
+ * This function iterates over properties in JSON schema definitions,
+ * passing each property and its key to a callback function.
+ */
+const loopJSONSchemaProperties = (jsonSchema: JSONSchema4, callback: (args: { key: string, property: JSONSchema4 }) => void): JSONSchema4 => {
+	if (!jsonSchema.definitions) {
+		return jsonSchema;
+	}
+	Object.entries(jsonSchema.definitions).forEach(([definitionKey, definition]) => {
+		if (definition.properties) {
+			Object.entries(definition.properties).forEach(([propertyKey, property]) => {
+				callback({ key: propertyKey, property });
+			});
+		}
+	});
+	return jsonSchema;
+};
+
+/**
+ * Adds the necessary GoLang type conversions as a helper func.
+ */
+export const addGoJSONSchema = (type: string, nillable: boolean): Record<string, unknown> => {
+	return {
+		goJSONSchema: {
+			imports: ['github.com/ainsleydev/webkit/pkg/adapters/payload'],
+			nillable: nillable,
+			type: type,
+		}
+	}
+}
+
+/**
  * Iterates over all the fields within the config, for both collections
  * and globals, and transforms the JSON schema
  * to include the necessary GoLang schema.
@@ -13,25 +44,28 @@ export const fieldMapper = (config: Config) => {
 		switch (field.type) {
 			case 'blocks':
 				field.typescriptSchema = [
-					() => ({
-						goJSONSchema: {
-							imports: ['github.com/ainsleydev/webkit/pkg/adapters/payload'],
-							nillable: false,
-							type: 'payload.Blocks',
-						},
-					}),
+					() => ({...addGoJSONSchema('payload.Blocks', false)}),
+				];
+				field.blocks.forEach((block) => {
+					block.fields = block.fields.map((f) => mapper(f));
+				});
+				break;
+			case 'json':
+				field.typescriptSchema = [
+					() => ({...addGoJSONSchema('[]byte', false)}),
 				];
 				break;
 			case 'richText':
 				field.typescriptSchema = [
 					() => ({
 						type: 'string',
-						goJSONSchema: {
-							imports: ['github.com/ainsleydev/webkit/pkg/adapters/payload'],
-							nillable: false,
-							type: 'payload.RichText',
-						},
+						...addGoJSONSchema('payload.RichText', false),
 					}),
+				];
+				break;
+			case 'upload':
+				field.typescriptSchema = [
+					() => ({...addGoJSONSchema('payload.Media', field.required === true)}),
 				];
 				break;
 			case 'tabs': {
@@ -40,10 +74,54 @@ export const fieldMapper = (config: Config) => {
 				});
 				break;
 			}
+			case 'relationship': {
+				if (field.relationTo === 'forms') {
+					field.typescriptSchema = [
+						() => ({...addGoJSONSchema('payload.Form', field.required === true)}),
+					];
+				}
+				break;
+			}
+			case 'group':
 			case 'array':
 			case 'row':
 			case 'collapsible': {
+				if (field.type === 'group' && field.name == 'meta') {
+					field.typescriptSchema = [
+						() => ({...addGoJSONSchema('payload.SettingsMeta', true)}),
+					];
+				}
 				field.fields = field.fields.map((f) => mapper(f));
+				break;
+			}
+			// SEE: https://github.com/ainsleydev/webkit/blob/cdfa078605bec4ee92f2424f69271a0bf6b71366/packages/payload-helper/src/gen/schema.ts#L235
+		}
+
+		if (field.type !== "ui") {
+			if (!Array.isArray(field.typescriptSchema)) {
+				field.typescriptSchema = [];
+			}
+
+			if (field.type !== "tabs" && field.type !== "row" && field.type !== "collapsible") {
+				field.typescriptSchema.push(
+					({jsonSchema}) => {
+						const payload = {
+							name: field.name,
+							type: field.type,
+							label: field.label,
+						} as Record<string, unknown>
+
+						if (field.type === "relationship") {
+							payload.hasMany = field.hasMany;
+							payload.relationTo = field.relationTo;
+						}
+
+						return {
+							...jsonSchema,
+							payload,
+						};
+					}
+				);
 			}
 		}
 
@@ -57,7 +135,7 @@ export const fieldMapper = (config: Config) => {
 	}
 
 	if (config.globals) {
-		config.globals.forEach((global) => {
+		config.globals.forEach((global, index) => {
 			global.fields = global.fields.map((field) => mapper(field));
 		});
 	}
@@ -71,45 +149,109 @@ export const fieldMapper = (config: Config) => {
  */
 export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> = [
 	/**
-	 * Removes the auth property from the schema
+	 * Removes the auth & uneeded definitions from the schema.
 	 */
-	({ jsonSchema }) => {
+	({ jsonSchema }): JSONSchema4 => {
 		if (!jsonSchema.properties) {
 			jsonSchema.properties = {};
 		}
+		if (!jsonSchema.definitions) {
+			jsonSchema.definitions = {};
+		}
 		// biome-ignore lint/performance/noDelete: <explanation>
 		delete jsonSchema.properties.auth;
+		// biome-ignore lint/performance/noDelete: <explanation>
+		delete jsonSchema.definitions.media;
+		// biome-ignore lint/performance/noDelete: <explanation>
+		delete jsonSchema.properties?.collections?.properties?.media;
+		// biome-ignore lint/performance/noDelete: <explanation>
+		delete jsonSchema.definitions.redirects;
+		// biome-ignore lint/performance/noDelete: <explanation>
+		delete jsonSchema.properties?.collections?.properties?.redirects;
 		return jsonSchema;
 	},
 	/**
 	 * Adds the settings and media definitions to the schema
 	 */
-	({ jsonSchema }) => {
+	({ jsonSchema }): JSONSchema4 => {
 		if (!jsonSchema.definitions) {
 			jsonSchema.definitions = {};
 		}
 
-		jsonSchema.definitions.settings = {
-			type: 'object',
-			additionalProperties: false,
-			fields: [],
-			goJSONSchema: {
-				imports: ['github.com/ainsleydev/webkit/pkg/adapters/payload'],
-				nillable: false,
-				type: 'payload.Settings',
-			},
-		};
+		if ('settings' in jsonSchema.definitions) {
+			jsonSchema.definitions.settings = {
+				type: 'object',
+				fields: [],
+				...addGoJSONSchema('payload.Settings', false),
+			};
+		}
 
-		jsonSchema.definitions.media = {
-			type: 'object',
-			additionalProperties: false,
-			goJSONSchema: {
-				imports: ['github.com/ainsleydev/webkit/pkg/adapters/payload'],
-				nillable: false,
-				type: 'payload.Media',
-			},
-		};
+		if ('forms' in jsonSchema.definitions) {
+			jsonSchema.definitions.forms = {
+				type: 'object',
+				...addGoJSONSchema('payload.Form', false),
+				fields: [],
+			};
+		}
 
+		if ('form-submissions' in jsonSchema.definitions) {
+			jsonSchema.definitions['form-submissions'] = {
+				type: 'object',
+				...addGoJSONSchema('payload.FormSubmission', false),
+				fields: [],
+			};
+		}
+
+		return jsonSchema;
+	},
+	/**
+	 * Updates the JSON schema so that it doesn't feature oneOf, so Go doesn't
+	 * output it as an interface{}.
+	 */
+	({ jsonSchema }): JSONSchema4 => {
+		loopJSONSchemaProperties(jsonSchema, ({ property}) => {
+			const payload = property.payload;
+			if (payload && payload.type === 'relationship') {
+				if (payload.hasMany) {
+					property.type = 'array';
+					property.items = {
+						$ref: `#/definitions/${payload.relationTo}`,
+					};
+					return;
+				}
+				// biome-ignore lint/performance/noDelete:
+				delete property.oneOf;
+				property.$ref = `#/definitions/${property.payload.relationTo}`;
+			}
+		})
+		return jsonSchema;
+	},
+	/**
+	 * Changes blockType to a string so it's not an *interface{} when
+	 * comparing block types in Go.
+	 */
+	({ jsonSchema }): JSONSchema4 => {
+		loopJSONSchemaProperties(jsonSchema, ({property, key}) => {
+			if (key === "blockType") {
+				property.type = "string";
+				// biome-ignore lint/performance/noDelete:
+				delete property.const;
+			}
+		})
+		return jsonSchema;
+	},
+	/**
+	 * Changes blockType to a string so it's not an *interface{} when
+	 * comparing block types in Go.
+	 */
+	({ jsonSchema }): JSONSchema4 => {
+		loopJSONSchemaProperties(jsonSchema, ({property, key}) => {
+			const payload = property.payload;
+			if (payload && payload.type === 'relationship' && payload.name === 'form') {
+				// biome-ignore lint/performance/noDelete: <explanation>
+				delete property.$ref;
+			}
+		})
 		return jsonSchema;
 	},
 ];

@@ -2,6 +2,7 @@ package payload
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/ainsleydev/webkit/pkg/adapters/payload/internal/tpl"
@@ -17,7 +18,7 @@ import (
 // TypeScript Bindings:
 // https://github.com/payloadcms/payload/blob/main/packages/plugin-form-builder/src/types.ts
 type Form struct {
-	ID                int                  `json:"id"`
+	ID                float64              `json:"id"`
 	Title             string               `json:"title"`
 	Fields            []FormField          `json:"fields,omitempty"`
 	SubmitButtonLabel *string              `json:"submitButtonLabel,omitempty"`
@@ -71,6 +72,15 @@ type FormField struct {
 	BlockName    *string                  `json:"blockName,omitempty"`
 	Message      []map[string]interface{} `json:"message,omitempty"`
 	Options      []FormOption             `json:"options,omitempty"`
+}
+
+func (f FormField) Render(_ context.Context, w io.Writer) error {
+	str := ""
+	if f.BlockType == FormBlockTypeText {
+		str = fmt.Sprintf(`<input type="text" name="%s" id="%s" />`, f.Name, f.ID)
+	}
+	_, err := w.Write([]byte(str))
+	return err
 }
 
 // FormRedirect defines the type of confirmation message to display after

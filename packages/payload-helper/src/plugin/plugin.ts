@@ -1,12 +1,12 @@
 import type { Config } from 'payload';
-import env from '../util/env';
 import { fieldMapper, schemas } from './schema';
+import env from "../util/env";
 
 /**
  * Plugin Options
  */
 export interface PluginOptions {
-	SEOFields: boolean;
+	SEOFields?: boolean;
 }
 
 /**
@@ -16,7 +16,7 @@ export interface PluginOptions {
  * @param pluginOptions
  */
 export const payloadHelper =
-	(pluginOptions: PluginOptions) =>
+	(pluginOptions: {}) =>
 	(incomingConfig: Config): Config => {
 		console.log(pluginOptions);
 
@@ -24,14 +24,13 @@ export const payloadHelper =
 		if (genGoLang) {
 			incomingConfig.typescript = {
 				...incomingConfig.typescript,
-				schema: schemas(incomingConfig),
+				schema: schemas,
 			};
 			incomingConfig = fieldMapper(incomingConfig);
 		}
 
-		if (!incomingConfig.typescript || incomingConfig.typescript.outputFile === undefined) {
-			incomingConfig.typescript.outputFile = './types/payload.ts';
-		}
+		incomingConfig.typescript = incomingConfig.typescript || {};
+		incomingConfig.typescript.outputFile = './src/types/payload.ts';
 
 		return incomingConfig;
 	};
