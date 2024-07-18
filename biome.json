@@ -49,6 +49,12 @@
 			}
 		}
 	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"jsxQuoteStyle": "single"
+		}
+	},
 	"overrides": [
 		{
 			"include": ["*.yaml"],

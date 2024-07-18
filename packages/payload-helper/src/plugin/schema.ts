@@ -5,7 +5,10 @@ import type { Config, Field } from 'payload';
  * This function iterates over properties in JSON schema definitions,
  * passing each property and its key to a callback function.
  */
-const loopJSONSchemaProperties = (jsonSchema: JSONSchema4, callback: (args: { key: string, property: JSONSchema4 }) => void): JSONSchema4 => {
+const loopJSONSchemaProperties = (
+	jsonSchema: JSONSchema4,
+	callback: (args: { key: string; property: JSONSchema4 }) => void,
+): JSONSchema4 => {
 	if (!jsonSchema.definitions) {
 		return jsonSchema;
 	}
@@ -28,9 +31,9 @@ export const addGoJSONSchema = (type: string, nillable: boolean): Record<string,
 			imports: ['github.com/ainsleydev/webkit/pkg/adapters/payload'],
 			nillable: nillable,
 			type: type,
-		}
-	}
-}
+		},
+	};
+};
 
 /**
  * Iterates over all the fields within the config, for both collections
@@ -43,17 +46,13 @@ export const fieldMapper = (config: Config) => {
 	const mapper = (field: Field): Field => {
 		switch (field.type) {
 			case 'blocks':
-				field.typescriptSchema = [
-					() => ({...addGoJSONSchema('payload.Blocks', false)}),
-				];
+				field.typescriptSchema = [() => ({ ...addGoJSONSchema('payload.Blocks', false) })];
 				field.blocks.forEach((block) => {
 					block.fields = block.fields.map((f) => mapper(f));
 				});
 				break;
 			case 'json':
-				field.typescriptSchema = [
-					() => ({...addGoJSONSchema('[]byte', false)}),
-				];
+				field.typescriptSchema = [() => ({ ...addGoJSONSchema('[]byte', false) })];
 				break;
 			case 'richText':
 				field.typescriptSchema = [
@@ -65,7 +64,7 @@ export const fieldMapper = (config: Config) => {
 				break;
 			case 'upload':
 				field.typescriptSchema = [
-					() => ({...addGoJSONSchema('payload.Media', field.required === true)}),
+					() => ({ ...addGoJSONSchema('payload.Media', field.required === true) }),
 				];
 				break;
 			case 'tabs': {
@@ -77,7 +76,7 @@ export const fieldMapper = (config: Config) => {
 			case 'relationship': {
 				if (field.relationTo === 'forms') {
 					field.typescriptSchema = [
-						() => ({...addGoJSONSchema('payload.Form', field.required === true)}),
+						() => ({ ...addGoJSONSchema('payload.Form', field.required === true) }),
 					];
 				}
 				break;
@@ -88,7 +87,7 @@ export const fieldMapper = (config: Config) => {
 			case 'collapsible': {
 				if (field.type === 'group' && field.name == 'meta') {
 					field.typescriptSchema = [
-						() => ({...addGoJSONSchema('payload.SettingsMeta', true)}),
+						() => ({ ...addGoJSONSchema('payload.SettingsMeta', true) }),
 					];
 				}
 				field.fields = field.fields.map((f) => mapper(f));
@@ -97,31 +96,29 @@ export const fieldMapper = (config: Config) => {
 			// SEE: https://github.com/ainsleydev/webkit/blob/cdfa078605bec4ee92f2424f69271a0bf6b71366/packages/payload-helper/src/gen/schema.ts#L235
 		}
 
-		if (field.type !== "ui") {
+		if (field.type !== 'ui') {
 			if (!Array.isArray(field.typescriptSchema)) {
 				field.typescriptSchema = [];
 			}
 
-			if (field.type !== "tabs" && field.type !== "row" && field.type !== "collapsible") {
-				field.typescriptSchema.push(
-					({jsonSchema}) => {
-						const payload = {
-							name: field.name,
-							type: field.type,
-							label: field.label,
-						} as Record<string, unknown>
+			if (field.type !== 'tabs' && field.type !== 'row' && field.type !== 'collapsible') {
+				field.typescriptSchema.push(({ jsonSchema }) => {
+					const payload = {
+						name: field.name,
+						type: field.type,
+						label: field.label,
+					} as Record<string, unknown>;
 
-						if (field.type === "relationship") {
-							payload.hasMany = field.hasMany;
-							payload.relationTo = field.relationTo;
-						}
-
-						return {
-							...jsonSchema,
-							payload,
-						};
+					if (field.type === 'relationship') {
+						payload.hasMany = field.hasMany;
+						payload.relationTo = field.relationTo;
 					}
-				);
+
+					return {
+						...jsonSchema,
+						payload,
+					};
+				});
 			}
 		}
 
@@ -209,7 +206,7 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 	 * output it as an interface{}.
 	 */
 	({ jsonSchema }): JSONSchema4 => {
-		loopJSONSchemaProperties(jsonSchema, ({ property}) => {
+		loopJSONSchemaProperties(jsonSchema, ({ property }) => {
 			const payload = property.payload;
 			if (payload && payload.type === 'relationship') {
 				if (payload.hasMany) {
@@ -223,7 +220,7 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 				delete property.oneOf;
 				property.$ref = `#/definitions/${property.payload.relationTo}`;
 			}
-		})
+		});
 		return jsonSchema;
 	},
 	/**
@@ -231,13 +228,13 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 	 * comparing block types in Go.
 	 */
 	({ jsonSchema }): JSONSchema4 => {
-		loopJSONSchemaProperties(jsonSchema, ({property, key}) => {
-			if (key === "blockType") {
-				property.type = "string";
+		loopJSONSchemaProperties(jsonSchema, ({ property, key }) => {
+			if (key === 'blockType') {
+				property.type = 'string';
 				// biome-ignore lint/performance/noDelete:
 				delete property.const;
 			}
-		})
+		});
 		return jsonSchema;
 	},
 	/**
@@ -245,13 +242,13 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 	 * comparing block types in Go.
 	 */
 	({ jsonSchema }): JSONSchema4 => {
-		loopJSONSchemaProperties(jsonSchema, ({property, key}) => {
+		loopJSONSchemaProperties(jsonSchema, ({ property, key }) => {
 			const payload = property.payload;
 			if (payload && payload.type === 'relationship' && payload.name === 'form') {
 				// biome-ignore lint/performance/noDelete: <explanation>
 				delete property.$ref;
 			}
-		})
+		});
 		return jsonSchema;
 	},
 ];

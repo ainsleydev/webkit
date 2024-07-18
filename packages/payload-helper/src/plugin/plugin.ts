@@ -1,6 +1,6 @@
 import type { Config } from 'payload';
 import { fieldMapper, schemas } from './schema';
-import env from "../util/env";
+import env from '../util/env';
 
 /**
  * Plugin Options

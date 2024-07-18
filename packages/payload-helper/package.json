@@ -4,12 +4,7 @@
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"type": "module",
-	"keywords": [
-		"payload",
-		"payloadcms",
-		"cms",
-		"utilities"
-	],
+	"keywords": ["payload", "payloadcms", "cms", "utilities"],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ainsleydev/webkit.git",
@@ -28,10 +23,7 @@
 	"bin": {
 		"payload-helper": "bin.js"
 	},
-	"files": [
-		"dist",
-		"bin.js"
-	],
+	"files": ["dist", "bin.js"],
 	"dependencies": {
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
 		"@payloadcms/richtext-lexical": "beta",

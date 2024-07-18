@@ -17,9 +17,7 @@
 			"url": "https://ainsley.dev"
 		}
 	],
-	"workspaces:": [
-		"packages/*"
-	],
+	"workspaces:": ["packages/*"],
 	"scripts": {
 		"precommit": "npx lint-staged",
 		"prepare": "husky",
@@ -32,18 +30,16 @@
 		"lint:js": "biome lint --write .",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"dependencies": {},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
+		"@biomejs/biome": "1.8.3",
 		"globals": "^15.3.0",
 		"husky": "^9.0.11",
 		"lint-staged": "^15.2.4",
 		"prettier": "^3.2.5"
 	},
 	"lint-staged": {
-		"*.{js,jsx,mjs,ts,tsx,css,scss,json,yaml,yml}": [
-			"prettier --write ."
-		],
+		"*.{js,jsx,mjs,ts,tsx,css,scss,json,yaml,yml}": ["prettier --write ."],
 		"*.{js,ts}": "eslint --fix"
 	},
 	"engines": {
