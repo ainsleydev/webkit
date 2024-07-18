@@ -76,3 +76,14 @@ func WithNavigation() Option {
 		})
 	}
 }
+
+// TODO: Implement, perhaps pass in a logger into each handler to control stdout.
+var silent = false
+
+// WithSilentLogs is a functional option to disable logs from all
+// handlers and middleware.
+func WithSilentLogs() Option {
+	return func(_ *Adapter) {
+		silent = true
+	}
+}

@@ -73,6 +73,7 @@ func TestNew_OK(t *testing.T) {
 		WithNavigation(),
 		WithMaintenanceHandler(defaultMaintenanceRenderer),
 		WithGlobalMiddleware[string]("navigation"),
+		WithSilentLogs(),
 	)
 
 	require.NoError(t, err)
