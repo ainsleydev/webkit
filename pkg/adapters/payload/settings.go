@@ -200,8 +200,8 @@ func (s *Settings) OpenGraph(url string) *markup.OpenGraph {
 			Width:       int(ptr.Float64(s.Meta.Image.Width)),
 			Height:      int(ptr.Float64(s.Meta.Image.Height)),
 		}
-		if s.Meta.Image.Fields["alt"] != nil {
-			img.Alt = s.Meta.Image.Fields["alt"].(string)
+		if s.Meta.Image.Extra["alt"] != nil {
+			img.Alt = s.Meta.Image.Extra["alt"].(string)
 		}
 		m.Image = append(m.Image, img)
 	}
@@ -218,8 +218,8 @@ func (s *Settings) TwitterCard() *markup.TwitterCard {
 
 	if s.Meta.Image != nil {
 		card.Image = s.Meta.Image.URL
-		if s.Meta.Image.Fields["alt"] != nil {
-			card.ImageAlt = s.Meta.Image.Fields["alt"].(string)
+		if s.Meta.Image.Extra["alt"] != nil {
+			card.ImageAlt = s.Meta.Image.Extra["alt"].(string)
 		}
 	}
 

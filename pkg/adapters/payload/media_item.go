@@ -37,14 +37,14 @@ type Media struct {
 	// Key value map of media sizes.
 	Sizes MediaSizes `json:"sizes,omitempty"`
 
-	// Timestamps for when the media was created and last updated.
+	// Timestamps for when the item was created and last updated.
 	// These are included by default from Payload.
 	CreatedAt string `json:"createdAt,omitempty"`
 	UpdatedAt string `json:"updatedAt,omitempty"`
 
 	// Arbitrary key-value pairs of any other fields that appear within
 	// the schema but are not defined in the struct.
-	Fields MediaFields `json:"-"`
+	Extra MediaFields `json:"-"`
 
 	// RawJSON is the raw byte slice of the block, which can be used to decode
 	// the block into a specific type.
@@ -97,7 +97,7 @@ func (m *Media) UnmarshalJSON(data []byte) error {
 
 	*m = temp
 	m.RawJSON = data
-	m.Fields = result
+	m.Extra = result
 	m.URL = url + m.URL
 
 	for k, v := range m.Sizes {
@@ -156,14 +156,14 @@ type MediaFields map[string]any
 
 // Alt returns the alt text for the media item if it's defined as
 // a field, otherwise an empty string.
-func (m MediaFields) Alt() string {
-	return m.string("alt")
+func (m *Media) Alt() string {
+	return m.Extra.string("alt")
 }
 
 // Caption returns the caption text for the media item if it's defined as
 // a field, otherwise an empty string.
-func (m MediaFields) Caption() string {
-	return m.string("caption")
+func (m *Media) Caption() string {
+	return m.Extra.string("caption")
 }
 
 func (m MediaFields) string(key string) string {

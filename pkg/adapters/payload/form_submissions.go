@@ -6,7 +6,7 @@ import "time"
 // within Payload CMS.
 type FormSubmission struct {
 	ID             int                       `json:"id"`
-	Form           Form                      `json:"form"` // Int or Form
+	Form           Form                      `json:"form"`
 	SubmissionData []FormSubmissionDataEntry `json:"submissionData,omitempty"`
 	UpdatedAt      time.Time                 `json:"updatedAt"`
 	CreatedAt      time.Time                 `json:"createdAt"`

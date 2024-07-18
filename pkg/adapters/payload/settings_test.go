@@ -305,7 +305,7 @@ func TestSettings_MarkupOpenGraph(t *testing.T) {
 						MimeType: "image/jpeg",
 						Width:    ptr.Float64Ptr(1200),
 						Height:   ptr.Float64Ptr(630),
-						Fields: map[string]interface{}{
+						Extra: map[string]interface{}{
 							"alt": "Alt",
 						},
 					},
@@ -369,7 +369,7 @@ func TestSettings_MarkupTwitterCard(t *testing.T) {
 					Description: ptr.StringPtr("Description"),
 					Image: &Media{
 						URL: "https://example.com/image.jpg",
-						Fields: map[string]interface{}{
+						Extra: map[string]interface{}{
 							"alt": "Alt",
 						},
 					},
@@ -424,7 +424,7 @@ func TestSettings_MarkupTwitterCard(t *testing.T) {
 						MimeType: "image/jpeg",
 						Width:    ptr.Float64Ptr(1200),
 						Height:   ptr.Float64Ptr(630),
-						Fields: map[string]interface{}{
+						Extra: map[string]interface{}{
 							"alt": "Alt",
 						},
 					},
