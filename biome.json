@@ -52,7 +52,8 @@
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "single",
-			"jsxQuoteStyle": "single"
+			"jsxQuoteStyle": "single",
+			"trailingCommas": "all"
 		}
 	},
 	"overrides": [
