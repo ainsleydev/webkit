@@ -12,7 +12,7 @@ export async function generateTypes(outFile: string): Promise<void> {
 	try {
 		configPath = findConfig();
 	} catch (e) {
-		console.log('Error finding config: ' + e);
+		console.log(`Error finding config: ${e}`);
 		return;
 	}
 
@@ -29,7 +29,6 @@ export async function generateTypes(outFile: string): Promise<void> {
 		config,
 		disableDBConnect: true,
 		disableOnInit: true,
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		local: true,
 		secret: '--unused--',

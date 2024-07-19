@@ -1,6 +1,6 @@
 import type { Config } from 'payload';
-import { fieldMapper, schemas } from './schema';
-import env from '../util/env';
+import { fieldMapper, schemas } from './plugin/schema';
+import env from './util/env';
 
 /**
  * Plugin Options
@@ -16,10 +16,8 @@ export interface PluginOptions {
  * @param pluginOptions
  */
 export const payloadHelper =
-	(pluginOptions: {}) =>
+	(pluginOptions: PluginOptions) =>
 	(incomingConfig: Config): Config => {
-		console.log(pluginOptions);
-
 		const genGoLang = env.bool('GEN_GOLANG', false);
 		if (genGoLang) {
 			incomingConfig.typescript = {

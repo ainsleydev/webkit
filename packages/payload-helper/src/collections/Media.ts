@@ -1,10 +1,10 @@
 import type { CollectionConfig, Field } from 'payload';
 
+// biome-ignore lint/style/useImportType: <explanation>
+// @ts-ignore
 import {
 	LexicalEditorProps,
 	LexicalRichTextAdapterProvider,
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
 } from '@payloadcms/richtext-lexical/dist/types';
 
 /**
