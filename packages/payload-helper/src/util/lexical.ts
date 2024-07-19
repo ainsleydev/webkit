@@ -3,7 +3,11 @@ import { $generateNodesFromDOM, $generateHtmlFromNodes } from '@lexical/html';
 import { $getRoot, $getSelection } from 'lexical';
 import { JSDOM } from 'jsdom';
 import type { SerializedEditorState } from 'lexical';
-import { convertLexicalToHTML } from '@payloadcms/richtext-lexical';
+
+const editor = createHeadlessEditor({
+	nodes: [],
+	onError: () => {},
+});
 
 /**
  * Converts an HTML string to a Lexical editor state.
@@ -12,11 +16,6 @@ import { convertLexicalToHTML } from '@payloadcms/richtext-lexical';
  * @returns {SerializedEditorState} The serialized editor state.
  */
 export const htmlToLexical = (html: string): SerializedEditorState => {
-	const editor = createHeadlessEditor({
-		nodes: [],
-		onError: () => {},
-	});
-
 	editor.update(
 		() => {
 			// In a headless environment you can use a package such as JSDom to parse the HTML string.
@@ -41,13 +40,28 @@ export const htmlToLexical = (html: string): SerializedEditorState => {
 
 /**
  * Converts a Lexical editor state to an HTML string.
- * TODO: This is not working as expected.
  *
  * @param {SerializedEditorState} json - The serialized editor state to convert.
  * @returns {string} The HTML string.
  */
-// export const lexicalToHtml = (json: SerializedEditorState): string => {
-// 	return convertLexicalToHTML({
-// 		data: json,
-// 	});
-// };
+export const lexicalToHtml = (json: SerializedEditorState): string => {
+	// Initialize a JSDOM instance
+	const dom = new JSDOM('');
+
+	// @ts-ignore
+	globalThis.window = dom.window;
+	globalThis.document = dom.window.document;
+
+	editor.update(() => {
+		const editorState = editor.parseEditorState(json);
+		editor.setEditorState(editorState);
+	});
+
+	// Convert the editor state to HTML
+	let html = '';
+	editor.getEditorState().read(() => {
+		html = $generateHtmlFromNodes(editor);
+	});
+
+	return html;
+};
