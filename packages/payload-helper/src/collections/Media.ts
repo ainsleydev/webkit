@@ -1,10 +1,7 @@
 import type { CollectionConfig, Field } from 'payload';
-
-// biome-ignore lint/style/useImportType: <explanation>
-// @ts-ignore
-import {
-	LexicalEditorProps,
+import type {
 	LexicalRichTextAdapterProvider,
+	LexicalEditorProps,
 } from '@payloadcms/richtext-lexical/dist/types';
 
 /**
