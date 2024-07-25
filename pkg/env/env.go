@@ -41,8 +41,10 @@ const (
 //		StringInts   map[string]int `env:"MAP_STRING_INT"`
 //	}
 func ParseConfig(cfg any, filenames ...string) error {
-	if err := godotenv.Load(filenames...); err != nil {
-		return err
+	if !IsProduction() {
+		if err := godotenv.Load(filenames...); err != nil {
+			return err
+		}
 	}
 	if err := env.Parse(cfg); err != nil {
 		return err
