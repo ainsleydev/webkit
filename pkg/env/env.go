@@ -2,7 +2,6 @@ package env
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
 
 	"github.com/caarlos0/env/v7"
@@ -42,9 +41,7 @@ const (
 //		StringInts   map[string]int `env:"MAP_STRING_INT"`
 //	}
 func ParseConfig(cfg any, filenames ...string) error {
-	slog.Info("Environment: " + AppEnvironment())
-	if !IsProduction() {
-		slog.Debug("In development mode, loading .env file")
+	if AppEnvironment() != Production {
 		if err := godotenv.Load(filenames...); err != nil {
 			return err
 		}
