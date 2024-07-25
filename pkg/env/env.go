@@ -2,7 +2,6 @@ package env
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
 
 	"github.com/caarlos0/env/v7"
@@ -22,7 +21,7 @@ const (
 // Common keys
 const (
 	// AppEnvironmentKey is the key for the app environment, i.e. prod/dev
-	AppEnvironmentKey = "APP_ENVIRONMENT"
+	AppEnvironmentKey = "APP_ENV"
 )
 
 // ParseConfig loads the environment variables from the .env file and parses the
@@ -42,8 +41,7 @@ const (
 //		StringInts   map[string]int `env:"MAP_STRING_INT"`
 //	}
 func ParseConfig(cfg any, filenames ...string) error {
-	slog.Info("Loading environment variables", AppEnvironment(), AppEnvironment() == Production)
-	if AppEnvironment() != Production {
+	if IsDevelopment() {
 		if err := godotenv.Load(filenames...); err != nil {
 			return err
 		}

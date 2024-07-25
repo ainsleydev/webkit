@@ -94,7 +94,7 @@ func TestGetOrError(t *testing.T) {
 }
 
 func TestAppEnvironment(t *testing.T) {
-	t.Setenv("APP_ENVIRONMENT", "edge_case_value")
+	t.Setenv(AppEnvironmentKey, "edge_case_value")
 	got := AppEnvironment()
 	want := "edge_case_value"
 	assert.Equal(t, want, got)
@@ -102,25 +102,25 @@ func TestAppEnvironment(t *testing.T) {
 
 func TestIsDevelopment(t *testing.T) {
 	t.Run("Development", func(t *testing.T) {
-		t.Setenv("APP_ENVIRONMENT", Development)
+		t.Setenv(AppEnvironmentKey, Development)
 		got := IsDevelopment()
 		assert.True(t, got)
 	})
 	t.Run("Empty", func(t *testing.T) {
-		t.Setenv("APP_ENVIRONMENT", "")
+		t.Setenv(AppEnvironmentKey, "")
 		got := IsDevelopment()
 		assert.True(t, got)
 	})
 }
 
 func TestIsStaging(t *testing.T) {
-	t.Setenv("APP_ENVIRONMENT", Staging)
+	t.Setenv(AppEnvironmentKey, Staging)
 	got := IsStaging()
 	assert.True(t, got)
 }
 
 func TestIsProduction(t *testing.T) {
-	t.Setenv("APP_ENVIRONMENT", Production)
+	t.Setenv(AppEnvironmentKey, Production)
 	got := IsProduction()
 	assert.True(t, got)
 }
