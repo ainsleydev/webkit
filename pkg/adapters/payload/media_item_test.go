@@ -290,54 +290,82 @@ func TestMediaSizes_SortByWidth(t *testing.T) {
 
 func TestMediaFields_Alt(t *testing.T) {
 	tt := map[string]struct {
-		input MediaFields
-		want  string
+		input        MediaFields
+		defaultValue []string
+		want         string
 	}{
 		"Alt Field Present": {
-			input: MediaFields{"alt": "Alt Text"},
-			want:  "Alt Text",
+			input:        MediaFields{"alt": "Alt Text"},
+			defaultValue: nil,
+			want:         "Alt Text",
 		},
-		"Alt Field Missing": {
-			input: MediaFields{},
-			want:  "",
+		"Alt Field Missing With Default": {
+			input:        MediaFields{},
+			defaultValue: []string{"Default Alt Text"},
+			want:         "Default Alt Text",
 		},
-		"Alt Field Not A String": {
-			input: MediaFields{"alt": 123},
-			want:  "",
+		"Alt Field Not A String With Default": {
+			input:        MediaFields{"alt": 123},
+			defaultValue: []string{"Default Alt Text"},
+			want:         "Default Alt Text",
+		},
+		"Alt Field Missing Without Default": {
+			input:        MediaFields{},
+			defaultValue: nil,
+			want:         "",
+		},
+		"Alt Field Not A String Without Default": {
+			input:        MediaFields{"alt": 123},
+			defaultValue: nil,
+			want:         "",
 		},
 	}
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			m := Media{Extra: test.input}
-			assert.Equal(t, test.want, m.Alt())
+			assert.Equal(t, test.want, m.Alt(test.defaultValue...))
 		})
 	}
 }
 
 func TestMediaFields_Caption(t *testing.T) {
 	tt := map[string]struct {
-		input MediaFields
-		want  string
+		input        MediaFields
+		defaultValue []string
+		want         string
 	}{
 		"Caption Field Present": {
-			input: MediaFields{"caption": "Caption Text"},
-			want:  "Caption Text",
+			input:        MediaFields{"caption": "Caption Text"},
+			defaultValue: nil,
+			want:         "Caption Text",
 		},
-		"Caption Field Missing": {
-			input: MediaFields{},
-			want:  "",
+		"Caption Field Missing With Default": {
+			input:        MediaFields{},
+			defaultValue: []string{"Default Caption Text"},
+			want:         "Default Caption Text",
 		},
-		"Caption Field Not A String": {
-			input: MediaFields{"caption": 123},
-			want:  "",
+		"Caption Field Not A String With Default": {
+			input:        MediaFields{"caption": 123},
+			defaultValue: []string{"Default Caption Text"},
+			want:         "Default Caption Text",
+		},
+		"Caption Field Missing Without Default": {
+			input:        MediaFields{},
+			defaultValue: nil,
+			want:         "",
+		},
+		"Caption Field Not A String Without Default": {
+			input:        MediaFields{"caption": 123},
+			defaultValue: nil,
+			want:         "",
 		},
 	}
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			m := Media{Extra: test.input}
-			assert.Equal(t, test.want, m.Caption())
+			assert.Equal(t, test.want, m.Caption(test.defaultValue...))
 		})
 	}
 }

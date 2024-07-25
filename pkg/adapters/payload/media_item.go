@@ -155,15 +155,25 @@ func (ms MediaSizes) SortByWidth() []MediaSize {
 type MediaFields map[string]any
 
 // Alt returns the alt text for the media item if it's defined as
-// a field, otherwise an empty string.
-func (m *Media) Alt() string {
-	return m.Extra.string("alt")
+// a field, otherwise it returns the first defaultValue if provided,
+// or an empty string if no defaultValue is given.
+func (m *Media) Alt(defaultValue ...string) string {
+	altText := m.Extra.string("alt")
+	if altText == "" && len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+	return altText
 }
 
 // Caption returns the caption text for the media item if it's defined as
-// a field, otherwise an empty string.
-func (m *Media) Caption() string {
-	return m.Extra.string("caption")
+// a field, otherwise it returns the first defaultValue if provided,
+// or an empty string if no defaultValue is given.
+func (m *Media) Caption(defaultValue ...string) string {
+	captionText := m.Extra.string("caption")
+	if captionText == "" && len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+	return captionText
 }
 
 func (m MediaFields) string(key string) string {
