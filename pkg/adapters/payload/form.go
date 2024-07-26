@@ -113,18 +113,32 @@ type FormField struct {
 	BlockName    *string          `json:"blockName,omitempty"`
 	Message      []map[string]any `json:"message,omitempty"`
 	Options      []FormOption     `json:"options,omitempty"`
+	// Value used for front-end only, Payload does not send this from their API.
+	Value string `json:"value,omitempty"`
 }
 
 // formFieldRenderers defines the renderers for each form field type.
 var formFieldRenderers = map[FormBlockType]func(*FormField) string{
 	FormBlockTypeText: func(f *FormField) string {
-		return fmt.Sprintf(`<input class="form-input" type="text" name="%s" id="%s" />`, f.Name, f.ID)
+		return fmt.Sprintf(`<input class="form-input" type="text" name="%s" id="%s" value="%s" />`,
+			f.Name,
+			f.ID,
+			f.Value,
+		)
 	},
 	FormBlockTypeEmail: func(f *FormField) string {
-		return fmt.Sprintf(`<input class="form-input" type="email" name="%s" id="%s" />`, f.Name, f.ID)
+		return fmt.Sprintf(`<input class="form-input" type="email" name="%s" id="%s" value="%s" />`,
+			f.Name,
+			f.ID,
+			f.Value,
+		)
 	},
 	FormBlockTypeTextarea: func(f *FormField) string {
-		return fmt.Sprintf(`<textarea class="form-input form-textarea" rows="6" name="%s" id="%s"></textarea>`, f.Name, f.ID)
+		return fmt.Sprintf(`<textarea class="form-input form-textarea" rows="6" name="%s" id="%s">%s</textarea>`,
+			f.Name,
+			f.ID,
+			f.Value,
+		)
 	},
 }
 
