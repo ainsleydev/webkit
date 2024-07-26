@@ -3,6 +3,7 @@ package env
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/caarlos0/env/v7"
 	"github.com/joho/godotenv"
@@ -71,7 +72,7 @@ func GetOrError(key string) (string, error) {
 
 // AppEnvironment returns the app environment.
 func AppEnvironment() string {
-	return Get(AppEnvironmentKey, "")
+	return strings.ToLower(Get(AppEnvironmentKey, Development))
 }
 
 // IsDevelopment returns whether we are running the app in development.
