@@ -1,6 +1,10 @@
 package random
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
 
 // String generates a random of characters only (upper or lowercase)
 // with no numbers based on the input length provided.
