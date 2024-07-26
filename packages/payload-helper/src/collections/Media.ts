@@ -1,8 +1,8 @@
 import type { CollectionConfig, Field } from 'payload';
-import type {
-	LexicalRichTextAdapterProvider,
-	LexicalEditorProps,
-} from '@payloadcms/richtext-lexical/dist/types';
+// import type {
+// 	LexicalRichTextAdapterProvider,
+// 	LexicalEditorProps,
+// } from '@payloadcms/richtext-lexical';
 
 /**
  * Media Collection Configuration
@@ -13,7 +13,7 @@ import type {
  * @param additionalFields
  */
 export const Media = (
-	editor: (props?: LexicalEditorProps) => LexicalRichTextAdapterProvider,
+	//editor?: (props?: LexicalEditorProps) => LexicalRichTextAdapterProvider,
 	additionalFields?: Field[],
 ): CollectionConfig => {
 	return {
@@ -31,17 +31,17 @@ export const Media = (
 				name: 'caption',
 				type: 'richText',
 				required: false,
-				editor: editor({
-					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-					// @ts-ignore
-					features: ({ defaultFeatures }) => {
-						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-						// @ts-ignore
-						return defaultFeatures.filter((feature) => {
-							return feature.key === 'paragraph' || feature.key === 'link';
-						});
-					},
-				}),
+				// editor: editor({
+				// 	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// 	// @ts-ignore
+				// 	features: ({ defaultFeatures }) => {
+				// 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// 		// @ts-ignore
+				// 		return defaultFeatures.filter((feature) => {
+				// 			return feature.key === 'paragraph' || feature.key === 'link';
+				// 		});
+				// 	},
+				// }),
 			},
 			...(additionalFields ? additionalFields : []),
 		],
