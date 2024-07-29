@@ -36,7 +36,7 @@ func globalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 			)
 
 			if !env.IsDevelopment() {
-				err := store.Get(ctx, cacheKey, t)
+				err := store.Get(ctx, cacheKey, &t)
 				if err == nil {
 					c.Set(cacheKey, t)
 					return next(c)

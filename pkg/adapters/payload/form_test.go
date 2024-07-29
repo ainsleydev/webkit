@@ -130,7 +130,7 @@ func TestFormField_Render(t *testing.T) {
 				BlockType: FormBlockTypeText,
 				Name:      "text-name",
 			},
-			want: `<input class="form-input" type="text" name="text-name" id="text-id" />`,
+			want: `<input class="form-input" type="text" name="text-name" id="text-id" value="" />`,
 			err:  nil,
 		},
 		"Email Field": {
@@ -139,7 +139,7 @@ func TestFormField_Render(t *testing.T) {
 				BlockType: FormBlockTypeEmail,
 				Name:      "email-name",
 			},
-			want: `<input class="form-input" type="email" name="email-name" id="email-id" />`,
+			want: `<input class="form-input" type="email" name="email-name" id="email-id" value="" />`,
 			err:  nil,
 		},
 		"Textarea Field": {

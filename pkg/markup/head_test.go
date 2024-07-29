@@ -30,11 +30,11 @@ var props = HeadProps{
 		URL:   "https://example.com/page",
 		Image: []OpengraphImage{
 			{
-				URL:    "https://example.com/image-og.png",
-				Type:   "image/png",
-				Width:  1200,
-				Height: 630,
-				Alt:    "Alt",
+				URL:         "https://example.com/image-og.png",
+				ContentType: "image/png",
+				Width:       1200,
+				Height:      630,
+				Alt:         "Alt",
 			},
 		},
 	},

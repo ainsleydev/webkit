@@ -21,8 +21,8 @@
 		"email": "hello@ainsley.dev",
 		"url": "https://ainsley.dev"
 	},
-	"main": "./src/index.ts",
-	"types": "./src/index.ts",
+	"main": "./dist/index.js",
+	"types": "./dist/types.d.ts",
 	"scripts": {
 		"build": "pnpm run clean && pnpm build:types && pnpm build:swc",
 		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
@@ -38,7 +38,10 @@
 	},
 	"files": [
 		"dist",
-		"bin.js"
+		"bin.js",
+		"types.js",
+		"types.ts",
+		"types.d.ts"
 	],
 	"dependencies": {
 		"@lexical/headless": "^0.16.1",

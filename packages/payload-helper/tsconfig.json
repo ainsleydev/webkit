@@ -1,6 +1,5 @@
 {
 	"compilerOptions": {
-		"baseUrl": ".",
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"composite": true,
@@ -24,6 +23,11 @@
 		],
 		"target": "ES2020"
 	},
-	"include": ["src/cli/*.ts"],
-	"exclude": ["node_modules"]
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"src/**/*.test.ts"
+	]
 }
