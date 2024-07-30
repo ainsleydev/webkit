@@ -3,6 +3,8 @@ package payload
 import (
 	"github.com/goccy/go-json"
 	"github.com/perimeterx/marshmallow"
+
+	"github.com/ainsleydev/webkit/pkg/util/random"
 )
 
 // Block defines a common structure of a singular block layout
@@ -38,6 +40,13 @@ type Blocks []Block
 // the fields directly.
 func (b *Block) Decode(v any) error {
 	return json.Unmarshal(b.RawJSON, v)
+}
+
+// SafeID generates a safe ID for the block instead of using the
+// ID provided by Payload which contains numbers, inherently
+// this is not a valid selector for HTML/CSS.
+func (b *Block) SafeID() string {
+	return random.Alpha(24)
 }
 
 // UnmarshalJSON unmarshalls the JSON data into the Block type.

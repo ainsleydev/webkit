@@ -85,3 +85,10 @@ func TestBlock_UnmarshalJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestBlock_SafeID(t *testing.T) {
+	b := Block{}
+	got := b.SafeID()
+	assert.NotEmpty(t, got)
+	assert.Len(t, got, 24)
+}
