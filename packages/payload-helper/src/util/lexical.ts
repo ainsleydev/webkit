@@ -14,12 +14,13 @@ import type { SanitizedConfig} from "payload";
  * @returns {SerializedEditorState} The serialized editor state.
  */
 export const htmlToLexical = async (html: string, config: SanitizedConfig): Promise<SerializedEditorState> => {
-	const cfg = await sanitizeServerEditorConfig(defaultEditorConfig, config)
+	//const cfg = await sanitizeServerEditorConfig(defaultEditorConfig, config)
 
 	const editor = createHeadlessEditor({
-		nodes: getEnabledNodes({
-			editorConfig: cfg,
-		}),
+		// nodes: getEnabledNodes({
+		// 	editorConfig: cfg,
+		// }),
+		nodes: [],
 		onError: (error) => {
 			console.error(error);
 		},
@@ -35,8 +36,6 @@ export const htmlToLexical = async (html: string, config: SanitizedConfig): Prom
 
 			// Select the root
 			$getRoot().select();
-
-			console.log(dom.window.document.body.innerHTML);
 
 			// Insert them at a selection.
 			const selection = $getSelection();
