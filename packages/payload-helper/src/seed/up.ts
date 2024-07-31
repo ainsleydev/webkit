@@ -1,28 +1,37 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { Payload, PayloadRequest } from 'payload';
 import { getFileByPath } from 'payload';
-import type {Media, MediaSeed} from "./types.js";
+import type { Media, MediaSeed } from './types.js';
+import { htmlToLexical } from '../util/lexical.js';
+import type {Seeder} from "./seed.js";
 
-const filename = fileURLToPath(import.meta.url);
-const dirname = path.dirname(filename);
 
+/**
+ *
+ * @param req
+ * @param payload
+ * @param dirname
+ * @param media
+ */
 export const uploadMedia = async (
 	req: PayloadRequest,
 	payload: Payload,
+	dirname: string,
 	media: MediaSeed,
 ): Promise<Media> => {
 	try {
 		const image = await getFileByPath(path.resolve(dirname, media.path));
-		return await payload.create({
+		const caption = media.caption ? await htmlToLexical(media.caption) : null;
+
+		return (await payload.create({
 			collection: 'media',
 			file: image,
 			data: {
 				alt: media.alt,
-				//caption: media.caption,
+				caption: caption,
 			},
 			req,
-		}) as unknown as Media;
+		})) as unknown as Media;
 	} catch (error) {
 		payload.logger.error(`Uploading media: ${error}`);
 		throw error;
@@ -34,13 +43,16 @@ export const uploadMedia = async (
  *
  * @param payload
  * @param req
+ * @param seeder
  */
 export const up = async ({
 	payload,
 	req,
+	seeder,
 }: {
 	payload: Payload;
 	req: PayloadRequest;
+	seeder: Seeder;
 }): Promise<void> => {
 	payload.logger.info('Running up script');
 
@@ -58,4 +70,6 @@ export const up = async ({
 		payload.logger.error(`Creating database: ${error}`);
 		return;
 	}
+
+	await seeder({ payload, req });
 };

@@ -4,7 +4,8 @@ import {
 	commitTransaction,
 	getPayload,
 	initTransaction,
-	killTransaction, type Payload,
+	killTransaction,
+	type Payload,
 } from 'payload';
 import { importConfig } from 'payload/node';
 import { down } from './down.js';
@@ -22,8 +23,16 @@ export type Seeder = (args: { payload: Payload; req: PayloadRequest }) => Promis
 export type SeedOptions = {
 	envPath: string;
 	configPath: string;
+	dbAdapter: DBAdapter;
 	seeder: Seeder;
 };
+
+/**
+ * The database adapter to use, which will remove and recreate the database.
+ */
+export enum DBAdapter {
+	Postgres = 'postgres',
+}
 
 /**
  * Seeds the database with initial data.
@@ -31,26 +40,33 @@ export type SeedOptions = {
  * @param opts - The options for seeding.
  * @returns A promise that resolves when the seeding is complete.
  */
-export const seed = async (opts: SeedOptions) => {
-	dotenv.config({
-		path: opts.envPath,
-	});
+export const seed = (opts: SeedOptions) => {
+	const fn = async () => {
+		dotenv.config({
+			path: opts.envPath,
+		});
 
-	for (const fn of [down, up]) {
-		const config = await importConfig(opts.configPath);
-		const payload = await getPayload({ config });
-		const req = { payload } as PayloadRequest;
+		for (const fn of [down, up]) {
+			const config = await importConfig(opts.configPath);
+			const payload = await getPayload({ config });
+			const req = { payload } as PayloadRequest;
 
-		await initTransaction(req);
+			await initTransaction(req);
 
-		try {
-			await fn({ payload, req });
-			payload.logger.info('Seed complete');
-			await commitTransaction(req);
-		} catch (err) {
-			const message = err instanceof Error ? err.message : 'Unknown error';
-			payload.logger.error(`Seed failed: ${message}`);
-			await killTransaction(req);
+			try {
+				await fn({ payload, req, seeder: opts.seeder });
+				payload.logger.info('Seed complete');
+				await commitTransaction(req);
+			} catch (err) {
+				const message = err instanceof Error ? err.message : 'Unknown error';
+				payload.logger.error(`Seed failed: ${message}`);
+				await killTransaction(req);
+			}
 		}
-	}
+	};
+
+	fn().then(() => process.exit(0)).catch((e) => {
+		console.error(e);
+		process.exit(1);
+	});
 };

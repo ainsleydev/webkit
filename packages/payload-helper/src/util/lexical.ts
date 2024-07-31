@@ -3,27 +3,19 @@ import { $generateNodesFromDOM, $generateHtmlFromNodes } from '@lexical/html';
 import { $getRoot, $getSelection } from 'lexical';
 import { JSDOM } from 'jsdom';
 import type { SerializedEditorState } from 'lexical';
-import { getEnabledNodes, sanitizeServerEditorConfig, defaultEditorConfig } from '@payloadcms/richtext-lexical'
+// import { getEnabledNodes, sanitizeServerEditorConfig, defaultEditorConfig } from '@payloadcms/richtext-lexical'
 import type { SanitizedConfig} from "payload";
 
 /**
  * Converts an HTML string to a Lexical editor state.
  *
  * @param {string} html - The HTML string to convert.
- * @param config
  * @returns {SerializedEditorState} The serialized editor state.
  */
-export const htmlToLexical = async (html: string, config: SanitizedConfig): Promise<SerializedEditorState> => {
-	//const cfg = await sanitizeServerEditorConfig(defaultEditorConfig, config)
-
+export const htmlToLexical = (html: string): SerializedEditorState => {
 	const editor = createHeadlessEditor({
-		// nodes: getEnabledNodes({
-		// 	editorConfig: cfg,
-		// }),
 		nodes: [],
-		onError: (error) => {
-			console.error(error);
-		},
+		onError: (error) => { console.error(error); },
 	});
 
 	editor.update(

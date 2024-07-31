@@ -3,10 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import env from '../util/env.js';
 import type { Payload, PayloadRequest } from 'payload';
+import type { Seeder } from './seed.js';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
-
 
 const postgresDrop = async (payload: Payload): Promise<void> => {
 	// Drop all tables
@@ -20,7 +20,7 @@ const postgresDrop = async (payload: Payload): Promise<void> => {
 		payload.logger.error(`Creating database: ${error}`);
 		return;
 	}
-}
+};
 
 /**
  * Down script to remove all media and drop all tables.
@@ -30,10 +30,10 @@ const postgresDrop = async (payload: Payload): Promise<void> => {
  */
 export const down = async ({
 	payload,
-	req,
 }: {
 	payload: Payload;
 	req: PayloadRequest;
+	seeder: Seeder;
 }): Promise<void> => {
 	payload.logger.info('Running down script');
 
