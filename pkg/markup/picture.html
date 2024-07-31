@@ -1,11 +1,24 @@
 <!-- =====================
     Picture
     ===================== -->
-<picture>
-
-
-
+{{ safeHTML "<!-- Picture -->" }}
+<picture {{ if ne .ID "" }} id="{{ .ID }}" {{- end }}
+	class=""
+	{{ range $key, $value := .Attributes}} {{ $key }}="{{ $value }}" {{- end }}
+>
+	{{- range .Sources}}
+		<source srcset="{{ .URL }}"
+			{{ with .Media }} media="{{ .Media }}" {{- end }}
+			type="{{ .MimeType }}"
+			{{ with .Width }} width="{{ . }}" {{- end }}
+			{{ with .Height }} height="{{ . }}" {{- end }}
+		/>
+	{{- end }}
+	<img src="{{ .URL }}" {{ with .Alt }} alt="{{ . }}" {{- end }} />
 </picture>
+
+
+
 {{/*{{ range .Sizes.SortByWidth -}}*/}}
 {{/*	<source srcset="{{ .URL }}"*/}}
 {{/*		{{- if and (ne .Size "avif") (ne .Size "webp") }} media="{{ .MediaAttr }}" {{- end }}*/}}

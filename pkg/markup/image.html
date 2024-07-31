@@ -1,0 +1,19 @@
+<!-- =====================
+    Image
+    ===================== -->
+{{ if .IsSource -}}
+	<source srcset="{{ .URL }}"
+		type="{{ .MimeType }}"
+		{{ with .Media -}} media="{{ . }}" {{ end }}
+		{{ with .Width -}} width="{{ . }}" {{- end }}
+		{{ with .Height -}} height="{{ . }}" {{- end }}
+		{{ range $key, $value := .Attributes -}} {{ $key }}="{{ $value }}" {{- end -}}
+	/>
+{{ else -}}
+	<img src="{{ .URL }}"
+		{{ with .Width }} width="{{ . }}" {{- end }}
+		{{ with .Height }} height="{{ . }}" {{- end }}
+		{{ range $key, $value := .Attributes}} {{ $key }}="{{ $value }}" {{- end }}
+	>
+{{- end }}
+

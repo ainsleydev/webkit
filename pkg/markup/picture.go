@@ -4,6 +4,7 @@ import (
 	"context"
 	"html/template"
 	"io"
+	"path/filepath"
 
 	"github.com/ainsleydev/webkit/pkg/tpl"
 )
@@ -13,8 +14,30 @@ type PictureProvider interface {
 	ToMarkup(ctx context.Context) PictureProps
 }
 
-func Picture(ctx context.Context, provider PictureProvider) PictureProps {
-	return provider.ToMarkup(ctx)
+// Picture - TODO
+//
+// TODO: How are we going to apply classes to the picture element?
+// At the moment, we are only applying classes to the source elements.
+func Picture(ctx context.Context, provider PictureProvider, opts ...ImageOptions) PictureProps {
+	props := provider.ToMarkup(ctx)
+	props.FileExtension = filepath.Ext(props.URL)
+
+	for i, img := range props.Sources {
+		// Assign the file extension to the source images.
+		props.Sources[i].FileExtension = filepath.Ext(img.URL)
+
+		// Apply all options to the source images
+		for _, opt := range opts {
+			opt(&img)
+		}
+
+		// Apply upwards
+		if img.Alt != "" {
+			props.Alt = img.Alt
+		}
+	}
+
+	return props
 }
 
 // PictureProps defines the fields for to render a <picture> element onto the DOM.
@@ -35,14 +58,14 @@ type PictureProps struct {
 	// The browser will consider each child <source> element and choose the best match among them.
 	Sources []ImageProps
 
-	// Determines if loading=lazy should be added to the image.
-	Lazy LoadingAttribute
-
 	// List of class names to apply to the <picture> element.
 	Classes []string
 
 	// A unique identifier for the <picture> element.
 	ID string
+
+	// The file extension of the image, for example (jpg).
+	FileExtension string
 
 	// The intrinsic width of the image in pixels , for example (300).
 	// Must be an integer without a unit (optional).
@@ -57,88 +80,30 @@ type PictureProps struct {
 	Attributes Attributes
 }
 
-// LoadingAttribute specifies the loading attribute for an image.
-// Indicates how the browser should load the image:
-type LoadingAttribute string
-
-const (
-	// LoadingEager loads the image immediately, regardless of whether or not the
-	// image is currently within the visible viewport (this is the default value).
-	LoadingEager LoadingAttribute = "eager"
-	// LoadingLazy Defers loading the image until it reaches a calculated distance
-	// from the viewport, as defined by the browser. The intent is to avoid the
-	// network and storage bandwidth needed to handle the image until it's
-	// reasonably certain that it will be needed. This generally improves
-	// the performance of the content in most typical use cases.
-	LoadingLazy LoadingAttribute = "lazy"
-)
+// Image transforms the PictureProps into an ImageProps type.
+//
+// This is useful when you want to render a single image element, instead
+// of the entire picture.
+func (p PictureProps) Image() ImageProps {
+	return ImageProps{
+		URL:           p.URL,
+		IsSource:      false,
+		Media:         "", // Default image should not output a media query.
+		FileExtension: p.FileExtension,
+		Width:         p.Width,
+		Height:        p.Height,
+		Attributes:    p.Attributes,
+	}
+}
 
 // headTemplate is the template for the head of the HTML document.
 // It requires a HeadProps struct to be passed in when executing the template.
 var mediaTemplates = template.Must(template.New("").Funcs(tpl.Funcs).ParseFS(templatesFS,
 	"picture.html",
-	//"image.html",
+	"image.html",
 ))
 
 // Render renders a picture element to the provided writer.
-func (p PictureProps) Render(ctx context.Context, w io.Writer) error {
+func (p PictureProps) Render(_ context.Context, w io.Writer) error {
 	return mediaTemplates.ExecuteTemplate(w, "picture.html", p)
-}
-
-// ImageProps defines the fields for an individual image or source HTML element.
-// The data type supports both <img> and <source> elements.
-//
-// See: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img
-// See: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source
-type ImageProps struct {
-	// The URL of the image, which will map to the srcset or src attribute.
-	// For example: "/images/dog.jpg"
-	URL string
-
-	// Media specifies the media condition (media query) for the source,
-	// For example: "(min-width: 600px)"
-	Media string
-
-	// Mimetype such as
-	// - image/jpeg
-	// - image/png
-	// - image/gif
-	// - image/avif
-	// - image/webp
-	// - image/svg+xml
-	MimeType *string
-
-	// The intrinsic width of the image in pixels , for example (300).
-	// Must be an integer without a unit (optional).
-	Width *int
-
-	// The intrinsic height of the image, in pixels, for example (300).
-	// Must be an integer without a unit (optional).
-	Height *int
-
-	// Attributes specifies additional attributes for the picture element as key-value pairs.
-	// For example: markup.Attributes{"id": "main-picture", "class": "responsive-picture"}
-	Attributes Attributes
-}
-
-//////////////////////////////////////////////////////////////////
-
-type PictureOptions func(p *PictureProps)
-
-func PictureWithAlt(alt string) PictureOptions {
-	return func(p *PictureProps) {
-		p.Alt = alt
-	}
-}
-
-func PictureWithLoadingLazy() PictureOptions {
-	return func(p *PictureProps) {
-		p.Lazy = LoadingLazy
-	}
-}
-
-func PictureWithLoadingAuto() PictureOptions {
-	return func(p *PictureProps) {
-		p.Lazy = LoadingEager
-	}
 }

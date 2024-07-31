@@ -105,6 +105,7 @@ func (m *Media) ToMarkup(_ context.Context) markup.PictureProps {
 		URL:     m.URL,
 		Alt:     m.Alt(),
 		Sources: m.Sizes.toMarkup(),
+		Classes: nil,
 		ID:      fmt.Sprintf("payload-media-%v", m.ID),
 		Width:   sizeToIntPointer(m.Width),
 		Height:  sizeToIntPointer(m.Height),
