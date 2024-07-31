@@ -1,11 +1,9 @@
 package payload
 
 import (
-	"bytes"
 	"context"
 	"testing"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -117,39 +115,6 @@ var media = `
    }
 }`
 
-func TestMedia_Render(t *testing.T) {
-	t.Skip()
-
-	t.Setenv(envPayloadURL, "https://example.com")
-
-	var m Media
-	err := m.UnmarshalJSON([]byte(media))
-	require.NoError(t, err)
-
-	r := &bytes.Buffer{}
-	err = m.Render(context.Background(), r)
-	require.NoError(t, err)
-
-	doc, err := goquery.NewDocumentFromReader(r)
-	require.NoError(t, err)
-
-	sources := []string{
-		`source[srcset="https://example.com/media/image-400x300.png"][media="(max-width: 450px)"][type="image/png"][width="400"][height="300"][data-payload-size="thumbnail"]`,
-		`source[srcset="https://example.com/media/image-400x300.avif"][media="(max-width: 450px)"][type="image/avif"][width="400"][height="300"][data-payload-size="thumbnail_avif"]`,
-		`source[srcset="https://example.com/media/image-400x300.webp"][media="(max-width: 450px)"][type="image/webp"][width="400"][height="300"][data-payload-size="thumbnail_webp"]`,
-		`source[srcset="https://example.com/media/image-768x2610.png"][media="(max-width: 818px)"][type="image/png"][width="768"][height="2610"][data-payload-size="mobile"]`,
-		`source[srcset="https://example.com/media/image-768x2610.avif"][media="(max-width: 818px)"][type="image/avif"][width="768"][height="2610"][data-payload-size="mobile_avif"]`,
-		`source[srcset="https://example.com/media/image-768x2610.webp"][media="(max-width: 818px)"][type="image/webp"][width="768"][height="2610"][data-payload-size="mobile_webp"]`,
-		`source[srcset="https://example.com/media/image-1024x3480.png"][media="(max-width: 1074px)"][type="image/png"][width="1024"][height="3480"][data-payload-size="tablet"]`,
-		`source[srcset="https://example.com/media/image-1024x3480.avif"][media="(max-width: 1074px)"][type="image/avif"][width="1024"][height="3480"][data-payload-size="tablet_avif"]`,
-		`source[srcset="https://example.com/media/image-1024x3480.webp"][media="(max-width: 1074px)"][type="image/webp"][width="1024"][height="3480"][data-payload-size="tablet_webp"]`,
-	}
-
-	for _, src := range sources {
-		assert.Equal(t, 1, doc.Find(src).Length())
-	}
-}
-
 func TestMedia_UnmarshalJSON(t *testing.T) {
 	var (
 		payloadURL = "https://example.com"
@@ -225,6 +190,35 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 		err := m.UnmarshalJSON([]byte(in))
 		assert.Error(t, err)
 	})
+}
+
+func TestMedia_ToMarkup(t *testing.T) {
+	t.Setenv(envPayloadURL, "https://example.com")
+
+	var m Media
+	err := m.UnmarshalJSON([]byte(media))
+	require.NoError(t, err)
+
+	p := m.ToMarkup(context.Background())
+
+	// Assert main image
+	assert.Equal(t, "https://example.com/media/image.png", p.URL)
+	assert.Equal(t, "Alt Text", p.Alt)
+	assert.Equal(t, 1440, *p.Width)
+	assert.Equal(t, 4894, *p.Height)
+	assert.Equal(t, "payload-media-15", p.ID)
+	assert.Equal(t, "15", p.Attributes["data-payload-media-id"])
+	assert.Equal(t, "image.png", p.Attributes["data-payload-media-filename"])
+	assert.Equal(t, "743837", p.Attributes["data-payload-media-filesize"])
+	assert.Len(t, p.Sources, 11)
+
+	// Assert first source
+	assert.Equal(t, "https://example.com/media/image-400x300.png", p.Sources[0].URL)
+	assert.Equal(t, "(max-width: 450px)", p.Sources[0].Media)
+	assert.Equal(t, "image/png", *p.Sources[0].MimeType)
+	assert.Equal(t, 400, *p.Sources[0].Width)
+	assert.Equal(t, 300, *p.Sources[0].Height)
+	assert.Equal(t, "thumbnail", p.Sources[0].Attributes["data-payload-size"])
 }
 
 func TestMediaSizes_SortByWidth(t *testing.T) {

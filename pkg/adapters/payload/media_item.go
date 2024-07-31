@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"sort"
 
 	"github.com/goccy/go-json"
 	"github.com/perimeterx/marshmallow"
 
-	"github.com/ainsleydev/webkit/pkg/adapters/payload/internal/tpl"
+	"github.com/ainsleydev/webkit/pkg/markup"
 )
 
 // Media defines the fields for media when they are uploaded to PayloadCMS.
@@ -68,15 +67,6 @@ type MediaSize struct {
 	MediaAttr string   `json:"media,omitempty"`
 }
 
-// Render renders the media block to the provided writer as a
-// picture element.
-//
-// Note: It does not include the <picture> element and it
-// expects the caller to wrap the output.
-func (m *Media) Render(_ context.Context, w io.Writer) error {
-	return tpl.Templates.ExecuteTemplate(w, "picture.html", m)
-}
-
 // UnmarshalJSON unmarshals the JSON data into the Media type.
 // This method is used to extract known fields and assign the remaining
 // fields to the fields map.
@@ -106,6 +96,24 @@ func (m *Media) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+// ToMarkup implements the markup.PictureProvider types and transforms the Media item
+// into a markup.PictureProps type ready for rendering onto the DOM.
+func (m *Media) ToMarkup(_ context.Context) markup.PictureProps {
+	return markup.PictureProps{
+		URL:     m.URL,
+		Alt:     m.Alt(),
+		Sources: m.Sizes.toMarkup(),
+		ID:      fmt.Sprintf("payload-media-%v", m.ID),
+		Width:   sizeToIntPointer(m.Width),
+		Height:  sizeToIntPointer(m.Height),
+		Attributes: markup.Attributes{
+			"data-payload-media-id":       fmt.Sprintf("%v", m.ID),
+			"data-payload-media-filename": m.Filename,
+			"data-payload-media-filesize": fmt.Sprintf("%v", m.Filesize),
+		},
+	}
 }
 
 // mediaByWidth implements sort.Interface for sorting MediaSize by Width.
@@ -150,6 +158,34 @@ func (ms MediaSizes) SortByWidth() []MediaSize {
 	return result
 }
 
+// toMarkup transforms media sizes into a slice of ImageProps ready for
+// rendering onto the DOM.
+func (ms MediaSizes) toMarkup() []markup.ImageProps {
+	images := make([]markup.ImageProps, len(ms))
+	index := 0
+	for _, img := range ms.SortByWidth() {
+		attr := markup.Attributes{
+			"data-payload-size": img.Size,
+		}
+		if img.Filesize != nil {
+			attr["data-payload-media-filesize"] = fmt.Sprintf("%v", *img.Filesize)
+		}
+		if img.Filename != nil {
+			attr["data-payload-media-filename"] = *img.Filename
+		}
+		images[index] = markup.ImageProps{
+			URL:        img.URL,
+			Media:      img.MediaAttr,
+			Width:      sizeToIntPointer(img.Width),
+			Height:     sizeToIntPointer(img.Height),
+			MimeType:   img.MimeType,
+			Attributes: attr,
+		}
+		index++
+	}
+	return images
+}
+
 // MediaFields defines a dictionary of arbitrary fields that are not
 // defined in the PayloadCMS schema.
 type MediaFields map[string]any
@@ -186,4 +222,12 @@ func (m MediaFields) string(key string) string {
 		return ""
 	}
 	return s
+}
+
+func sizeToIntPointer(f *float64) *int {
+	if f == nil {
+		return nil
+	}
+	intValue := int(*f)
+	return &intValue
 }

@@ -8,8 +8,6 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/perimeterx/marshmallow"
-
-	"github.com/ainsleydev/webkit/pkg/adapters/payload/internal/tpl"
 )
 
 // Form defines a singular form collection type in the Form Builder Plugin
@@ -80,12 +78,6 @@ func (f *Form) UnmarshalJSON(data []byte) error {
 	f.Extra = result
 
 	return nil
-}
-
-// Render renders the form block to the provided writer as
-// a form element.
-func (f *Form) Render(_ context.Context, w io.Writer) error {
-	return tpl.Templates.ExecuteTemplate(w, "form.html", f)
 }
 
 // ButtonLabel returns a label for the form's submit button.
