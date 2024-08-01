@@ -3,17 +3,19 @@
     ===================== -->
 {{ if .IsSource -}}
 	<source srcset="{{ .URL }}"
-		type="{{ .MimeType }}"
+		{{ with .MimeType -}} type="{{ . }}" {{- end }}
 		{{ with .Media -}} media="{{ . }}" {{ end }}
 		{{ with .Width -}} width="{{ . }}" {{- end }}
 		{{ with .Height -}} height="{{ . }}" {{- end }}
-		{{ range $key, $value := .Attributes -}} {{ $key }}="{{ $value }}" {{- end -}}
+		{{ range $key, $value := .Attributes -}} {{ $key | safeAttr }}="{{ $value }}" {{ end -}}
 	/>
 {{ else -}}
 	<img src="{{ .URL }}"
-		{{ with .Width }} width="{{ . }}" {{- end }}
-		{{ with .Height }} height="{{ . }}" {{- end }}
-		{{ range $key, $value := .Attributes}} {{ $key }}="{{ $value }}" {{- end }}
-	>
+		{{ with .Alt -}} alt="{{ . }}" {{- end }}
+		{{ with .Loading }} loading="{{ . }}" {{- end }}
+		{{ with .Width -}} width="{{ . }}" {{- end }}
+		{{ with .Height -}} height="{{ . }}" {{- end }}
+		{{ range $key, $value := .Attributes -}} {{ $key | safeAttr }}="{{ $value }}" {{ end }}
+	/>
 {{- end }}
 

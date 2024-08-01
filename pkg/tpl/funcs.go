@@ -30,4 +30,7 @@ var Funcs = template.FuncMap{
 	"safeHTML": func(v any) template.HTML {
 		return template.HTML(fmt.Sprint(v))
 	},
+	"safeAttr": func(v any) template.HTMLAttr {
+		return template.HTMLAttr(fmt.Sprint(v))
+	},
 }

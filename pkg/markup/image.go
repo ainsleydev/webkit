@@ -3,8 +3,8 @@ package markup
 import (
 	"bytes"
 	"context"
+	"github.com/ainsleydev/webkit/pkg/util/stringutil"
 	"io"
-	"strings"
 )
 
 // ImageProps defines the fields for an individual image or source HTML element.
@@ -35,13 +35,13 @@ type ImageProps struct {
 	// - image/avif
 	// - image/webp
 	// - image/svg+xml
-	MimeType *string
+	MimeType ImageMimeType
 
 	// The file extension of the image, for example (jpg).
 	FileExtension string
 
 	// Determines if loading=lazy should be added to the image.
-	Lazy LoadingAttribute
+	Loading LoadingAttribute
 
 	// The intrinsic width of the image in pixels , for example (300).
 	// Must be an integer without a unit (optional).
@@ -56,17 +56,21 @@ type ImageProps struct {
 	Attributes Attributes
 }
 
+func Image(_ context.Context, props ImageProps, opts ...ImageOptions) ImageProps {
+	for _, opt := range opts {
+		opt(&props)
+	}
+	return props
+}
+
 // Render renders a picture element to the provided writer.
 func (i ImageProps) Render(_ context.Context, w io.Writer) error {
-	var buf bytes.Buffer
-	if err := mediaTemplates.ExecuteTemplate(&buf, "image.html", i); err != nil {
+	buf := &bytes.Buffer{}
+	if err := mediaTemplates.ExecuteTemplate(buf, "image.html", i); err != nil {
 		return err
 	}
-	repl := strings.NewReplacer(
-		"\t", "",
-		"\n", " ",
-	)
-	_, err := repl.WriteString(w, strings.TrimSpace(buf.String()))
+	s := stringutil.RemoveDuplicateWhitespace(buf.String())
+	_, err := w.Write([]byte(s))
 	return err
 }
 
@@ -87,13 +91,12 @@ const (
 	LoadingLazy LoadingAttribute = "lazy"
 )
 
-//////////////////////////////////////////////////////////////////
-
 // ImageSize specifies the size of the image, as defined in the static and
 // dynamic renderers. With any luck, all sizes listed below will be
 // rendered.
 type ImageSize string
 
+// ImageSize constants that are defined by sharp when resizing images.
 const (
 	ImageSizeThumbnail ImageSize = "thumbnail"
 	ImageSizeMobile    ImageSize = "mobile"
@@ -101,6 +104,23 @@ const (
 	ImageSizeDesktop   ImageSize = "desktop"
 )
 
+// ImageMimeType specifies a mimetype four a <source> element that is outputted
+// on the type attribute.
+type ImageMimeType string
+
+// ImageMimeType constants that are defined at:
+// https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
+const (
+	ImageMimeTypeAPNG ImageMimeType = "image/apng"
+	ImageMimeTypeAVIF ImageMimeType = "image/avif"
+	ImageMimeTypeGif  ImageMimeType = "image/gif"
+	ImageMimeTypeJPG  ImageMimeType = "image/jpeg"
+	ImageMimeTypePNG  ImageMimeType = "image/png"
+	ImageMimeTypeSVG  ImageMimeType = "image/svg+xml"
+	ImageMimeTypeWebP ImageMimeType = "image/webp"
+)
+
+// ImageOptions allows for optional settings to be applied to an <img> or <source>.
 type ImageOptions func(p *ImageProps)
 
 // ImageWithAlt attaches alternative text to the image.
@@ -113,13 +133,38 @@ func ImageWithAlt(alt string) ImageOptions {
 // ImageWithLazyLoading sets loading=lazy to the image.
 func ImageWithLazyLoading() ImageOptions {
 	return func(p *ImageProps) {
-		p.Lazy = LoadingLazy
+		p.Loading = LoadingLazy
 	}
 }
 
 // ImageWithEagerLoading sets loading=eager to the image.
 func ImageWithEagerLoading() ImageOptions {
 	return func(p *ImageProps) {
-		p.Lazy = LoadingEager
+		p.Loading = LoadingEager
+	}
+}
+
+// ImageWithWidth sets the width of the image.
+func ImageWithWidth(width int) ImageOptions {
+	return func(p *ImageProps) {
+		p.Width = &width
+	}
+}
+
+// ImageWithHeight sets the height of the image.
+func ImageWithHeight(height int) ImageOptions {
+	return func(p *ImageProps) {
+		p.Height = &height
+	}
+}
+
+// ImageWithAttribute attaches a custom attribute to the image that
+// will be rendered in the HTML, for example data-id="main-image".
+func ImageWithAttribute(key, value string) ImageOptions {
+	return func(p *ImageProps) {
+		if p.Attributes == nil {
+			p.Attributes = make(Attributes)
+		}
+		p.Attributes[key] = value
 	}
 }

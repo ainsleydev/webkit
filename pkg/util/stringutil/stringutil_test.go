@@ -33,3 +33,13 @@ func TestIsEmpty(t *testing.T) {
 		assert.False(t, IsEmpty(ptr.StringPtr("hello")))
 	})
 }
+
+func TestRemoveDuplicateWhitespace(t *testing.T) {
+	in := `   <source srcset="https://example.com/image.jpg"
+		type="image/webp"
+
+	/>  `
+	want := `<source srcset="https://example.com/image.jpg" type="image/webp" />`
+	got := RemoveDuplicateWhitespace(in)
+	assert.Equal(t, want, got)
+}

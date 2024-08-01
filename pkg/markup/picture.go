@@ -67,6 +67,9 @@ type PictureProps struct {
 	// The file extension of the image, for example (jpg).
 	FileExtension string
 
+	// Determines if loading=lazy should be added to the image.
+	Lazy LoadingAttribute
+
 	// The intrinsic width of the image in pixels , for example (300).
 	// Must be an integer without a unit (optional).
 	Width *int
@@ -106,4 +109,28 @@ var mediaTemplates = template.Must(template.New("").Funcs(tpl.Funcs).ParseFS(tem
 // Render renders a picture element to the provided writer.
 func (p PictureProps) Render(_ context.Context, w io.Writer) error {
 	return mediaTemplates.ExecuteTemplate(w, "picture.html", p)
+}
+
+// PictureOptions allows for optional settings to be applied to a <picture>.
+type PictureOptions func(p *PictureProps)
+
+// PictureWithAlt attaches alternative text to the picture.
+func PictureWithAlt(alt string) PictureOptions {
+	return func(p *PictureProps) {
+		p.Alt = alt
+	}
+}
+
+// PictureWithLazyLoading sets loading=lazy to the picture.
+func PictureWithLazyLoading() PictureOptions {
+	return func(p *PictureProps) {
+		p.Lazy = LoadingLazy
+	}
+}
+
+// PictureWithEagerLoading sets loading=eager to the picture.
+func PictureWithEagerLoading() PictureOptions {
+	return func(p *PictureProps) {
+		p.Lazy = LoadingEager
+	}
 }

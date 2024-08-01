@@ -3,7 +3,6 @@ package markup
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -101,7 +100,6 @@ func TestHead(t *testing.T) {
 		}
 		buf := bytes.Buffer{}
 		err := p.Render(context.TODO(), &buf)
-		fmt.Println(buf.String())
 
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), `<title>Hello, World!</title>`)
@@ -115,6 +113,5 @@ func TestHead(t *testing.T) {
 
 		err := props.Render(ctx, &buf)
 		assert.NoError(t, err)
-		fmt.Println(buf.String())
 	})
 }
