@@ -56,7 +56,8 @@ type ImageProps struct {
 	Attributes Attributes
 }
 
-func Image(_ context.Context, props ImageProps, opts ...ImageOptions) ImageProps {
+// Image - TODO
+func Image(props ImageProps, opts ...ImageOptions) ImageProps {
 	for _, opt := range opts {
 		opt(&props)
 	}

@@ -39,7 +39,7 @@ func TestImageProps_Render(t *testing.T) {
 			},
 			want: `<img src="https://example.com/image.jpg" width="300" height="200" />`,
 		},
-		"Image with Lazy Loading": {
+		"Image with Loading Loading": {
 			input: func() ImageProps {
 				return Image(context.TODO(), ImageProps{
 					URL: "https://example.com/image.jpg",

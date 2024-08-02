@@ -1,33 +1,12 @@
 <!-- =====================
     Picture
     ===================== -->
-{{ safeHTML "<!-- Picture -->" }}
-<picture {{ if ne .ID "" }} id="{{ .ID }}" {{- end }}
-	class=""
-	{{ range $key, $value := .Attributes}} {{ $key }}="{{ $value }}" {{- end }}
+<picture {{ with .ID }} id="{{ . }}" {{- end }}
+	{{ with .Classes -}} class="{{ range . -}} {{ . }} {{- end }} " {{- end }}
+	{{ range $key, $value := .Attributes -}} {{ $key | safeAttr }}="{{ $value }}" {{ end -}}
 >
-	{{- range .Sources}}
-		<source srcset="{{ .URL }}"
-			{{ with .Media }} media="{{ .Media }}" {{- end }}
-			type="{{ .MimeType }}"
-			{{ with .Width }} width="{{ . }}" {{- end }}
-			{{ with .Height }} height="{{ . }}" {{- end }}
-		/>
+	{{- range .Sources }}
+		{{ renderComponent . }}
 	{{- end }}
-	<img src="{{ .URL }}" {{ with .Alt }} alt="{{ . }}" {{- end }} />
+	{{ renderComponent .Image }}
 </picture>
-
-
-
-{{/*{{ range .Sizes.SortByWidth -}}*/}}
-{{/*	<source srcset="{{ .URL }}"*/}}
-{{/*		{{- if and (ne .Size "avif") (ne .Size "webp") }} media="{{ .MediaAttr }}" {{- end }}*/}}
-{{/*		{{ with .MimeType }} type="{{ . }}" {{- end }}*/}}
-{{/*		{{ with .Width -}} width="{{ .}}" {{- end }}*/}}
-{{/*		{{ with .Height -}} height="{{ .}}" {{- end }}*/}}
-{{/*		{{ with .Size -}} data-payload-size="{{ . }}" {{- end }}*/}}
-{{/*	/>*/}}
-{{/*{{ end }}*/}}
-{{/*{{ if .URL -}}*/}}
-{{/*	<img src="{{ .URL }}" {{ with (index .Extra "alt") -}} alt="{{ . }}" {{- end }}>*/}}
-{{/*{{ end }}*/}}

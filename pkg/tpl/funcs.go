@@ -1,12 +1,19 @@
 package tpl
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"html/template"
+	"io"
 	"log/slog"
 
 	"github.com/goccy/go-json"
 )
+
+type componentRenderer interface {
+	Render(context.Context, io.Writer) error
+}
 
 // Funcs is a map of utility functions that can be used in the std
 // html/template package.
@@ -32,5 +39,14 @@ var Funcs = template.FuncMap{
 	},
 	"safeAttr": func(v any) template.HTMLAttr {
 		return template.HTMLAttr(fmt.Sprint(v))
+	},
+	"renderComponent": func(renderer componentRenderer) string {
+		buf := bytes.Buffer{}
+		err := renderer.Render(context.Background(), &buf)
+		if err != nil {
+			slog.Error("Rendering component: " + err.Error())
+			return ""
+		}
+		return buf.String()
 	},
 }

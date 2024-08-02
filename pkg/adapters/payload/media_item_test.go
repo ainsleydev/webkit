@@ -1,7 +1,6 @@
 package payload
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -199,7 +198,7 @@ func TestMedia_ToMarkup(t *testing.T) {
 	err := m.UnmarshalJSON([]byte(media))
 	require.NoError(t, err)
 
-	p := m.ToMarkup(context.Background())
+	p := m.ToMarkup()
 
 	// Assert main image
 	assert.Equal(t, "https://example.com/media/image.png", p.URL)

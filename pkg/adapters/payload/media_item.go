@@ -1,7 +1,6 @@
 package payload
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -100,7 +99,7 @@ func (m *Media) UnmarshalJSON(data []byte) error {
 
 // ToMarkup implements the markup.PictureProvider types and transforms the Media item
 // into a markup.PictureProps type ready for rendering onto the DOM.
-func (m *Media) ToMarkup(_ context.Context) markup.PictureProps {
+func (m *Media) ToMarkup() markup.PictureProps {
 	return markup.PictureProps{
 		URL:     m.URL,
 		Alt:     m.Alt(),

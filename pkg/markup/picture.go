@@ -11,15 +11,15 @@ import (
 
 // PictureProvider is a common - TODO
 type PictureProvider interface {
-	ToMarkup(ctx context.Context) PictureProps
+	ToMarkup() PictureProps
 }
 
 // Picture - TODO
 //
 // TODO: How are we going to apply classes to the picture element?
 // At the moment, we are only applying classes to the source elements.
-func Picture(ctx context.Context, provider PictureProvider, opts ...ImageOptions) PictureProps {
-	props := provider.ToMarkup(ctx)
+func Picture(provider PictureProvider, opts ...ImageOptions) PictureProps {
+	props := provider.ToMarkup()
 	props.FileExtension = filepath.Ext(props.URL)
 
 	for i, img := range props.Sources {
@@ -68,7 +68,7 @@ type PictureProps struct {
 	FileExtension string
 
 	// Determines if loading=lazy should be added to the image.
-	Lazy LoadingAttribute
+	Loading LoadingAttribute
 
 	// The intrinsic width of the image in pixels , for example (300).
 	// Must be an integer without a unit (optional).
@@ -90,9 +90,12 @@ type PictureProps struct {
 func (p PictureProps) Image() ImageProps {
 	return ImageProps{
 		URL:           p.URL,
+		Alt:           p.Alt,
 		IsSource:      false,
 		Media:         "", // Default image should not output a media query.
+		MimeType:      "",
 		FileExtension: p.FileExtension,
+		Loading:       p.Loading,
 		Width:         p.Width,
 		Height:        p.Height,
 		Attributes:    p.Attributes,
@@ -124,13 +127,21 @@ func PictureWithAlt(alt string) PictureOptions {
 // PictureWithLazyLoading sets loading=lazy to the picture.
 func PictureWithLazyLoading() PictureOptions {
 	return func(p *PictureProps) {
-		p.Lazy = LoadingLazy
+		p.Loading = LoadingLazy
 	}
 }
 
 // PictureWithEagerLoading sets loading=eager to the picture.
 func PictureWithEagerLoading() PictureOptions {
 	return func(p *PictureProps) {
-		p.Lazy = LoadingEager
+		p.Loading = LoadingEager
+	}
+}
+
+func PictureWithClasses(classes ...string) PictureOptions {
+	return func(p *PictureProps) {
+		for _, v := range classes {
+			p.Classes = append(p.Classes, v)
+		}
 	}
 }
