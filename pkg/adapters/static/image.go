@@ -126,7 +126,7 @@ func imageSourceMarkup(path string) (markup.ImageProps, error) {
 	}
 	defer b.Close() // Don't forget to close the file when we're done
 
-	mime, err := mimetype.DetectReader(b)
+	m, err := mimetype.DetectReader(b)
 	if err != nil {
 		return markup.ImageProps{}, err
 	}
@@ -138,7 +138,10 @@ func imageSourceMarkup(path string) (markup.ImageProps, error) {
 		return def, err
 	}
 
-	if mime.String() == "image/jpeg" {
+	mime := m.String()
+	if mime == string(markup.ImageMimeTypeJPG) ||
+		mime == string(markup.ImageMimeTypePNG) ||
+		mime == "image/jpg" {
 		fmt.Println(getProperties(b))
 	}
 
@@ -152,7 +155,7 @@ func imageSourceMarkup(path string) (markup.ImageProps, error) {
 		Alt:      "",
 		IsSource: false,
 		Media:    "",
-		MimeType: markup.ImageMimeType(mime.String()),
+		MimeType: markup.ImageMimeType(mime),
 		//Width:      &props.Width,
 		//Height:     &props.Height,
 		Attributes: markup.Attributes{},
