@@ -15,7 +15,7 @@ func TestImageProps_Render(t *testing.T) {
 	}{
 		"Simple Source": {
 			input: func() ImageProps {
-				return Image(context.TODO(), ImageProps{
+				return Image(ImageProps{
 					URL:      "https://example.com/image.jpg",
 					IsSource: true,
 					MimeType: ImageMimeTypeWebP,
@@ -25,7 +25,7 @@ func TestImageProps_Render(t *testing.T) {
 		},
 		"Simple Image with Alt": {
 			input: func() ImageProps {
-				return Image(context.TODO(), ImageProps{
+				return Image(ImageProps{
 					URL: "https://example.com/image.jpg",
 				}, ImageWithAlt("Alternative"))
 			},
@@ -33,7 +33,7 @@ func TestImageProps_Render(t *testing.T) {
 		},
 		"Image with Width and Height": {
 			input: func() ImageProps {
-				return Image(context.TODO(), ImageProps{
+				return Image(ImageProps{
 					URL: "https://example.com/image.jpg",
 				}, ImageWithWidth(300), ImageWithHeight(200))
 			},
@@ -41,7 +41,7 @@ func TestImageProps_Render(t *testing.T) {
 		},
 		"Image with Loading Loading": {
 			input: func() ImageProps {
-				return Image(context.TODO(), ImageProps{
+				return Image(ImageProps{
 					URL: "https://example.com/image.jpg",
 				}, ImageWithLazyLoading())
 			},
@@ -49,7 +49,7 @@ func TestImageProps_Render(t *testing.T) {
 		},
 		"Image with Eager Loading": {
 			input: func() ImageProps {
-				return Image(context.TODO(), ImageProps{
+				return Image(ImageProps{
 					URL: "https://example.com/image.jpg",
 				}, ImageWithEagerLoading())
 			},
@@ -57,7 +57,7 @@ func TestImageProps_Render(t *testing.T) {
 		},
 		"Image with Custom Attributes": {
 			input: func() ImageProps {
-				return Image(context.TODO(), ImageProps{
+				return Image(ImageProps{
 					URL: "https://example.com/image.jpg",
 				}, ImageWithAttribute("data-id", "main-image"))
 			},
@@ -65,7 +65,7 @@ func TestImageProps_Render(t *testing.T) {
 		},
 		"Source with Media Query": {
 			input: func() ImageProps {
-				return Image(context.TODO(), ImageProps{
+				return Image(ImageProps{
 					URL:      "https://example.com/image.jpg",
 					IsSource: true,
 					MimeType: ImageMimeTypeWebP,
@@ -76,7 +76,7 @@ func TestImageProps_Render(t *testing.T) {
 		},
 		"Source with Width and Height": {
 			input: func() ImageProps {
-				return Image(context.TODO(), ImageProps{
+				return Image(ImageProps{
 					URL:      "https://example.com/image.jpg",
 					IsSource: true,
 				}, ImageWithWidth(300), ImageWithHeight(200))
@@ -85,7 +85,7 @@ func TestImageProps_Render(t *testing.T) {
 		},
 		"Source with Custom Attributes": {
 			input: func() ImageProps {
-				return Image(context.TODO(), ImageProps{
+				return Image(ImageProps{
 					URL:      "https://example.com/image.jpg",
 					IsSource: true,
 				}, ImageWithAttribute("data-id", "main-source"))

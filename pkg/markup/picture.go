@@ -2,11 +2,9 @@ package markup
 
 import (
 	"context"
-	"html/template"
+	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 	"io"
 	"path/filepath"
-
-	"github.com/ainsleydev/webkit/pkg/tpl"
 )
 
 // PictureProvider is a common - TODO
@@ -18,7 +16,7 @@ type PictureProvider interface {
 //
 // TODO: How are we going to apply classes to the picture element?
 // At the moment, we are only applying classes to the source elements.
-func Picture(provider PictureProvider, opts ...ImageOptions) PictureProps {
+func Picture(provider PictureProvider, opts ...PictureOptions) PictureProps {
 	props := provider.PictureMarkup()
 	props.FileExtension = filepath.Ext(props.URL)
 
@@ -26,15 +24,14 @@ func Picture(provider PictureProvider, opts ...ImageOptions) PictureProps {
 		// Assign the file extension to the source images.
 		props.Sources[i].FileExtension = filepath.Ext(img.URL)
 
-		// Apply all options to the source images
-		for _, opt := range opts {
-			opt(&img)
-		}
-
 		// Apply upwards
-		if img.Alt != "" {
-			props.Alt = img.Alt
-		}
+		//if img.Alt != "" {
+		//	props.Alt = img.Alt
+		//}
+	}
+
+	for _, opt := range opts {
+		opt(&props)
 	}
 
 	return props
@@ -102,16 +99,9 @@ func (p PictureProps) Image() ImageProps {
 	}
 }
 
-// headTemplate is the template for the head of the HTML document.
-// It requires a HeadProps struct to be passed in when executing the template.
-var mediaTemplates = template.Must(template.New("").Funcs(tpl.Funcs).ParseFS(templatesFS,
-	"picture.html",
-	"image.html",
-))
-
 // Render renders a picture element to the provided writer.
-func (p PictureProps) Render(_ context.Context, w io.Writer) error {
-	return mediaTemplates.ExecuteTemplate(w, "picture.html", p)
+func (p PictureProps) Render(ctx context.Context, w io.Writer) error {
+	return templates.Render(ctx, w, "picture.html", p)
 }
 
 // PictureOptions allows for optional settings to be applied to a <picture>.

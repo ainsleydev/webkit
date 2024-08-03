@@ -43,3 +43,10 @@ func TestRemoveDuplicateWhitespace(t *testing.T) {
 	got := RemoveDuplicateWhitespace(in)
 	assert.Equal(t, want, got)
 }
+
+func TestFormatHTML(t *testing.T) {
+	in := `<picture > <img src=\"https://example.com/image.jpg\" alt=\"Alternative\" /> </picture>`
+	want := "<picture>\n  <img src=\\\"https://example.com/image.jpg\\\" alt=\\\"Alternative\\\" />\n</picture>"
+	got := FormatHTML(in)
+	assert.Equal(t, want, got)
+}

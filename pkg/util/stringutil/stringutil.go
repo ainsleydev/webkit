@@ -1,6 +1,7 @@
 package stringutil
 
 import (
+	"github.com/yosssi/gohtml"
 	"regexp"
 	"strings"
 )
@@ -21,4 +22,12 @@ var space = regexp.MustCompile(`\s+`)
 // Including tab & new line characters.
 func RemoveDuplicateWhitespace(s string) string {
 	return strings.TrimSpace(space.ReplaceAllString(s, " "))
+}
+
+// FormatHTML parses a input HTML string, formats it and returns the result.
+func FormatHTML(s string) string {
+	repl := strings.NewReplacer(
+		" >", ">",
+	)
+	return gohtml.Format(repl.Replace(s))
 }

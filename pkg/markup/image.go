@@ -1,9 +1,8 @@
 package markup
 
 import (
-	"bytes"
 	"context"
-	"github.com/ainsleydev/webkit/pkg/util/stringutil"
+	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 	"io"
 )
 
@@ -70,14 +69,8 @@ func Image(props ImageProps, opts ...ImageOptions) ImageProps {
 }
 
 // Render renders a picture element to the provided writer.
-func (i ImageProps) Render(_ context.Context, w io.Writer) error {
-	buf := &bytes.Buffer{}
-	if err := mediaTemplates.ExecuteTemplate(buf, "image.html", i); err != nil {
-		return err
-	}
-	s := stringutil.RemoveDuplicateWhitespace(buf.String())
-	_, err := w.Write([]byte(s))
-	return err
+func (i ImageProps) Render(ctx context.Context, w io.Writer) error {
+	return templates.Render(ctx, w, "image.html", i)
 }
 
 // LoadingAttribute specifies the loading attribute for an image.

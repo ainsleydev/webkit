@@ -3,6 +3,8 @@ package markup
 import (
 	"bytes"
 	"context"
+	"github.com/PuerkitoBio/goquery"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 
@@ -102,8 +104,14 @@ func TestHead(t *testing.T) {
 		err := p.Render(context.TODO(), &buf)
 
 		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), `<title>Hello, World!</title>`)
-		assert.Contains(t, buf.String(), `<meta name="description" content="This is a test description." />`)
+
+		doc, err := goquery.NewDocumentFromReader(&buf)
+
+		require.NoError(t, err)
+		assert.Contains(t, doc.Find("title").Text(), "Hello, World!")
+		description, ok := doc.Find(`meta[name="description"]`).Attr("content")
+		assert.True(t, ok)
+		assert.Equal(t, "This is a test description.", description)
 	})
 
 	t.Run("Full Head", func(t *testing.T) {

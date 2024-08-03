@@ -2,13 +2,12 @@ package markup
 
 import (
 	"context"
-	"html/template"
+	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 	"io"
 	"time"
 
 	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	schemaorg "github.com/ainsleydev/webkit/pkg/markup/schema"
-	"github.com/ainsleydev/webkit/pkg/tpl"
 )
 
 // HeadProps defines the properties that should be included in the
@@ -43,19 +42,11 @@ type HeadProps struct {
 	Snippets []webkitctx.MarkupSnippet
 }
 
-// headTemplate is the template for the head of the HTML document.
-// It requires a HeadProps struct to be passed in when executing the template.
-var headTemplate = template.Must(template.New("").Funcs(tpl.Funcs).ParseFS(templatesFS,
-	"head.html",
-	"opengraph.html",
-	"twitter.html",
-))
-
 // Render renders the head of the document to the provided writer.
 func (h HeadProps) Render(ctx context.Context, w io.Writer) error {
 	s, ok := webkitctx.HeadSnippets(ctx)
 	if ok {
 		h.Snippets = s
 	}
-	return headTemplate.ExecuteTemplate(w, "head.html", h)
+	return templates.Render(ctx, w, "head.html", h)
 }

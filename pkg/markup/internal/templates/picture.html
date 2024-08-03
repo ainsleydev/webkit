@@ -2,11 +2,11 @@
     Picture
     ===================== -->
 <picture {{ with .ID }} id="{{ . }}" {{- end }}
-	{{ with .Classes -}} class="{{ range . -}} {{ . }} {{- end }} " {{- end }}
+	{{ with .Classes -}} class="{{ range . -}} {{ . }} {{- end }}" {{- end }}
 	{{ range $key, $value := .Attributes -}} {{ $key | safeAttr }}="{{ $value }}" {{ end -}}
 >
 	{{- range .Sources }}
-		{{ renderComponent . }}
+		{{ renderComponent . | safeHTML }}
 	{{- end }}
-	{{ renderComponent .Image }}
+	{{ renderComponent .Image | safeHTML }}
 </picture>
