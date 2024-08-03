@@ -1,12 +1,42 @@
 package static
 
 import (
+	"github.com/ainsleydev/webkit/pkg/markup"
 	"log/slog"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 )
+
+type Image string
+
+const ImageDistPath = "/dist"
+
+func (i Image) String() string {
+	return string(i)
+}
+
+func (i Image) ImageMarkup() markup.ImageProps {
+	return markup.ImageProps{
+		URL:           i.String(),
+		IsSource:      false,
+		FileExtension: filepath.Ext(i.String()),
+	}
+}
+
+func (i Image) PictureMarkup() markup.PictureProps {
+	return markup.PictureProps{}
+}
+
+func (i Image) RootPath() string {
+	parts := strings.Split(i.String(), "/")
+	if len(parts) > 1 {
+		parts[0] = ImageDistPath
+		return "/" + strings.Join(parts, "/")
+	}
+	return i.String()
+}
 
 // removeFileExtension removes the file extension from a given filename.
 func removeFileExtension(fileName string) string {

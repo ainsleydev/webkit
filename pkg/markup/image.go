@@ -7,6 +7,11 @@ import (
 	"io"
 )
 
+// ImageProvider is a common - TODO
+type ImageProvider interface {
+	ImageMarkup() ImageProps
+}
+
 // ImageProps defines the fields for an individual image or source HTML element.
 // The data type supports both <img> and <source> elements.
 //

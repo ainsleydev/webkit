@@ -11,7 +11,7 @@ import (
 
 // PictureProvider is a common - TODO
 type PictureProvider interface {
-	ToMarkup() PictureProps
+	PictureMarkup() PictureProps
 }
 
 // Picture - TODO
@@ -19,7 +19,7 @@ type PictureProvider interface {
 // TODO: How are we going to apply classes to the picture element?
 // At the moment, we are only applying classes to the source elements.
 func Picture(provider PictureProvider, opts ...ImageOptions) PictureProps {
-	props := provider.ToMarkup()
+	props := provider.PictureMarkup()
 	props.FileExtension = filepath.Ext(props.URL)
 
 	for i, img := range props.Sources {

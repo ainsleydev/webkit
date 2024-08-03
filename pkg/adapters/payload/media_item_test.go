@@ -198,7 +198,7 @@ func TestMedia_ToMarkup(t *testing.T) {
 	err := m.UnmarshalJSON([]byte(media))
 	require.NoError(t, err)
 
-	p := m.ToMarkup()
+	p := m.PictureMarkup()
 
 	// Assert main image
 	assert.Equal(t, "https://example.com/media/image.png", p.URL)
