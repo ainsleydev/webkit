@@ -13,22 +13,34 @@ type Image string
 
 const ImageDistPath = "/dist"
 
+// NewImage creates a new image type.
+func NewImage(s string) Image {
+	return Image(s)
+}
+
+// String implements the Stringer interface to cast the image path
+// to a string.
 func (i Image) String() string {
 	return string(i)
 }
 
+// ImageMarkup implements the markup.ImageProvider interface and transforms the static image
+// into a markup.ImageProps type ready for rendering an <img> to the DOM.
 func (i Image) ImageMarkup() markup.ImageProps {
 	return markup.ImageProps{
-		URL:           i.String(),
-		IsSource:      false,
-		FileExtension: filepath.Ext(i.String()),
+		URL:      i.String(),
+		IsSource: false,
 	}
 }
 
+// PictureMarkup implements the markup.PictureProvider interface and transforms the static image
+// into a markup.PictureProps type ready for rendering a <picture> the DOM.
 func (i Image) PictureMarkup() markup.PictureProps {
 	return markup.PictureProps{}
 }
 
+// RootPath returns the path relative to the application directory structure.
+// I.e. transforms: /assets/images/hello.jpg to /dist/images.hello.jpg
 func (i Image) RootPath() string {
 	parts := strings.Split(i.String(), "/")
 	if len(parts) > 1 {

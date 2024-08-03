@@ -5,6 +5,8 @@ import (
 	"io"
 )
 
+// Component is the interface that all templates implement.
 type Component interface {
-	Render(context.Context, io.Writer) error
+	// Render the template.
+	Render(ctx context.Context, w io.Writer) error
 }

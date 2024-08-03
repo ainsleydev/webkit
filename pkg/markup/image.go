@@ -41,9 +41,6 @@ type ImageProps struct {
 	// - image/svg+xml
 	MimeType ImageMimeType
 
-	// The file extension of the image, for example (jpg).
-	FileExtension string
-
 	// Determines if loading=lazy should be added to the image.
 	Loading LoadingAttribute
 
@@ -61,14 +58,15 @@ type ImageProps struct {
 }
 
 // Image - TODO
-func Image(props ImageProps, opts ...ImageOptions) ImageProps {
+func Image(provider ImageProvider, opts ...ImageOptions) ImageProps {
+	props := provider.ImageMarkup()
 	for _, opt := range opts {
 		opt(&props)
 	}
 	return props
 }
 
-// Render renders a picture element to the provided writer.
+// Render renders an <img> element to the provided writer.
 func (i ImageProps) Render(ctx context.Context, w io.Writer) error {
 	return templates.Render(ctx, w, "image.html", i)
 }

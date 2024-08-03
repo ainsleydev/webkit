@@ -3,6 +3,7 @@ package payload
 import (
 	"errors"
 	"fmt"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 	"os"
 	"sort"
 
@@ -97,8 +98,28 @@ func (m *Media) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// PictureMarkup implements the markup.PictureProvider types and transforms the Media item
-// into a markup.PictureProps type ready for rendering onto the DOM.
+// ImageMarkup implements the markup.ImageProvider interface and transforms the Media item
+// into a markup.ImageProps type ready for rendering an <img> to the DOM.
+func (m *Media) ImageMarkup() markup.ImageProps {
+	return markup.ImageProps{
+		URL:      m.URL,
+		Alt:      m.Alt(),
+		IsSource: false,
+		Media:    "",
+		MimeType: markup.ImageMimeType(m.MimeType),
+		Loading:  "",
+		Width:    sizeToIntPointer(m.Width),
+		Height:   sizeToIntPointer(m.Height),
+		Attributes: markup.Attributes{
+			"data-payload-media-id":       fmt.Sprintf("%v", m.ID),
+			"data-payload-media-filename": m.Filename,
+			"data-payload-media-filesize": fmt.Sprintf("%v", m.Filesize),
+		},
+	}
+}
+
+// PictureMarkup implements the markup.PictureProvider interface and transforms the Media item
+// into a markup.PictureProps type ready for rendering a <picture> the DOM.
 func (m *Media) PictureMarkup() markup.PictureProps {
 	return markup.PictureProps{
 		URL:     m.URL,
@@ -108,26 +129,6 @@ func (m *Media) PictureMarkup() markup.PictureProps {
 		ID:      fmt.Sprintf("payload-media-%v", m.ID),
 		Width:   sizeToIntPointer(m.Width),
 		Height:  sizeToIntPointer(m.Height),
-		Attributes: markup.Attributes{
-			"data-payload-media-id":       fmt.Sprintf("%v", m.ID),
-			"data-payload-media-filename": m.Filename,
-			"data-payload-media-filesize": fmt.Sprintf("%v", m.Filesize),
-		},
-	}
-}
-
-// ImageMarkup - TODO
-func (m *Media) ImageMarkup() markup.ImageProps {
-	return markup.ImageProps{
-		URL:           m.URL,
-		Alt:           m.Alt(),
-		IsSource:      false,
-		Media:         "",
-		MimeType:      markup.ImageMimeType(m.MimeType),
-		FileExtension: "",
-		Loading:       "",
-		Width:         sizeToIntPointer(m.Width),
-		Height:        sizeToIntPointer(m.Height),
 		Attributes: markup.Attributes{
 			"data-payload-media-id":       fmt.Sprintf("%v", m.ID),
 			"data-payload-media-filename": m.Filename,
@@ -196,9 +197,10 @@ func (ms MediaSizes) toMarkup() []markup.ImageProps {
 		images[index] = markup.ImageProps{
 			URL:        img.URL,
 			Media:      img.MediaAttr,
+			IsSource:   true,
 			Width:      sizeToIntPointer(img.Width),
 			Height:     sizeToIntPointer(img.Height),
-			MimeType:   img.MimeType,
+			MimeType:   markup.ImageMimeType(ptr.String(img.MimeType)),
 			Attributes: attr,
 		}
 		index++

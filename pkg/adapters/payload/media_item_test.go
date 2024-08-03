@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -200,6 +201,8 @@ func TestMedia_ToMarkup(t *testing.T) {
 
 	p := m.PictureMarkup()
 
+	fmt.Printf("%#v\n", p)
+
 	// Assert main image
 	assert.Equal(t, "https://example.com/media/image.png", p.URL)
 	assert.Equal(t, "Alt Text", p.Alt)
@@ -214,7 +217,7 @@ func TestMedia_ToMarkup(t *testing.T) {
 	// Assert first source
 	assert.Equal(t, "https://example.com/media/image-400x300.png", p.Sources[0].URL)
 	assert.Equal(t, "(max-width: 450px)", p.Sources[0].Media)
-	assert.Equal(t, "image/png", *p.Sources[0].MimeType)
+	assert.EqualValues(t, "image/png", p.Sources[0].MimeType)
 	assert.Equal(t, 400, *p.Sources[0].Width)
 	assert.Equal(t, 300, *p.Sources[0].Height)
 	assert.Equal(t, "thumbnail", p.Sources[0].Attributes["data-payload-size"])

@@ -4,37 +4,11 @@ import (
 	"context"
 	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 	"io"
-	"path/filepath"
 )
 
 // PictureProvider is a common - TODO
 type PictureProvider interface {
 	PictureMarkup() PictureProps
-}
-
-// Picture - TODO
-//
-// TODO: How are we going to apply classes to the picture element?
-// At the moment, we are only applying classes to the source elements.
-func Picture(provider PictureProvider, opts ...PictureOptions) PictureProps {
-	props := provider.PictureMarkup()
-	props.FileExtension = filepath.Ext(props.URL)
-
-	for i, img := range props.Sources {
-		// Assign the file extension to the source images.
-		props.Sources[i].FileExtension = filepath.Ext(img.URL)
-
-		// Apply upwards
-		//if img.Alt != "" {
-		//	props.Alt = img.Alt
-		//}
-	}
-
-	for _, opt := range opts {
-		opt(&props)
-	}
-
-	return props
 }
 
 // PictureProps defines the fields for to render a <picture> element onto the DOM.
@@ -61,9 +35,6 @@ type PictureProps struct {
 	// A unique identifier for the <picture> element.
 	ID string
 
-	// The file extension of the image, for example (jpg).
-	FileExtension string
-
 	// Determines if loading=lazy should be added to the image.
 	Loading LoadingAttribute
 
@@ -80,28 +51,36 @@ type PictureProps struct {
 	Attributes Attributes
 }
 
+// Picture returns picture properties - TODO
+func Picture(provider PictureProvider, opts ...PictureOptions) PictureProps {
+	props := provider.PictureMarkup()
+	for _, opt := range opts {
+		opt(&props)
+	}
+	return props
+}
+
+// Render renders a <picture> element to the provided writer.
+func (p PictureProps) Render(ctx context.Context, w io.Writer) error {
+	return templates.Render(ctx, w, "picture.html", p)
+}
+
 // Image transforms the PictureProps into an ImageProps type.
 //
 // This is useful when you want to render a single image element, instead
 // of the entire picture.
 func (p PictureProps) Image() ImageProps {
 	return ImageProps{
-		URL:           p.URL,
-		Alt:           p.Alt,
-		IsSource:      false,
-		Media:         "", // Default image should not output a media query.
-		MimeType:      "",
-		FileExtension: p.FileExtension,
-		Loading:       p.Loading,
-		Width:         p.Width,
-		Height:        p.Height,
-		Attributes:    p.Attributes,
+		URL:        p.URL,
+		Alt:        p.Alt,
+		IsSource:   false,
+		Media:      "", // Default image should not output a media query.
+		MimeType:   "",
+		Loading:    p.Loading,
+		Width:      p.Width,
+		Height:     p.Height,
+		Attributes: p.Attributes,
 	}
-}
-
-// Render renders a picture element to the provided writer.
-func (p PictureProps) Render(ctx context.Context, w io.Writer) error {
-	return templates.Render(ctx, w, "picture.html", p)
 }
 
 // PictureOptions allows for optional settings to be applied to a <picture>.

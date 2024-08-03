@@ -8,6 +8,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type imageProviderMock struct {
+	Props ImageProps
+}
+
+func (i imageProviderMock) ImageMarkup() ImageProps {
+	return i.Props
+}
+
 func TestImageProps_Render(t *testing.T) {
 	tt := map[string]struct {
 		input func() ImageProps
@@ -15,79 +23,97 @@ func TestImageProps_Render(t *testing.T) {
 	}{
 		"Simple Source": {
 			input: func() ImageProps {
-				return Image(ImageProps{
-					URL:      "https://example.com/image.jpg",
-					IsSource: true,
-					MimeType: ImageMimeTypeWebP,
+				return Image(&imageProviderMock{
+					ImageProps{
+						URL:      "https://example.com/image.jpg",
+						IsSource: true,
+						MimeType: ImageMimeTypeWebP,
+					},
 				})
 			},
 			want: `<source srcset="https://example.com/image.jpg" type="image/webp" />`,
 		},
 		"Simple Image with Alt": {
 			input: func() ImageProps {
-				return Image(ImageProps{
-					URL: "https://example.com/image.jpg",
+				return Image(&imageProviderMock{
+					ImageProps{
+						URL: "https://example.com/image.jpg",
+					},
 				}, ImageWithAlt("Alternative"))
 			},
 			want: `<img src="https://example.com/image.jpg" alt="Alternative" />`,
 		},
 		"Image with Width and Height": {
 			input: func() ImageProps {
-				return Image(ImageProps{
-					URL: "https://example.com/image.jpg",
+				return Image(&imageProviderMock{
+					ImageProps{
+						URL: "https://example.com/image.jpg",
+					},
 				}, ImageWithWidth(300), ImageWithHeight(200))
 			},
 			want: `<img src="https://example.com/image.jpg" width="300" height="200" />`,
 		},
 		"Image with Loading Loading": {
 			input: func() ImageProps {
-				return Image(ImageProps{
-					URL: "https://example.com/image.jpg",
+				return Image(&imageProviderMock{
+					ImageProps{
+						URL: "https://example.com/image.jpg",
+					},
 				}, ImageWithLazyLoading())
 			},
 			want: `<img src="https://example.com/image.jpg" loading="lazy" />`,
 		},
 		"Image with Eager Loading": {
 			input: func() ImageProps {
-				return Image(ImageProps{
-					URL: "https://example.com/image.jpg",
+				return Image(&imageProviderMock{
+					ImageProps{
+						URL: "https://example.com/image.jpg",
+					},
 				}, ImageWithEagerLoading())
 			},
 			want: `<img src="https://example.com/image.jpg" loading="eager" />`,
 		},
 		"Image with Custom Attributes": {
 			input: func() ImageProps {
-				return Image(ImageProps{
-					URL: "https://example.com/image.jpg",
+				return Image(&imageProviderMock{
+					ImageProps{
+						URL: "https://example.com/image.jpg",
+					},
 				}, ImageWithAttribute("data-id", "main-image"))
 			},
 			want: `<img src="https://example.com/image.jpg" data-id="main-image" />`,
 		},
 		"Source with Media Query": {
 			input: func() ImageProps {
-				return Image(ImageProps{
-					URL:      "https://example.com/image.jpg",
-					IsSource: true,
-					MimeType: ImageMimeTypeWebP,
-					Media:    "(min-width: 600px)",
+				return Image(&imageProviderMock{
+					ImageProps{
+						URL:      "https://example.com/image.jpg",
+						IsSource: true,
+						MimeType: ImageMimeTypeWebP,
+						Media:    "(min-width: 600px)",
+					},
 				})
 			},
 			want: `<source srcset="https://example.com/image.jpg" type="image/webp" media="(min-width: 600px)" />`,
 		},
 		"Source with Width and Height": {
 			input: func() ImageProps {
-				return Image(ImageProps{
-					URL:      "https://example.com/image.jpg",
-					IsSource: true,
+				return Image(&imageProviderMock{
+					ImageProps{
+						URL:      "https://example.com/image.jpg",
+						IsSource: true,
+					},
 				}, ImageWithWidth(300), ImageWithHeight(200))
 			},
 			want: `<source srcset="https://example.com/image.jpg" width="300" height="200" />`,
 		},
 		"Source with Custom Attributes": {
 			input: func() ImageProps {
-				return Image(ImageProps{
-					URL:      "https://example.com/image.jpg",
-					IsSource: true,
+				return Image(&imageProviderMock{
+					ImageProps{
+						URL:      "https://example.com/image.jpg",
+						IsSource: true,
+					},
 				}, ImageWithAttribute("data-id", "main-source"))
 			},
 			want: `<source srcset="https://example.com/image.jpg" data-id="main-source" />`,

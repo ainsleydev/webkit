@@ -3,7 +3,6 @@ package webkit
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -207,13 +206,5 @@ func (k *Kit) Trace(pattern string, handler Handler, plugs ...Plug) {
 func (k *Kit) NotFound(handler Handler) {
 	k.mux.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		k.handle(w, r, handler)
-	})
-}
-
-func (k *Kit) build() {
-	chi.Walk(k.mux, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		fmt.Println(method, route)
-
-		handler.ServeHTTP(nil, nil)
 	})
 }
