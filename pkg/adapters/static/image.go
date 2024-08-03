@@ -1,16 +1,16 @@
 package static
 
 import (
-	"fmt"
+	"errors"
 	"github.com/ainsleydev/webkit/pkg/markup"
-	"github.com/gabriel-vasile/mimetype"
-	"image"
 	_ "image/jpeg"
 	_ "image/png"
-	"io"
 	"log/slog"
 	"os"
+	"path"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -41,21 +41,10 @@ func (i Image) ImageMarkup() markup.ImageProps {
 // PictureMarkup implements the markup.PictureProvider interface and transforms the static image
 // into a markup.PictureProps type ready for rendering a <picture> the DOM.
 func (i Image) PictureMarkup() markup.PictureProps {
-	m := markup.PictureProps{
+	return markup.PictureProps{
 		URL:     i.String(),
-		Sources: make([]markup.ImageProps, 0, 12), // Approx no of images after conversion.
+		Sources: i.imageSources(),
 	}
-
-	for _, path := range i.imagePaths() {
-		source, err := imageSourceMarkup(path)
-		if err != nil {
-			slog.Error("Obtaining image: "+err.Error(), "path", path)
-			continue
-		}
-		m.Sources = append(m.Sources, source)
-	}
-
-	return m
 }
 
 var getDistPath = func(path string) string {
@@ -81,85 +70,53 @@ var (
 	}
 )
 
-type sourceImage struct {
-	path   string
-	width  int
-	height int
-}
-
-func (i Image) imagePaths() []string {
+func (i Image) imageSources() []markup.ImageProps {
 	img := i.String()
-	baseName := removeFileExtension(filepath.Base(img))
-	dir := filepath.Dir(img)
+	//baseName := removeFileExtension(filepath.Base(img))
 
-	var s []string
+	var images []markup.ImageProps
 
 	for _, size := range imageSizes {
-		s = append(s, filepath.Join(dir, baseName+"-"+size+filepath.Ext(img)))
+		for _, ext := range append(imageExtensions, filepath.Ext(img)) {
+			distDir := getDistPath(img)
+			dir := path.Dir(distDir)
+			base := removeFileExtension(filepath.Base(distDir))
+			glob := filepath.Join(dir, base+"-"+size+"-*"+ext)
 
-		for _, ext := range append(imageExtensions) {
-			s = append(s, filepath.Join(dir, baseName+"-"+size+ext))
+			matches, err := filepath.Glob(glob)
+			if err != nil {
+				slog.Error(err.Error())
+				continue
+			}
+
+			if len(matches) == 0 {
+				slog.Error("No matches found for image: " + glob)
+				continue
+			}
+
+			//fmt.Println(matches[0], base)
+			props, err := getImageProperties(filepath.Base(matches[0]))
+			if err != nil {
+				slog.Error(err.Error())
+				continue
+			}
+
+			images = append(images, markup.ImageProps{
+				URL:        filepath.Join(filepath.Dir(img), filepath.Base(matches[0])),
+				IsSource:   true,
+				MimeType:   props.Mime,
+				Width:      &props.Width,
+				Height:     &props.Height,
+				Attributes: nil,
+			})
 		}
 	}
 
-	for _, ext := range imageExtensions {
-		s = append(s, filepath.Join(dir, baseName+ext))
-	}
-
-	return s
-}
-
-func imageSourceMarkup(path string) (markup.ImageProps, error) {
-	def := markup.ImageProps{
-		URL:      path,
-		IsSource: true,
-	}
-
-	distPath := getDistPath(path)
-	if _, err := os.Stat(distPath); err != nil {
-		return def, err
-	}
-
-	b, err := os.Open(distPath)
-	if err != nil {
-		return def, err
-	}
-	defer b.Close() // Don't forget to close the file when we're done
-
-	m, err := mimetype.DetectReader(b)
-	if err != nil {
-		return markup.ImageProps{}, err
-	}
-
-	// Reset the file pointer to the beginning
-	_, err = b.Seek(0, io.SeekStart)
-	if err != nil {
-		slog.Error("Resetting file pointer: " + distPath)
-		return def, err
-	}
-
-	mime := m.String()
-	if mime == string(markup.ImageMimeTypeJPG) ||
-		mime == string(markup.ImageMimeTypePNG) ||
-		mime == "image/jpg" {
-		fmt.Println(getProperties(b))
-	}
-
-	//props, err := getProperties(b)
-	//if err != nil {
-	//	return def, err
+	//for _, ext := range imageExtensions {
+	//	s = append(s, filepath.Join(filepath.Dir(img), baseName+ext))
 	//}
 
-	return markup.ImageProps{
-		URL:      path,
-		Alt:      "",
-		IsSource: false,
-		Media:    "",
-		MimeType: markup.ImageMimeType(mime),
-		//Width:      &props.Width,
-		//Height:     &props.Height,
-		Attributes: markup.Attributes{},
-	}, nil
+	return images
 }
 
 // removeFileExtension removes the file extension from a given filename.
@@ -171,20 +128,40 @@ func removeFileExtension(fileName string) string {
 type imageProperties struct {
 	Width  int
 	Height int
+	Mime   markup.ImageMimeType
 }
 
-func getProperties(r io.Reader) (imageProperties, error) {
-	def := imageProperties{}
-	img, _, err := image.Decode(r)
-	if err != nil {
-		return def, err
+var imageExtensionsToMime = map[string]markup.ImageMimeType{
+	".avif": markup.ImageMimeTypeAVIF,
+	".jpg":  markup.ImageMimeTypeJPG,
+	".jpeg": markup.ImageMimeTypeJPG,
+	".png":  markup.ImageMimeTypeAPNG,
+	".webp": markup.ImageMimeTypeWebP,
+}
+
+var imageWidthHeightRegex = regexp.MustCompile(`.*-(\d+)x(\d+)\.[a-zA-Z0-9]+$`)
+
+func getImageProperties(baseName string) (imageProperties, error) {
+	matches := imageWidthHeightRegex.FindStringSubmatch(baseName)
+	if matches == nil || len(matches) != 3 {
+		return imageProperties{}, errors.New("No matches TODO")
 	}
-	if img == nil {
-		return def, err
+	mime, ok := imageExtensionsToMime[filepath.Ext(baseName)]
+	if !ok {
+		slog.Error("No mime found: " + baseName)
 	}
-	bounds := img.Bounds()
 	return imageProperties{
-		Width:  bounds.Max.X,
-		Height: bounds.Max.Y,
+		Width:  mustConvertStringToInt(matches[1]),
+		Height: mustConvertStringToInt(matches[2]),
+		Mime:   mime,
 	}, nil
+}
+
+func mustConvertStringToInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		slog.Error("Converting string " + s + " to int for image props")
+		return 0
+	}
+	return i
 }

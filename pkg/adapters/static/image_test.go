@@ -1,6 +1,7 @@
 package static
 
 import (
+	"fmt"
 	"github.com/ainsleydev/webkit/pkg/markup"
 	"github.com/goccy/go-json"
 	"github.com/stretchr/testify/assert"
@@ -34,9 +35,9 @@ func TestImage_PictureMarkup(t *testing.T) {
 
 	input := Image("/assets/images/gopher.jpg")
 	mm := input.PictureMarkup()
-	_, err := json.MarshalIndent(mm, "", "\t")
+	b, err := json.MarshalIndent(mm, "", "\t")
 	require.NoError(t, err)
-	//fmt.Println(string(b))
+	fmt.Println(string(b))
 }
 
 func TestImage_ImagePaths(t *testing.T) {
@@ -57,6 +58,6 @@ func TestImage_ImagePaths(t *testing.T) {
 		"/assets/images/image.avif",
 		"/assets/images/image.webp",
 	}
-	got := input.imagePaths()
+	got := input.imageSources()
 	assert.Equal(t, want, got)
 }
