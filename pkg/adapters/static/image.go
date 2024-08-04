@@ -2,7 +2,6 @@ package static
 
 import (
 	"errors"
-	"github.com/ainsleydev/webkit/pkg/markup"
 	_ "image/jpeg"
 	_ "image/png"
 	"log/slog"
@@ -12,6 +11,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/ainsleydev/webkit/pkg/markup"
 )
 
 // Image defines a static image to be rendered onto the DON, it can either
@@ -31,20 +32,25 @@ func (i Image) String() string {
 
 // ImageMarkup implements the markup.ImageProvider interface and transforms the static image
 // into a markup.ImageProps type ready for rendering an <img> to the DOM.
-func (i Image) ImageMarkup() markup.ImageProps {
+func (i Image) ImageMarkup() (markup.ImageProps, error) {
+
 	return markup.ImageProps{
 		URL:      i.String(),
 		IsSource: false,
-	}
+	}, nil
 }
 
 // PictureMarkup implements the markup.PictureProvider interface and transforms the static image
 // into a markup.PictureProps type ready for rendering a <picture> the DOM.
-func (i Image) PictureMarkup() markup.PictureProps {
+func (i Image) PictureMarkup() (markup.PictureProps, error) {
+	sources, err := i.imageSources()
+	if err != nil {
+		return markup.PictureProps{URL: i.String()}, err
+	}
 	return markup.PictureProps{
 		URL:     i.String(),
-		Sources: i.imageSources(),
-	}
+		Sources: sources,
+	}, nil
 }
 
 var getDistPath = func(path string) string {
@@ -68,55 +74,68 @@ var (
 		".avif",
 		".webp",
 	}
+	imageExtensionsToMime = map[string]markup.ImageMimeType{
+		".avif": markup.ImageMimeTypeAVIF,
+		".jpg":  markup.ImageMimeTypeJPG,
+		".jpeg": markup.ImageMimeTypeJPG,
+		".png":  markup.ImageMimeTypeAPNG,
+		".webp": markup.ImageMimeTypeWebP,
+	}
 )
 
-func (i Image) imageSources() []markup.ImageProps {
+func (i Image) imageSources() ([]markup.ImageProps, error) {
 	img := i.String()
-	//baseName := removeFileExtension(filepath.Base(img))
 
 	var images []markup.ImageProps
 
+	// Obtain all of the images that have been resized, for example:
+	// gopher-desktop-1440-1920.avif
 	for _, size := range imageSizes {
 		for _, ext := range append(imageExtensions, filepath.Ext(img)) {
-			distDir := getDistPath(img)
-			dir := path.Dir(distDir)
-			base := removeFileExtension(filepath.Base(distDir))
-			glob := filepath.Join(dir, base+"-"+size+"-*"+ext)
-
-			matches, err := filepath.Glob(glob)
+			source, err := i.getMatches(ext, size, true)
 			if err != nil {
-				slog.Error(err.Error())
-				continue
+				return nil, err
 			}
 
-			if len(matches) == 0 {
-				slog.Error("No matches found for image: " + glob)
-				continue
-			}
-
-			//fmt.Println(matches[0], base)
-			props, err := getImageProperties(filepath.Base(matches[0]))
+			props, err := getImageProperties(filepath.Base(source))
 			if err != nil {
-				slog.Error(err.Error())
-				continue
+				return nil, err
 			}
 
 			images = append(images, markup.ImageProps{
-				URL:        filepath.Join(filepath.Dir(img), filepath.Base(matches[0])),
-				IsSource:   true,
-				MimeType:   props.Mime,
-				Width:      &props.Width,
-				Height:     &props.Height,
-				Attributes: nil,
+				URL:      filepath.Join(filepath.Dir(img), filepath.Base(source)),
+				IsSource: true,
+				MimeType: props.Mime,
+				Width:    &props.Width,
+				Height:   &props.Height,
 			})
 		}
 	}
 
-	//for _, ext := range imageExtensions {
-	//	s = append(s, filepath.Join(filepath.Dir(img), baseName+ext))
-	//}
+	// Obtain all of the original images that have been not resized but adjusted
+	// based on file extension, for example:
+	// gopher.avif & gopher.web
+	for _, ext := range imageExtensions {
+		source, err := i.getMatches(ext, "", false)
+		if err != nil {
+			return nil, err
+		}
 
-	return images
+		ext := filepath.Ext(source)
+		mime, ok := imageExtensionsToMime[ext]
+		if !ok {
+			return nil, errors.New("no mime type found for extension: " + ext)
+		}
+
+		images = append(images, markup.ImageProps{
+			URL:        filepath.Join(filepath.Dir(img), filepath.Base(source)),
+			IsSource:   true,
+			MimeType:   mime,
+			Attributes: nil,
+		})
+	}
+
+	return images, nil
 }
 
 // removeFileExtension removes the file extension from a given filename.
@@ -125,18 +144,37 @@ func removeFileExtension(fileName string) string {
 	return strings.TrimSuffix(fileName, ext)
 }
 
+// getMatches obtains all of the images associated with a file extension and
+// optional size relative to the img root.
+func (i Image) getMatches(extension, size string, useSize bool) (string, error) {
+	img := i.String()
+	distDir := getDistPath(img)
+	dir := path.Dir(distDir)
+	base := removeFileExtension(filepath.Base(distDir))
+	glob := filepath.Join(dir, base+extension)
+
+	// I.e. this is a source element with a name similar to: gopher-desktop-1440-1920.avif
+	// Otherwise we're just looking for gopher.avif
+	if useSize {
+		glob = filepath.Join(dir, base+"-"+size+"-*"+extension)
+	}
+
+	matches, err := filepath.Glob(glob)
+	if err != nil {
+		return "", errors.New("obtaining glob for image: " + err.Error() + ", glob: " + glob)
+	}
+
+	if len(matches) == 0 {
+		return "", errors.New("no matches found for glob: " + glob)
+	}
+
+	return matches[0], nil
+}
+
 type imageProperties struct {
 	Width  int
 	Height int
 	Mime   markup.ImageMimeType
-}
-
-var imageExtensionsToMime = map[string]markup.ImageMimeType{
-	".avif": markup.ImageMimeTypeAVIF,
-	".jpg":  markup.ImageMimeTypeJPG,
-	".jpeg": markup.ImageMimeTypeJPG,
-	".png":  markup.ImageMimeTypeAPNG,
-	".webp": markup.ImageMimeTypeWebP,
 }
 
 var imageWidthHeightRegex = regexp.MustCompile(`.*-(\d+)x(\d+)\.[a-zA-Z0-9]+$`)
@@ -144,24 +182,28 @@ var imageWidthHeightRegex = regexp.MustCompile(`.*-(\d+)x(\d+)\.[a-zA-Z0-9]+$`)
 func getImageProperties(baseName string) (imageProperties, error) {
 	matches := imageWidthHeightRegex.FindStringSubmatch(baseName)
 	if matches == nil || len(matches) != 3 {
-		return imageProperties{}, errors.New("No matches TODO")
+		return imageProperties{}, errors.New("no regex matches found for: " + baseName)
 	}
-	mime, ok := imageExtensionsToMime[filepath.Ext(baseName)]
+
+	ext := filepath.Ext(baseName)
+	mime, ok := imageExtensionsToMime[ext]
 	if !ok {
-		slog.Error("No mime found: " + baseName)
+		return imageProperties{}, errors.New("no mime type found for extension: " + ext)
 	}
+
+	width, err := strconv.Atoi(matches[1])
+	if err != nil {
+		return imageProperties{}, errors.New("converting width to int: " + err.Error() + " for image: " + baseName)
+	}
+
+	height, err := strconv.Atoi(matches[2])
+	if err != nil {
+		return imageProperties{}, errors.New("converting height to int: " + err.Error() + " for image: " + baseName)
+	}
+
 	return imageProperties{
-		Width:  mustConvertStringToInt(matches[1]),
-		Height: mustConvertStringToInt(matches[2]),
+		Width:  width,
+		Height: height,
 		Mime:   mime,
 	}, nil
-}
-
-func mustConvertStringToInt(s string) int {
-	i, err := strconv.Atoi(s)
-	if err != nil {
-		slog.Error("Converting string " + s + " to int for image props")
-		return 0
-	}
-	return i
 }
