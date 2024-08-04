@@ -33,14 +33,16 @@
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
 		"@biomejs/biome": "1.8.3",
-		"globals": "^15.3.0",
-		"husky": "^9.0.11",
-		"lint-staged": "^15.2.4",
-		"prettier": "^3.2.5"
+		"globals": "^15.9.0",
+		"husky": "^9.1.4",
+		"lint-staged": "^15.2.8"
 	},
 	"lint-staged": {
-		"*.{js,jsx,mjs,ts,tsx,css,scss,json,yaml,yml}": ["prettier --write ."],
-		"*.{js,ts}": "eslint --fix"
+		"*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
+			"biome format --write --no-errors-on-unmatched"
+		],
+		"*.go": ["gofmt -w"],
+		"*.templ": ["templ fmt"]
 	},
 	"engines": {
 		"node": ">=18",
