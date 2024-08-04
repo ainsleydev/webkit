@@ -38,7 +38,7 @@ func Head(ctx context.Context) markup.HeadProps {
 		slog.Error("Merging page meta with settings meta: " + err.Error())
 	}
 
-	//ctx, ok := ctx.Value("navigation").(context.Context)
+	// ctx, ok := ctx.Value("navigation").(context.Context)
 
 	props := markup.HeadProps{
 		Title:        ptr.String(settings.Meta.Title),
@@ -49,7 +49,7 @@ func Head(ctx context.Context) markup.HeadProps {
 		OpenGraph:    settings.OpenGraph(url),
 		Twitter:      settings.TwitterCard(),
 		Organisation: settings.SchemaOrganisation(url),
-		//Navigation:   ,
+		// Navigation:   ,
 	}
 
 	if settings.Meta.Image != nil {

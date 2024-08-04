@@ -9,7 +9,7 @@ type (
 		GUID          GUID    `json:"guid,omitempty"`
 		Link          string  `json:"link,omitempty"`
 		Modified      string  `json:"modified,omitempty"`
-		ModifiedGMT   string  `json:"modifiedGMT,omitempty"`
+		ModifiedGMT   string  `json:"modifiedGMT,omitempty"` //nolint
 		Password      string  `json:"password,omitempty"`
 		Slug          string  `json:"slug,omitempty"`
 		Status        string  `json:"status,omitempty"`

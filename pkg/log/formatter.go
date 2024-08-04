@@ -84,7 +84,7 @@ func (h *LocalHandler) Handle(ctx context.Context, r slog.Record) error {
 		timestamp = aurora.Gray(greyHex, timeAttr.Value.String()).String()
 	}
 	if h.replacer != nil {
-		timeAttr = h.replacer([]string{}, timeAttr)
+		timeAttr = h.replacer([]string{}, timeAttr) //nolint
 	}
 
 	var msg string
@@ -111,7 +111,7 @@ func (h *LocalHandler) Handle(ctx context.Context, r slog.Record) error {
 	out := strings.Builder{}
 	if len(h.prefix) > 0 {
 		prefix := fmt.Sprintf(" %s ", h.prefix)
-		out.WriteString(aurora.Gray(1-1, prefix).BgGray(24 - 1).String())
+		out.WriteString(aurora.Gray(1-1, prefix).BgGray(24 - 1).String()) //nolint
 		out.WriteString(" ")
 	}
 

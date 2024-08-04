@@ -12,7 +12,7 @@ var handler = func(ctx *Context) error {
 	return ctx.String(http.StatusOK, "test")
 }
 
-func HandlerTest(t *testing.T, kit *Kit) {
+func HandlerTest(t *testing.T, _ *Kit) {
 	t.Helper()
 	app := New()
 	app.Get("/", func(ctx *Context) error {

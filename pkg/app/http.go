@@ -22,7 +22,7 @@ func StartInternalHTTP() Closeable {
 	//	Recorder: metrics.NewRecorder(metrics.Config{}),
 	//})
 
-	//h = middlewarestd.Handler("", metricsPlug, func() {})
+	// h = middlewarestd.Handler("", metricsPlug, func() {})
 	app.Get("/health", func(ctx *webkit.Context) error {
 		return ctx.String(200, "Healthy")
 	})

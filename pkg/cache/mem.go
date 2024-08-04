@@ -63,7 +63,7 @@ func (c *MemCache) Get(_ context.Context, key string, value interface{}) error {
 	return nil
 }
 
-func (c *MemCache) Set(ctx context.Context, key string, value interface{}, opts Options) {
+func (c *MemCache) Set(_ context.Context, key string, value interface{}, opts Options) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if opts.Expiration == 0 {

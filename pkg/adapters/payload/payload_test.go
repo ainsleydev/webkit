@@ -46,6 +46,8 @@ func TestNew_Error(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			orig := envPayloadURL
 			defer func() { envPayloadURL = orig }()
 			envPayloadURL = test.envURL

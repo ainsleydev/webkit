@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"embed"
-	"github.com/ainsleydev/webkit/pkg/tpl"
-	"github.com/ainsleydev/webkit/pkg/util/stringutil"
 	"html/template"
 	"io"
+
+	"github.com/ainsleydev/webkit/pkg/tpl"
+	"github.com/ainsleydev/webkit/pkg/util/stringutil"
 )
 
 //go:embed *.html

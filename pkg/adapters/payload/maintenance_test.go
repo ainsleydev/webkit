@@ -42,7 +42,7 @@ func TestMaintenanceMiddleware(t *testing.T) {
 		"Nil Maintenance": {
 			url: "/page",
 			ctx: func() context.Context {
-				return context.WithValue(context.TODO(), SettingsContextKey, &Settings{})
+				return context.WithValue(context.TODO(), SettingsContextKey, &Settings{}) //nolint
 			},
 			called: false,
 		},
@@ -70,6 +70,8 @@ func TestMaintenanceMiddleware(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			app := webkit.New()
 			req := httptest.NewRequest(http.MethodGet, test.url, nil)
 			req = req.WithContext(test.ctx())

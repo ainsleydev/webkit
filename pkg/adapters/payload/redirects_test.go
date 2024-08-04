@@ -38,7 +38,7 @@ func TestRedirects(t *testing.T) {
 		},
 		"API error returns nil": {
 			url: fromURL,
-			mock: func(cols *payloadfakes.MockCollectionService, store cache.Store) {
+			mock: func(cols *payloadfakes.MockCollectionService, _ cache.Store) {
 				cols.ListFunc = func(_ context.Context, _ payloadcms.Collection, _ payloadcms.ListParams, _ any) (payloadcms.Response, error) {
 					return payloadcms.Response{}, errors.New("error")
 				}
@@ -66,7 +66,7 @@ func TestRedirects(t *testing.T) {
 		},
 		"Redirects 301 from API": {
 			url: fromURL,
-			mock: func(cols *payloadfakes.MockCollectionService, store cache.Store) {
+			mock: func(cols *payloadfakes.MockCollectionService, _ cache.Store) {
 				cols.ListFunc = func(_ context.Context, _ payloadcms.Collection, _ payloadcms.ListParams, out any) (payloadcms.Response, error) {
 					*out.(*payloadcms.ListResponse[redirect]) = payloadcms.ListResponse[redirect]{
 						Docs: redirects,
@@ -88,6 +88,8 @@ func TestRedirects(t *testing.T) {
 	}
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			app := webkit.New()
 			req := httptest.NewRequest(http.MethodGet, test.url, nil)
 			rr := httptest.NewRecorder()

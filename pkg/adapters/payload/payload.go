@@ -99,10 +99,8 @@ const (
 	GlobalNavigation payloadcms.Global = "navigation"
 )
 
-var (
-	// envPayloadURL is the environment key for the Payload URL.
-	envPayloadURL = "PAYLOAD_URL"
-)
+// envPayloadURL is the environment key for the Payload URL.
+var envPayloadURL = "PAYLOAD_URL"
 
 func (a Adapter) validate() error {
 	if a.kit == nil {

@@ -20,14 +20,14 @@ func TestURL(t *testing.T) {
 		want string
 	}{
 		"From Environment Homepage": {
-			mock: func(r *http.Request) {
+			mock: func(_ *http.Request) {
 				t.Setenv("APP_URL", "http://example.com")
 			},
 			path: "/",
 			want: "http://example.com",
 		},
 		"From Environment Path": {
-			mock: func(r *http.Request) {
+			mock: func(_ *http.Request) {
 				t.Setenv("APP_URL", "http://example.com")
 			},
 			path: "/test",

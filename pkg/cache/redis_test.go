@@ -18,6 +18,7 @@ import (
 
 // Setup is a helper to obtain a mock cache store for testing.
 func Setup(t *testing.T, mf func(m *internal.MockRedisStore)) *Redis {
+	t.Helper()
 	ctrl := gomock.NewController(t)
 	m := internal.NewMockRedisStore(ctrl)
 	if mf != nil {
@@ -97,6 +98,7 @@ func TestPing(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			c := Setup(t, test.mock)
 			err := c.Ping(ctx)
 			assert.Equal(t, test.wantErr, err != nil)
@@ -131,6 +133,7 @@ func TestClose(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			c := Setup(t, test.mock)
 			err := c.Close()
 			assert.Equal(t, test.wantErr, err != nil)
@@ -180,6 +183,7 @@ func TestCache_Get(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			c := Setup(t, test.mock)
 			got := testCacheStruct{}
 			err := c.Get(ctx, key, &got)
@@ -228,7 +232,7 @@ func TestCache_Set(t *testing.T) {
 		},
 		"Encode Error": {
 			make(chan string),
-			func(m *internal.MockRedisStore) {
+			func(_ *internal.MockRedisStore) {
 			},
 			"marshalling cache value",
 		},
@@ -236,6 +240,8 @@ func TestCache_Set(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			var buf bytes.Buffer
 			slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
 
@@ -251,6 +257,8 @@ func TestCache_Set(t *testing.T) {
 }
 
 func TestCache_Delete(t *testing.T) {
+	t.Parallel()
+
 	tt := map[string]struct {
 		value   any
 		mock    func(m *internal.MockRedisStore)
@@ -281,6 +289,7 @@ func TestCache_Delete(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			c := Setup(t, test.mock)
 			err := c.Delete(ctx, key)
 			assert.Equal(t, test.wantErr, err != nil)
@@ -330,6 +339,7 @@ func TestCache_Invalidate(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			c := Setup(t, test.mock)
 			c.Invalidate(ctx, test.input)
 		})

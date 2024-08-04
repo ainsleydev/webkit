@@ -1,7 +1,6 @@
 package payload
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/ainsleydev/webkit/pkg/webkit"
@@ -21,7 +20,7 @@ type Maintenance struct {
 
 var defaultMaintenanceRenderer = func(c *webkit.Context, _ Maintenance) error {
 	return c.String(http.StatusServiceUnavailable,
-		fmt.Sprintf("Site is under maintenance. Please check back soon"),
+		"Site is under maintenance. Please check back soon",
 	)
 }
 

@@ -14,7 +14,7 @@ import (
 
 // redirect defines the structure of a redirect within the Payload UI.
 type redirect struct {
-	Id        float64      `json:"id"`
+	ID        float64      `json:"id"`
 	From      string       `json:"from"`
 	To        string       `json:"to"`
 	Code      redirectCode `json:"code"`
@@ -31,15 +31,15 @@ const (
 	// redirectsCode301 - Moved Permanently
 	redirectsCode301 redirectCode = "301"
 	// redirectsCode302 - Found
-	redirectsCode302 redirectCode = "302"
+	redirectsCode302 redirectCode = "302" //nolint:unused
 	// redirectsCode307 - Temporary redirect
-	redirectsCode307 redirectCode = "307"
+	redirectsCode307 redirectCode = "307" //nolint:unused
 	// redirectsCode308 - Permanent redirect
-	redirectsCode308 redirectCode = "308"
+	redirectsCode308 redirectCode = "308" //nolint:unused
 	// redirectsCode410 - Content Gone (Deleted)
-	redirectsCode410 redirectCode = "410"
+	redirectsCode410 redirectCode = "410" //nolint:unused
 	// redirectsCode451 - Unavailable For Legal Reasons
-	redirectsCode451 redirectCode = "451"
+	redirectsCode451 redirectCode = "451" //nolint:unused
 )
 
 const redirectCacheKey = "payload_redirects"
@@ -68,7 +68,6 @@ func redirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 				_, err := client.Collections.List(ctx, CollectionRedirects, payloadcms.ListParams{
 					Limit: payloadcms.AllItems,
 				}, &lr)
-
 				if err != nil {
 					slog.Error("Fetching redirects from Payload with URL: " + path + ", Error: " + err.Error())
 					return next(c)

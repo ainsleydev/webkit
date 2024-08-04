@@ -3,10 +3,11 @@ package markup
 import (
 	"bytes"
 	"context"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 

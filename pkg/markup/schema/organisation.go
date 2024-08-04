@@ -35,13 +35,19 @@ package schemaorg
 //	   "iso6523Code": "0199:724500PMK2A2M1SQQ228"
 //	}
 type Organisation struct {
-	ID          string   `json:"@id"`         // Full URL
-	URL         string   `json:"url"`         // Full URL
-	LegalName   string   `json:"legalName"`   // The legal name of the organisation
-	Description string   `json:"description"` // A description of the organisation, can be the same as the tagline.
-	Logo        string   `json:"logo"`        // Full URL, no SVGs
-	SameAs      []string `json:"sameAs"`      // An array of full social media URLs
-	Address     Address  `json:"address"`
+	// Full URL
+	ID string `json:"@id"`
+	// Full URL
+	URL string `json:"url"`
+	// The legal name of the organisation
+	LegalName string `json:"legalName"`
+	// A description of the organisation, can be the same as the tagline.
+	Description string `json:"description"`
+	// Full URL, no SVGs
+	Logo string `json:"logo"`
+	// An array of full social media URLs
+	SameAs  []string `json:"sameAs"`
+	Address Address  `json:"address"`
 }
 
 // MarshalJSON implements the json.Marshaler interface to generate

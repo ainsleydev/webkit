@@ -29,7 +29,7 @@ func TestHeadTemplate(t *testing.T) {
 	assert.True(t, ok)
 	assert.Len(t, got, 1)
 	assert.Equal(t, name, got[0].Name)
-	assert.Equal(t, content, string(got[0].Content))
+	assert.Equal(t, content, got[0].Content)
 }
 
 func TestFooterTemplate(t *testing.T) {
@@ -43,5 +43,5 @@ func TestFooterTemplate(t *testing.T) {
 	assert.True(t, ok)
 	assert.Len(t, got, 1)
 	assert.Equal(t, name, got[0].Name)
-	assert.Equal(t, content, string(got[0].Content))
+	assert.Equal(t, content, got[0].Content)
 }

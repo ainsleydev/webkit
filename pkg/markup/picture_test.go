@@ -83,5 +83,4 @@ func TestPictureProps_Render(t *testing.T) {
 			assert.Equal(t, test.want, buf.String())
 		})
 	}
-
 }

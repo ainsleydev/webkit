@@ -14,9 +14,8 @@ func TestRecover(t *testing.T) {
 	app := webkit.New()
 	rr := httptest.NewRecorder()
 
-	app.Get("/", func(ctx *webkit.Context) error {
+	app.Get("/", func(_ *webkit.Context) error {
 		panic("test")
-		return nil
 	}, Recover)
 
 	assert.Panics(t, func() {

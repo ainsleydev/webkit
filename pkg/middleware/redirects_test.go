@@ -49,6 +49,8 @@ func TestAddTrailingSlash(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			app := webkit.New()
 			rr := httptest.NewRecorder()
 
@@ -95,6 +97,7 @@ func TestWWWRedirect(t *testing.T) {
 
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			rr := redirectTest(t, WWWRedirect, tc.host)
 			assert.Equal(t, tc.wantStatus, rr.Code)
 			assert.Equal(t, tc.wantLocation, rr.Header().Get("Location"))
@@ -129,6 +132,7 @@ func TestNonWWWRedirect(t *testing.T) {
 
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			rr := redirectTest(t, NonWWWRedirect, tc.host)
 			assert.Equal(t, tc.wantStatus, rr.Code)
 			assert.Equal(t, tc.wantLocation, rr.Header().Get("Location"))

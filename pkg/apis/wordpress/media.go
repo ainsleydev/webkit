@@ -14,7 +14,7 @@ type (
 		GUID         GUID         `json:"guid,omitempty"`
 		Link         string       `json:"link,omitempty"`
 		Modified     string       `json:"modified,omitempty"`
-		ModifiedGMT  string       `json:"modifiedGMT,omitempty"`
+		ModifiedGMT  string       `json:"modifiedGMT,omitempty"` //nolint
 		Password     string       `json:"password,omitempty"`
 		Slug         string       `json:"slug,omitempty"`
 		Status       string       `json:"status,omitempty"`
@@ -52,7 +52,7 @@ type (
 		Thumbnail MediaDetailsSizesItem `json:"thumbnail,omitempty"`
 		Medium    MediaDetailsSizesItem `json:"medium,omitempty"`
 		Large     MediaDetailsSizesItem `json:"large,omitempty"`
-		SiteLogo  MediaDetailsSizesItem `json:"site-logo,omitempty"`
+		SiteLogo  MediaDetailsSizesItem `json:"site-logo,omitempty"` //nolint
 	}
 	// MediaDetailsSizesItem represents details of a specific size of a media item.
 	MediaDetailsSizesItem struct {

@@ -20,12 +20,12 @@ func TestAdapter_Robots(t *testing.T) {
 		want string
 	}{
 		"Nil robots Production": {
-			ctx:  func(c *webkit.Context) {},
+			ctx:  func(_ *webkit.Context) {},
 			env:  env.Production,
 			want: "User-agent: *\nDisallow:",
 		},
 		"Nil robots Dev": {
-			ctx:  func(c *webkit.Context) {},
+			ctx:  func(_ *webkit.Context) {},
 			env:  env.Development,
 			want: "User-agent: *\nDisallow: /",
 		},
@@ -49,6 +49,8 @@ func TestAdapter_Robots(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			app := webkit.New()
 			app.Plug(func(next webkit.Handler) webkit.Handler {
 				return func(c *webkit.Context) error {

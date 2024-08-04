@@ -32,7 +32,7 @@ func TestCacheMiddleware(t *testing.T) {
 		"Skipped": {
 			url:    "/favicon.ico",
 			method: http.MethodGet,
-			assertFn: func(rr *httptest.ResponseRecorder, store cache.Store) {
+			assertFn: func(rr *httptest.ResponseRecorder, _ cache.Store) {
 				assert.Equal(t, "", rr.Header().Get("X-Cache"))
 			},
 		},
@@ -52,14 +52,14 @@ func TestCacheMiddleware(t *testing.T) {
 		"Cache Miss": {
 			url:    "/page",
 			method: http.MethodGet,
-			assertFn: func(rr *httptest.ResponseRecorder, store cache.Store) {
+			assertFn: func(rr *httptest.ResponseRecorder, _ cache.Store) {
 				assert.Equal(t, "MISS", rr.Header().Get("X-Cache"))
 			},
 		},
 		"Next Error": {
 			url:    "/page",
 			method: http.MethodGet,
-			handler: func(c *webkit.Context) error {
+			handler: func(_ *webkit.Context) error {
 				return errors.New("next error")
 			},
 			assertFn: func(rr *httptest.ResponseRecorder, store cache.Store) {
@@ -84,6 +84,8 @@ func TestCacheMiddleware(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			app := webkit.New()
 			req := httptest.NewRequest(test.method, test.url, nil)
 			rr := httptest.NewRecorder()

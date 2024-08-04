@@ -30,7 +30,7 @@ func (nfs noDirListingFileSystem) Open(path string) (http.File, error) {
 		return nil, err
 	}
 
-	s, err := f.Stat()
+	s, _ := f.Stat()
 	if !s.IsDir() {
 		return f, nil
 	}

@@ -37,7 +37,7 @@ jobs:
                     version: latest
                     skip-cache: true
                     args: --verbose
-                    working-directory: web
+                    working-directory: ./
 
             -   name: Biome
                 run: biome ci .
