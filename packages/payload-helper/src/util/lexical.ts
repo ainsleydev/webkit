@@ -4,7 +4,7 @@ import { $getRoot, $getSelection, type LexicalEditor } from 'lexical';
 import { JSDOM } from 'jsdom';
 import type { SerializedEditorState } from 'lexical';
 import { getPayload, buildConfig } from 'payload';
-import { importWithoutClientFiles } from 'payload/node'
+import { importWithoutClientFiles } from 'payload/node';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import {
 	defaultEditorConfig,
@@ -12,7 +12,6 @@ import {
 	lexicalEditor,
 	sanitizeServerEditorConfig,
 } from '@payloadcms/richtext-lexical';
-
 
 const loadEditor = async (): Promise<LexicalEditor> => {
 	const config = {

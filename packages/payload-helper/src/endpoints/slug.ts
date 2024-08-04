@@ -1,4 +1,4 @@
-import { PayloadHandler, PayloadRequest } from 'payload';
+import type { PayloadHandler, PayloadRequest } from 'payload';
 
 /**
  * Find a document in the given collection by its slug.
@@ -19,9 +19,8 @@ export const findBySlug = (collection: string): PayloadHandler => {
 			});
 			if (data.docs.length === 0) {
 				return new Response(JSON.stringify({ error: 'not found' }), { status: 404 });
-			} else {
-				return new Response(JSON.stringify(data.docs[0]), { status: 200 });
 			}
+			return new Response(JSON.stringify(data.docs[0]), { status: 200 });
 		} catch (error) {
 			console.error('Error occurred while fetching document:', error);
 			return new Response(JSON.stringify({ error: 'Internal server error' }), {

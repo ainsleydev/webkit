@@ -3,8 +3,7 @@ import type { Payload, PayloadRequest } from 'payload';
 import { getFileByPath } from 'payload';
 import type { Media, MediaSeed } from './types.js';
 import { htmlToLexical } from '../util/lexical.js';
-import type {Seeder} from "./seed.js";
-
+import type { Seeder } from './seed.js';
 
 /**
  *
