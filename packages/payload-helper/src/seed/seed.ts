@@ -1,11 +1,11 @@
 import dotenv from 'dotenv';
 import {
+	type Payload,
 	type PayloadRequest,
 	commitTransaction,
 	getPayload,
 	initTransaction,
 	killTransaction,
-	type Payload,
 } from 'payload';
 import { importConfig } from 'payload/node';
 import { down } from './down.js';

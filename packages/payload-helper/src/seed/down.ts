@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import env from '../util/env.js';
 import type { Payload, PayloadRequest } from 'payload';
+import env from '../util/env.js';
 import type { Seeder } from './seed.js';
 
 const filename = fileURLToPath(import.meta.url);

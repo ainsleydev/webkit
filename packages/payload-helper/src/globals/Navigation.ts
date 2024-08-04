@@ -1,4 +1,4 @@
-import type { GlobalConfig, Tab, Field, ArrayField } from 'payload';
+import type { ArrayField, Field, GlobalConfig, Tab } from 'payload';
 
 /**
  * Navigation Configuration for the header and footer

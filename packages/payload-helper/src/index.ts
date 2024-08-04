@@ -1,7 +1,7 @@
 import type { Config } from 'payload';
 import { fieldMapper, schemas } from './plugin/schema.js';
-import env from './util/env.js';
 import type { PayloadHelperPluginConfig } from './types.js';
+import env from './util/env.js';
 
 /**
  * Payload Helper Plugin for websites at ainsley.dev

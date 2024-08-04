@@ -1,7 +1,7 @@
 import type { GlobalConfig, GroupField, Tab, UploadField } from 'payload';
 import { validatePostcode, validateURL } from '../util/validation.js';
-import { languages } from './locales.js';
 import { countries } from './countries.js';
+import { languages } from './locales.js';
 
 /**
  * Settings Global Configuration
