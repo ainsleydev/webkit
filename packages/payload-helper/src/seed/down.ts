@@ -2,25 +2,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import env from '../util/env.js';
-import type { Payload, PayloadRequest } from 'payload';
+import type { Payload, PayloadRequest} from 'payload';
 import type { Seeder } from './seed.js';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 const postgresDrop = async (payload: Payload): Promise<void> => {
-	// Drop all tables
-	payload.logger.info('Dropping tables in database...');
-	try {
-		// @ts-expect-error
-		const db = payload.db.pool;
-		const client = await db.connect();
-		await client.query('drop schema public cascade; create schema public;');
-	} catch (error) {
-		payload.logger.error(`Creating database: ${error}`);
-		return;
-	}
+	// @ts-expect-error
+	const db = payload.db.pool;
+	const client = await db.connect();
+	await client.query('drop schema public cascade; create schema public;');
 };
+
+const sqlDrop = async (payload: Payload): Promise<void> => {}
 
 /**
  * Down script to remove all media and drop all tables.
@@ -46,5 +41,5 @@ export const down = async ({
 		}
 	}
 
-	await postgresDrop(payload);
+	payload.logger.info('Dropping tables in database...');
 };

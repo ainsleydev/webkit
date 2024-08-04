@@ -1,7 +1,6 @@
 package payload
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -192,6 +191,24 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 	})
 }
 
+func TestMedia_ImageMarkup(t *testing.T) {
+	t.Setenv(envPayloadURL, "https://example.com")
+
+	var m Media
+	err := m.UnmarshalJSON([]byte(media))
+	require.NoError(t, err)
+
+	i := m.ImageMarkup()
+
+	assert.Equal(t, i.URL, "https://example.com/media/image.png")
+	assert.Equal(t, "Alt Text", i.Alt)
+	assert.Equal(t, 1440, *i.Width)
+	assert.Equal(t, 4894, *i.Height)
+	assert.Equal(t, "15", i.Attributes["data-payload-media-id"])
+	assert.Equal(t, "image.png", i.Attributes["data-payload-media-filename"])
+	assert.Equal(t, "743837", i.Attributes["data-payload-media-filesize"])
+}
+
 func TestMedia_ToMarkup(t *testing.T) {
 	t.Setenv(envPayloadURL, "https://example.com")
 
@@ -201,26 +218,27 @@ func TestMedia_ToMarkup(t *testing.T) {
 
 	p := m.PictureMarkup()
 
-	fmt.Printf("%#v\n", p)
-
 	// Assert main image
-	assert.Equal(t, "https://example.com/media/image.png", p.URL)
-	assert.Equal(t, "Alt Text", p.Alt)
-	assert.Equal(t, 1440, *p.Width)
-	assert.Equal(t, 4894, *p.Height)
-	assert.Equal(t, "payload-media-15", p.ID)
-	assert.Equal(t, "15", p.Attributes["data-payload-media-id"])
-	assert.Equal(t, "image.png", p.Attributes["data-payload-media-filename"])
-	assert.Equal(t, "743837", p.Attributes["data-payload-media-filesize"])
-	assert.Len(t, p.Sources, 11)
+	t.Log("Main Image")
+	{
+		assert.Equal(t, "https://example.com/media/image.png", p.URL)
+		assert.Equal(t, "Alt Text", p.Alt)
+		assert.Equal(t, 1440, *p.Width)
+		assert.Equal(t, 4894, *p.Height)
+		assert.Equal(t, "15", p.Attributes["data-payload-media-id"])
+		assert.Equal(t, "image.png", p.Attributes["data-payload-media-filename"])
+		assert.Equal(t, "743837", p.Attributes["data-payload-media-filesize"])
+		assert.Len(t, p.Sources, 11)
+	}
 
-	// Assert first source
-	assert.Equal(t, "https://example.com/media/image-400x300.png", p.Sources[0].URL)
-	assert.Equal(t, "(max-width: 450px)", p.Sources[0].Media)
-	assert.EqualValues(t, "image/png", p.Sources[0].MimeType)
-	assert.Equal(t, 400, *p.Sources[0].Width)
-	assert.Equal(t, 300, *p.Sources[0].Height)
-	assert.Equal(t, "thumbnail", p.Sources[0].Attributes["data-payload-size"])
+	t.Log("Source")
+	{
+		assert.Equal(t, "https://example.com/media/image-400x300.png", p.Sources[0].URL)
+		assert.EqualValues(t, "image/png", p.Sources[0].MimeType)
+		assert.Equal(t, 400, *p.Sources[0].Width)
+		assert.Equal(t, 300, *p.Sources[0].Height)
+		assert.Equal(t, "thumbnail", p.Sources[0].Attributes["data-payload-size"])
+	}
 }
 
 func TestMediaSizes_SortByWidth(t *testing.T) {

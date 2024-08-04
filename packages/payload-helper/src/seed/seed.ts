@@ -47,6 +47,12 @@ export const seed = (opts: SeedOptions) => {
 		});
 
 		for (const fn of [down, up]) {
+			if (fn === down) {
+				process.env.PAYLOAD_DROP_DATABASE = 'true';
+			} else {
+				delete process.env.PAYLOAD_DROP_DATABASE; // Ensure it is not set for other functions
+			}
+
 			const config = await importConfig(opts.configPath);
 			const payload = await getPayload({ config });
 			const req = { payload } as PayloadRequest;

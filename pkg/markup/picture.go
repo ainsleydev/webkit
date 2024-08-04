@@ -2,8 +2,10 @@ package markup
 
 import (
 	"context"
-	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
+	"fmt"
 	"io"
+
+	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 )
 
 // PictureProvider is a common - TODO
@@ -56,6 +58,12 @@ func Picture(provider PictureProvider, opts ...PictureOptions) PictureProps {
 	props := provider.PictureMarkup()
 	for _, opt := range opts {
 		opt(&props)
+	}
+	for idx, src := range props.Sources {
+		if !src.IsSource || src.Width == nil {
+			continue
+		}
+		props.Sources[idx].Media = fmt.Sprintf("(max-width: %vpx)", *src.Width+50)
 	}
 	return props
 }

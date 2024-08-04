@@ -32,25 +32,25 @@ func (i Image) String() string {
 
 // ImageMarkup implements the markup.ImageProvider interface and transforms the static image
 // into a markup.ImageProps type ready for rendering an <img> to the DOM.
-func (i Image) ImageMarkup() (markup.ImageProps, error) {
-
+func (i Image) ImageMarkup() markup.ImageProps {
 	return markup.ImageProps{
 		URL:      i.String(),
 		IsSource: false,
-	}, nil
+	}
 }
 
 // PictureMarkup implements the markup.PictureProvider interface and transforms the static image
 // into a markup.PictureProps type ready for rendering a <picture> the DOM.
-func (i Image) PictureMarkup() (markup.PictureProps, error) {
+func (i Image) PictureMarkup() markup.PictureProps {
 	sources, err := i.imageSources()
 	if err != nil {
-		return markup.PictureProps{URL: i.String()}, err
+		slog.Error(err.Error(), "image", i)
+		return markup.PictureProps{URL: i.String()}
 	}
 	return markup.PictureProps{
 		URL:     i.String(),
 		Sources: sources,
-	}, nil
+	}
 }
 
 var getDistPath = func(path string) string {
@@ -83,6 +83,7 @@ var (
 	}
 )
 
+// imageSources obtains all of the <source> elements within a static directory.
 func (i Image) imageSources() ([]markup.ImageProps, error) {
 	img := i.String()
 

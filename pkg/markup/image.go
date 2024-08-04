@@ -2,8 +2,9 @@ package markup
 
 import (
 	"context"
-	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 	"io"
+
+	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 )
 
 // ImageProvider is a common - TODO

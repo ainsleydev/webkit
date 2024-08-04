@@ -15,8 +15,7 @@ import (
 
 func TestImage_ImageMarkup(t *testing.T) {
 	input := NewImage("/assets/images/cat.jpg")
-	got, err := input.ImageMarkup()
-	require.NoError(t, err)
+	got := input.ImageMarkup()
 	want := markup.ImageProps{
 		URL: "/assets/images/cat.jpg",
 	}
@@ -37,8 +36,7 @@ func TestImage_PictureMarkup(t *testing.T) {
 
 	t.Run("OK", func(t *testing.T) {
 		input := Image("/assets/images/gopher.jpg")
-		got, err := input.PictureMarkup()
-		require.NoError(t, err)
+		got := input.PictureMarkup()
 
 		assert.Equal(t, got.URL, input.String())
 		require.Len(t, got.Sources, 14)
@@ -59,30 +57,30 @@ func TestImage_PictureMarkup(t *testing.T) {
 		assert.Equal(t, got.Sources[13], markup.ImageProps{URL: "/assets/images/gopher.webp", IsSource: true, MimeType: markup.ImageMimeTypeWebP})
 	})
 
-	t.Log("Errors")
-	{
-		tt := map[string]struct {
-			input Image
-			want  string
-		}{
-			"Non existent image": {
-				input: Image("/assets/images/non_existent_image.jpg"),
-				want:  "no matches found for glob",
-			},
-			"Missing size variants": {
-				input: Image("/assets/images/missing-sizes.jpg"),
-				want:  "no matches found for glob",
-			},
-		}
-
-		for name, test := range tt {
-			t.Run(name, func(t *testing.T) {
-				_, err := test.input.PictureMarkup()
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), test.want)
-			})
-		}
-	}
+	//t.Log("Errors")
+	//{
+	//	tt := map[string]struct {
+	//		input Image
+	//		want  string
+	//	}{
+	//		"Non existent image": {
+	//			input: Image("/assets/images/non_existent_image.jpg"),
+	//			want:  "no matches found for glob",
+	//		},
+	//		"Missing size variants": {
+	//			input: Image("/assets/images/missing-sizes.jpg"),
+	//			want:  "no matches found for glob",
+	//		},
+	//	}
+	//
+	//	for name, test := range tt {
+	//		t.Run(name, func(t *testing.T) {
+	//			_, err := test.input.PictureMarkup()
+	//			assert.Error(t, err)
+	//			assert.Contains(t, err.Error(), test.want)
+	//		})
+	//	}
+	//}
 }
 
 func TestGetImageProperties(t *testing.T) {

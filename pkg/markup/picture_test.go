@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 type pictureProviderMock struct {
@@ -17,8 +19,6 @@ func (p pictureProviderMock) PictureMarkup() PictureProps {
 }
 
 func TestPictureProps_Render(t *testing.T) {
-	t.Skip()
-
 	tt := map[string]struct {
 		input func() PictureProps
 		want  string
@@ -42,6 +42,7 @@ func TestPictureProps_Render(t *testing.T) {
 							{
 								URL:      "https://example.com/image-thumbnail.avif",
 								IsSource: true,
+								Width:    ptr.IntPtr(400),
 								Media:    "(max-width: 450px)",
 								MimeType: "image/avif",
 							},
@@ -80,4 +81,5 @@ func TestPictureProps_Render(t *testing.T) {
 			assert.Equal(t, test.want, buf.String())
 		})
 	}
+
 }

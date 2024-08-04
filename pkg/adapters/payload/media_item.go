@@ -3,9 +3,10 @@ package payload
 import (
 	"errors"
 	"fmt"
-	"github.com/ainsleydev/webkit/pkg/util/ptr"
 	"os"
 	"sort"
+
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 
 	"github.com/goccy/go-json"
 	"github.com/perimeterx/marshmallow"
@@ -57,14 +58,13 @@ type MediaSizes map[string]MediaSize
 // MediaSize defines the fields for the different sizes of media when they
 // are uploaded to PayloadCMS.
 type MediaSize struct {
-	Size      string   `json:"-"` // Name of the media size 	e.g. (thumbnail, small, medium, large)
-	URL       string   `json:"url,omitempty"`
-	Filename  *string  `json:"filename,omitempty"`
-	Filesize  *float64 `json:"filesize,omitempty"`
-	MimeType  *string  `json:"mimeType,omitempty"`
-	Width     *float64 `json:"width,omitempty"`
-	Height    *float64 `json:"height,omitempty"`
-	MediaAttr string   `json:"media,omitempty"`
+	Size     string   `json:"-"` // Name of the media size 	e.g. (thumbnail, small, medium, large)
+	URL      string   `json:"url,omitempty"`
+	Filename *string  `json:"filename,omitempty"`
+	Filesize *float64 `json:"filesize,omitempty"`
+	MimeType *string  `json:"mimeType,omitempty"`
+	Width    *float64 `json:"width,omitempty"`
+	Height   *float64 `json:"height,omitempty"`
 }
 
 // UnmarshalJSON unmarshals the JSON data into the Media type.
@@ -105,7 +105,6 @@ func (m *Media) ImageMarkup() markup.ImageProps {
 		URL:      m.URL,
 		Alt:      m.Alt(),
 		IsSource: false,
-		Media:    "",
 		MimeType: markup.ImageMimeType(m.MimeType),
 		Loading:  "",
 		Width:    sizeToIntPointer(m.Width),
@@ -125,8 +124,6 @@ func (m *Media) PictureMarkup() markup.PictureProps {
 		URL:     m.URL,
 		Alt:     m.Alt(),
 		Sources: m.Sizes.toMarkup(),
-		Classes: nil,
-		ID:      fmt.Sprintf("payload-media-%v", m.ID),
 		Width:   sizeToIntPointer(m.Width),
 		Height:  sizeToIntPointer(m.Height),
 		Attributes: markup.Attributes{
@@ -164,9 +161,6 @@ func (ms MediaSizes) SortByWidth() []MediaSize {
 	sorted := make(mediaByWidth, 0, len(ms))
 	for key, mediaSize := range ms {
 		mediaSize.Size = key
-		if mediaSize.Width != nil {
-			mediaSize.MediaAttr = fmt.Sprintf("(max-width: %vpx)", *mediaSize.Width+50)
-		}
 		sorted = append(sorted, mediaSize)
 	}
 	sort.Sort(sorted)
@@ -196,7 +190,6 @@ func (ms MediaSizes) toMarkup() []markup.ImageProps {
 		}
 		images[index] = markup.ImageProps{
 			URL:        img.URL,
-			Media:      img.MediaAttr,
 			IsSource:   true,
 			Width:      sizeToIntPointer(img.Width),
 			Height:     sizeToIntPointer(img.Height),
