@@ -1,0 +1,28 @@
+version: 2
+updates:
+    -   package-ecosystem: gomod
+        directory: ./
+        schedule:
+            interval: monthly
+        groups:
+            dependencies:
+                patterns:
+                    - "*"
+    -   package-ecosystem: npm
+        directory: ./packages/payload-helper
+        schedule:
+            interval: monthly
+        groups:
+            payload:
+                patterns:
+                    - "@ainsleydev/payload-helper"
+                    - "^@payloadcms/.*"
+                    - "^payload$"
+    -   package-ecosystem: "github-actions"
+        directory: .github/workflows
+        schedule:
+            interval: monthly
+        groups:
+            workflows:
+                patterns:
+                    - "*"
