@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/ainsleyclark/go-payloadcms"
@@ -71,7 +70,7 @@ func redirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 				}, &lr)
 
 				if err != nil {
-					slog.Error("Fetching redirects from Payload: " + err.Error())
+					slog.Error("Fetching redirects from Payload with URL: " + path + ", Error: " + err.Error())
 					return next(c)
 				}
 				redirects = lr.Docs
@@ -83,7 +82,7 @@ func redirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 			}
 
 			for _, r := range redirects {
-				if r.From != strings.TrimSuffix(path, "/") {
+				if r.From != path {
 					continue
 				}
 				code, err := strconv.Atoi(string(r.Code))

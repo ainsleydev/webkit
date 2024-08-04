@@ -33,7 +33,7 @@ func TestRedirects(t *testing.T) {
 		wantStatus int
 	}{
 		"Skipped": {
-			url:        "/favico.ico",
+			url:        "/favicon.ico",
 			wantStatus: 200,
 		},
 		"API error returns nil": {
