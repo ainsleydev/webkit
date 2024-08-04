@@ -118,7 +118,7 @@ func PictureWithEagerLoading() PictureOptions {
 func PictureWithClasses(classes ...string) PictureOptions {
 	return func(p *PictureProps) {
 		for _, v := range classes {
-			p.Classes = append(p.Classes, v)
+			p.Classes = append(p.Classes, v+" ")
 		}
 	}
 }

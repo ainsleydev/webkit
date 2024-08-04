@@ -158,13 +158,31 @@ func (a mediaByWidth) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 // If a width is nil, it will consistently appear at the end.
 func (ms MediaSizes) SortByWidth() []MediaSize {
 	// Convert map to slice for deterministic sorting
-	sorted := make(mediaByWidth, 0, len(ms))
+	var sorted mediaByWidth
+	var avif, webp *MediaSize
+
 	for key, mediaSize := range ms {
 		mediaSize.Size = key
-		sorted = append(sorted, mediaSize)
+		switch key {
+		case "avif":
+			avif = &mediaSize
+		case "webp":
+			webp = &mediaSize
+		default:
+			sorted = append(sorted, mediaSize)
+		}
 	}
+
+	// Sort the slice by width
 	sort.Sort(sorted)
 
+	// Append avif and webp in the correct order
+	if avif != nil {
+		sorted = append(sorted, *avif)
+	}
+	if webp != nil {
+		sorted = append(sorted, *webp)
+	}
 	// Convert sorted slice back to original format
 	result := make([]MediaSize, len(sorted))
 	for i, m := range sorted {
@@ -195,6 +213,11 @@ func (ms MediaSizes) toMarkup() []markup.ImageProps {
 			Height:     sizeToIntPointer(img.Height),
 			MimeType:   markup.ImageMimeType(ptr.String(img.MimeType)),
 			Attributes: attr,
+		}
+		// Ensure media=max-width isn't outputted.
+		if img.Size == "webp" || img.Size == "avif" {
+			images[index].Width = nil
+			images[index].Height = nil
 		}
 		index++
 	}

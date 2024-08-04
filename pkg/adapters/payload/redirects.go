@@ -52,6 +52,11 @@ const redirectCacheKey = "payload_redirects"
 func redirectMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plug {
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
+			// Skip caching for non-GET requests, file requests and ignored paths.
+			if shouldSkipMiddleware(c) {
+				return next(c)
+			}
+
 			var (
 				ctx       = c.Request.Context()
 				redirects []redirect

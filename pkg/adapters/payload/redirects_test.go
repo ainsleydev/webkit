@@ -27,11 +27,17 @@ func TestRedirects(t *testing.T) {
 	)
 
 	tt := map[string]struct {
+		url        string
 		mock       func(cols *payloadfakes.MockCollectionService, store cache.Store)
 		wantURL    string
 		wantStatus int
 	}{
+		"Skipped": {
+			url:        "/favico.ico",
+			wantStatus: 200,
+		},
 		"API error returns nil": {
+			url: fromURL,
 			mock: func(cols *payloadfakes.MockCollectionService, store cache.Store) {
 				cols.ListFunc = func(_ context.Context, _ payloadcms.Collection, _ payloadcms.ListParams, _ any) (payloadcms.Response, error) {
 					return payloadcms.Response{}, errors.New("error")
@@ -40,6 +46,7 @@ func TestRedirects(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		"Invalid number defaults to 301": {
+			url: fromURL,
 			mock: func(_ *payloadfakes.MockCollectionService, store cache.Store) {
 				store.Set(context.TODO(), redirectCacheKey, []redirect{
 					{From: fromURL, To: "/new", Code: "wrong"},
@@ -49,6 +56,7 @@ func TestRedirects(t *testing.T) {
 			wantURL:    "/new",
 		},
 		"No Matches": {
+			url: fromURL,
 			mock: func(_ *payloadfakes.MockCollectionService, store cache.Store) {
 				store.Set(context.TODO(), redirectCacheKey, []redirect{
 					{From: "/wrong", To: "/new", Code: redirectsCode301},
@@ -57,6 +65,7 @@ func TestRedirects(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		"Redirects 301 from API": {
+			url: fromURL,
 			mock: func(cols *payloadfakes.MockCollectionService, store cache.Store) {
 				cols.ListFunc = func(_ context.Context, _ payloadcms.Collection, _ payloadcms.ListParams, out any) (payloadcms.Response, error) {
 					*out.(*payloadcms.ListResponse[redirect]) = payloadcms.ListResponse[redirect]{
@@ -69,6 +78,7 @@ func TestRedirects(t *testing.T) {
 			wantURL:    "/new",
 		},
 		"Redirects 301 from Cache": {
+			url: fromURL,
 			mock: func(_ *payloadfakes.MockCollectionService, store cache.Store) {
 				store.Set(context.TODO(), redirectCacheKey, redirects, cache.Options{})
 			},
@@ -79,7 +89,7 @@ func TestRedirects(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			app := webkit.New()
-			req := httptest.NewRequest(http.MethodGet, fromURL, nil)
+			req := httptest.NewRequest(http.MethodGet, test.url, nil)
 			rr := httptest.NewRecorder()
 
 			store := cache.NewInMemory(time.Hour)
@@ -88,10 +98,12 @@ func TestRedirects(t *testing.T) {
 				Collections: collections,
 			}
 
-			test.mock(collections, store)
+			if test.mock != nil {
+				test.mock(collections, store)
+			}
 
 			app.Plug(redirectMiddleware(payload, store))
-			app.Get(fromURL, func(c *webkit.Context) error {
+			app.Get(test.url, func(c *webkit.Context) error {
 				return c.String(http.StatusOK, "Middleware")
 			})
 			app.ServeHTTP(rr, req)
