@@ -1,16 +1,10 @@
 {
 	"name": "@ainsleydev/payload-helper",
-	"version": "0.0.4",
+	"version": "0.0.6",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"type": "module",
-	"keywords": [
-		"payload",
-		"cms",
-		"plugin",
-		"typescript",
-		"react"
-	],
+	"keywords": ["payload", "cms", "plugin", "typescript", "react"],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ainsleydev/webkit.git",
@@ -36,13 +30,7 @@
 	"bin": {
 		"payload-helper": "bin.js"
 	},
-	"files": [
-		"dist",
-		"bin.js",
-		"types.js",
-		"types.ts",
-		"types.d.ts"
-	],
+	"files": ["dist", "bin.js", "types.js", "types.ts", "types.d.ts"],
 	"dependencies": {
 		"@lexical/headless": "^0.16.1",
 		"@lexical/html": "^0.16.1",
