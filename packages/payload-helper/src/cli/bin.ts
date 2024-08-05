@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import chalk from 'chalk';
 import { Command } from 'commander';
 import { generateTypes } from './types.js';
-import chalk from 'chalk';
 
 const program = new Command();
 

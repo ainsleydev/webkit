@@ -1,9 +1,10 @@
 package stringutil
 
 import (
-	"github.com/yosssi/gohtml"
 	"regexp"
 	"strings"
+
+	"github.com/yosssi/gohtml"
 )
 
 // IsNotEmpty checks if a string pointer is empty.

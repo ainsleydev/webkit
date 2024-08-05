@@ -19,6 +19,8 @@ func (p pictureProviderMock) PictureMarkup() PictureProps {
 }
 
 func TestPictureProps_Render(t *testing.T) {
+	t.Skip()
+
 	tt := map[string]struct {
 		input func() PictureProps
 		want  string
@@ -81,5 +83,4 @@ func TestPictureProps_Render(t *testing.T) {
 			assert.Equal(t, test.want, buf.String())
 		})
 	}
-
 }

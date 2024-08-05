@@ -75,6 +75,7 @@ func TestNavigation_UnmarshalJSON(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			var n Navigation
 			err := n.UnmarshalJSON([]byte(test.input))
 			assert.Equal(t, test.wantErr, err != nil)
@@ -120,6 +121,7 @@ func TestNavigationItem_UnmarshalJSON(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			var n NavigationItem
 			err := n.UnmarshalJSON([]byte(test.input))
 			assert.Equal(t, test.wantErr, err != nil)
@@ -150,6 +152,7 @@ func TestNavigationItems_Len(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			assert.Equal(t, test.want, test.input.Len())
 		})
 	}
@@ -160,7 +163,8 @@ func TestNavigationItems_Walk(t *testing.T) {
 
 	items := NavigationItems{
 		{Title: "Home", URL: "/"},
-		{Title: "About", URL: "/about",
+		{
+			Title: "About", URL: "/about",
 			Children: NavigationItems{
 				{Title: "Team", URL: "/about/team"},
 				{Title: "History", URL: "/about/history"},
@@ -170,7 +174,7 @@ func TestNavigationItems_Walk(t *testing.T) {
 	}
 
 	var visitedItems []string
-	walker := func(index int, item *NavigationItem) {
+	walker := func(_ int, item *NavigationItem) {
 		visitedItems = append(visitedItems, item.Title+"("+item.URL+")")
 	}
 
@@ -201,7 +205,8 @@ func TestNavigationItems_MaxDepth(t *testing.T) {
 		},
 		"Single item with children": {
 			input: NavigationItems{
-				{Title: "About", URL: "/about",
+				{
+					Title: "About", URL: "/about",
 					Children: NavigationItems{
 						{Title: "Team", URL: "/about/team"},
 					},
@@ -212,7 +217,8 @@ func TestNavigationItems_MaxDepth(t *testing.T) {
 		"Nested children": {
 			input: NavigationItems{
 				{Title: "Home", URL: "/"},
-				{Title: "About", URL: "/about",
+				{
+					Title: "About", URL: "/about",
 					Children: NavigationItems{
 						{Title: "Team", URL: "/about/team"},
 						{Title: "History", URL: "/about/history"},
@@ -226,6 +232,7 @@ func TestNavigationItems_MaxDepth(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := test.input.MaxDepth()
 			assert.Equal(t, test.want, got)
 		})
@@ -255,6 +262,7 @@ func TestNavigationItem_HasChildren(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := test.input.HasChildren()
 			assert.Equal(t, test.want, got)
 		})
@@ -284,6 +292,7 @@ func TestNavigationItem_IsRelativeURL(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := test.input.IsRelativeURL()
 			assert.Equal(t, test.want, got)
 		})
@@ -292,6 +301,4 @@ func TestNavigationItem_IsRelativeURL(t *testing.T) {
 
 func TestNavigationItem_IsActive(t *testing.T) {
 	t.Parallel()
-
-	// TODO:
 }

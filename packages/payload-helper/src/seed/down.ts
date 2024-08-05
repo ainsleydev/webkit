@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { Payload, PayloadRequest } from 'payload';
 import env from '../util/env.js';
-import type { Payload, PayloadRequest} from 'payload';
 import type { Seeder } from './seed.js';
 
 const filename = fileURLToPath(import.meta.url);
@@ -15,7 +15,7 @@ const postgresDrop = async (payload: Payload): Promise<void> => {
 	await client.query('drop schema public cascade; create schema public;');
 };
 
-const sqlDrop = async (payload: Payload): Promise<void> => {}
+const sqlDrop = async (payload: Payload): Promise<void> => {};
 
 /**
  * Down script to remove all media and drop all tables.

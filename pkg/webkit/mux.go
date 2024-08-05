@@ -143,7 +143,7 @@ func (k *Kit) handle(w http.ResponseWriter, r *http.Request, handler Handler, pl
 func (k *Kit) handleError(ctx *Context, err error) {
 	ctx.Set(ErrorKey, err)
 	if handleErr := k.ErrorHandler(ctx, err); handleErr != nil {
-		slog.Error("Handling error: %v", handleErr)
+		slog.Error("Handling error: " + handleErr.Error())
 	}
 }
 

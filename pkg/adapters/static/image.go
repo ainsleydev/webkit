@@ -2,8 +2,6 @@ package static
 
 import (
 	"errors"
-	_ "image/jpeg"
-	_ "image/png"
 	"log/slog"
 	"os"
 	"path"

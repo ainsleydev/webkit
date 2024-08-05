@@ -44,7 +44,7 @@ func URL(ctx context.Context) (string, bool) {
 
 // WithURL returns a new context with the given full URL.
 func WithURL(ctx context.Context, url string) context.Context {
-	return context.WithValue(ctx, ContextKeyURL, url)
+	return context.WithValue(ctx, ContextKeyURL, url) //nolint
 }
 
 // MarkupSnippet defines the structure of a piece of HTML content that

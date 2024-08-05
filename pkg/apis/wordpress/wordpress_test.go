@@ -14,7 +14,7 @@ import (
 func Setup(t *testing.T, serverResponse string, serverStatus int) (*Client, func()) {
 	t.Helper()
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(serverStatus)
 		_, err := io.WriteString(w, serverResponse)
 		require.NoError(t, err)
@@ -82,7 +82,7 @@ func TestClient_Get_ReadError(t *testing.T) {
 	client, teardown := Setup(t, "test response", http.StatusOK)
 	defer teardown()
 
-	client.reader = func(r io.Reader) ([]byte, error) {
+	client.reader = func(_ io.Reader) ([]byte, error) {
 		return nil, assert.AnError
 	}
 

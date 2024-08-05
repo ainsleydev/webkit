@@ -83,7 +83,7 @@ func (h SentryHook) Fire(e *logrus.Entry) error {
 type SentryEventIdentityModifier struct{}
 
 // ApplyToEvent simply returns the event (ignoring the hint).
-func (m *SentryEventIdentityModifier) ApplyToEvent(event *sentry.Event, hint *sentry.EventHint) *sentry.Event {
+func (m *SentryEventIdentityModifier) ApplyToEvent(event *sentry.Event, _ *sentry.EventHint) *sentry.Event {
 	return event
 }
 

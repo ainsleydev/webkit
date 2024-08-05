@@ -10,12 +10,12 @@ linters:
         - wastedassign
         - revive
         - forbidigo
-        - tagliatelle
         - misspell
 linters-settings:
-    tagliatelle:
-        case:
-            use-field-name: false
-            rules:
-                yaml: snake
-                json: snake
+    revive:
+        rules:
+            - name: context-keys-type
+              disabled: true
+    staticcheck:
+        checks:
+            - "-SA1029"

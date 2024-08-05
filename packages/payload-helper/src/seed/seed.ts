@@ -1,11 +1,11 @@
 import dotenv from 'dotenv';
 import {
+	type Payload,
 	type PayloadRequest,
 	commitTransaction,
 	getPayload,
 	initTransaction,
 	killTransaction,
-	type Payload,
 } from 'payload';
 import { importConfig } from 'payload/node';
 import { down } from './down.js';
@@ -71,8 +71,10 @@ export const seed = (opts: SeedOptions) => {
 		}
 	};
 
-	fn().then(() => process.exit(0)).catch((e) => {
-		console.error(e);
-		process.exit(1);
-	});
+	fn()
+		.then(() => process.exit(0))
+		.catch((e) => {
+			console.error(e);
+			process.exit(1);
+		});
 };

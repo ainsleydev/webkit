@@ -28,11 +28,12 @@ func TestGetSettings(t *testing.T) {
 	t.Parallel()
 
 	s := &Settings{
-		Id:       123,
+		ID:       123,
 		SiteName: ptr.StringPtr("Site Name"),
 	}
 
 	t.Run("OK", func(t *testing.T) {
+		t.Parallel()
 		ctx := context.WithValue(context.Background(), SettingsContextKey, s)
 		got, err := GetSettings(ctx)
 		assert.NoError(t, err)
@@ -40,6 +41,7 @@ func TestGetSettings(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
+		t.Parallel()
 		got, err := GetSettings(context.TODO())
 		assert.Error(t, err, ErrSettingsNotFound)
 		assert.Nil(t, got)
@@ -50,7 +52,7 @@ func TestWithSettings(t *testing.T) {
 	t.Parallel()
 
 	s := &Settings{
-		Id:       123,
+		ID:       123,
 		SiteName: ptr.StringPtr("Site Name"),
 	}
 
@@ -61,10 +63,8 @@ func TestWithSettings(t *testing.T) {
 }
 
 func TestMustGetSettings(t *testing.T) {
-	t.Parallel()
-
 	s := &Settings{
-		Id:       123,
+		ID:       123,
 		SiteName: ptr.StringPtr("Site Name"),
 	}
 
@@ -102,7 +102,7 @@ func TestSettings_UnmarshalJSON(t *testing.T) {
 				"extraField": "extraValue"
 			}`,
 			want: Settings{
-				Id:       1,
+				ID:       1,
 				SiteName: ptr.StringPtr("Example Site"),
 				TagLine:  ptr.StringPtr("An example tagline"),
 				Locale:   "en_GB",
@@ -333,6 +333,7 @@ func TestSettings_MarkupOpenGraph(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := test.input.OpenGraph(url)
 			assert.Equal(t, &test.want, got)
 		})
@@ -443,6 +444,7 @@ func TestSettings_MarkupTwitterCard(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := test.input.TwitterCard()
 			assert.EqualValues(t, &test.want, got)
 		})
@@ -514,6 +516,7 @@ func TestSettings_MarkupSchemaOrganisation(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := test.input.SchemaOrganisation(url)
 			assert.Equal(t, &test.want, got)
 		})

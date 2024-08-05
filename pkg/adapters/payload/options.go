@@ -78,7 +78,7 @@ func WithNavigation() Option {
 }
 
 // TODO: Implement, perhaps pass in a logger into each handler to control stdout.
-var silent = false
+var silent = false //nolint:unused
 
 // WithSilentLogs is a functional option to disable logs from all
 // handlers and middleware.

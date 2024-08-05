@@ -11,7 +11,7 @@ import (
 
 func TestWrapHandlerFunc(t *testing.T) {
 	called := false
-	handlerFunc := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handlerFunc := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		called = true
 		w.WriteHeader(http.StatusOK)
 	})
@@ -26,7 +26,7 @@ func TestWrapHandlerFunc(t *testing.T) {
 
 func TestWrapHandler(t *testing.T) {
 	called := false
-	wrappedHandler := WrapHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	wrappedHandler := WrapHandler(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		called = true
 		w.WriteHeader(http.StatusOK)
 	}))

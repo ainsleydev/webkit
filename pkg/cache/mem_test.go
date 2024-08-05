@@ -53,6 +53,8 @@ func TestMem_SetAndGet(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			store := NewInMemory(time.Second * 5)
 			store.Set(context.Background(), test.key, value, test.opts)
 
@@ -64,6 +66,7 @@ func TestMem_SetAndGet(t *testing.T) {
 	}
 
 	t.Run("Returns error if value is not a pointer", func(t *testing.T) {
+		t.Parallel()
 		store := NewInMemory(time.Second * 5)
 		store.Set(context.Background(), "key", "value", Options{})
 
@@ -73,6 +76,7 @@ func TestMem_SetAndGet(t *testing.T) {
 	})
 
 	t.Run("Works with slices", func(t *testing.T) {
+		t.Parallel()
 		store := NewInMemory(time.Second * 5)
 		s := []string{"1", "2", "3"}
 		store.Set(context.Background(), "key", s, Options{})

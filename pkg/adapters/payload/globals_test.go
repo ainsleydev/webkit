@@ -44,20 +44,20 @@ func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client,
 	}{
 		"File Request": {
 			url:  "/favicon.ico",
-			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {},
+			mock: func(_ *payloadfakes.MockGlobalsService, _ cache.Store) {},
 			want: nil,
 		},
 		"From Cache": {
 			url: "/want",
-			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
+			mock: func(_ *payloadfakes.MockGlobalsService, store cache.Store) {
 				store.Set(context.TODO(), GlobalsContextKey("settings"), &settings, cache.Options{})
 			},
 			want: &settings,
 		},
 		"API Error": {
 			url: "/want",
-			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
-				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
+			mock: func(gb *payloadfakes.MockGlobalsService, _ cache.Store) {
+				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, _ any) (payloadcms.Response, error) {
 					return payloadcms.Response{}, assert.AnError
 				}
 			},
@@ -65,7 +65,7 @@ func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client,
 		},
 		"From API": {
 			url: "/want",
-			mock: func(gb *payloadfakes.MockGlobalsService, store cache.Store) {
+			mock: func(gb *payloadfakes.MockGlobalsService, _ cache.Store) {
 				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
 					*out.(*Settings) = settings
 					return payloadcms.Response{}, nil
@@ -77,6 +77,8 @@ func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client,
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			app := webkit.New()
 			req := httptest.NewRequest(http.MethodGet, test.url, nil)
 			rr := httptest.NewRecorder()

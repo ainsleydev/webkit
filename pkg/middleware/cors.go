@@ -17,7 +17,6 @@ import (
 // [Portswigger: Cross-origin resource sharing (CORS)]: https://portswigger.net/web-security/cors
 func CORS(next webkit.Handler) webkit.Handler {
 	return func(ctx *webkit.Context) error {
-
 		// See: https://github.com/labstack/echo/blob/master/middleware/cors.go
 
 		//g.Writer.Header().Set("Access-Control-Allow-Origin", "*")

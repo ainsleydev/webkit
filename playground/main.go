@@ -11,8 +11,7 @@ import (
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
-type Env struct {
-}
+type Env struct{}
 
 func main() {
 	kit := webkit.New()
@@ -21,7 +20,7 @@ func main() {
 
 	err := env.ParseConfig(&Env{})
 	if err != nil {
-		slog.Error("Failed to parse config: %v", err)
+		slog.Error("Failed to parse config: " + err.Error())
 		os.Exit(1)
 	}
 
@@ -41,6 +40,6 @@ func main() {
 	})
 
 	if err := kit.Start(":8080"); err != nil {
-		slog.Error("Failed to start server: %v", err)
+		slog.Error("Failed to start server: " + err.Error())
 	}
 }

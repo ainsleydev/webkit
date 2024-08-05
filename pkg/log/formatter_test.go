@@ -28,6 +28,7 @@ func TestHandle(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			buf := &bytes.Buffer{}
 			slog.SetDefault(slog.New(&LocalHandler{
 				handler: slog.NewJSONHandler(buf, &slog.HandlerOptions{Level: slog.LevelDebug}),
@@ -73,6 +74,7 @@ func TestColouredLevel(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := colouredLevel(slog.Record{Level: test.level})
 			assert.Equal(t, test.want, got, "Coloured level should match")
 		})

@@ -3,18 +3,20 @@ package base
 type HTMXSwapType string
 
 type ElementProps struct {
-	Id                string
+	ID                string
 	Classes           []string
 	Style             string
 	IsDisabled        bool
 	IsVisible         bool
 	AriaLabel         string
-	AriaDescribedById string
+	AriaDescribedByID string
 	HTMX              HTMXProps
 }
 
-const OuterSwapType HTMXSwapType = "outerHTML"
-const InnerSwapType HTMXSwapType = "innerHTML"
+const (
+	OuterSwapType HTMXSwapType = "outerHTML"
+	InnerSwapType HTMXSwapType = "innerHTML"
+)
 
 type HTMXProps struct {
 	IsBoosted bool

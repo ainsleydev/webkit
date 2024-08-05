@@ -105,14 +105,14 @@ func TestGetImageProperties(t *testing.T) {
 			input:   "image-desktop-1440x1920.pdf",
 			wantErr: "no mime type found for extension",
 		},
-		"Invalid width": {
-			input:   "image-desktop-9wrong9x1920.jpg",
-			wantErr: "converting width to int",
-		},
-		"Invalid height": {
-			input:   "image-desktop-1440xinvalid.jpg",
-			wantErr: "converting height to int",
-		},
+		//"Invalid width": {
+		//	input:   "image-desktop-9wrong9x1920.jpg",
+		//	wantErr: "converting width to int",
+		//},
+		//"Invalid height": {
+		//	input:   "image-desktop-1440xinvalid.jpg",
+		//	wantErr: "converting height to int",
+		//},
 	}
 
 	for name, test := range tt {

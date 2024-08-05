@@ -183,11 +183,10 @@ func (ms MediaSizes) SortByWidth() []MediaSize {
 	if webp != nil {
 		sorted = append(sorted, *webp)
 	}
+
 	// Convert sorted slice back to original format
 	result := make([]MediaSize, len(sorted))
-	for i, m := range sorted {
-		result[i] = m
-	}
+	copy(result, sorted)
 	return result
 }
 

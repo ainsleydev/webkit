@@ -67,7 +67,7 @@ func Logger(next webkit.Handler) webkit.Handler {
 				slog.String("method", req.Method),
 				slog.Int("status", rr.Status),
 				slog.String("remote_addr", req.RemoteAddr),
-				slog.Duration("latency", time.Now().Sub(start)),
+				slog.Duration("latency", time.Since(start)),
 				slog.Any(string(webkitctx.ContextKeyRequestID), ctx.Get(string(webkitctx.ContextKeyRequestID))),
 				slog.String("user_agent", req.UserAgent()),
 				slog.Any(webkit.ErrorKey, ctx.Get("error")),
@@ -77,7 +77,7 @@ func Logger(next webkit.Handler) webkit.Handler {
 			msg = fmt.Sprintf("%s - %s", msg, aurora.Gray(10, fmt.Sprintf("Path: %s, Status: %d, Latency: %d",
 				req.URL.Path,
 				rr.Status,
-				time.Now().Sub(start).Milliseconds(),
+				time.Since(start).Milliseconds(),
 			)))
 		}
 
@@ -96,7 +96,7 @@ func statusLevel(status int) slog.Level {
 		return slog.LevelInfo
 	case status >= 400 && status < 500:
 		// switching to info level to be less noisy
-		//return slog.LevelInfo
+		// return slog.LevelInfo
 		return slog.LevelError
 	case status >= 500:
 		return slog.LevelError

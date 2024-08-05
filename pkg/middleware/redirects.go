@@ -67,7 +67,7 @@ func WWWRedirect(next webkit.Handler) webkit.Handler {
 //
 // For example, a request to "https://www.example.com" will be redirected to "https://example.com".
 func NonWWWRedirect(next webkit.Handler) webkit.Handler {
-	return redirect(next, func(scheme, host, uri string) (bool, string) {
+	return redirect(next, func(_, host, uri string) (bool, string) {
 		if strings.HasPrefix(host, www) {
 			return true, "https://" + host[4:] + uri
 		}

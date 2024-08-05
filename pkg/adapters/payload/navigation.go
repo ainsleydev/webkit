@@ -88,7 +88,7 @@ func (n NavigationItems) Walk(walker NavigationWalkerFunc) {
 // depth is 1. If there is one nav menu with one child, the depth is 2.
 func (n NavigationItems) MaxDepth() int {
 	maxDepth := 0
-	n.Walk(func(index int, item *NavigationItem) {
+	n.Walk(func(_ int, item *NavigationItem) {
 		if len(item.Children) > 0 {
 			maxDepth++
 		}

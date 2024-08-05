@@ -7,7 +7,7 @@ type Country struct {
 	Value string
 }
 
-var countries = []Country{
+var countries = []Country{ //nolint:unused
 	{Label: "Afghanistan", Value: "AF"},
 	{Label: "Åland Islands", Value: "AX"},
 	{Label: "Albania", Value: "AL"},

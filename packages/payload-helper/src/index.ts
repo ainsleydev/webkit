@@ -1,7 +1,7 @@
 import type { Config } from 'payload';
 import { fieldMapper, schemas } from './plugin/schema.js';
+import type { PayloadHelperPluginConfig } from './types.js';
 import env from './util/env.js';
-import type {PayloadHelperPluginConfig} from "./types.js";
 
 /**
  * Payload Helper Plugin for websites at ainsley.dev
@@ -18,6 +18,7 @@ export const payloadHelper =
 				...incomingConfig.typescript,
 				schema: schemas,
 			};
+			// biome-ignore lint/style/noParameterAssign: Need to change field mapper.
 			incomingConfig = fieldMapper(incomingConfig);
 		}
 

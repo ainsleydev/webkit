@@ -40,7 +40,7 @@ func GetSettings(ctx context.Context) (*Settings, error) {
 
 // WithSettings is a helper function to set the Payload Settings in the context.
 func WithSettings(ctx context.Context, s *Settings) context.Context {
-	return context.WithValue(ctx, SettingsContextKey, s)
+	return context.WithValue(ctx, SettingsContextKey, s) //nolint
 }
 
 // MustGetSettings is a helper function to get the settings from the context.
@@ -61,7 +61,7 @@ func settingsMiddleware(client *payloadcms.Client, store cache.Store) webkit.Plu
 // Settings defines the common global collection type within Payload
 // that allows users to change site settings.
 type Settings struct {
-	Id            float64                `json:"id"`
+	ID            float64                `json:"id"`
 	SiteName      *string                `json:"siteName,omitempty"`
 	TagLine       *string                `json:"tagLine,omitempty"`
 	Locale        string                 `json:"locale,omitempty"` // In en_GB format

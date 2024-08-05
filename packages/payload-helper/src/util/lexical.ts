@@ -1,10 +1,5 @@
 import { createHeadlessEditor } from '@lexical/headless';
-import { $generateNodesFromDOM, $generateHtmlFromNodes } from '@lexical/html';
-import { $getRoot, $getSelection, type LexicalEditor } from 'lexical';
-import { JSDOM } from 'jsdom';
-import type { SerializedEditorState } from 'lexical';
-import { getPayload, buildConfig } from 'payload';
-import { importWithoutClientFiles } from 'payload/node'
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import {
 	defaultEditorConfig,
@@ -12,7 +7,11 @@ import {
 	lexicalEditor,
 	sanitizeServerEditorConfig,
 } from '@payloadcms/richtext-lexical';
-
+import { JSDOM } from 'jsdom';
+import { $getRoot, $getSelection, type LexicalEditor } from 'lexical';
+import type { SerializedEditorState } from 'lexical';
+import { buildConfig, getPayload } from 'payload';
+import { importWithoutClientFiles } from 'payload/node';
 
 const loadEditor = async (): Promise<LexicalEditor> => {
 	const config = {

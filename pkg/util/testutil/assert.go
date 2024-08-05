@@ -13,6 +13,8 @@ import (
 //   - Removing all whitespace characters (spaces, newlines, tabs, carriage returns).
 //   - Comparing the resulting strings using the `assert.Equal` function from the testing package.
 func AssertHTML(t *testing.T, want, got string) {
+	t.Helper()
+
 	// Lowercase both strings
 	w := strings.ToLower(want)
 	f := strings.ToLower(got)

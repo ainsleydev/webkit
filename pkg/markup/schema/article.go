@@ -74,7 +74,7 @@ func (s *Article) MarshalJSON() ([]byte, error) {
 type TODO struct {
 	Context             string    `json:"@context"`
 	Type                string    `json:"@type"`
-	Url                 string    `json:"url"`
+	URL                 string    `json:"url"`
 	Headline            string    `json:"headline"`
 	Image               string    `json:"image"`
 	AlternativeHeadline string    `json:"alternativeHeadline"`
@@ -100,15 +100,15 @@ type TODO struct {
 	} `json:"accountablePerson"`
 	MainEntityOfPage struct {
 		Type string `json:"@type"`
-		Id   string `json:"@id"`
+		ID   string `json:"@id"`
 	} `json:"mainEntityOfPage"`
 	Publisher struct {
 		Type string `json:"@type"`
 		Name string `json:"name"`
-		Url  string `json:"url"`
+		URL  string `json:"url"`
 		Logo struct {
 			Type string `json:"@type"`
-			Url  string `json:"url"`
+			URL  string `json:"url"`
 		} `json:"logo"`
 	} `json:"publisher"`
 	CopyrightHolder string `json:"copyrightHolder"`

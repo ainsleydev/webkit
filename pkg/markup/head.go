@@ -2,9 +2,10 @@ package markup
 
 import (
 	"context"
-	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 	"io"
 	"time"
+
+	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 
 	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	schemaorg "github.com/ainsleydev/webkit/pkg/markup/schema"

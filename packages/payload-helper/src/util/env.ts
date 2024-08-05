@@ -18,7 +18,7 @@ const utils = {
 			return defaultValue;
 		}
 
-		return parseInt(getKey(key), 10);
+		return Number.parseInt(getKey(key), 10);
 	},
 
 	float(key: string, defaultValue?: number): number | undefined {
@@ -26,7 +26,7 @@ const utils = {
 			return defaultValue;
 		}
 
-		return parseFloat(getKey(key));
+		return Number.parseFloat(getKey(key));
 	},
 
 	bool(key: string, defaultValue?: boolean): boolean | undefined {
@@ -79,11 +79,11 @@ const utils = {
 
 	oneOf(key: string, expectedValues?: unknown[], defaultValue?: unknown) {
 		if (!expectedValues) {
-			throw new Error(`env.oneOf requires expectedValues`);
+			throw new Error('env.oneOf requires expectedValues');
 		}
 
 		if (defaultValue && !expectedValues.includes(defaultValue)) {
-			throw new Error(`env.oneOf requires defaultValue to be included in expectedValues`);
+			throw new Error('env.oneOf requires defaultValue to be included in expectedValues');
 		}
 
 		const rawValue = envFn(key, defaultValue);

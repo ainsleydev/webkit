@@ -9,9 +9,9 @@ import (
 // String generates a random of characters only (upper or lowercase)
 // with no numbers based on the input length provided.
 func String(length int64) string {
-	rand.Seed(time.Now().UnixNano())
+	rand.Seed(time.Now().UnixNano()) //nolint
 	b := make([]byte, length)
-	rand.Read(b)
+	rand.Read(b) //nolint
 	return fmt.Sprintf("%x", b)[:length]
 }
 
@@ -31,7 +31,7 @@ func AlphaNum(length int64) string {
 // input.
 func Seq(n int) string {
 	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	rand.Seed(time.Now().UnixNano())
+	rand.Seed(time.Now().UnixNano()) //nolint
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
@@ -42,7 +42,7 @@ func Seq(n int) string {
 // generate is a helper function for generating random character runs
 // with no special characters
 func generate(n int64, numeric bool) string {
-	var characterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	characterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	if !numeric {
 		characterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	}

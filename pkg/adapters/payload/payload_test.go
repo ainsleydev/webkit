@@ -14,8 +14,6 @@ import (
 )
 
 func TestNew_Error(t *testing.T) {
-	t.Parallel()
-
 	tt := map[string]struct {
 		options []Option
 		envURL  string
