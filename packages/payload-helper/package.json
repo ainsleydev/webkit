@@ -18,7 +18,7 @@
 	"main": "./dist/index.js",
 	"types": "./dist/types.d.ts",
 	"scripts": {
-		"build": "pnpm run clean && pnpm build:types && pnpm build:swc",
+		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
 		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
 		"build:types": "tsc --emitDeclarationOnly --outDir dist",
 		"format": "biome format --write .",
