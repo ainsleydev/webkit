@@ -14,8 +14,6 @@ import (
 )
 
 func TestNew_Error(t *testing.T) {
-	t.Parallel()
-
 	tt := map[string]struct {
 		options []Option
 		envURL  string
@@ -46,8 +44,6 @@ func TestNew_Error(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
 			orig := envPayloadURL
 			defer func() { envPayloadURL = orig }()
 			envPayloadURL = test.envURL

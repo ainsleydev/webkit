@@ -63,15 +63,12 @@ func TestWithSettings(t *testing.T) {
 }
 
 func TestMustGetSettings(t *testing.T) {
-	t.Parallel()
-
 	s := &Settings{
 		ID:       123,
 		SiteName: ptr.StringPtr("Site Name"),
 	}
 
 	t.Run("OK", func(t *testing.T) {
-		t.Parallel()
 		ctx := context.WithValue(context.Background(), SettingsContextKey, s)
 		got, err := GetSettings(ctx)
 		assert.NoError(t, err)
@@ -79,7 +76,6 @@ func TestMustGetSettings(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		t.Parallel()
 		var buf bytes.Buffer
 		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
 

@@ -194,8 +194,6 @@ func TestCache_Get(t *testing.T) {
 }
 
 func TestCache_Set(t *testing.T) {
-	t.Parallel()
-
 	tt := map[string]struct {
 		value   any
 		mock    func(m *internal.MockRedisStore)
@@ -240,8 +238,6 @@ func TestCache_Set(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
 			var buf bytes.Buffer
 			slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
 
