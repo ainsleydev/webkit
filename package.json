@@ -39,9 +39,9 @@
 	},
 	"lint-staged": {
 		"*.{js,ts,cjs,mjs,d.cts,d.mts,mjs,jsx,ts,tsx,json,jsonc}": [
-			"biome check --files-ignore-unknown=true",
 			"biome format --write --no-errors-on-unmatched",
-			"biome lint --write --no-errors-on-unmatched"
+			"biome lint --write --no-errors-on-unmatched",
+			"biome check --files-ignore-unknown=true"
 		],
 		"*.go": ["gofmt -w"],
 		"*.templ": ["templ fmt"]

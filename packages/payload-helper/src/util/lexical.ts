@@ -48,32 +48,62 @@ const loadEditor = async (): Promise<LexicalEditor> => {
  * @returns {SerializedEditorState} The serialized editor state.
  */
 export const htmlToLexical = (html: string): SerializedEditorState => {
-	let state = {};
-
-	loadEditor().then((editor) => {
-		editor.update(
-			() => {
-				// In a headless environment you can use a package such as JSDom to parse the HTML string.
-				const dom = new JSDOM(`<!DOCTYPE html><body>${html}</body>`);
-
-				// Once you have the DOM instance it's easy to generate LexicalNodes.
-				const nodes = $generateNodesFromDOM(editor, dom.window.document);
-
-				// Select the root
-				$getRoot().select();
-
-				// Insert them at a selection.
-				const selection = $getSelection();
-
-				if (selection) selection.insertNodes(nodes);
-			},
-			{ discrete: true },
-		);
-
-		state = editor.getEditorState().toJSON();
+	const editor = createHeadlessEditor({
+		nodes: [],
+		onError: (error) => {
+			console.error(error);
+		},
 	});
 
-	return state as SerializedEditorState;
+	editor.update(
+		() => {
+			// In a headless environment you can use a package such as JSDom to parse the HTML string.
+			const dom = new JSDOM(`<!DOCTYPE html><body>${html}</body>`);
+
+			// Once you have the DOM instance it's easy to generate LexicalNodes.
+			const nodes = $generateNodesFromDOM(editor, dom.window.document);
+
+			// Select the root
+			$getRoot().select();
+
+			// Insert them at a selection.
+			const selection = $getSelection();
+
+			console.log('Generated nodes: ', nodes);
+
+			if (selection) selection.insertNodes(nodes);
+		},
+		{ discrete: true },
+	);
+
+	return editor.getEditorState().toJSON();
+
+	// let state = {};
+	//
+	// loadEditor().then((editor) => {
+	// 	editor.update(
+	// 		() => {
+	// 			// In a headless environment you can use a package such as JSDom to parse the HTML string.
+	// 			const dom = new JSDOM(`<!DOCTYPE html><body>${html}</body>`);
+	//
+	// 			// Once you have the DOM instance it's easy to generate LexicalNodes.
+	// 			const nodes = $generateNodesFromDOM(editor, dom.window.document);
+	//
+	// 			// Select the root
+	// 			$getRoot().select();
+	//
+	// 			// Insert them at a selection.
+	// 			const selection = $getSelection();
+	//
+	// 			if (selection) selection.insertNodes(nodes);
+	// 		},
+	// 		{ discrete: true },
+	// 	);
+	//
+	// 	state = editor.getEditorState().toJSON();
+	// });
+	//
+	// return state as SerializedEditorState;
 };
 
 /**
