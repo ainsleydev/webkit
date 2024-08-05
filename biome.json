@@ -1,13 +1,6 @@
 {
 	"$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
-	"formatter": {
-		"enabled": true,
-		"formatWithErrors": false,
-		"indentStyle": "tab",
-		"indentWidth": 4,
-		"lineEnding": "lf",
-		"lineWidth": 100,
-		"attributePosition": "auto",
+	"files": {
 		"ignore": [
 			"**/.DS_Store",
 			"**/.cache",
@@ -36,6 +29,15 @@
 			"**/.next",
 			"**/plugins/**"
 		]
+	},
+	"formatter": {
+		"enabled": true,
+		"formatWithErrors": false,
+		"indentStyle": "tab",
+		"indentWidth": 4,
+		"lineEnding": "lf",
+		"lineWidth": 100,
+		"attributePosition": "auto"
 	},
 	"organizeImports": {
 		"enabled": true

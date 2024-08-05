@@ -22,7 +22,7 @@
 		"precommit": "npx lint-staged",
 		"prepare": "husky",
 		"check": "pnpm format && pnpm lint && pnpm test",
-		"format": "pnpm format:go && pnpm format:js",
+		"format": "pnpm format:go && biome check --write .",
 		"format:go": "go fmt ./...",
 		"format:js": "biome format --write .",
 		"lint": "pnpm lint:go && pnpm lint:js",
@@ -39,7 +39,9 @@
 	},
 	"lint-staged": {
 		"*.{js,ts,cjs,mjs,d.cts,d.mts,mjs,jsx,ts,tsx,json,jsonc}": [
-			"biome format --write --no-errors-on-unmatched"
+			"biome check --files-ignore-unknown=true",
+			"biome format --write --no-errors-on-unmatched",
+			"biome lint --write --no-errors-on-unmatched"
 		],
 		"*.go": ["gofmt -w"],
 		"*.templ": ["templ fmt"]
