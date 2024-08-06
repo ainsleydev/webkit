@@ -7,9 +7,17 @@ export type SettingsConfig = {
 		config: GlobalConfig;
 	}) => GlobalConfig;
 };
+
+export type WebServerConfig = {
+	apiKey?: string;
+	cacheEndpoint?: string;
+};
+
 export type PayloadHelperPluginConfig = {
 	settings?: SettingsConfig;
 	// seo?: (args: {
 	// 	config: SEOPluginConfig;
 	// }) => SEOPluginConfig;
+
+	webServer?: WebServerConfig;
 };

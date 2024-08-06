@@ -1,4 +1,5 @@
 import type { Config } from 'payload';
+import { cacheHook } from './plugin/hooks.js';
 import { fieldMapper, schemas } from './plugin/schema.js';
 import type { PayloadHelperPluginConfig } from './types.js';
 import env from './util/env.js';
@@ -24,6 +25,40 @@ export const payloadHelper =
 
 		incomingConfig.typescript = incomingConfig.typescript || {};
 		incomingConfig.typescript.outputFile = './src/types/payload.ts';
+
+		// Map collections & add hooks
+		(incomingConfig.collections || []).map((collection) => {
+			return {
+				...collection,
+				hooks: {
+					afterChange: [
+						cacheHook(
+							pluginOptions?.webServer?.cacheEndpoint ?? '/cache/',
+							collection.slug,
+							collection.fields,
+							true,
+						),
+					],
+				},
+			};
+		});
+
+		// Map globals & add hooks
+		(incomingConfig.globals || []).map((global) => {
+			return {
+				...global,
+				hooks: {
+					afterChange: [
+						cacheHook(
+							pluginOptions?.webServer?.cacheEndpoint ?? '/cache/',
+							global.slug,
+							global.fields,
+							false,
+						),
+					],
+				},
+			};
+		});
 
 		return incomingConfig;
 	};
