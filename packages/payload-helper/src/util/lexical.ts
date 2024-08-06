@@ -1,45 +1,45 @@
 import { createHeadlessEditor } from '@lexical/headless';
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
-import { sqliteAdapter } from '@payloadcms/db-sqlite';
-import {
-	defaultEditorConfig,
-	getEnabledNodes,
-	lexicalEditor,
-	sanitizeServerEditorConfig,
-} from '@payloadcms/richtext-lexical';
+// import { sqliteAdapter } from '@payloadcms/db-sqlite';
+// import {
+// 	defaultEditorConfig,
+// 	getEnabledNodes,
+// 	lexicalEditor,
+// 	sanitizeServerEditorConfig,
+// } from '@payloadcms/richtext-lexical';
 import { JSDOM } from 'jsdom';
 import { $getRoot, $getSelection, type LexicalEditor } from 'lexical';
 import type { SerializedEditorState } from 'lexical';
-import { buildConfig, getPayload } from 'payload';
-import { importWithoutClientFiles } from 'payload/node';
+// import { buildConfig, getPayload } from 'payload';
+// import { importWithoutClientFiles } from 'payload/node';
 
-const loadEditor = async (): Promise<LexicalEditor> => {
-	const config = {
-		secret: 'testing',
-		editor: lexicalEditor({
-			admin: {
-				hideGutter: false,
-			},
-		}),
-		db: sqliteAdapter({
-			client: {
-				url: 'file:./local.db',
-			},
-		}),
-	};
-
-	const instance = await getPayload({
-		config: buildConfig(config),
-	});
-
-	const editorConfig = await sanitizeServerEditorConfig(defaultEditorConfig, instance.config);
-
-	return createHeadlessEditor({
-		nodes: getEnabledNodes({
-			editorConfig,
-		}),
-	});
-};
+// const loadEditor = async (): Promise<LexicalEditor> => {
+// 	const config = {
+// 		secret: 'testing',
+// 		editor: lexicalEditor({
+// 			admin: {
+// 				hideGutter: false,
+// 			},
+// 		}),
+// 		db: sqliteAdapter({
+// 			client: {
+// 				url: 'file:./local.db',
+// 			},
+// 		}),
+// 	};
+//
+// 	const instance = await getPayload({
+// 		config: buildConfig(config),
+// 	});
+//
+// 	const editorConfig = await sanitizeServerEditorConfig(defaultEditorConfig, instance.config);
+//
+// 	return createHeadlessEditor({
+// 		nodes: getEnabledNodes({
+// 			editorConfig,
+// 		}),
+// 	});
+// };
 
 /**
  * Converts an HTML string to a Lexical editor state.
@@ -68,8 +68,6 @@ export const htmlToLexical = (html: string): SerializedEditorState => {
 
 			// Insert them at a selection.
 			const selection = $getSelection();
-
-			console.log('Generated nodes: ', nodes);
 
 			if (selection) selection.insertNodes(nodes);
 		},

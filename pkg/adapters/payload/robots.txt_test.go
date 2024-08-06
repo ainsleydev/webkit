@@ -2,9 +2,11 @@ package payload
 
 import (
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
@@ -27,6 +29,15 @@ func TestAdapter_Robots(t *testing.T) {
 		"Nil robots Dev": {
 			ctx:  func(_ *webkit.Context) {},
 			env:  env.Development,
+			want: "User-agent: *\nDisallow: /",
+		},
+		"Digital Ocean": {
+			ctx: func(c *webkit.Context) {
+				u, err := url.Parse("https://s-clark-cms-ejioo.ondigitalocean.app/")
+				require.NoError(t, err)
+				c.Request.URL = u
+			},
+			env:  env.Production,
 			want: "User-agent: *\nDisallow: /",
 		},
 		"Settings": {

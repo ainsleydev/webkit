@@ -8,8 +8,13 @@ import {
 	killTransaction,
 } from 'payload';
 import { importConfig } from 'payload/node';
-import { down } from './down.js';
-import { up } from './up.js';
+import env from "../util/env.js";
+import path from "node:path";
+import fs from "node:fs";
+import {fileURLToPath} from "node:url";
+
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
 /**
  * A function that seeds the database with initial data.
@@ -46,28 +51,58 @@ export const seed = (opts: SeedOptions) => {
 			path: opts.envPath,
 		});
 
-		for (const fn of [down, up]) {
-			if (fn === down) {
-				process.env.PAYLOAD_DROP_DATABASE = 'true';
-			} else {
-				delete process.env.PAYLOAD_DROP_DATABASE; // Ensure it is not set for other functions
-			}
+		process.env.PAYLOAD_DROP_DATABASE = 'true';
 
-			const config = await importConfig(opts.configPath);
-			const payload = await getPayload({ config });
-			const req = { payload } as PayloadRequest;
+		const config = await importConfig(opts.configPath);
+		const payload = await getPayload({ config });
+		const req = { payload } as PayloadRequest;
 
-			await initTransaction(req);
+		await initTransaction(req);
 
+		delete process.env.PAYLOAD_DROP_DATABASE
+
+		try {
+			// Init
+			payload.logger.info("Initialising Payload...")
+			await payload.init({
+				config: payload.config,
+			});
+
+			// Creating new tables
+			payload.logger.info('Creating indexes...');
 			try {
-				await fn({ payload, req, seeder: opts.seeder });
-				payload.logger.info('Seed complete');
-				await commitTransaction(req);
-			} catch (err) {
-				const message = err instanceof Error ? err.message : 'Unknown error';
-				payload.logger.error(`Seed failed: ${message}`);
-				await killTransaction(req);
+				if (payload.db.init) {
+					await payload.db.init();
+				}
+			} catch (error) {
+				payload.logger.error(`Creating database: ${error}`);
+				return;
 			}
+
+			if (env.isProduction) {
+				payload.logger.info('Migrating DB...');
+				await payload.db.migrate();
+			}
+
+			// Clearing local media
+			if (!env.isProduction) {
+				payload.logger.info('Clearing media...');
+				const mediaDir = path.resolve(dirname, '../../media');
+				if (fs.existsSync(mediaDir)) {
+					fs.rmSync(mediaDir, { recursive: true, force: true });
+				}
+			}
+
+			// Run user defined seed script
+			await opts.seeder({ payload, req });
+
+			await commitTransaction(req)
+
+			payload.logger.info('Seed complete');
+		} catch (err) {
+			const message = err instanceof Error ? err.message : 'Unknown error';
+			payload.logger.error(`Seed failed: ${message}`);
+			await killTransaction(req);
 		}
 	};
 
