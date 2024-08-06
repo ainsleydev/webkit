@@ -201,9 +201,17 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 	 * output it as an interface{}.
 	 */
 	({ jsonSchema }): JSONSchema4 => {
-		loopJSONSchemaProperties(jsonSchema, ({ property }) => {
+		const updateRelationship = (property: JSONSchema4) => {
 			const payload = property.payload;
-			if (payload && payload.type === 'relationship') {
+			if (!payload) {
+				return;
+			}
+
+			if (payload.name === 'clients') {
+				console.log(payload, property);
+			}
+
+			if (payload.type === 'relationship') {
 				if (payload.hasMany) {
 					property.type = 'array';
 					property.items = {
@@ -214,6 +222,25 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 				delete property.oneOf;
 				property.$ref = `#/definitions/${property.payload.relationTo}`;
 			}
+
+			const pType = payload.type;
+			if (
+				pType === 'group' ||
+				pType === 'row' ||
+				pType === 'collapsible' ||
+				pType === 'array'
+			) {
+				if (property.properties) {
+					for (const k in property.properties) {
+						updateRelationship(property.properties[k]);
+					}
+				}
+				return;
+			}
+		};
+
+		loopJSONSchemaProperties(jsonSchema, ({ property }) => {
+			updateRelationship(property);
 		});
 		return jsonSchema;
 	},
