@@ -207,10 +207,6 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 				return;
 			}
 
-			if (payload.name === 'clients') {
-				console.log(payload, property);
-			}
-
 			if (payload.type === 'relationship') {
 				if (payload.hasMany) {
 					property.type = 'array';
