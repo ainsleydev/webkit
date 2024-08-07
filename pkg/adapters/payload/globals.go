@@ -1,10 +1,8 @@
 package payload
 
 import (
-	"context"
 	"log/slog"
 	"strings"
-	"time"
 
 	"github.com/ainsleyclark/go-payloadcms"
 
@@ -45,11 +43,7 @@ func globalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 				}
 			}
 
-			// Add a timeout to the context
-			ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
-			defer cancel()
-
-			_, err := client.Globals.Get(ctxWithTimeout, payloadcms.Global(global), t)
+			_, err := client.Globals.Get(ctx, payloadcms.Global(global), t)
 			if err != nil {
 				slog.Error("Fetching " + global + " global from Payload: " + err.Error())
 				return next(c)

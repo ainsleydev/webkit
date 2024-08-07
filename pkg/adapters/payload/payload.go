@@ -115,9 +115,9 @@ func (a Adapter) attachHandlers() {
 	a.kit.Get("/sitemap.xml", sitemap())
 	a.kit.Post("/cache/", cacheBust(a.cache))
 
-	//if !env.IsDevelopment() {
-	a.kit.Plug(cacheMiddleware(a.cache))
-	//}
+	if !env.IsDevelopment() {
+		a.kit.Plug(cacheMiddleware(a.cache))
+	}
 
 	// Plugs
 	a.kit.Plug(redirectMiddleware(a.Client, a.cache))
