@@ -87,13 +87,19 @@ func (c *MemCache) Delete(_ context.Context, key string) error {
 func (c *MemCache) Invalidate(_ context.Context, tags []string) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
+
+	// Create a map for faster tag lookup
+	tagSet := make(map[string]struct{})
+	for _, tag := range tags {
+		tagSet[tag] = struct{}{}
+	}
+
+	// Iterate through the cache and remove items with matching tags
 	for key, item := range c.cache {
-		for _, tag := range tags {
-			for _, itemTag := range item.tags {
-				if tag == itemTag {
-					delete(c.cache, key)
-					break
-				}
+		for _, itemTag := range item.tags {
+			if _, exists := tagSet[itemTag]; exists {
+				delete(c.cache, key)
+				break
 			}
 		}
 	}
