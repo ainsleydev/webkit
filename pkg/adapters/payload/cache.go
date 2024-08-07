@@ -52,6 +52,7 @@ func cacheMiddleware(store cache.Store) webkit.Plug {
 			}
 
 			if !httputil.Is2xx(rr.Status) {
+				fmt.Println("in")
 				return nil
 			}
 
@@ -66,7 +67,7 @@ func cacheMiddleware(store cache.Store) webkit.Plug {
 	}
 }
 
-// CacheBust is a handler that can be used to clear the cache for a specific page.
+// cacheBust is a handler that can be used to clear the cache for a specific page.
 func cacheBust(store cache.Store) webkit.Handler {
 	type webhookRequest struct {
 		Slug string `json:"slug,omitempty"`
@@ -74,13 +75,6 @@ func cacheBust(store cache.Store) webkit.Handler {
 
 	return func(c *webkit.Context) error {
 		ctx := c.Request.Context()
-
-		//all, err := io.ReadAll(c.Request.Body)
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//fmt.Println(string(all))
 
 		var w webhookRequest
 		if err := c.BindJSON(&w); err != nil {
@@ -99,6 +93,7 @@ func cacheBust(store cache.Store) webkit.Handler {
 		case string(CollectionRedirects):
 			err = store.Delete(ctx, redirectCacheKey)
 		default:
+			slog.Info("Invalidation all cache items with tag of `payload`")
 			store.Invalidate(ctx, []string{"payload"})
 		}
 

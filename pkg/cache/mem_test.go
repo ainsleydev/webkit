@@ -115,21 +115,48 @@ func TestMem_Flush(t *testing.T) {
 func TestMem_Invalidate(t *testing.T) {
 	t.Parallel()
 
-	data := map[string]inMemCacheItem{
-		"key1": {value: "value1", tags: []string{"tag1", "tag2"}},
-		"key2": {value: "value2", tags: []string{"tag1", "tag3"}},
-		"key3": {value: "value3", tags: []string{"tag3"}},
+	tt := map[string]struct {
+		initialData    map[string]inMemCacheItem
+		invalidateTags []string
+		expectedKeys   []string
+	}{
+		"Simple": {
+			initialData: map[string]inMemCacheItem{
+				"key1": {value: "value1", tags: []string{"tag1", "tag2"}},
+				"key2": {value: "value2", tags: []string{"tag1", "tag3"}},
+				"key3": {value: "value3", tags: []string{"tag3"}},
+			},
+			invalidateTags: []string{"tag1", "tag2"},
+			expectedKeys:   []string{"key3"},
+		},
+		"Error Case": {
+			initialData: map[string]inMemCacheItem{
+				"key1": {value: "value1", tags: []string{"tag1"}},
+				"key2": {value: "value2", tags: []string{"tag1"}},
+				"key3": {value: "value3", tags: []string{"tag2"}},
+			},
+			invalidateTags: []string{"tag1"},
+			expectedKeys:   []string{"key3"},
+		},
 	}
 
-	store := &MemCache{
-		cache: data,
-		mutex: &sync.RWMutex{},
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			store := &MemCache{
+				cache: test.initialData,
+				mutex: &sync.RWMutex{},
+			}
+
+			store.Invalidate(context.Background(), test.invalidateTags)
+
+			require.Len(t, store.cache, len(test.expectedKeys))
+			for _, key := range test.expectedKeys {
+				assert.Contains(t, store.cache, key)
+			}
+		})
 	}
-
-	store.Invalidate(context.Background(), []string{"tag1", "tag2"})
-
-	require.Len(t, store.cache, 1)
-	assert.Equal(t, "value3", store.cache["key3"].value)
 }
 
 func TestMem_Close(t *testing.T) {
