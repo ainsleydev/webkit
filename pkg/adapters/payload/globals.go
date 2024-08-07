@@ -9,6 +9,7 @@ import (
 	"github.com/ainsleyclark/go-payloadcms"
 
 	"github.com/ainsleydev/webkit/pkg/cache"
+	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
@@ -36,17 +37,19 @@ func globalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 				cacheKey = GlobalsContextKey(global)
 			)
 
-			err := store.Get(ctx, cacheKey, &t)
-			if err == nil {
-				c.Set(cacheKey, t)
-				return next(c)
+			if env.IsProduction() {
+				err := store.Get(ctx, cacheKey, &t)
+				if err == nil {
+					c.Set(cacheKey, t)
+					return next(c)
+				}
 			}
 
 			// Add a timeout to the context
 			ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
 			defer cancel()
 
-			_, err = client.Globals.Get(ctxWithTimeout, payloadcms.Global(global), t)
+			_, err := client.Globals.Get(ctxWithTimeout, payloadcms.Global(global), t)
 			if err != nil {
 				slog.Error("Fetching " + global + " global from Payload: " + err.Error())
 				return next(c)

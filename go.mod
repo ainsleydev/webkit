@@ -6,7 +6,7 @@ require (
 	dario.cat/mergo v1.0.0
 	github.com/PuerkitoBio/goquery v1.9.2
 	github.com/a-h/templ v0.2.747
-	github.com/ainsleyclark/go-payloadcms v0.0.1
+	github.com/ainsleyclark/go-payloadcms v0.0.2
 	github.com/caarlos0/env/v7 v7.1.0
 	github.com/getsentry/sentry-go v0.28.1
 	github.com/go-chi/chi/v5 v5.1.0
