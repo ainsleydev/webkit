@@ -10,7 +10,8 @@ export type SettingsConfig = {
 
 export type WebServerConfig = {
 	apiKey?: string;
-	cacheEndpoint?: string;
+	baseURL: string;
+	cacheEndpoint: string;
 };
 
 export type PayloadHelperPluginConfig = {

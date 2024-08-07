@@ -1,5 +1,5 @@
-import type { Config } from 'payload';
-import { cacheHook } from './plugin/hooks.js';
+import type { CollectionConfig, Config } from 'payload';
+import { cacheHookCollections, cacheHookGlobals } from './plugin/hooks.js';
 import { fieldMapper, schemas } from './plugin/schema.js';
 import type { PayloadHelperPluginConfig } from './types.js';
 import env from './util/env.js';
@@ -23,38 +23,43 @@ export const payloadHelper =
 			incomingConfig = fieldMapper(incomingConfig);
 		}
 
+		// TODO: Validate Config
+
+		// Update typescript generation file
 		incomingConfig.typescript = incomingConfig.typescript || {};
 		incomingConfig.typescript.outputFile = './src/types/payload.ts';
 
 		// Map collections & add hooks
-		(incomingConfig.collections || []).map((collection) => {
-			return {
-				...collection,
-				hooks: {
-					afterChange: [
-						cacheHook(
-							pluginOptions?.webServer?.cacheEndpoint ?? '/cache/',
-							collection.slug,
-							collection.fields,
-							true,
-						),
-					],
-				},
-			};
-		});
+		incomingConfig.collections = (incomingConfig.collections || []).map(
+			(collection): CollectionConfig => {
+				return {
+					...collection,
+					hooks: {
+						afterChange: [
+							cacheHookCollections({
+								server: pluginOptions.webServer,
+								slug: collection.slug,
+								fields: collection.fields,
+								isCollection: true,
+							}),
+						],
+					},
+				};
+			},
+		);
 
 		// Map globals & add hooks
-		(incomingConfig.globals || []).map((global) => {
+		incomingConfig.globals = (incomingConfig.globals || []).map((global) => {
 			return {
 				...global,
 				hooks: {
 					afterChange: [
-						cacheHook(
-							pluginOptions?.webServer?.cacheEndpoint ?? '/cache/',
-							global.slug,
-							global.fields,
-							false,
-						),
+						cacheHookGlobals({
+							server: pluginOptions.webServer,
+							slug: global.slug,
+							fields: global.fields,
+							isCollection: true,
+						}),
 					],
 				},
 			};

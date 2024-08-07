@@ -1,44 +1,63 @@
-import type { Field } from 'payload';
+import type { Field, Payload } from 'payload';
 import type { CollectionAfterChangeHook, GlobalAfterChangeHook } from 'payload';
+import type { WebServerConfig } from '../types.js';
 
 /**
- * AfterChangeHook is a hook for either the Collection or Global.
+ * TODO
  */
-type AfterChangeHook = CollectionAfterChangeHook | GlobalAfterChangeHook;
+export type CacheBustConfig = {
+	server?: WebServerConfig;
+	slug: string;
+	fields: Field[];
+	isCollection: boolean;
+};
 
 /**
  * Cache hook is responsible for notifying the web server of changes
  * on Collections or Globals as defined by the endpoint.
  */
-export const cacheHook = (
-	endpoint: string,
-	slug: string,
-	fields: Field[],
-	isCollection: boolean,
-): AfterChangeHook => {
-	//@ts-expect-error
-	return async ({ doc, previousDoc, operation }) => {
+const cacheBust = async (
+	config: CacheBustConfig,
+	payload: Payload,
+	doc: unknown,
+	previousDoc: unknown,
+) => {
+	const logger = payload.logger;
+
+	const endpoint =
+		new URL(config?.server?.cacheEndpoint ?? '', config?.server?.baseURL ?? '').href ?? '';
+
+	try {
+		const response = await fetch(endpoint, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				slug: config.slug,
+				fields: config.fields,
+				type: config.isCollection ? 'collection' : 'global',
+				doc: doc,
+				prevDoc: previousDoc,
+			}),
+		});
+		logger.info(`Webhook response status: ${response.status}`);
+	} catch (err) {
+		logger.error(`Webhook error ${err}`);
+	}
+};
+
+export const cacheHookCollections = (config: CacheBustConfig): CollectionAfterChangeHook => {
+	return async ({ req, doc, previousDoc, operation }) => {
 		if (operation !== 'update') {
 			return;
 		}
-		try {
-			const response = await fetch(endpoint, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					slug: slug,
-					fields: fields,
-					type: isCollection ? 'collection' : 'global',
-					doc: doc,
-					prevDoc: previousDoc,
-				}),
-			});
-			const json = await response.json();
-			console.log('Webhook response', json);
-		} catch (err) {
-			console.error('Webhook error', err);
-		}
+		await cacheBust(config, req.payload, doc, previousDoc);
+	};
+};
+
+export const cacheHookGlobals = (config: CacheBustConfig): GlobalAfterChangeHook => {
+	return async ({ req, doc, previousDoc }) => {
+		await cacheBust(config, req.payload, doc, previousDoc);
 	};
 };
