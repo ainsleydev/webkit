@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/payload-helper",
-	"version": "0.0.7",
+	"version": "0.0.14",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"type": "module",
@@ -23,7 +23,7 @@
 		"build:types": "tsc --emitDeclarationOnly --outDir dist",
 		"format": "biome format --write . --apply-unsafe --organise-imports",
 		"lint": "biome lint --write .",
-		"release": "npm publish --access public",
+		"release": "pnpm build && npm publish --access public",
 		"clean": "rimraf {dist,*.tsbuildinfo}",
 		"test": "jest"
 	},

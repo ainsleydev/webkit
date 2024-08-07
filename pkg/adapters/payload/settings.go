@@ -50,6 +50,10 @@ func MustGetSettings(ctx context.Context) *Settings {
 	if err != nil {
 		slog.Error("Obtaining settings: " + err.Error())
 	}
+	// Guard Check for nil panics
+	if s == nil {
+		s = &Settings{}
+	}
 	return s
 }
 

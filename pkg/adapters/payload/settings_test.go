@@ -70,9 +70,14 @@ func TestMustGetSettings(t *testing.T) {
 
 	t.Run("OK", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), SettingsContextKey, s)
-		got, err := GetSettings(ctx)
-		assert.NoError(t, err)
+		got := MustGetSettings(ctx)
 		assert.Equal(t, s, got)
+	})
+
+	t.Run("Nil", func(t *testing.T) {
+		ctx := context.WithValue(context.Background(), SettingsContextKey, nil)
+		got := MustGetSettings(ctx)
+		assert.Equal(t, &Settings{}, got)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -82,7 +87,7 @@ func TestMustGetSettings(t *testing.T) {
 		got := MustGetSettings(context.TODO())
 
 		assert.Contains(t, buf.String(), ErrSettingsNotFound.Error())
-		assert.Nil(t, got)
+		assert.Equal(t, &Settings{}, got)
 	})
 }
 

@@ -2,7 +2,6 @@ import path from 'node:path';
 import type { Payload, PayloadRequest } from 'payload';
 import { getFileByPath } from 'payload';
 import { htmlToLexical } from '../util/lexical.js';
-import type { Seeder } from './seed.js';
 import type { Media, MediaSeed } from './types.js';
 
 /**
@@ -35,40 +34,4 @@ export const uploadMedia = async (
 		payload.logger.error(`Uploading media: ${error}`);
 		throw error;
 	}
-};
-
-/**
- * Up script to create tables and seed data.
- *
- * @param payload
- * @param req
- * @param seeder
- */
-export const up = async ({
-	payload,
-	req,
-	seeder,
-}: {
-	payload: Payload;
-	req: PayloadRequest;
-	seeder: Seeder;
-}): Promise<void> => {
-	payload.logger.info('Running up script');
-
-	await payload.init({
-		config: payload.config,
-	});
-
-	// Creating new tables
-	payload.logger.info('Creating indexes...');
-	try {
-		if (payload.db.init) {
-			await payload.db.init();
-		}
-	} catch (error) {
-		payload.logger.error(`Creating database: ${error}`);
-		return;
-	}
-
-	await seeder({ payload, req });
 };
