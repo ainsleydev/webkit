@@ -36,14 +36,16 @@ func cacheMiddleware(store cache.Store) webkit.Plug {
 			if err := store.Get(ctx, cacheKey, &page); err == nil {
 				// Cache hit, serve from cache
 				c.Set("cache_hit", "HIT")
-				c.Response.Header().Set("X-Cache", "HIT")
-				c.Response.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", int(cachePageExpiry.Seconds())))
+				c.Response.Header().Set("X-Webkit-Cache", "HIT")
+				expiry := fmt.Sprintf("public, max-age=%d", int(cachePageExpiry.Seconds()))
+				c.Response.Header().Set("X-Webkit-Cache-Control", expiry)
+				c.Response.Header().Set("Cache-Control", "public, max-age=1")
 				return c.HTML(http.StatusOK, page)
 			}
 
 			rr := httputil.NewResponseRecorder(c.Response)
 			c.Set("cache_hit", "MISS")
-			c.Response.Header().Set("X-Cache", "MISS")
+			c.Response.Header().Set("X-Webkit-Cache", "MISS")
 			c.Response = rr
 
 			// Process next request in chain.
