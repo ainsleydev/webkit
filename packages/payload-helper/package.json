@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/payload-helper",
-	"version": "0.0.17",
+	"version": "0.0.18",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"type": "module",
@@ -32,8 +32,8 @@
 	},
 	"files": ["dist", "bin.js", "types.js", "types.ts", "types.d.ts"],
 	"dependencies": {
-		"@lexical/headless": "^0.16.1",
-		"@lexical/html": "^0.16.1",
+		"@lexical/headless": "^0.17.0",
+		"@lexical/html": "^0.17.0",
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
 		"@payloadcms/db-sqlite": "3.0.0-beta.76",
 		"@payloadcms/richtext-lexical": "3.0.0-beta.76",
@@ -45,7 +45,7 @@
 		"commander": "^12.1.0",
 		"dotenv": "^16.4.5",
 		"jsdom": "^24.1.1",
-		"lexical": "^0.16.1",
+		"lexical": "^0.17.0",
 		"mime-types": "^2.1.35",
 		"payload": "3.0.0-beta.76"
 	},
