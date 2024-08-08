@@ -1,10 +1,8 @@
-import type { CollectionConfig, Config, Plugin } from 'payload';
+import type { CollectionConfig, Config } from 'payload';
 import { cacheHookCollections, cacheHookGlobals } from './plugin/hooks.js';
 import { fieldMapper, schemas } from './plugin/schema.js';
 import type { PayloadHelperPluginConfig } from './types.js';
 import env from './util/env.js';
-import { seoPlugin } from '@payloadcms/plugin-seo';
-import { SEOFields } from './common/SEO.js';
 
 // export const test = (pluginOptions: PayloadHelperPluginConfig): Plugin[] => {
 // 	return [
@@ -52,6 +50,9 @@ export const payloadHelper =
 		// Map collections & add hooks
 		incomingConfig.collections = (incomingConfig.collections || []).map(
 			(collection): CollectionConfig => {
+				if (collection.upload) {
+					return collection;
+				}
 				return {
 					...collection,
 					hooks: {

@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/payload-helper",
-	"version": "0.0.20",
+	"version": "0.0.21",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"type": "module",
@@ -37,7 +37,6 @@
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
 		"@payloadcms/db-sqlite": "3.0.0-beta.76",
 		"@payloadcms/richtext-lexical": "3.0.0-beta.76",
-		"@payloadcms/storage-s3": "3.0.0-beta.76",
 		"@payloadcms/plugin-form-builder": "3.0.0-beta.76",
 		"@payloadcms/plugin-seo": "3.0.0-beta.76",
 		"@types/json-schema": "^7.0.15",
