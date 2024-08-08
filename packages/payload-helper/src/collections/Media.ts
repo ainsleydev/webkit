@@ -34,6 +34,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 		],
 		upload: {
 			staticDir: 'media',
+			adminThumbnail: 'thumbnail',
 			handlers: [
 				async (req: PayloadRequest, args) => {
 					const logger = req.payload.logger;
@@ -77,7 +78,11 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 					formatOptions: {
 						format: 'avif',
 						options: {
-							quality: 80,
+							quality: 60,
+							effort: 1,
+							chromaSubsampling: '4:4:4',
+							bitdepth: 8,
+							lossless: false,
 						},
 					},
 				},
@@ -108,7 +113,11 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 					formatOptions: {
 						format: 'avif',
 						options: {
-							quality: 80,
+							quality: 60,
+							effort: 1,
+							chromaSubsampling: '4:4:4',
+							bitdepth: 8,
+							lossless: false,
 						},
 					},
 				},
@@ -136,7 +145,11 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 					formatOptions: {
 						format: 'avif',
 						options: {
-							quality: 80,
+							quality: 60,
+							effort: 1,
+							chromaSubsampling: '4:4:4',
+							bitdepth: 8,
+							lossless: false,
 						},
 					},
 				},
@@ -164,7 +177,11 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 					formatOptions: {
 						format: 'avif',
 						options: {
-							quality: 80,
+							quality: 60,
+							effort: 1,
+							chromaSubsampling: '4:4:4',
+							bitdepth: 8,
+							lossless: false,
 						},
 					},
 				},
