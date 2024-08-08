@@ -84,14 +84,14 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 				// Thumbnail Sizes
 				{
 					name: 'thumbnail',
-					width: 400,
-					height: 300,
+					width: 200,
+					height: undefined,
 					position: 'centre',
 				},
 				{
 					name: 'thumbnail_webp',
-					width: 400,
-					height: 300,
+					width: 200,
+					height: undefined,
 					position: 'centre',
 					formatOptions: {
 						format: 'webp',
@@ -102,8 +102,8 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 				},
 				{
 					name: 'thumbnail_avif',
-					width: 400,
-					height: 300,
+					width: 200,
+					height: undefined,
 					position: 'centre',
 					formatOptions: {
 						format: 'avif',
@@ -115,12 +115,12 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 				// Mobile Sizes
 				{
 					name: 'mobile',
-					width: 768,
+					width: 500,
 					height: undefined,
 				},
 				{
 					name: 'mobile_webp',
-					width: 768,
+					width: 500,
 					height: undefined,
 					formatOptions: {
 						format: 'webp',
@@ -131,7 +131,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 				},
 				{
 					name: 'mobile_avif',
-					width: 768,
+					width: 500,
 					height: undefined,
 					formatOptions: {
 						format: 'avif',
@@ -143,12 +143,12 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 				// Tablet Sizes
 				{
 					name: 'tablet',
-					width: 1024,
+					width: 800,
 					height: undefined,
 				},
 				{
 					name: 'tablet_webp',
-					width: 1024,
+					width: 800,
 					height: undefined,
 					formatOptions: {
 						format: 'webp',
@@ -159,7 +159,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 				},
 				{
 					name: 'tablet_avif',
-					width: 1024,
+					width: 800,
 					height: undefined,
 					formatOptions: {
 						format: 'avif',
@@ -171,12 +171,12 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 				// Desktop Sizes
 				{
 					name: 'desktop',
-					width: 1440,
+					width: 1200,
 					height: undefined,
 				},
 				{
 					name: 'desktop_webp',
-					width: 1440,
+					width: 1200,
 					height: undefined,
 					formatOptions: {
 						format: 'webp',
@@ -187,7 +187,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 				},
 				{
 					name: 'desktop_avif',
-					width: 1440,
+					width: 1200,
 					height: undefined,
 					formatOptions: {
 						format: 'avif',
