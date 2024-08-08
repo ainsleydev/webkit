@@ -169,33 +169,33 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 					},
 				},
 				// Desktop Sizes
-				{
-					name: 'desktop',
-					width: 1200,
-					height: undefined,
-				},
-				{
-					name: 'desktop_webp',
-					width: 1200,
-					height: undefined,
-					formatOptions: {
-						format: 'webp',
-						options: {
-							quality: 80,
-						},
-					},
-				},
-				{
-					name: 'desktop_avif',
-					width: 1200,
-					height: undefined,
-					formatOptions: {
-						format: 'avif',
-						options: {
-							quality: 80,
-						},
-					},
-				},
+				// {
+				// 	name: 'desktop',
+				// 	width: 1200,
+				// 	height: undefined,
+				// },
+				// {
+				// 	name: 'desktop_webp',
+				// 	width: 1200,
+				// 	height: undefined,
+				// 	formatOptions: {
+				// 		format: 'webp',
+				// 		options: {
+				// 			quality: 80,
+				// 		},
+				// 	},
+				// },
+				// {
+				// 	name: 'desktop_avif',
+				// 	width: 1200,
+				// 	height: undefined,
+				// 	formatOptions: {
+				// 		format: 'avif',
+				// 		options: {
+				// 			quality: 80,
+				// 		},
+				// 	},
+				// },
 			],
 		},
 	};

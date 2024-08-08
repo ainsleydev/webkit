@@ -1,11 +1,28 @@
-import type { CollectionConfig, Config } from 'payload';
+import type { CollectionConfig, Config, Plugin } from 'payload';
 import { cacheHookCollections, cacheHookGlobals } from './plugin/hooks.js';
 import { fieldMapper, schemas } from './plugin/schema.js';
 import type { PayloadHelperPluginConfig } from './types.js';
 import env from './util/env.js';
+import { seoPlugin } from '@payloadcms/plugin-seo';
+import { SEOFields } from './common/SEO.js';
 
-// export const test = (pluginOptions: PayloadHelperPluginConfig) =>
-// 	(incomingConfig: Config): Config => {
+// export const test = (pluginOptions: PayloadHelperPluginConfig): Plugin[] => {
+// 	return [
+// 		seoPlugin({
+// 			collections: pluginOptions?.seo?.collections,
+// 			globals: pluginOptions?.seo?.globals,
+// 			fields: [...SEOFields, pluginOptions.seo?.fields],
+// 			tabbedUI: true,
+// 			uploadsCollection: 'media',
+// 			generateTitle: pluginOptions?.seo?.generateTitle ?
+// 				pluginOptions?.seo?.generateTitle :
+// 				({ doc }) => `${pluginOptions.siteName} — ${doc?.title?.value ?? ''}`,
+// 			generateDescription: pluginOptions?.seo?.generateDescription ?
+// 				pluginOptions?.seo?.generateDescription :
+// 				({ doc }) => doc?.excerpt?.value,
+// 		}),
+// 	];
+// };
 
 /**
  * Payload Helper Plugin for websites at ainsley.dev
