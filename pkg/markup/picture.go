@@ -48,6 +48,11 @@ type PictureProps struct {
 	// Must be an integer without a unit (optional).
 	Height *int
 
+	// HideMediaSourcesWithSizeAttrs indicates if only next-gen image formats (AVIF & WebP)
+	// should be used. When true, this will hide any <source> elements with size attributes,
+	// effectively excluding them from the rendering process.
+	HideMediaSizes bool
+
 	// Attributes specifies additional attributes for the picture element as key-value pairs.
 	// For example: markup.Attributes{"data-attribute-size": "large"}
 	Attributes Attributes
@@ -59,12 +64,27 @@ func Picture(provider PictureProvider, opts ...PictureOptions) PictureProps {
 	for _, opt := range opts {
 		opt(&props)
 	}
-	for idx, src := range props.Sources {
-		if !src.IsSource || src.Width == nil {
-			continue
+
+	// Add media query for sources with width attributes.
+	for idx := range props.Sources {
+		src := &props.Sources[idx]
+		if src.IsSource && src.Width != nil {
+			src.Media = fmt.Sprintf("(max-width: %vpx)", *src.Width+50)
 		}
-		props.Sources[idx].Media = fmt.Sprintf("(max-width: %vpx)", *src.Width+50)
 	}
+
+	// If HideMediaSizes is true, remove sources with size attributes.
+	if props.HideMediaSizes {
+		var i int
+		for _, src := range props.Sources {
+			if src.Width == nil {
+				props.Sources[i] = src
+				i++
+			}
+		}
+		props.Sources = props.Sources[:i]
+	}
+
 	return props
 }
 
@@ -115,10 +135,19 @@ func PictureWithEagerLoading() PictureOptions {
 	}
 }
 
+// PictureWithClasses appends any CSS classes to the picture.
 func PictureWithClasses(classes ...string) PictureOptions {
 	return func(p *PictureProps) {
 		for _, v := range classes {
 			p.Classes = append(p.Classes, v+" ")
 		}
+	}
+}
+
+// PictureWithHiddenMediaSources modifies the picture so sizes where sources with size
+// attributes are hidden.
+func PictureWithHiddenMediaSources() PictureOptions {
+	return func(p *PictureProps) {
+		p.HideMediaSizes = true
 	}
 }

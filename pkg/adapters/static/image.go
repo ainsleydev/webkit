@@ -58,7 +58,7 @@ var getDistPath = func(path string) string {
 		slog.Error("Error getting current working directory: " + err.Error())
 		return ""
 	}
-	return filepath.Join(wd, AssetToBasePath(path))
+	return filepath.Join(strings.ReplaceAll(wd, "/tmp/main", ""), AssetToBasePath(path))
 }
 
 var (

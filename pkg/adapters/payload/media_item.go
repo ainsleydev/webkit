@@ -112,7 +112,7 @@ func (m *Media) ImageMarkup() markup.ImageProps {
 		Attributes: markup.Attributes{
 			"data-payload-media-id":       fmt.Sprintf("%v", m.ID),
 			"data-payload-media-filename": m.Filename,
-			"data-payload-media-filesize": fmt.Sprintf("%v", m.Filesize),
+			"data-payload-media-filesize": formatFileSize(m.Filesize),
 		},
 	}
 }
@@ -129,60 +129,59 @@ func (m *Media) PictureMarkup() markup.PictureProps {
 		Attributes: markup.Attributes{
 			"data-payload-media-id":       fmt.Sprintf("%v", m.ID),
 			"data-payload-media-filename": m.Filename,
-			"data-payload-media-filesize": fmt.Sprintf("%v", m.Filesize),
+			"data-payload-media-filesize": formatFileSize(m.Filesize),
 		},
 	}
 }
 
-// mediaByWidth implements sort.Interface for sorting MediaSize by Width.
-type mediaByWidth []MediaSize
+// mediaByOrder implements sort.Interface for sorting MediaSize by a predefined order.
+type mediaByOrder []MediaSize
 
-func (a mediaByWidth) Len() int { return len(a) }
-func (a mediaByWidth) Less(i, j int) bool {
-	// Handle nil width consistently
-	if a[i].Width == nil && a[j].Width != nil {
-		return false
-	} else if a[i].Width != nil && a[j].Width == nil {
-		return true
-	}
-
-	// Sort by width, then by key for stability
-	if a[i].Width == nil || a[j].Width == nil || *a[i].Width == *a[j].Width {
-		return a[i].Size < a[j].Size
-	}
-	return *a[i].Width < *a[j].Width
+// Define the order for the sizes
+var sizeOrder = map[string]int{
+	"thumbnail_avif": 1,
+	"thumbnail_webp": 2,
+	"thumbnail":      3,
+	"mobile_avif":    4,
+	"mobile_webp":    5,
+	"mobile":         6,
+	"tablet_avif":    7,
+	"tablet_webp":    8,
+	"tablet":         9,
+	"desktop_avif":   10,
+	"desktop_webp":   11,
+	"desktop":        12,
+	"avif":           13,
+	"webp":           14,
 }
-func (a mediaByWidth) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+
+func (a mediaByOrder) Len() int { return len(a) }
+func (a mediaByOrder) Less(i, j int) bool {
+	// Get the order index for each size
+	orderI, okI := sizeOrder[a[i].Size]
+	orderJ, okJ := sizeOrder[a[j].Size]
+	if !okI {
+		orderI = len(sizeOrder) + 1 // Any unknown size should go to the end
+	}
+	if !okJ {
+		orderJ = len(sizeOrder) + 1
+	}
+	return orderI < orderJ
+}
+func (a mediaByOrder) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
 // SortByWidth sorts the media sizes by width from lowest to highest.
 // If a width is nil, it will consistently appear at the end.
 func (ms MediaSizes) SortByWidth() []MediaSize {
-	// Convert map to slice for deterministic sorting
-	var sorted mediaByWidth
-	var avif, webp *MediaSize
+	var sorted mediaByOrder
 
 	for key, mediaSize := range ms {
 		mediaSize.Size = key
-		switch key {
-		case "avif":
-			avif = &mediaSize
-		case "webp":
-			webp = &mediaSize
-		default:
-			sorted = append(sorted, mediaSize)
-		}
+		sorted = append(sorted, mediaSize)
 	}
 
 	// Sort the slice by width
 	sort.Sort(sorted)
-
-	// Append avif and webp in the correct order
-	if avif != nil {
-		sorted = append(sorted, *avif)
-	}
-	if webp != nil {
-		sorted = append(sorted, *webp)
-	}
 
 	// Convert sorted slice back to original format
 	result := make([]MediaSize, len(sorted))
@@ -200,7 +199,7 @@ func (ms MediaSizes) toMarkup() []markup.ImageProps {
 			"data-payload-size": img.Size,
 		}
 		if img.Filesize != nil {
-			attr["data-payload-media-filesize"] = fmt.Sprintf("%v", *img.Filesize)
+			attr["data-payload-media-filesize"] = formatFileSize(*img.Filesize)
 		}
 		if img.Filename != nil {
 			attr["data-payload-media-filename"] = *img.Filename
@@ -267,4 +266,15 @@ func sizeToIntPointer(f *float64) *int {
 	}
 	intValue := int(*f)
 	return &intValue
+}
+
+func formatFileSize(size float64) string {
+	const unit = 1024
+	if size < unit {
+		return fmt.Sprintf("%.1f B", size)
+	}
+	if size < unit*unit {
+		return fmt.Sprintf("%.1f KB", size/unit)
+	}
+	return fmt.Sprintf("%.1f MB", size/(unit*unit))
 }

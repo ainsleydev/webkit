@@ -37,8 +37,7 @@ func cacheMiddleware(store cache.Store) webkit.Plug {
 				// Cache hit, serve from cache
 				c.Set("cache_hit", "HIT")
 				c.Response.Header().Set("X-Webkit-Cache", "HIT")
-				expiry := fmt.Sprintf("public, max-age=%d", int(cachePageExpiry.Seconds()))
-				c.Response.Header().Set("X-Webkit-Cache-Control", expiry)
+				c.Response.Header().Set("X-Webkit-Cache-Control", fmt.Sprintf("public, max-age=%d", int(cachePageExpiry.Seconds())))
 				c.Response.Header().Set("Cache-Control", "public, max-age=1")
 				return c.HTML(http.StatusOK, page)
 			}

@@ -1,21 +1,12 @@
-import type { CollectionConfig, Field } from 'payload';
-// import type {
-// 	LexicalRichTextAdapterProvider,
-// 	LexicalEditorProps,
-// } from '@payloadcms/richtext-lexical';
+import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import * as mime from 'mime-types';
+import type { CollectionConfig, Field, PayloadRequest } from 'payload';
 
 /**
  * Media Collection Configuration
  * Additional fields will be appended to the media collection.
- *
- * @constructor
- * @param editor
- * @param additionalFields
  */
-export const Media = (
-	//editor?: (props?: LexicalEditorProps) => LexicalRichTextAdapterProvider,
-	additionalFields?: Field[],
-): CollectionConfig => {
+export const Media = (additionalFields?: Field[]): CollectionConfig => {
 	return {
 		slug: 'media',
 		access: {
@@ -31,22 +22,41 @@ export const Media = (
 				name: 'caption',
 				type: 'richText',
 				required: false,
-				// editor: editor({
-				// 	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// 	// @ts-ignore
-				// 	features: ({ defaultFeatures }) => {
-				// 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// 		// @ts-ignore
-				// 		return defaultFeatures.filter((feature) => {
-				// 			return feature.key === 'paragraph' || feature.key === 'link';
-				// 		});
-				// 	},
-				// }),
+				editor: lexicalEditor({
+					features: ({ defaultFeatures }) => {
+						return defaultFeatures.filter((feature) => {
+							return feature.key === 'paragraph' || feature.key === 'link';
+						});
+					},
+				}),
 			},
 			...(additionalFields ? additionalFields : []),
 		],
 		upload: {
 			staticDir: 'media',
+			handlers: [
+				async (req: PayloadRequest, args) => {
+					const logger = req.payload.logger;
+					const { params } = args;
+					const { collection, filename } = params;
+
+					if (collection !== 'media') {
+						return;
+					}
+
+					const contentType = mime.lookup(filename);
+					if (!contentType) {
+						logger.error(`Unable to find mime type for file: ${filename}`);
+						return;
+					}
+
+					const headers = new Headers();
+					headers.set('Content-Type', contentType);
+					headers.set('Cache-Control', 'public, max-age=31536000');
+
+					req.responseHeaders = headers;
+				},
+			],
 			imageSizes: [
 				// Original Size (for WebP & Avif)
 				{
