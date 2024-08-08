@@ -4,6 +4,9 @@ import { fieldMapper, schemas } from './plugin/schema.js';
 import type { PayloadHelperPluginConfig } from './types.js';
 import env from './util/env.js';
 
+// export const test = (pluginOptions: PayloadHelperPluginConfig) =>
+// 	(incomingConfig: Config): Config => {
+
 /**
  * Payload Helper Plugin for websites at ainsley.dev
  *

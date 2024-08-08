@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/payload-helper",
-	"version": "0.0.16",
+	"version": "0.0.17",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"type": "module",
@@ -35,9 +35,11 @@
 		"@lexical/headless": "^0.16.1",
 		"@lexical/html": "^0.16.1",
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
-		"@payloadcms/db-sqlite": "3.0.0-canary.2c2c95f",
-		"@payloadcms/richtext-lexical": "3.0.0-beta.73",
-		"@payloadcms/storage-s3": "3.0.0-beta.29",
+		"@payloadcms/db-sqlite": "3.0.0-beta.76",
+		"@payloadcms/richtext-lexical": "3.0.0-beta.76",
+		"@payloadcms/storage-s3": "3.0.0-beta.76",
+		"@payloadcms/plugin-form-builder": "3.0.0-beta.76",
+		"@payloadcms/plugin-seo": "3.0.0-beta.76",
 		"@types/json-schema": "^7.0.15",
 		"chalk": "^5.3.0",
 		"commander": "^12.1.0",
@@ -45,7 +47,7 @@
 		"jsdom": "^24.1.1",
 		"lexical": "^0.16.1",
 		"mime-types": "^2.1.35",
-		"payload": "3.0.0-beta.73"
+		"payload": "3.0.0-beta.76"
 	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
