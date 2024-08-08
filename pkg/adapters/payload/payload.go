@@ -110,11 +110,6 @@ func (a Adapter) validate() error {
 }
 
 func (a Adapter) attachHandlers() {
-	// Routes
-	a.kit.Get("/robots.txt", robots(a.env[env.AppEnvironmentKey]))
-	a.kit.Get("/sitemap.xml", sitemap())
-	a.kit.Post("/cache/", cacheBust(a.cache))
-
 	if !env.IsDevelopment() {
 		a.kit.Plug(cacheMiddleware(a.cache))
 	}
@@ -127,4 +122,9 @@ func (a Adapter) attachHandlers() {
 	for _, m := range a.globalMiddlewares {
 		a.kit.Plug(m(a.Client, a.cache))
 	}
+
+	// Routes
+	a.kit.Get("/robots.txt", robots(a.env[env.AppEnvironmentKey]))
+	a.kit.Get("/sitemap.xml", sitemap())
+	a.kit.Post("/cache/", cacheBust(a.cache))
 }

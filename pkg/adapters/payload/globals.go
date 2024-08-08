@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -25,7 +26,10 @@ func GlobalsContextKey(global string) string {
 func globalsMiddleware[T any](client *payloadcms.Client, store cache.Store, global string) webkit.Plug {
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
-			if httputil.IsFileRequest(c.Request) {
+			// We always want to store settings in conetxt for downstream handlers
+			// such as robots.txt. But we also don't want other middlewares
+			// to run
+			if httputil.IsFileRequest(c.Request) && global != "settings" {
 				return next(c)
 			}
 
@@ -43,8 +47,9 @@ func globalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 				}
 			}
 
-			_, err := client.Globals.Get(ctx, payloadcms.Global(global), t)
+			resp, err := client.Globals.Get(ctx, payloadcms.Global(global), t)
 			if err != nil {
+				fmt.Println(string(resp.Message))
 				slog.Error("Fetching " + global + " global from Payload: " + err.Error())
 				return next(c)
 			}

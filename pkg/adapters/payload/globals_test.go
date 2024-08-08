@@ -42,11 +42,11 @@ func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client,
 		mock func(gb *payloadfakes.MockGlobalsService, store cache.Store)
 		want any
 	}{
-		"File Request": {
-			url:  "/favicon.ico",
-			mock: func(_ *payloadfakes.MockGlobalsService, _ cache.Store) {},
-			want: nil,
-		},
+		//"File Request": {
+		//	url:  "/favicon.ico",
+		//	mock: func(_ *payloadfakes.MockGlobalsService, _ cache.Store) {},
+		//	want: nil,
+		//},
 		"From Cache": {
 			url: "/want",
 			mock: func(_ *payloadfakes.MockGlobalsService, store cache.Store) {

@@ -53,7 +53,6 @@ func cacheMiddleware(store cache.Store) webkit.Plug {
 			}
 
 			if !httputil.Is2xx(rr.Status) {
-				fmt.Println("in")
 				return nil
 			}
 

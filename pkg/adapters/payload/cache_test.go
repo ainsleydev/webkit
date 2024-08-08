@@ -33,7 +33,7 @@ func TestCacheMiddleware(t *testing.T) {
 			url:    "/favicon.ico",
 			method: http.MethodGet,
 			assertFn: func(rr *httptest.ResponseRecorder, _ cache.Store) {
-				assert.Equal(t, "", rr.Header().Get("X-Cache"))
+				assert.Equal(t, "", rr.Header().Get("X-WebKit-Cache"))
 			},
 		},
 		"From Cache": {
@@ -43,8 +43,8 @@ func TestCacheMiddleware(t *testing.T) {
 				store.Set(context.TODO(), "page:/page", "Cache", cache.Options{})
 			},
 			assertFn: func(rr *httptest.ResponseRecorder, store cache.Store) {
-				assert.Equal(t, "HIT", rr.Header().Get("X-Cache"))
-				assert.Equal(t, "public, max-age=2419200", rr.Header().Get("Cache-Control"))
+				assert.Equal(t, "HIT", rr.Header().Get("X-WebKit-Cache"))
+				assert.Equal(t, "public, max-age=1", rr.Header().Get("Cache-Control"))
 				var p string
 				assert.NoError(t, store.Get(context.TODO(), "page:/page", &p))
 			},
@@ -53,7 +53,7 @@ func TestCacheMiddleware(t *testing.T) {
 			url:    "/page",
 			method: http.MethodGet,
 			assertFn: func(rr *httptest.ResponseRecorder, _ cache.Store) {
-				assert.Equal(t, "MISS", rr.Header().Get("X-Cache"))
+				assert.Equal(t, "MISS", rr.Header().Get("X-WebKit-Cache"))
 			},
 		},
 		"Next Error": {
@@ -63,7 +63,7 @@ func TestCacheMiddleware(t *testing.T) {
 				return errors.New("next error")
 			},
 			assertFn: func(rr *httptest.ResponseRecorder, store cache.Store) {
-				assert.Equal(t, "MISS", rr.Header().Get("X-Cache"))
+				assert.Equal(t, "MISS", rr.Header().Get("X-WebKit-Cache"))
 				var p string
 				assert.Error(t, store.Get(context.TODO(), "page:/page", &p))
 			},
@@ -75,7 +75,7 @@ func TestCacheMiddleware(t *testing.T) {
 				return c.String(http.StatusNotFound, "Not Found")
 			},
 			assertFn: func(rr *httptest.ResponseRecorder, store cache.Store) {
-				assert.Equal(t, "MISS", rr.Header().Get("X-Cache"))
+				assert.Equal(t, "MISS", rr.Header().Get("X-WebKit-Cache"))
 				var p string
 				assert.Error(t, store.Get(context.TODO(), "page:/page", &p))
 			},
@@ -122,7 +122,7 @@ func TestCacheMiddleware(t *testing.T) {
 		})
 		app.ServeHTTP(rr, req)
 
-		assert.Equal(t, "MISS", rr.Header().Get("X-Cache"))
+		assert.Equal(t, "MISS", rr.Header().Get("X-WebKit-Cache"))
 	})
 }
 

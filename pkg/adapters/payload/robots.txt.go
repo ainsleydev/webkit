@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -30,12 +31,13 @@ func robots(appEnv string) webkit.Handler {
 
 		settings, err := GetSettings(c.Context())
 		if err != nil {
+			slog.Error("Obtaining settings for robots.txt file: " + err.Error())
 			return defaultRobots(c)
 		}
 
-		robots := settings.Robots
-		if robots != nil {
-			return c.String(http.StatusOK, *robots)
+		robotsTxt := settings.Robots
+		if robotsTxt != nil {
+			return c.String(http.StatusOK, *robotsTxt)
 		}
 
 		return defaultRobots(c)
