@@ -33,7 +33,7 @@
 	"files": ["dist", "bin.js", "types.js", "types.ts", "types.d.ts"],
 	"dependencies": {
 		"@lexical/headless": "^0.16.1",
-		"@lexical/html": "^0.16.1",
+		"@lexical/html": "^0.17.0",
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
 		"@payloadcms/db-sqlite": "3.0.0-beta.76",
 		"@payloadcms/richtext-lexical": "3.0.0-beta.76",
