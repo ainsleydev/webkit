@@ -1,6 +1,7 @@
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import * as mime from 'mime-types';
 import type { CollectionConfig, Field, PayloadRequest } from 'payload';
+import env from '../util/env.js';
 
 /**
  * Media Collection Configuration
@@ -35,6 +36,7 @@ export const Media = (additionalFields?: Field[]): CollectionConfig => {
 		upload: {
 			staticDir: 'media',
 			adminThumbnail: 'thumbnail',
+			disableLocalStorage: env.isProduction,
 			handlers: [
 				async (req: PayloadRequest, args) => {
 					const logger = req.payload.logger;
