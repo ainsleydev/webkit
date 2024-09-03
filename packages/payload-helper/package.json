@@ -46,7 +46,7 @@
 		"jsdom": "^24.1.1",
 		"lexical": "^0.17.0",
 		"mime-types": "^2.1.35",
-		"payload": "3.0.0-beta.76"
+		"payload": "3.0.0-canary.5866281"
 	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
