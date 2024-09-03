@@ -22,6 +22,7 @@ type LocalHandler struct {
 	writer   io.Writer
 	prefix   string
 	mtx      *sync.Mutex
+	opts     *slog.HandlerOptions
 }
 
 // NewLocalHandler returns a new local handler with the given options.
@@ -41,6 +42,7 @@ func NewLocalHandler(writer io.Writer, opts *slog.HandlerOptions, prefix string)
 		writer:   writer,
 		prefix:   prefix,
 		mtx:      &sync.Mutex{},
+		opts:     opts,
 	}
 }
 
@@ -57,18 +59,24 @@ func (h *LocalHandler) Enabled(ctx context.Context, level slog.Level) bool {
 // WithAttrs returns a new handler with the provided attributes.
 func (h *LocalHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &LocalHandler{
-		handler: h.handler.WithAttrs(attrs),
-		bytes:   h.bytes,
-		mtx:     h.mtx,
+		handler:  h.handler.WithAttrs(attrs),
+		bytes:    h.bytes,
+		mtx:      h.mtx,
+		writer:   h.writer,
+		prefix:   h.prefix,
+		replacer: h.replacer,
 	}
 }
 
 // WithGroup returns a new handler with the provided group name.
 func (h *LocalHandler) WithGroup(name string) slog.Handler {
 	return &LocalHandler{
-		handler: h.handler.WithGroup(name),
-		bytes:   h.bytes,
-		mtx:     h.mtx,
+		handler:  h.handler.WithGroup(name),
+		bytes:    h.bytes,
+		mtx:      h.mtx,
+		writer:   h.writer,
+		prefix:   h.prefix,
+		replacer: h.replacer,
 	}
 }
 
@@ -103,7 +111,7 @@ func (h *LocalHandler) Handle(ctx context.Context, r slog.Record) error {
 	if err != nil {
 		return err
 	}
-	bytes, err := json.MarshalIndent(attrs, "", "  ")
+	byts, err := json.MarshalIndent(attrs, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error when marshaling attrs: %w", err)
 	}
@@ -131,8 +139,8 @@ func (h *LocalHandler) Handle(ctx context.Context, r slog.Record) error {
 		out.WriteString(" ")
 	}
 
-	if len(attrs) > 0 && len(bytes) > 0 {
-		out.WriteString(aurora.Gray(greyHex, string(bytes)).String())
+	if len(attrs) > 0 && len(byts) > 0 {
+		out.WriteString(aurora.Gray(greyHex, string(byts)).String())
 	}
 
 	_, err = h.writer.Write([]byte(out.String() + "\n"))

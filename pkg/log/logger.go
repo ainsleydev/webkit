@@ -1,6 +1,8 @@
 package log
 
 import (
+	"io"
+	"log"
 	"log/slog"
 	"os"
 
@@ -15,6 +17,22 @@ var DefaultLogger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 func Bootstrap(prefix string) {
 	DefaultLogger = slog.New(resolveLogHandler(prefix))
 	slog.SetDefault(DefaultLogger)
+}
+
+// NewLogger creates a new WebKit compliant logger with the given prefix.
+func NewLogger(prefix string) *slog.Logger {
+	return slog.New(resolveLogHandler(prefix))
+}
+
+// NewNoOpLogger creates a logger that does nothing.
+func NewNoOpLogger() *slog.Logger {
+	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
+
+// Discard sets the default logger to discard all logs.
+// It's an alias for log.SetOutput(io.Discard).
+func Discard() {
+	log.SetOutput(io.Discard)
 }
 
 func resolveLogHandler(prefix string) slog.Handler {
