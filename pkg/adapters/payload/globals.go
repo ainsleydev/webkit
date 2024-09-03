@@ -1,7 +1,6 @@
 package payload
 
 import (
-	"fmt"
 	"log/slog"
 	"strings"
 
@@ -47,9 +46,8 @@ func globalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 				}
 			}
 
-			resp, err := client.Globals.Get(ctx, payloadcms.Global(global), t)
+			_, err := client.Globals.Get(ctx, payloadcms.Global(global), t)
 			if err != nil {
-				fmt.Println(string(resp.Message))
 				slog.Error("Fetching " + global + " global from Payload: " + err.Error())
 				return next(c)
 			}
