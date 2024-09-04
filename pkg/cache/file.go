@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -37,6 +38,11 @@ func NewFileCache(filePath string) (*FileCache, error) {
 		data:     make(map[string]fileCacheItem),
 		mtx:      &sync.RWMutex{},
 	}
+	// Add .json extension if not present
+	if !strings.HasSuffix(filePath, ".json") {
+		filePath += ".json"
+	}
+	// Load cache data from file
 	if err := fc.load(); err != nil {
 		return nil, err
 	}

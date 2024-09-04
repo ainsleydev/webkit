@@ -210,7 +210,7 @@ func TestFile_Persistence(t *testing.T) {
 	t.Parallel()
 
 	tempDir := t.TempDir()
-	filePath := filepath.Join(tempDir, "cache.json")
+	filePath := filepath.Join(tempDir, "cache")
 
 	// Create and populate the cache
 	store1, err := NewFileCache(filePath)
