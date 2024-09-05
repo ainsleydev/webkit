@@ -37,33 +37,15 @@ func TestCache_Flush(t *testing.T) {
 	c.Flush(context.TODO())
 }
 
-// testCacheStruct represents a struct for working with
+// redisTestCacheStruct represents a struct for working with
 // JSON values within the cache store.
-type testCacheStruct struct {
+type redisTestCacheStruct struct {
 	Name  string `json:"name"`
 	Value int    `json:"value"`
 }
 
-var (
-	// key is the test key used for Redis testing.
-	key = "key"
-	// tag is the test tag used for Redis testing.
-	tag = "tag"
-	// value is the test value to match against testing for
-	// get and set test methods, to see if it's marshalling
-	// properly.
-	value = testCacheStruct{
-		Name:  "name",
-		Value: 1,
-	}
-	// options are the default testing set options.
-
-	ctx = context.TODO()
-)
-
 func TestNew(t *testing.T) {
 	t.Parallel()
-
 	got := NewRedis(&redis.Options{})
 	assert.NotNil(t, got.client)
 	assert.NotNil(t, got.mtx)
@@ -71,6 +53,8 @@ func TestNew(t *testing.T) {
 
 func TestPing(t *testing.T) {
 	t.Parallel()
+
+	ctx := context.Background()
 
 	tt := map[string]struct {
 		mock    func(m *internal.MockRedisStore)
@@ -89,7 +73,7 @@ func TestPing(t *testing.T) {
 				cmd := redis.NewStatusCmd(ctx, nil)
 				cmd.SetErr(errors.New("ping error"))
 				m.EXPECT().
-					Ping(ctx).
+					Ping(context.Background()).
 					Return(cmd)
 			},
 			true,
@@ -144,6 +128,11 @@ func TestClose(t *testing.T) {
 func TestCache_Get(t *testing.T) {
 	t.Parallel()
 
+	var (
+		ctx = context.Background()
+		key = "key"
+	)
+
 	tt := map[string]struct {
 		mock    func(m *internal.MockRedisStore)
 		wantErr bool
@@ -156,7 +145,7 @@ func TestCache_Get(t *testing.T) {
 					Return(redis.NewStringResult(`{"name": "name", "value": 1}`, nil))
 			},
 			false,
-			testCacheStruct{
+			redisTestCacheStruct{
 				Name:  "name",
 				Value: 1,
 			},
@@ -168,7 +157,7 @@ func TestCache_Get(t *testing.T) {
 					Return(redis.NewStringResult("", errors.New("redis error")))
 			},
 			true,
-			testCacheStruct{},
+			redisTestCacheStruct{},
 		},
 		"Decode Error": {
 			func(m *internal.MockRedisStore) {
@@ -177,7 +166,7 @@ func TestCache_Get(t *testing.T) {
 					Return(redis.NewStringResult("wrong", nil))
 			},
 			true,
-			testCacheStruct{},
+			redisTestCacheStruct{},
 		},
 	}
 
@@ -185,7 +174,7 @@ func TestCache_Get(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			c := Setup(t, test.mock)
-			got := testCacheStruct{}
+			got := redisTestCacheStruct{}
 			err := c.Get(ctx, key, &got)
 			assert.Equal(t, test.wantErr, err != nil)
 			assert.Equal(t, test.want, got)
@@ -194,6 +183,12 @@ func TestCache_Get(t *testing.T) {
 }
 
 func TestCache_Set(t *testing.T) {
+	var (
+		ctx = context.Background()
+		key = "key"
+		tag = "tag"
+	)
+
 	tt := map[string]struct {
 		value   any
 		mock    func(m *internal.MockRedisStore)
@@ -230,8 +225,7 @@ func TestCache_Set(t *testing.T) {
 		},
 		"Encode Error": {
 			make(chan string),
-			func(_ *internal.MockRedisStore) {
-			},
+			func(_ *internal.MockRedisStore) {},
 			"marshalling cache value",
 		},
 	}
@@ -254,6 +248,12 @@ func TestCache_Set(t *testing.T) {
 
 func TestCache_Delete(t *testing.T) {
 	t.Parallel()
+
+	var (
+		ctx   = context.Background()
+		key   = "key"
+		value = "value"
+	)
 
 	tt := map[string]struct {
 		value   any
@@ -295,6 +295,12 @@ func TestCache_Delete(t *testing.T) {
 
 func TestCache_Invalidate(t *testing.T) {
 	t.Parallel()
+
+	var (
+		ctx = context.Background()
+		key = "key"
+		tag = "tag"
+	)
 
 	tt := map[string]struct {
 		input []string

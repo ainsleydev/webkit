@@ -171,12 +171,3 @@ func (f *FileCache) Flush(_ context.Context) {
 func (f *FileCache) Close() error {
 	return f.save()
 }
-
-func contains(slice []string, item string) bool {
-	for _, a := range slice {
-		if a == item {
-			return true
-		}
-	}
-	return false
-}
