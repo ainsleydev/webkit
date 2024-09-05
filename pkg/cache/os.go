@@ -21,11 +21,11 @@ type (
 		basePath  string
 		indexPath string
 		mtx       sync.RWMutex
-		index     map[string]*cacheEntry
+		index     map[string]*osCacheEntry
 	}
-	// cacheEntry represents a single item in the cache, including its expiration
+	// osCacheEntry represents a single item in the cache, including its expiration
 	// time and associated tags.
-	cacheEntry struct {
+	osCacheEntry struct {
 		Expiration time.Time `json:"expiration"`
 		Tags       []string  `json:"tags"`
 	}
@@ -43,7 +43,7 @@ func NewOSCache(basePath string) (*OSCache, error) {
 	cache := &OSCache{
 		basePath:  basePath,
 		indexPath: filepath.Join(basePath, osIndexFileName),
-		index:     make(map[string]*cacheEntry),
+		index:     make(map[string]*osCacheEntry),
 	}
 
 	if err := cache.loadIndex(); err != nil {
@@ -76,15 +76,28 @@ func (o *OSCache) Get(ctx context.Context, key string, v any) error {
 
 	filePath := o.getFilePath(key)
 	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return err
+
+	switch typ := v.(type) {
+	case *[]byte:
+		*typ = data
+	case *string:
+		*typ = string(data)
+	default:
+		return errors.New("v must be a pointer to a []byte or string")
 	}
 
-	return json.Unmarshal(data, v)
+	return err
 }
 
 func (o *OSCache) Set(_ context.Context, key string, value any, options Options) {
 	filePath := o.getFilePath(key)
+
+	// Ensure the directory exists
+	dir := filepath.Dir(filePath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		slog.Error("Error creating directory: " + err.Error())
+		return
+	}
 
 	var data []byte
 	var err error
@@ -95,12 +108,7 @@ func (o *OSCache) Set(_ context.Context, key string, value any, options Options)
 	case string:
 		data = []byte(v)
 	default:
-		// For other types, we'll still need to marshal to JSON
-		data, err = json.Marshal(value)
-		if err != nil {
-			slog.Error("Error marshaling value: " + err.Error())
-			return
-		}
+		slog.Error("Data unsupported for OS cache is not a string or byte slice")
 	}
 
 	if err := os.WriteFile(filePath, data, 0644); err != nil {
@@ -114,7 +122,7 @@ func (o *OSCache) Set(_ context.Context, key string, value any, options Options)
 	}
 
 	o.mtx.Lock()
-	o.index[key] = &cacheEntry{
+	o.index[key] = &osCacheEntry{
 		Expiration: expiration,
 		Tags:       options.Tags,
 	}
@@ -165,7 +173,7 @@ func (o *OSCache) Invalidate(_ context.Context, tags []string) {
 
 func (o *OSCache) Flush(_ context.Context) {
 	o.mtx.Lock()
-	o.index = make(map[string]*cacheEntry)
+	o.index = make(map[string]*osCacheEntry)
 	o.mtx.Unlock()
 
 	err := filepath.Walk(o.basePath, func(path string, info fs.FileInfo, err error) error {
@@ -208,7 +216,7 @@ func (o *OSCache) loadIndex() error {
 
 func (o *OSCache) saveIndex() error {
 	o.mtx.RLock()
-	indexCopy := make(map[string]*cacheEntry)
+	indexCopy := make(map[string]*osCacheEntry)
 	for k, v := range o.index {
 		indexCopy[k] = v
 	}

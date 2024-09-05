@@ -66,6 +66,11 @@ func TestOSCache_Set(t *testing.T) {
 			value: "tagged_value",
 			opts:  Options{Tags: []string{"tag1", "tag2"}},
 		},
+		"Nested Directory": {
+			key:   "nested/directory/key",
+			value: "nested_value",
+			opts:  Options{},
+		},
 	}
 
 	for name, test := range tt {
@@ -90,6 +95,23 @@ func TestOSCache_Set(t *testing.T) {
 			assert.Equal(t, test.value, got)
 		})
 	}
+
+	t.Run("Make Dir Error", func(t *testing.T) {
+		var buf bytes.Buffer
+		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+
+		tempDir := t.TempDir()
+		store, err := NewOSCache(tempDir)
+		require.NoError(t, err)
+
+		// Make the directory read-only
+		require.NoError(t, os.Chmod(tempDir, 0555))
+
+		// Attempt to set a value, which should trigger a directory creation error
+		store.Set(context.Background(), "nested/key", "value", Options{})
+
+		assert.Contains(t, buf.String(), "Error creating directory")
+	})
 }
 
 func TestOSCache_SetError(t *testing.T) {
@@ -113,33 +135,74 @@ func TestOSCache_Get(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		setup     func(*OSCache, context.Context)
-		key       string
-		wantErr   bool
-		wantValue string
+		setup      func(*OSCache, context.Context)
+		key        string
+		decodeInto func() any
+		want       func(got any, err error)
 	}{
-		"Existing Key": {
+		"OK String": {
 			setup: func(store *OSCache, ctx context.Context) {
-				store.Set(ctx, "existing_key", "existing_value", Options{})
+				store.Set(ctx, "string_key", "value", Options{})
 			},
-			key:       "existing_key",
-			wantErr:   false,
-			wantValue: "existing_value",
+			key: "string_key",
+			decodeInto: func() any {
+				return new(string)
+			},
+			want: func(got any, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "value", *got.(*string))
+			},
+		},
+		"OK Byte Slice": {
+			setup: func(store *OSCache, ctx context.Context) {
+				store.Set(ctx, "byte_key", []byte("value"), Options{})
+			},
+			key: "byte_key",
+			decodeInto: func() any {
+				return new([]byte)
+			},
+			want: func(got any, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, []byte("value"), *got.(*[]byte))
+			},
+		},
+		"Invalid Type": {
+			setup: func(store *OSCache, ctx context.Context) {
+				store.Set(ctx, "invalid_key", "value", Options{})
+			},
+			key: "invalid_key",
+			decodeInto: func() any {
+				return new(int)
+			},
+			want: func(got any, err error) {
+				assert.Error(t, err)
+				assert.Equal(t, 0, *got.(*int))
+			},
 		},
 		"Non Existent Key": {
-			setup:     func(store *OSCache, ctx context.Context) {},
-			key:       "non_existent_key",
-			wantErr:   true,
-			wantValue: "",
+			setup: func(store *OSCache, ctx context.Context) {},
+			key:   "non_existent_key",
+			decodeInto: func() any {
+				return new(string)
+			},
+			want: func(got any, err error) {
+				assert.Error(t, err)
+				assert.Equal(t, "", *got.(*string))
+			},
 		},
 		"Expired Key": {
 			setup: func(store *OSCache, ctx context.Context) {
 				store.Set(ctx, "expired_key", "expired_value", Options{Expiration: time.Nanosecond})
 				time.Sleep(time.Millisecond) // Ensure expiration
 			},
-			key:       "expired_key",
-			wantErr:   true,
-			wantValue: "",
+			key: "expired_key",
+			decodeInto: func() any {
+				return new(string)
+			},
+			want: func(got any, err error) {
+				assert.Error(t, err)
+				assert.Equal(t, "", *got.(*string))
+			},
 		},
 	}
 
@@ -154,32 +217,12 @@ func TestOSCache_Get(t *testing.T) {
 			ctx := context.Background()
 			test.setup(store, ctx)
 
-			var got string
-			err = store.Get(ctx, test.key, &got)
-			assert.Equal(t, test.wantValue, got)
-			assert.Equal(t, test.wantErr, err != nil)
+			v := test.decodeInto()
+			err = store.Get(ctx, test.key, v)
+
+			test.want(v, err)
 		})
 	}
-
-	t.Run("Error", func(t *testing.T) {
-		t.Parallel()
-
-		tempDir := t.TempDir()
-		store, err := NewOSCache(tempDir)
-		require.NoError(t, err)
-
-		// Manually write an invalid JSON to a file
-		err = os.WriteFile(filepath.Join(tempDir, "invalid_key"), []byte("invalid json"), 0644)
-		require.NoError(t, err)
-
-		// Add the key to the index
-		store.index["invalid_key"] = &cacheEntry{}
-
-		var result string
-		err = store.Get(context.Background(), "invalid_key", &result)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "invalid character")
-	})
 }
 
 func TestOSCache_Delete(t *testing.T) {
@@ -251,12 +294,12 @@ func TestOSCache_Invalidate(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		initialData    map[string]cacheEntry
+		initialData    map[string]osCacheEntry
 		invalidateTags []string
 		expectedKeys   []string
 	}{
 		"SimpleInvalidation": {
-			initialData: map[string]cacheEntry{
+			initialData: map[string]osCacheEntry{
 				"key1": {Tags: []string{"tag1", "tag2"}},
 				"key2": {Tags: []string{"tag1", "tag3"}},
 				"key3": {Tags: []string{"tag3"}},
@@ -265,7 +308,7 @@ func TestOSCache_Invalidate(t *testing.T) {
 			expectedKeys:   []string{"key3"},
 		},
 		"NoMatchingTags": {
-			initialData: map[string]cacheEntry{
+			initialData: map[string]osCacheEntry{
 				"key1": {Tags: []string{"tag1"}},
 				"key2": {Tags: []string{"tag2"}},
 			},
