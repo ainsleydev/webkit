@@ -85,10 +85,22 @@ func (o *OSCache) Get(ctx context.Context, key string, v any) error {
 
 func (o *OSCache) Set(_ context.Context, key string, value any, options Options) {
 	filePath := o.getFilePath(key)
-	data, err := json.Marshal(value)
-	if err != nil {
-		slog.Error("Error marshaling value: " + err.Error())
-		return
+
+	var data []byte
+	var err error
+
+	switch v := value.(type) {
+	case []byte:
+		data = v
+	case string:
+		data = []byte(v)
+	default:
+		// For other types, we'll still need to marshal to JSON
+		data, err = json.Marshal(value)
+		if err != nil {
+			slog.Error("Error marshaling value: " + err.Error())
+			return
+		}
 	}
 
 	if err := os.WriteFile(filePath, data, 0644); err != nil {
@@ -202,7 +214,7 @@ func (o *OSCache) saveIndex() error {
 	}
 	o.mtx.RUnlock()
 
-	data, err := json.Marshal(indexCopy)
+	data, err := json.MarshalIndent(indexCopy, "", "\t")
 	if err != nil {
 		return err
 	}
