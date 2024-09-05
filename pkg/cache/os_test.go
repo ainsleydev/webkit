@@ -16,8 +16,9 @@ import (
 func TestNewOSCache(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		tempDir := t.TempDir()
-		store, err := NewOSCache(tempDir)
+		store, err := NewOSCache(tempDir, true)
 		require.NoError(t, err)
+		assert.True(t, store.prettyPrint)
 		assert.NotNil(t, store)
 	})
 
@@ -30,14 +31,14 @@ func TestNewOSCache(t *testing.T) {
 		err := os.WriteFile(filePath, []byte("not a directory"), 0644)
 		require.NoError(t, err)
 
-		_, err = NewOSCache(filePath)
+		_, err = NewOSCache(filePath, true)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "not a directory")
 	})
 }
 
 func TestOSCache_Ping(t *testing.T) {
-	store, err := NewOSCache(t.TempDir())
+	store, err := NewOSCache(t.TempDir(), true)
 	require.NoError(t, err)
 	got := store.Ping(context.Background())
 	assert.NoError(t, got)
@@ -71,6 +72,11 @@ func TestOSCache_Set(t *testing.T) {
 			value: "nested_value",
 			opts:  Options{},
 		},
+		"Pretty Print": {
+			key:   "key.json",
+			value: "{}",
+			opts:  Options{},
+		},
 	}
 
 	for name, test := range tt {
@@ -79,7 +85,7 @@ func TestOSCache_Set(t *testing.T) {
 
 			ctx := context.Background()
 			tempDir := t.TempDir()
-			store, err := NewOSCache(tempDir)
+			store, err := NewOSCache(tempDir, true)
 			require.NoError(t, err)
 
 			store.Set(ctx, test.key, test.value, test.opts)
@@ -101,7 +107,7 @@ func TestOSCache_Set(t *testing.T) {
 		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
 
 		tempDir := t.TempDir()
-		store, err := NewOSCache(tempDir)
+		store, err := NewOSCache(tempDir, false)
 		require.NoError(t, err)
 
 		// Make the directory read-only
@@ -112,23 +118,37 @@ func TestOSCache_Set(t *testing.T) {
 
 		assert.Contains(t, buf.String(), "Error creating directory")
 	})
-}
 
-func TestOSCache_SetError(t *testing.T) {
-	var buf bytes.Buffer
-	slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+	t.Run("Write File Error", func(t *testing.T) {
+		var buf bytes.Buffer
+		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
 
-	tempDir := t.TempDir()
-	store, err := NewOSCache(tempDir)
-	require.NoError(t, err)
+		tempDir := t.TempDir()
+		store, err := NewOSCache(tempDir, false)
+		require.NoError(t, err)
 
-	// Make the directory read-only
-	require.NoError(t, os.Chmod(tempDir, 0555))
+		// Make the directory read-only
+		require.NoError(t, os.Chmod(tempDir, 0555))
 
-	// Attempt to set a value, which should trigger a save error
-	store.Set(context.Background(), "key", "value", Options{})
+		// Attempt to set a value, which should trigger a save error
+		store.Set(context.Background(), "key", "value", Options{})
 
-	assert.Contains(t, buf.String(), "Error writing to file")
+		assert.Contains(t, buf.String(), "Error writing to file")
+	})
+
+	t.Run("Pretty Print Error", func(t *testing.T) {
+		var buf bytes.Buffer
+		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+
+		tempDir := t.TempDir()
+		store, err := NewOSCache(tempDir, true)
+		require.NoError(t, err)
+
+		// Attempt to set a value that cannot be pretty printed
+		store.Set(context.Background(), "key.json", "invalid_json", Options{})
+
+		assert.Contains(t, buf.String(), "Error pretty printing JSON")
+	})
 }
 
 func TestOSCache_Get(t *testing.T) {
@@ -211,7 +231,7 @@ func TestOSCache_Get(t *testing.T) {
 			t.Parallel()
 
 			tempDir := t.TempDir()
-			store, err := NewOSCache(tempDir)
+			store, err := NewOSCache(tempDir, false)
 			require.NoError(t, err)
 
 			ctx := context.Background()
@@ -252,7 +272,7 @@ func TestOSCache_Delete(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			store, err := NewOSCache(t.TempDir())
+			store, err := NewOSCache(t.TempDir(), false)
 			require.NoError(t, err)
 
 			// Setup the test case
@@ -274,7 +294,7 @@ func TestOSCache_Flush(t *testing.T) {
 	t.Parallel()
 
 	tempDir := t.TempDir()
-	store, err := NewOSCache(tempDir)
+	store, err := NewOSCache(tempDir, false)
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -322,7 +342,7 @@ func TestOSCache_Invalidate(t *testing.T) {
 			t.Parallel()
 
 			tempDir := t.TempDir()
-			store, err := NewOSCache(tempDir)
+			store, err := NewOSCache(tempDir, false)
 			require.NoError(t, err)
 
 			ctx := context.Background()
@@ -355,7 +375,7 @@ func TestOSCache_Persistence(t *testing.T) {
 	tempDir := t.TempDir()
 
 	// Create and populate the cache
-	store1, err := NewOSCache(tempDir)
+	store1, err := NewOSCache(tempDir, false)
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -366,7 +386,7 @@ func TestOSCache_Persistence(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a new cache instance and verify the data persists
-	store2, err := NewOSCache(tempDir)
+	store2, err := NewOSCache(tempDir, false)
 	require.NoError(t, err)
 
 	var value1, value2 string

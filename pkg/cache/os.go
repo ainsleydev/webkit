@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -18,10 +19,11 @@ type (
 	// It uses a separate index file to store expiration times and tags named
 	// index.json which is stored in the base directory.
 	OSCache struct {
-		basePath  string
-		indexPath string
-		mtx       sync.RWMutex
-		index     map[string]*osCacheEntry
+		basePath    string
+		indexPath   string
+		mtx         sync.RWMutex
+		index       map[string]*osCacheEntry
+		prettyPrint bool
 	}
 	// osCacheEntry represents a single item in the cache, including its expiration
 	// time and associated tags.
@@ -35,15 +37,16 @@ const osIndexFileName = "index.json"
 
 // NewOSCache creates and initializes a new OSCache instance.
 // It creates the base directory if it doesn't exist and loads the index.
-func NewOSCache(basePath string) (*OSCache, error) {
+func NewOSCache(basePath string, prettyPrint bool) (*OSCache, error) {
 	if err := os.MkdirAll(basePath, 0755); err != nil {
 		return nil, err
 	}
 
 	cache := &OSCache{
-		basePath:  basePath,
-		indexPath: filepath.Join(basePath, osIndexFileName),
-		index:     make(map[string]*osCacheEntry),
+		basePath:    basePath,
+		indexPath:   filepath.Join(basePath, osIndexFileName),
+		index:       make(map[string]*osCacheEntry),
+		prettyPrint: prettyPrint,
 	}
 
 	if err := cache.loadIndex(); err != nil {
@@ -109,6 +112,15 @@ func (o *OSCache) Set(_ context.Context, key string, value any, options Options)
 		data = []byte(v)
 	default:
 		slog.Error("Data unsupported for OS cache is not a string or byte slice")
+		return
+	}
+
+	if o.prettyPrint && strings.HasSuffix(filePath, ".json") {
+		data, err = marshalIdent(data)
+		if err != nil {
+			slog.Error("Error pretty printing JSON: " + err.Error())
+			return
+		}
 	}
 
 	if err := os.WriteFile(filePath, data, 0644); err != nil {

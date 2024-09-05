@@ -32,6 +32,8 @@ type (
 
 // NewFileCache creates a new FileCache instance, initializing it with the given
 // file path. If the file doesn't exist, it will be created.
+//
+// TODO, add pretty print mechanism.
 func NewFileCache(filePath string) (*FileCache, error) {
 	fc := &FileCache{
 		filePath: filePath,
@@ -132,7 +134,7 @@ func (f *FileCache) Set(_ context.Context, key string, value any, options Option
 	}
 }
 
-func (f *FileCache) Delete(ctx context.Context, key string) error {
+func (f *FileCache) Delete(_ context.Context, key string) error {
 	f.mtx.Lock()
 	defer f.mtx.Unlock()
 
