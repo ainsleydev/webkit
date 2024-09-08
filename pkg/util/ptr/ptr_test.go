@@ -2,6 +2,7 @@ package ptr
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -346,18 +347,38 @@ func TestComplex64Ptr(t *testing.T) {
 func TestComplex128(t *testing.T) {
 	t.Run("Nil", func(t *testing.T) {
 		var c *complex128
-		assert.Equal(t, complex128(0+0i), Complex128(c))
+		assert.Equal(t, 0+0i, Complex128(c))
 	})
 
 	t.Run("Non Nil", func(t *testing.T) {
-		val := complex128(3 + 4i)
+		val := 3 + 4i
 		ptr := &val
 		assert.Equal(t, val, Complex128(ptr))
 	})
 }
 
 func TestComplex128Ptr(t *testing.T) {
-	val := complex128(3 + 4i)
+	val := 3 + 4i
 	ptr := Complex128Ptr(val)
+	assert.Equal(t, val, *ptr)
+}
+
+func TestTime(t *testing.T) {
+	t.Run("Nil", func(t *testing.T) {
+		var tPtr *time.Time
+		assert.Equal(t, time.Time{}, Time(tPtr))
+	})
+
+	t.Run("Non Nil", func(t *testing.T) {
+		val := time.Now()
+		ptr := &val
+		assert.Equal(t, val, Time(ptr))
+	})
+}
+
+func TestTimePtr(t *testing.T) {
+	val := time.Now()
+	ptr := TimePtr(val)
+	assert.NotNil(t, ptr)
 	assert.Equal(t, val, *ptr)
 }
