@@ -98,7 +98,7 @@ func (f *FileCache) Get(_ context.Context, key string, v any) error {
 
 	item, ok := f.data[key]
 	if !ok {
-		return errors.New("key not found")
+		return ErrNotFound
 	}
 
 	if item.Expiration != 0 && item.Expiration < time.Now().UnixNano() {

@@ -66,7 +66,7 @@ func (o *OSCache) Get(ctx context.Context, key string, v any) error {
 	o.mtx.RUnlock()
 
 	if !exists {
-		return errors.New("key not found")
+		return ErrNotFound
 	}
 
 	if !entry.Expiration.IsZero() && time.Now().After(entry.Expiration) {

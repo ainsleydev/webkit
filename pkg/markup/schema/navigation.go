@@ -41,7 +41,7 @@ package schemaorg
 //type NavigationItem struct {
 //	Position    int    `json:"position"`    // I.e 1, 2, 3
 //	Name        string `json:"name"`        // I.e "Home"
-//	Description string `json:"description"` // I.e "The homepage of the website" usually the same as the description tag.
+//	AgencyDescription string `json:"description"` // I.e "The homepage of the website" usually the same as the description tag.
 //	URL         string `json:"url"`         // Full URL
 //}
 //
@@ -52,7 +52,7 @@ package schemaorg
 //		Type        string `json:"@type"`
 //		Position    int    `json:"position"`
 //		Name        string `json:"name"`
-//		Description string `json:"description"`
+//		AgencyDescription string `json:"description"`
 //		Url         string `json:"url"`
 //	} `json:"itemListElement"`
 //}

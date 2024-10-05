@@ -17,7 +17,7 @@ import (
 
 var props = HeadProps{
 	Title:         "Title",
-	Description:   "Description",
+	Description:   "AgencyDescription",
 	Image:         "https://example.com/image.png",
 	DatePublished: time.Now(),
 	DateModified:  time.Now(),
@@ -44,14 +44,14 @@ var props = HeadProps{
 		Site:        "@example",
 		Creator:     "@author",
 		Title:       "Title",
-		Description: "Description",
+		Description: "AgencyDescription",
 		Image:       "https://example.com/simage.png",
 	},
 	Organisation: &schemaorg.Organisation{
 		ID:          "https://example.com",
 		URL:         "https://example.com",
 		LegalName:   "Example Inc.",
-		Description: "Description",
+		Description: "AgencyDescription",
 		Logo:        "https://example.com/logo.png",
 		SameAs: []string{
 			"https://twitter.com/example",
@@ -73,14 +73,14 @@ var props = HeadProps{
 	//			Type:        "ListItem",
 	//			Position:    1,
 	//			Name:        "Home",
-	//			Description: "Homepage of the website",
+	//			AgencyDescription: "Homepage of the website",
 	//			URL:         "https://example.com",
 	//		},
 	//		{
 	//			Type:        "ListItem",
 	//			Position:    2,
 	//			Name:        "About Us",
-	//			Description: "About us page",
+	//			AgencyDescription: "About us page",
 	//			URL:         "https://example.com/about",
 	//		},
 	//	},
@@ -95,7 +95,7 @@ func TestHead(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("Simple Title & Description", func(t *testing.T) {
+	t.Run("Simple Title & AgencyDescription", func(t *testing.T) {
 		p := HeadProps{
 			Title:       "Hello, World!",
 			Description: "This is a test description.",

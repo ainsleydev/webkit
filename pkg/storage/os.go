@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -20,7 +21,7 @@ func NewOSStorage(basePath string) *OS {
 func (s *OS) Upload(_ context.Context, path string, content io.Reader) error {
 	fullPath := filepath.Join(s.BasePath, path)
 	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
-		return err
+		return fmt.Errorf("failed to create directory for %s: %w", fullPath, err)
 	}
 
 	file, err := os.Create(fullPath)

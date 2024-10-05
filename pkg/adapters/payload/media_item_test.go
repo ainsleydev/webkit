@@ -231,7 +231,7 @@ func TestMedia_ToMarkup(t *testing.T) {
 		assert.Len(t, p.Sources, 11)
 	}
 
-	t.Log("Source")
+	t.Log("SourceURL")
 	{
 		assert.Equal(t, "https://example.com/media/image-400x300.avif", p.Sources[0].URL)
 		assert.EqualValues(t, "image/avif", p.Sources[0].MimeType)

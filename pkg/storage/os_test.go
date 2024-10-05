@@ -74,6 +74,25 @@ func TestOS_Upload(t *testing.T) {
 		err = s.Upload(context.Background(), "error.txt", content)
 		assert.Error(t, err)
 	})
+
+	t.Run("Directory Creation Fails", func(t *testing.T) {
+		t.Parallel()
+		s := setupOSStorage(t)
+
+		// Create a read-only parent directory to simulate directory creation failure
+		parentDir := filepath.Join(s.BasePath, "readonly")
+		err := os.Mkdir(parentDir, 0555) // read-only
+		require.NoError(t, err)
+
+		content := bytes.NewBufferString("error on directory creation")
+		err = s.Upload(context.Background(), "readonly/subdir/test.txt", content)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "permission denied")
+
+		// Cleanup by setting the permissions back to writable
+		err = os.Chmod(parentDir, 0755)
+		require.NoError(t, err)
+	})
 }
 
 func TestOS_Delete(t *testing.T) {

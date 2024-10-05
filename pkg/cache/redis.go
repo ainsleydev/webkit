@@ -37,7 +37,7 @@ func (r *Redis) Get(ctx context.Context, key string, v any) error {
 
 	result, err := r.client.Get(ctx, key).Result()
 	if err != nil {
-		return err
+		return ErrNotFound
 	}
 
 	err = json.Unmarshal([]byte(result), v)

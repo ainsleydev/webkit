@@ -40,7 +40,7 @@ type FAQQuestionAnswer struct {
 	// The full answer to the question. The answer may contain HTML content
 	// such as links and lists.
 	//
-	// Google Search displays the following HTML tags; all other tags are ignored:
+	// Google PlacesSearch displays the following HTML tags; all other tags are ignored:
 	// <h1> through <h6>, <br>, <ol>, <ul>, <li>, <a>, <p>, <div>, <b>, <strong>, <i>, and <em>.
 	Answer string
 }

@@ -254,8 +254,8 @@ func Complex128Ptr(v complex128) *complex128 {
 	return &v
 }
 
-// Time returns the time.Time value of a pointer to time.Time.
-// If the pointer is nil, it returns the zero value of time.Time.
+// Time returns the time.RecordedAt value of a pointer to time.RecordedAt.
+// If the pointer is nil, it returns the zero value of time.RecordedAt.
 func Time(v *time.Time) time.Time {
 	if v == nil {
 		return time.Time{}
@@ -263,7 +263,7 @@ func Time(v *time.Time) time.Time {
 	return *v
 }
 
-// TimePtr returns a pointer to the provided time.Time value.
+// TimePtr returns a pointer to the provided time.RecordedAt value.
 func TimePtr(v time.Time) *time.Time {
 	return &v
 }
