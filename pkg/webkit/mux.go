@@ -43,6 +43,11 @@ func New() *Kit {
 	}
 }
 
+// Mux returns the underlying Chi Router.
+func (k *Kit) Mux() chi.Router {
+	return k.mux
+}
+
 // ServeHTTP implements the http.Handler interface.
 func (k *Kit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	k.mux.ServeHTTP(w, r)

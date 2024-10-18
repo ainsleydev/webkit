@@ -1,5 +1,13 @@
 import type { JSONSchema4 } from 'json-schema';
-import type { Config, Field } from 'payload';
+import type { Config, Field, SanitizedConfig } from 'payload';
+
+/**
+ * General Options for Generating Schema
+ */
+export interface SchemaOptions {
+	useWebKitMedia?: boolean;
+	assignRelationships?: boolean;
+}
 
 /**
  * This function iterates over properties in JSON schema definitions,
@@ -42,7 +50,7 @@ export const addGoJSONSchema = (type: string, nillable: boolean): Record<string,
  *
  * @param config
  */
-export const fieldMapper = (config: Config) => {
+export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
 	const mapper = (field: Field): Field => {
 		switch (field.type) {
 			case 'blocks':
@@ -52,7 +60,7 @@ export const fieldMapper = (config: Config) => {
 				});
 				break;
 			case 'json':
-				field.typescriptSchema = [() => ({ ...addGoJSONSchema('[]byte', false) })];
+				field.typescriptSchema = [() => ({ ...addGoJSONSchema('payload.JSON', false) })];
 				break;
 			case 'richText':
 				field.typescriptSchema = [
@@ -63,9 +71,11 @@ export const fieldMapper = (config: Config) => {
 				];
 				break;
 			case 'upload':
-				field.typescriptSchema = [
-					() => ({ ...addGoJSONSchema('payload.Media', field.required === true) }),
-				];
+				if (opts.useWebKitMedia) {
+					field.typescriptSchema = [
+						() => ({ ...addGoJSONSchema('payload.Media', field.required === true) }),
+					];
+				}
 				break;
 			case 'tabs': {
 				field.tabs.forEach((tab) => {
@@ -96,7 +106,7 @@ export const fieldMapper = (config: Config) => {
 			// SEE: https://github.com/ainsleydev/webkit/blob/cdfa078605bec4ee92f2424f69271a0bf6b71366/packages/payload-helper/src/gen/schema.ts#L235
 		}
 
-		if (field.type !== 'ui') {
+		if (field.type !== 'ui' && opts.assignRelationships) {
 			if (!Array.isArray(field.typescriptSchema)) {
 				field.typescriptSchema = [];
 			}
@@ -144,7 +154,7 @@ export const fieldMapper = (config: Config) => {
  * Adjusts the JSON schema to include the necessary GoLang schema
  *
  */
-export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> = [
+export const schemas = (opts: SchemaOptions): Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> => [
 	/**
 	 * Removes the auth & uneeded definitions from the schema.
 	 */
@@ -155,9 +165,15 @@ export const schemas: Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> 
 		if (!jsonSchema.definitions) {
 			jsonSchema.definitions = {};
 		}
+
+		if (opts.useWebKitMedia) {
+			delete jsonSchema.definitions.media;
+			delete jsonSchema.properties?.collections?.properties?.media;
+		}
+
 		delete jsonSchema.properties.auth;
-		delete jsonSchema.definitions.media;
-		delete jsonSchema.properties?.collections?.properties?.media;
+		delete jsonSchema.definitions['payload-locked-documents'];
+		delete jsonSchema.properties?.collections?.properties?.['payload-locked-documents'];
 		delete jsonSchema.definitions.redirects;
 		delete jsonSchema.properties?.collections?.properties?.redirects;
 		return jsonSchema;

@@ -1,0 +1,17 @@
+
+
+// RegisterHandlers adds each server route to the WebkitRouter.
+func RegisterHandlers(router *webkit.Kit, si ServerInterface) {
+    RegisterHandlersWithBaseURL(router, si, "")
+}
+
+// RegisterHandlersWithBaseURL registers handlers, and prepends BaseURL to the paths, so that the paths
+// can be served under a prefix.
+func RegisterHandlersWithBaseURL(router *webkit.Kit, si ServerInterface, baseURL string) {
+    wrapper := ServerInterfaceWrapper{
+        Handler: si,
+    }
+
+    {{range .}}router.{{.Method | lower | title }}(baseURL + "{{.Path}}", wrapper.{{.OperationId}})
+    {{end}}
+}

@@ -1,17 +1,16 @@
-import dotenv from 'dotenv';
 import {
 	type Payload,
 	type PayloadRequest,
+	type SanitizedConfig,
 	commitTransaction,
 	getPayload,
 	initTransaction,
 	killTransaction,
 } from 'payload';
-import { importConfig } from 'payload/node';
-import env from "../util/env.js";
-import path from "node:path";
-import fs from "node:fs";
-import {fileURLToPath} from "node:url";
+import env from '../util/env.js';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -26,18 +25,9 @@ export type Seeder = (args: { payload: Payload; req: PayloadRequest }) => Promis
  * Note: You must use path.resolve for the paths, i.e. path.resolve(__dirname, 'path/to/file')
  */
 export type SeedOptions = {
-	envPath: string;
-	configPath: string;
-	dbAdapter: DBAdapter;
+	config: SanitizedConfig;
 	seeder: Seeder;
 };
-
-/**
- * The database adapter to use, which will remove and recreate the database.
- */
-export enum DBAdapter {
-	Postgres = 'postgres',
-}
 
 /**
  * Seeds the database with initial data.
@@ -45,29 +35,23 @@ export enum DBAdapter {
  * @param opts - The options for seeding.
  * @returns A promise that resolves when the seeding is complete.
  */
-export const seed = (opts: SeedOptions) => {
+export const seed = (opts: {
+	seeder: Seeder,
+	config: SanitizedConfig;
+}) => {
 	const fn = async () => {
-		dotenv.config({
-			path: opts.envPath,
-		});
-
 		process.env.PAYLOAD_DROP_DATABASE = 'true';
 
-		const config = await importConfig(opts.configPath);
-		const payload = await getPayload({ config });
+		const payload = await getPayload({
+			config: opts.config,
+		});
 		const req = { payload } as PayloadRequest;
 
 		await initTransaction(req);
 
-		delete process.env.PAYLOAD_DROP_DATABASE
+		delete process.env.PAYLOAD_DROP_DATABASE;
 
 		try {
-			// Init
-			payload.logger.info("Initialising Payload...")
-			await payload.init({
-				config: payload.config,
-			});
-
 			// Creating new tables
 			payload.logger.info('Creating indexes...');
 			try {
@@ -79,10 +63,8 @@ export const seed = (opts: SeedOptions) => {
 				return;
 			}
 
-			if (env.isProduction) {
-				payload.logger.info('Migrating DB...');
-				await payload.db.migrate();
-			}
+			payload.logger.info('Migrating DB...');
+			await payload.db.migrate();
 
 			// Clearing local media
 			if (!env.isProduction) {
@@ -96,7 +78,7 @@ export const seed = (opts: SeedOptions) => {
 			// Run user defined seed script
 			await opts.seeder({ payload, req });
 
-			await commitTransaction(req)
+			await commitTransaction(req);
 
 			payload.logger.info('Seed complete');
 		} catch (err) {
