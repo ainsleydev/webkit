@@ -201,7 +201,7 @@ export const Media = (args: MediaArgs = {}): CollectionConfig => {
 		],
 		upload: {
 			staticDir: 'media',
-			adminThumbnail: 'thumbnail',
+			adminThumbnail: 'tablet',
 			disableLocalStorage: env.isProduction,
 			handlers: [
 				async (req: PayloadRequest, args) => {

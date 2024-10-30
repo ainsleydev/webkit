@@ -20,7 +20,7 @@ func (j JSON) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, errors.New("payload.JSON: " + err.Error())
 	}
-	return json.Marshal(string(data))
+	return data, nil
 }
 
 // UnmarshalJSON unmarshals a string into a JSON map.
