@@ -21,7 +21,7 @@ func TestImageProps_Render(t *testing.T) {
 		input func() ImageProps
 		want  string
 	}{
-		"Simple Source": {
+		"Simple SourceURL": {
 			input: func() ImageProps {
 				return Image(&imageProviderMock{
 					ImageProps{
@@ -83,7 +83,7 @@ func TestImageProps_Render(t *testing.T) {
 			},
 			want: `<img src="https://example.com/image.jpg" data-id="main-image" />`,
 		},
-		"Source with Media Query": {
+		"SourceURL with Media Query": {
 			input: func() ImageProps {
 				return Image(&imageProviderMock{
 					ImageProps{
@@ -96,7 +96,7 @@ func TestImageProps_Render(t *testing.T) {
 			},
 			want: `<source srcset="https://example.com/image.jpg" type="image/webp" media="(min-width: 600px)" />`,
 		},
-		"Source with Width and Height": {
+		"SourceURL with Width and Height": {
 			input: func() ImageProps {
 				return Image(&imageProviderMock{
 					ImageProps{
@@ -107,7 +107,7 @@ func TestImageProps_Render(t *testing.T) {
 			},
 			want: `<source srcset="https://example.com/image.jpg" width="300" height="200" />`,
 		},
-		"Source with Custom Attributes": {
+		"SourceURL with Custom Attributes": {
 			input: func() ImageProps {
 				return Image(&imageProviderMock{
 					ImageProps{

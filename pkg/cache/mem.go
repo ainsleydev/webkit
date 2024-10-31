@@ -44,7 +44,7 @@ func (c *MemCache) Get(_ context.Context, key string, value interface{}) error {
 
 	item, found := c.cache[key]
 	if !found {
-		return errors.New("key not found")
+		return ErrNotFound
 	}
 	if !item.noExpiry && time.Now().After(item.expiration) {
 		// Item has expired, delete it from the cache

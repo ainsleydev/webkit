@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -31,12 +32,19 @@ type (
 
 // NewFileCache creates a new FileCache instance, initializing it with the given
 // file path. If the file doesn't exist, it will be created.
+//
+// TODO, add pretty print mechanism.
 func NewFileCache(filePath string) (*FileCache, error) {
 	fc := &FileCache{
 		filePath: filePath,
 		data:     make(map[string]fileCacheItem),
 		mtx:      &sync.RWMutex{},
 	}
+	// Add .json extension if not present
+	if !strings.HasSuffix(filePath, ".json") {
+		filePath += ".json"
+	}
+	// Load cache data from file
 	if err := fc.load(); err != nil {
 		return nil, err
 	}
@@ -90,7 +98,7 @@ func (f *FileCache) Get(_ context.Context, key string, v any) error {
 
 	item, ok := f.data[key]
 	if !ok {
-		return errors.New("key not found")
+		return ErrNotFound
 	}
 
 	if item.Expiration != 0 && item.Expiration < time.Now().UnixNano() {
@@ -126,7 +134,7 @@ func (f *FileCache) Set(_ context.Context, key string, value any, options Option
 	}
 }
 
-func (f *FileCache) Delete(ctx context.Context, key string) error {
+func (f *FileCache) Delete(_ context.Context, key string) error {
 	f.mtx.Lock()
 	defer f.mtx.Unlock()
 
@@ -164,13 +172,4 @@ func (f *FileCache) Flush(_ context.Context) {
 
 func (f *FileCache) Close() error {
 	return f.save()
-}
-
-func contains(slice []string, item string) bool {
-	for _, a := range slice {
-		if a == item {
-			return true
-		}
-	}
-	return false
 }

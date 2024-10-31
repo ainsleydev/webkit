@@ -27,7 +27,7 @@ const (
 
 // ParseConfig loads the environment variables from the .env file and parses the
 // environment variables into the provided struct. It returns an error if the
-// .env file cannot be loaded or if the environment variables cannot be parsed.\
+// .env file cannot be loaded or if the environment variables cannot be parsed.
 //
 //	For example:
 //

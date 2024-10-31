@@ -304,7 +304,7 @@ func TestSettings_MarkupOpenGraph(t *testing.T) {
 				Locale:   "en_GB",
 				Meta: SettingsMeta{
 					Title:       ptr.StringPtr("Title"),
-					Description: ptr.StringPtr("Description"),
+					Description: ptr.StringPtr("AgencyDescription"),
 					Image: &Media{
 						URL:      "https://example.com/image.jpg",
 						MimeType: "image/jpeg",
@@ -320,7 +320,7 @@ func TestSettings_MarkupOpenGraph(t *testing.T) {
 				Type:        "website",
 				SiteName:    "Example Site",
 				Title:       "Title",
-				Description: "Description",
+				Description: "AgencyDescription",
 				URL:         url,
 				Locale:      "en_GB",
 				Image: []markup.OpengraphImage{
@@ -360,19 +360,19 @@ func TestSettings_MarkupTwitterCard(t *testing.T) {
 			input: Settings{
 				Meta: SettingsMeta{
 					Title:       ptr.StringPtr("Title"),
-					Description: ptr.StringPtr("Description"),
+					Description: ptr.StringPtr("AgencyDescription"),
 				},
 			},
 			want: markup.TwitterCard{
 				Title:       "Title",
-				Description: "Description",
+				Description: "AgencyDescription",
 			},
 		},
 		"With Image": {
 			input: Settings{
 				Meta: SettingsMeta{
 					Title:       ptr.StringPtr("Title"),
-					Description: ptr.StringPtr("Description"),
+					Description: ptr.StringPtr("AgencyDescription"),
 					Image: &Media{
 						URL: "https://example.com/image.jpg",
 						Extra: map[string]interface{}{
@@ -383,7 +383,7 @@ func TestSettings_MarkupTwitterCard(t *testing.T) {
 			},
 			want: markup.TwitterCard{
 				Title:       "Title",
-				Description: "Description",
+				Description: "AgencyDescription",
 				Image:       "https://example.com/image.jpg",
 				ImageAlt:    "Alt",
 			},
@@ -424,7 +424,7 @@ func TestSettings_MarkupTwitterCard(t *testing.T) {
 				},
 				Meta: SettingsMeta{
 					Title:       ptr.StringPtr("Title"),
-					Description: ptr.StringPtr("Description"),
+					Description: ptr.StringPtr("AgencyDescription"),
 					Image: &Media{
 						URL:      "https://example.com/image.jpg",
 						MimeType: "image/jpeg",
@@ -440,7 +440,7 @@ func TestSettings_MarkupTwitterCard(t *testing.T) {
 				Site:        "@user",
 				Creator:     "@user",
 				Title:       "Title",
-				Description: "Description",
+				Description: "AgencyDescription",
 				Image:       "https://example.com/image.jpg",
 				ImageAlt:    "Alt",
 			},
@@ -489,7 +489,7 @@ func TestSettings_MarkupSchemaOrganisation(t *testing.T) {
 					Line1:    ptr.StringPtr("Line 1"),
 					Line2:    ptr.StringPtr("Line 2"),
 					City:     ptr.StringPtr("City"),
-					County:   ptr.StringPtr("County"),
+					County:   ptr.StringPtr("State"),
 					Postcode: ptr.StringPtr("12345"),
 					Country:  ptr.StringPtr("Country"),
 				},
@@ -509,9 +509,9 @@ func TestSettings_MarkupSchemaOrganisation(t *testing.T) {
 					"https://youtube.com/example",
 				},
 				Address: schemaorg.Address{
-					StreetAddress: "Line 1, Line 2, City, County, Country, 12345",
+					StreetAddress: "Line 1, Line 2, City, State, Country, 12345",
 					Locality:      "City",
-					Region:        "County",
+					Region:        "State",
 					Country:       "Country",
 					PostalCode:    "12345",
 				},

@@ -35,7 +35,7 @@ func TestPictureProps_Render(t *testing.T) {
 			},
 			want: "<picture>\n  <img src=\"https://example.com/image.jpg\" alt=\"Alternative\" />\n</picture>",
 		},
-		"Simple Source": {
+		"Simple SourceURL": {
 			input: func() PictureProps {
 				return Picture(&pictureProviderMock{
 					PictureProps{

@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"io"
 	"time"
 )
@@ -45,3 +46,7 @@ type (
 
 // Forever defines an infinite expiration time.
 const Forever = -1
+
+// ErrNotFound is the error that's returned by the Get() method
+// when no cache key was found.
+var ErrNotFound = errors.New("key not found")

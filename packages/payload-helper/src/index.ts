@@ -31,16 +31,6 @@ import env from './util/env.js';
 export const payloadHelper =
 	(pluginOptions: PayloadHelperPluginConfig) =>
 	(incomingConfig: Config): Config => {
-		const genGoLang = env.bool('GEN_GOLANG', false);
-		if (genGoLang) {
-			incomingConfig.typescript = {
-				...incomingConfig.typescript,
-				schema: schemas,
-			};
-			// biome-ignore lint/style/noParameterAssign: Need to change field mapper.
-			incomingConfig = fieldMapper(incomingConfig);
-		}
-
 		// TODO: Validate Config
 
 		// Update typescript generation file
@@ -50,39 +40,52 @@ export const payloadHelper =
 		// Map collections & add hooks
 		incomingConfig.collections = (incomingConfig.collections || []).map(
 			(collection): CollectionConfig => {
-				if (collection.upload) {
+				if (collection.upload !== undefined && collection.upload !== true) {
 					return collection;
 				}
+
+				const hooks = collection.hooks || {};
+
+				// Add afterChange hook only if webServer is defined
+				if (pluginOptions.webServer) {
+					hooks.afterChange = [
+						...(hooks.afterChange || []),
+						cacheHookCollections({
+							server: pluginOptions.webServer,
+							slug: collection.slug,
+							fields: collection.fields,
+							isCollection: true,
+						}),
+					];
+				}
+
 				return {
 					...collection,
-					hooks: {
-						afterChange: [
-							cacheHookCollections({
-								server: pluginOptions.webServer,
-								slug: collection.slug,
-								fields: collection.fields,
-								isCollection: true,
-							}),
-						],
-					},
+					hooks,
 				};
 			},
 		);
 
 		// Map globals & add hooks
 		incomingConfig.globals = (incomingConfig.globals || []).map((global) => {
+			const hooks = global.hooks || {};
+
+			// Add afterChange hook only if webServer is defined
+			if (pluginOptions.webServer) {
+				hooks.afterChange = [
+					...(hooks.afterChange || []),
+					cacheHookGlobals({
+						server: pluginOptions.webServer,
+						slug: global.slug,
+						fields: global.fields,
+						isCollection: true,
+					}),
+				];
+			}
+
 			return {
 				...global,
-				hooks: {
-					afterChange: [
-						cacheHookGlobals({
-							server: pluginOptions.webServer,
-							slug: global.slug,
-							fields: global.fields,
-							isCollection: true,
-						}),
-					],
-				},
+				hooks,
 			};
 		});
 

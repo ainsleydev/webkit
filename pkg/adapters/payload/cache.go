@@ -56,7 +56,7 @@ func cacheMiddleware(store cache.Store) webkit.Plug {
 				return nil
 			}
 
-			// Store the response in cache for future page requests.
+			// Storage the response in cache for future page requests.
 			store.Set(ctx, cacheKey, rr.Body.String(), cache.Options{
 				Expiration: cachePageExpiry,
 				Tags:       []string{"payload"},

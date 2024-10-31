@@ -38,7 +38,7 @@ func Head(ctx context.Context) markup.HeadProps {
 		slog.Error("Merging page meta with settings meta: " + err.Error())
 	}
 
-	// ctx, ok := ctx.Value("navigation").(context.Context)
+	// ctx, ok := ctx.Int("navigation").(context.Context)
 
 	props := markup.HeadProps{
 		Title:        ptr.String(settings.Meta.Title),

@@ -1,5 +1,7 @@
 package ptr
 
+import "time"
+
 // String returns the string value of a pointer to string.
 // If the pointer is nil, it returns an empty string.
 func String(v *string) string {
@@ -249,5 +251,19 @@ func Complex128(v *complex128) complex128 {
 
 // Complex128Ptr returns a pointer to the provided complex128 value.
 func Complex128Ptr(v complex128) *complex128 {
+	return &v
+}
+
+// Time returns the time.RecordedAt value of a pointer to time.RecordedAt.
+// If the pointer is nil, it returns the zero value of time.RecordedAt.
+func Time(v *time.Time) time.Time {
+	if v == nil {
+		return time.Time{}
+	}
+	return *v
+}
+
+// TimePtr returns a pointer to the provided time.RecordedAt value.
+func TimePtr(v time.Time) *time.Time {
 	return &v
 }

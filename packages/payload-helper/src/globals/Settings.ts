@@ -11,7 +11,7 @@ import { languages } from './locales.js';
  * @param additionalTabs
  * @constructor
  */
-export const Settings = (additionalTabs: Tab[]): GlobalConfig => {
+export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 	return {
 		slug: 'settings',
 		typescript: {

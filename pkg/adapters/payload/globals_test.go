@@ -44,7 +44,7 @@ func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client,
 	}{
 		//"File Request": {
 		//	url:  "/favicon.ico",
-		//	mock: func(_ *payloadfakes.MockGlobalsService, _ cache.Store) {},
+		//	mock: func(_ *payloadfakes.MockGlobalsService, _ cache.Storage) {},
 		//	want: nil,
 		//},
 		"From Cache": {
