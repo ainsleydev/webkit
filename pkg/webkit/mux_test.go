@@ -114,3 +114,30 @@ func TestKit_Trace(t *testing.T) {
 	app.Trace("/", handler)
 	HandlerTest(t, app)
 }
+
+func TestKit_Mount(t *testing.T) {
+	app := New()
+
+	fn := func() http.Handler {
+		h := New()
+		h.Get("/sub-path", func(ctx *Context) error {
+			return ctx.String(http.StatusOK, "mounted sub path")
+		})
+		return h
+	}
+
+	app.Mount("/base", fn())
+
+	req := httptest.NewRequest(http.MethodGet, "/base/sub-path", nil)
+	rr := httptest.NewRecorder()
+	app.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "mounted sub path", rr.Body.String())
+
+	req = httptest.NewRequest(http.MethodGet, "/sub-path", nil)
+	rr = httptest.NewRecorder()
+	app.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusNotFound, rr.Code)
+}
