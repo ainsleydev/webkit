@@ -80,10 +80,6 @@ export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
 			case 'point':
 				field.typescriptSchema = [
 					() => ({
-						type: 'array',
-						items: { type: 'number' },
-						minItems: 2,
-						maxItems: 2,
 						...addGoJSONSchema('payload.Point', field.required === true),
 					}),
 				];
