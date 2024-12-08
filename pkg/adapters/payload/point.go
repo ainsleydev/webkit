@@ -1,28 +1,45 @@
 package payload
 
-// Point represents a geographical coordinate with
-// longitude and latitude, stored as a slice of two float64 values where:
-//
-// - The first element (index 0) is the longitude.
-// - The second element (index 1) is the latitude.
-//
-// See: https://payloadcms.com/docs/beta/fields/point
-type Point []float64
+import (
+	"encoding/json"
+	"fmt"
+)
 
-// Latitude returns the latitude value from the Point.
-// If the Point is invalid (does not contain two elements), it returns 0.
-func (p Point) Latitude() float64 {
-	if len(p) > 1 {
-		return p[1]
-	}
-	return 0
+// Point represents a geographical coordinate.
+// While it's defined as a struct, it marshals to/from JSON as a [longitude, latitude] array.
+type Point struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
 
-// Longitude returns the longitude value from the Point.
-// If the Point is invalid (does not contain two elements), it returns 0.
-func (p Point) Longitude() float64 {
-	if len(p) > 0 {
-		return p[0]
+// MarshalJSON implements the json.Marshaler interface.
+// Converts the Point to a [longitude, latitude] array.
+//
+//goland:noinspection GoMixedReceiverTypes
+func (p Point) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.ToSlice())
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+// Expects a [longitude, latitude] array.
+//
+//goland:noinspection GoMixedReceiverTypes
+func (p *Point) UnmarshalJSON(data []byte) error {
+	var coords []float64
+	if err := json.Unmarshal(data, &coords); err != nil {
+		return err
 	}
-	return 0
+	if len(coords) != 2 {
+		return fmt.Errorf("point array must contain exactly 2 elements [longitude, latitude]")
+	}
+	p.Longitude = coords[0]
+	p.Latitude = coords[1]
+	return nil
+}
+
+// ToSlice converts the Point to a []float64 slice in [longitude, latitude] order.
+//
+//goland:noinspection GoMixedReceiverTypes
+func (p Point) ToSlice() []float64 {
+	return []float64{p.Longitude, p.Latitude}
 }
