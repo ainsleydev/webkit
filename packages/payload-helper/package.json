@@ -66,15 +66,5 @@
 	"engines": {
 		"node": ">=18",
 		"pnpm": ">=9"
-	},
-	"pnpm": {
-		"overrides": {
-			"@lexical/*": "0.20.0",
-			"lexical": "0.20.0"
-		}
-	},
-	"overrides": {
-		"@lexical/*": "0.20.0",
-		"lexical": "0.20.0"
 	}
 }
