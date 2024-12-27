@@ -77,6 +77,13 @@ export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
 					];
 				}
 				break;
+			case 'point':
+				field.typescriptSchema = [
+					() => ({
+						...addGoJSONSchema('payload.Point', field.required === true),
+					}),
+				];
+				break;
 			case 'tabs': {
 				field.tabs.forEach((tab) => {
 					tab.fields = tab.fields.map((f) => mapper(f));
@@ -91,6 +98,7 @@ export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
 				}
 				break;
 			}
+
 			case 'group':
 			case 'array':
 			case 'row':
@@ -154,7 +162,9 @@ export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
  * Adjusts the JSON schema to include the necessary GoLang schema
  *
  */
-export const schemas = (opts: SchemaOptions): Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> => [
+export const schemas = (
+	opts: SchemaOptions,
+): Array<(args: { jsonSchema: JSONSchema4 }) => JSONSchema4> => [
 	/**
 	 * Removes the auth & uneeded definitions from the schema.
 	 */

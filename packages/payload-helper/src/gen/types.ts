@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
-import { configToJSONSchema, getPayload, type SanitizedConfig } from 'payload';
-import { fieldMapper, type SchemaOptions, schemas } from '../plugin/schema.js';
+import { type SanitizedConfig, configToJSONSchema, getPayload } from 'payload';
+import { type SchemaOptions, fieldMapper, schemas } from '../plugin/schema.js';
 
 /**
  * Creates JSON schema types of Payloads Collections & Globals
@@ -15,7 +15,7 @@ export async function generateTypes(config: SanitizedConfig, opts: SchemaOptions
 
 	config.typescript = {
 		...config.typescript,
-		schema: schemas(opts)
+		schema: schemas(opts),
 	};
 
 	// biome-ignore lint/style/noParameterAssign: Need to change field mapper.
@@ -23,8 +23,8 @@ export async function generateTypes(config: SanitizedConfig, opts: SchemaOptions
 
 	const payload = await getPayload({
 		config,
-		disableDBConnect: true,
-		disableOnInit: true,
+		//disableDBConnect: true,
+		//disableOnInit: true,
 	});
 
 	const jsonSchema = configToJSONSchema(payload.config, payload.db.defaultIDType);

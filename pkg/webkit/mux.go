@@ -213,3 +213,8 @@ func (k *Kit) NotFound(handler Handler) {
 		k.handle(w, r, handler)
 	})
 }
+
+// Mount mounts another handler or sub router under a specific pattern.
+func (k *Kit) Mount(pattern string, handler http.Handler) {
+	k.mux.Mount(pattern, handler)
+}
