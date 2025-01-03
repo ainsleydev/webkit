@@ -16,7 +16,7 @@ var media = `
    "caption": null,
    "updatedAt": "2024-05-17T18:01:52.169Z",
    "createdAt": "2024-05-17T18:01:52.169Z",
-   "url": "/media/image.png",
+   "url": "https://ainsley.dev/media/image.png",
    "filename": "image.png",
    "mimeType": "image/png",
    "filesize": 743837,
@@ -24,7 +24,7 @@ var media = `
    "height": 4894,
    "sizes": {
        "webp": {
-           "url": "/media/image-1440x4894.webp",
+           "url": "https://ainsley.dev/media/image-1440x4894.webp",
            "width": 1440,
            "height": 4894,
            "mimeType": "image/webp",
@@ -32,7 +32,7 @@ var media = `
            "filename": "image-1440x4894.webp"
        },
        "avif": {
-           "url": "/media/image-1440x4894.avif",
+           "url": "https://ainsley.dev/media/image-1440x4894.avif",
            "width": 1440,
            "height": 4894,
            "mimeType": "image/avif",
@@ -40,7 +40,7 @@ var media = `
            "filename": "image-1440x4894.avif"
        },
        "thumbnail": {
-           "url": "/media/image-400x300.png",
+           "url": "https://ainsley.dev/media/image-400x300.png",
            "width": 400,
            "height": 300,
            "mimeType": "image/png",
@@ -48,7 +48,7 @@ var media = `
            "filename": "image-400x300.png"
        },
        "thumbnail_webp": {
-           "url": "/media/image-400x300.webp",
+           "url": "https://ainsley.dev/media/image-400x300.webp",
            "width": 400,
            "height": 300,
            "mimeType": "image/webp",
@@ -56,7 +56,7 @@ var media = `
            "filename": "image-400x300.webp"
        },
        "thumbnail_avif": {
-           "url": "/media/image-400x300.avif",
+           "url": "https://ainsley.dev/media/image-400x300.avif",
            "width": 400,
            "height": 300,
            "mimeType": "image/avif",
@@ -64,7 +64,7 @@ var media = `
            "filename": "image-400x300.avif"
        },
        "mobile": {
-           "url": "/media/image-768x2610.png",
+           "url": "https://ainsley.dev/media/image-768x2610.png",
            "width": 768,
            "height": 2610,
            "mimeType": "image/png",
@@ -72,7 +72,7 @@ var media = `
            "filename": "image-768x2610.png"
        },
        "mobile_webp": {
-           "url": "/media/image-768x2610.webp",
+           "url": "https://ainsley.dev/media/image-768x2610.webp",
            "width": 768,
            "height": 2610,
            "mimeType": "image/webp",
@@ -80,7 +80,7 @@ var media = `
            "filename": "image-768x2610.webp"
        },
        "mobile_avif": {
-           "url": "/media/image-768x2610.avif",
+           "url": "https://ainsley.dev/media/image-768x2610.avif",
            "width": 768,
            "height": 2610,
            "mimeType": "image/avif",
@@ -88,7 +88,7 @@ var media = `
            "filename": "image-768x2610.avif"
        },
        "tablet": {
-           "url": "/media/image-1024x3480.png",
+           "url": "https://ainsley.dev/media/image-1024x3480.png",
            "width": 1024,
            "height": 3480,
            "mimeType": "image/png",
@@ -96,7 +96,7 @@ var media = `
            "filename": "image-1024x3480.png"
        },
        "tablet_webp": {
-           "url": "/media/image-1024x3480.webp",
+           "url": "https://ainsley.dev/media/image-1024x3480.webp",
            "width": 1024,
            "height": 3480,
            "mimeType": "image/webp",
@@ -104,7 +104,7 @@ var media = `
            "filename": "image-1024x3480.webp"
        },
        "tablet_avif": {
-           "url": "/media/image-1024x3480.avif",
+           "url": "https://ainsley.dev/media/image-1024x3480.avif",
            "width": 1024,
            "height": 3480,
            "mimeType": "image/avif",
@@ -116,14 +116,13 @@ var media = `
 
 func TestMedia_UnmarshalJSON(t *testing.T) {
 	var (
-		payloadURL = "https://example.com"
-		in         = `{
+		in = `{
 			"id": 15,
 				"alt": "Alt Text",
 				"caption": null,
 				"updatedAt": "2024-05-17T18:01:52.169Z",
 				"createdAt": "2024-05-17T18:01:52.169Z",
-				"url": "/media/image.png",
+				"url": "https://ainsley.dev/media/image.png",
 				"filename": "image.png",
 				"mimeType": "image/png",
 				"filesize": 743837,
@@ -131,7 +130,7 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 				"height": 4894,
 				"sizes": {
 				"webp": {
-					"url": "/media/image-1440x4894.webp"
+					"url": "https://ainsley.dev/media/image-1440x4894.webp"
 				}
 			}
 		}`
@@ -148,7 +147,7 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 				ID:        15,
 				CreatedAt: "2024-05-17T18:01:52.169Z",
 				UpdatedAt: "2024-05-17T18:01:52.169Z",
-				URL:       "https://example.com/media/image.png",
+				URL:       "https://ainsley.dev/media/image.png",
 				Filename:  "image.png",
 				MimeType:  "image/png",
 				Filesize:  743837,
@@ -156,7 +155,7 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 				Height:    ptr.Float64Ptr(4894),
 				Sizes: MediaSizes{
 					"webp": MediaSize{
-						URL: "https://example.com/media/image-1440x4894.webp",
+						URL: "https://ainsley.dev/media/image-1440x4894.webp",
 					},
 				},
 				Extra: map[string]any{
@@ -176,23 +175,16 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			t.Setenv(envPayloadURL, payloadURL)
 			var m Media
 			err := m.UnmarshalJSON([]byte(test.input))
 			assert.Equal(t, test.wantErr, err != nil)
 			assert.EqualValues(t, test.want, m)
 		})
 	}
-
-	t.Run("No Env", func(t *testing.T) {
-		var m Media
-		err := m.UnmarshalJSON([]byte(in))
-		assert.Error(t, err)
-	})
 }
 
 func TestMedia_ImageMarkup(t *testing.T) {
-	t.Setenv(envPayloadURL, "https://example.com")
+	t.Parallel()
 
 	var m Media
 	err := m.UnmarshalJSON([]byte(media))
@@ -200,7 +192,7 @@ func TestMedia_ImageMarkup(t *testing.T) {
 
 	i := m.ImageMarkup()
 
-	assert.Equal(t, i.URL, "https://example.com/media/image.png")
+	assert.Equal(t, i.URL, "https://ainsley.dev/media/image.png")
 	assert.Equal(t, "Alt Text", i.Alt)
 	assert.Equal(t, 1440, *i.Width)
 	assert.Equal(t, 4894, *i.Height)
@@ -210,8 +202,6 @@ func TestMedia_ImageMarkup(t *testing.T) {
 }
 
 func TestMedia_ToMarkup(t *testing.T) {
-	t.Setenv(envPayloadURL, "https://example.com")
-
 	var m Media
 	err := m.UnmarshalJSON([]byte(media))
 	require.NoError(t, err)
@@ -221,7 +211,7 @@ func TestMedia_ToMarkup(t *testing.T) {
 	// Assert main image
 	t.Log("Main Image")
 	{
-		assert.Equal(t, "https://example.com/media/image.png", p.URL)
+		assert.Equal(t, "https://ainsley.dev/media/image.png", p.URL)
 		assert.Equal(t, "Alt Text", p.Alt)
 		assert.Equal(t, 1440, *p.Width)
 		assert.Equal(t, 4894, *p.Height)
@@ -233,7 +223,7 @@ func TestMedia_ToMarkup(t *testing.T) {
 
 	t.Log("SourceURL")
 	{
-		assert.Equal(t, "https://example.com/media/image-400x300.avif", p.Sources[0].URL)
+		assert.Equal(t, "https://ainsley.dev/media/image-400x300.avif", p.Sources[0].URL)
 		assert.EqualValues(t, "image/avif", p.Sources[0].MimeType)
 		assert.Equal(t, 400, *p.Sources[0].Width)
 		assert.Equal(t, 300, *p.Sources[0].Height)

@@ -1,14 +1,12 @@
 package payload
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
-	"os"
 	"sort"
 
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 
-	"github.com/goccy/go-json"
 	"github.com/perimeterx/marshmallow"
 
 	"github.com/ainsleydev/webkit/pkg/markup"
@@ -80,18 +78,11 @@ func (m *Media) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	url := os.Getenv(envPayloadURL)
-	if url == "" {
-		return errors.New("env var: " + envPayloadURL + " is not set")
-	}
-
 	*m = temp
 	m.RawJSON = data
 	m.Extra = result
-	m.URL = url + m.URL
 
 	for k, v := range m.Sizes {
-		v.URL = url + v.URL
 		m.Sizes[k] = v
 	}
 
@@ -230,7 +221,7 @@ type MediaFields map[string]any
 // a field, otherwise it returns the first defaultValue if provided,
 // or an empty string if no defaultValue is given.
 func (m *Media) Alt(defaultValue ...string) string {
-	altText := m.Extra.string("alt")
+	altText := m.Extra.String("alt")
 	if altText == "" && len(defaultValue) > 0 {
 		return defaultValue[0]
 	}
@@ -241,14 +232,15 @@ func (m *Media) Alt(defaultValue ...string) string {
 // a field, otherwise it returns the first defaultValue if provided,
 // or an empty string if no defaultValue is given.
 func (m *Media) Caption(defaultValue ...string) string {
-	captionText := m.Extra.string("caption")
+	captionText := m.Extra.String("caption")
 	if captionText == "" && len(defaultValue) > 0 {
 		return defaultValue[0]
 	}
 	return captionText
 }
 
-func (m MediaFields) string(key string) string {
+// String obtains a string from the key value map.
+func (m MediaFields) String(key string) string {
 	v, ok := m[key]
 	if !ok {
 		return ""

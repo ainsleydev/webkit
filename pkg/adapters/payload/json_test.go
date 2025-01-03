@@ -17,12 +17,12 @@ func TestJSON_MarshalJSON(t *testing.T) {
 	}{
 		"Simple JSON Object": {
 			input:   JSON{"key": "value"},
-			want:    "\"{\\\"key\\\":\\\"value\\\"}\"",
+			want:    `{"key":"value"}`,
 			wantErr: false,
 		},
 		"Empty JSON Object": {
 			input:   JSON{},
-			want:    "\"{}\"",
+			want:    "{}",
 			wantErr: false,
 		},
 		"Marshal Error (Unsupported Type)": {

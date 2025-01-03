@@ -72,8 +72,21 @@ export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
 				break;
 			case 'upload':
 				if (opts.useWebKitMedia) {
+					const isArray = field.hasMany; // Assuming `hasMany` indicates an array of uploads
 					field.typescriptSchema = [
-						() => ({ ...addGoJSONSchema('payload.Media', field.required === true) }),
+						() => ({
+							...(isArray
+								? {
+										type: 'array',
+										items: {
+											...addGoJSONSchema(
+												'payload.Media',
+												field.required === true,
+											),
+										},
+									}
+								: { ...addGoJSONSchema('payload.Media', field.required === true) }),
+						}),
 					];
 				}
 				break;
