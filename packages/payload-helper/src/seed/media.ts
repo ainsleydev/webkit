@@ -19,7 +19,7 @@ export const uploadMedia = async (
 ): Promise<Media> => {
 	try {
 		const image = await getFileByPath(path.resolve(dirname, media.path));
-		const caption = media.caption ? await htmlToLexical(media.caption) : null;
+		const caption = media.caption ? htmlToLexical(media.caption) : null;
 
 		return (await payload.create({
 			collection: 'media',
