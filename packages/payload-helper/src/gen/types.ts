@@ -15,7 +15,7 @@ export async function generateTypes(config: SanitizedConfig, opts: SchemaOptions
 
 	config.typescript = {
 		...config.typescript,
-		schema: schemas(opts),
+		schema: [...config.typescript.schema, ...schemas(opts)],
 	};
 
 	// biome-ignore lint/style/noParameterAssign: Need to change field mapper.
@@ -27,7 +27,7 @@ export async function generateTypes(config: SanitizedConfig, opts: SchemaOptions
 		//disableOnInit: true,
 	});
 
-	const jsonSchema = configToJSONSchema(payload.config, payload.db.defaultIDType);
+	const jsonSchema = configToJSONSchema(config, payload.db.defaultIDType);
 	const prettyJSON = JSON.stringify(jsonSchema, null, 4);
 
 	fs.writeFileSync(outputFile, prettyJSON);
