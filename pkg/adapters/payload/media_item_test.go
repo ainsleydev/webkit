@@ -201,6 +201,33 @@ func TestMedia_ImageMarkup(t *testing.T) {
 	assert.Equal(t, "726.4 KB", i.Attributes["data-payload-media-filesize"])
 }
 
+func TestMediaSize_ImageMarkup(t *testing.T) {
+	t.Parallel()
+
+	ms := MediaSize{
+		Size:     "mobile",
+		URL:      "https://ainsley.dev/media/image-768x2610.png",
+		Width:    ptr.Float64Ptr(768),
+		Height:   ptr.Float64Ptr(2610),
+		MimeType: ptr.StringPtr("image/png"),
+		Filesize: ptr.Float64Ptr(427862),
+		Filename: ptr.StringPtr("image-768x2610.png"),
+	}
+
+	i := ms.ImageMarkup()
+
+	assert.Equal(t, "https://ainsley.dev/media/image-768x2610.png", i.URL)
+	assert.Equal(t, 768, *i.Width)
+	assert.Equal(t, 2610, *i.Height)
+	assert.EqualValues(t, "image/png", i.MimeType)
+	assert.False(t, i.IsSource)
+	assert.Empty(t, i.Media)
+	assert.Empty(t, i.Loading)
+	assert.Equal(t, "mobile", i.Attributes["data-payload-size"])
+	assert.Equal(t, "417.8 KB", i.Attributes["data-payload-media-filesize"])
+	assert.Equal(t, "image-768x2610.png", i.Attributes["data-payload-media-filename"])
+}
+
 func TestMedia_ToMarkup(t *testing.T) {
 	var m Media
 	err := m.UnmarshalJSON([]byte(media))
@@ -225,10 +252,34 @@ func TestMedia_ToMarkup(t *testing.T) {
 	{
 		assert.Equal(t, "https://ainsley.dev/media/image-400x300.avif", p.Sources[0].URL)
 		assert.EqualValues(t, "image/avif", p.Sources[0].MimeType)
+		assert.Equal(t, "thumbnail_avif", p.Sources[0].Name)
 		assert.Equal(t, 400, *p.Sources[0].Width)
 		assert.Equal(t, 300, *p.Sources[0].Height)
 		assert.Equal(t, "thumbnail_avif", p.Sources[0].Attributes["data-payload-size"])
 	}
+}
+
+func TestMediaSizes_Size(t *testing.T) {
+	t.Parallel()
+
+	ms := MediaSizes{
+		"size1": {Width: ptr.Float64Ptr(100)},
+	}
+
+	t.Run("OK", func(t *testing.T) {
+		t.Parallel()
+
+		got, err := ms.Size("size1")
+		require.NoError(t, err)
+		assert.NotNil(t, got)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := ms.Size("wrong")
+		assert.Error(t, err)
+	})
 }
 
 func TestMediaSizes_SortByWidth(t *testing.T) {

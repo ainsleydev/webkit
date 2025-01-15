@@ -53,6 +53,16 @@ type Media struct {
 // (e.g. "small", "medium", "large").
 type MediaSizes map[string]MediaSize
 
+// Size returns a MediaSize from the sizes map by key or an
+// error if it doesn't exist.
+func (ms MediaSizes) Size(name string) (MediaSize, error) {
+	size, ok := ms[name]
+	if !ok {
+		return MediaSize{}, fmt.Errorf("media size not found: %s", name)
+	}
+	return size, nil
+}
+
 // MediaSize defines the fields for the different sizes of media when they
 // are uploaded to PayloadCMS.
 type MediaSize struct {
@@ -63,6 +73,35 @@ type MediaSize struct {
 	MimeType *string  `json:"mimeType,omitempty"`
 	Width    *float64 `json:"width,omitempty"`
 	Height   *float64 `json:"height,omitempty"`
+}
+
+// ImageMarkup implements the markup.ImageProvider interface and transforms the
+// MediaSize item into a markup.ImageProps type ready for rendering an <img>
+// to the DOM.
+func (ms MediaSize) ImageMarkup() markup.ImageProps {
+	// Create attributes map with size information
+	attributes := markup.Attributes{
+		"data-payload-size": ms.Size,
+	}
+
+	// Add optional filesize if present
+	if ms.Filesize != nil {
+		attributes["data-payload-media-filesize"] = formatFileSize(*ms.Filesize)
+	}
+
+	// Add optional filename if present
+	if ms.Filename != nil {
+		attributes["data-payload-media-filename"] = *ms.Filename
+	}
+
+	return markup.ImageProps{
+		URL:        ms.URL,
+		IsSource:   false,
+		MimeType:   markup.ImageMimeType(ptr.String(ms.MimeType)),
+		Width:      sizeToIntPointer(ms.Width),
+		Height:     sizeToIntPointer(ms.Height),
+		Attributes: attributes,
+	}
 }
 
 // UnmarshalJSON unmarshals the JSON data into the Media type.
@@ -198,6 +237,7 @@ func (ms MediaSizes) toMarkup() []markup.ImageProps {
 		images[index] = markup.ImageProps{
 			URL:        img.URL,
 			IsSource:   true,
+			Name:       img.Size,
 			Width:      sizeToIntPointer(img.Width),
 			Height:     sizeToIntPointer(img.Height),
 			MimeType:   markup.ImageMimeType(ptr.String(img.MimeType)),

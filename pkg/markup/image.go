@@ -42,6 +42,9 @@ type ImageProps struct {
 	// - image/svg+xml
 	MimeType ImageMimeType
 
+	// Optional name for an image (used for sizing).
+	Name string
+
 	// Determines if loading=lazy should be added to the image.
 	Loading LoadingAttribute
 
