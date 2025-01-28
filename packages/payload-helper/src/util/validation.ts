@@ -1,4 +1,6 @@
-export const validateURL = async (value: string) => {
+import type { TextFieldSingleValidation } from 'payload';
+
+export const validateURL: TextFieldSingleValidation = async (value) => {
 	if (!value) {
 		return true;
 	}
@@ -10,7 +12,7 @@ export const validateURL = async (value: string) => {
 	}
 };
 
-export const validatePostcode = async (value: string) => {
+export const validatePostcode: TextFieldSingleValidation = async (value) => {
 	if (!value) {
 		return true;
 	}

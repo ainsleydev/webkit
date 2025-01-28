@@ -127,7 +127,7 @@ export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
 			// SEE: https://github.com/ainsleydev/webkit/blob/cdfa078605bec4ee92f2424f69271a0bf6b71366/packages/payload-helper/src/gen/schema.ts#L235
 		}
 
-		if (field.type !== 'ui' && opts.assignRelationships) {
+		if (field.type !== 'ui' && (opts.assignRelationships || field.custom?.webkitUseSchema)) {
 			if (!Array.isArray(field.typescriptSchema)) {
 				field.typescriptSchema = [];
 			}
@@ -152,7 +152,6 @@ export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
 				});
 			}
 		}
-
 		return field;
 	};
 
@@ -199,6 +198,21 @@ export const schemas = (
 		delete jsonSchema.properties?.collections?.properties?.['payload-locked-documents'];
 		delete jsonSchema.definitions.redirects;
 		delete jsonSchema.properties?.collections?.properties?.redirects;
+
+		// I don't know why but Payload duplicates types and adds Select?
+
+		for (const key in jsonSchema.definitions) {
+			if (key.endsWith('select') || key.endsWith('Select')) {
+				delete jsonSchema.definitions[key];
+			}
+		}
+
+		for (const key in jsonSchema.properties) {
+			if (key.endsWith('select') || key.endsWith('Select')) {
+				delete jsonSchema.properties[key];
+			}
+		}
+
 		return jsonSchema;
 	},
 	/**

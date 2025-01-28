@@ -9,7 +9,10 @@ import (
 	"github.com/ainsleydev/webkit/pkg/markup/internal/templates"
 )
 
-// PictureProvider is a common - TODO
+// PictureProvider is a common interface that's used for implementing
+// a standardised way of writing a <picture> element to the DOM.
+//
+// Any type can implement this and pass it to the Picture() func.
 type PictureProvider interface {
 	PictureMarkup() PictureProps
 }
@@ -59,7 +62,8 @@ type PictureProps struct {
 	Attributes Attributes
 }
 
-// Picture returns picture properties - TODO
+// Picture returns picture properties and transforms the options,
+// so it can be rendered to the DOM.
 func Picture(provider PictureProvider, opts ...PictureOptions) PictureProps {
 	props := provider.PictureMarkup()
 	for _, opt := range opts {
