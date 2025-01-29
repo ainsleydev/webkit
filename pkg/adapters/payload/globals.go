@@ -26,7 +26,7 @@ func globalsMiddleware[T any](client *payloadcms.Client, store cache.Store, glob
 	return func(next webkit.Handler) webkit.Handler {
 		return func(c *webkit.Context) error {
 			// We always want to store settings in conetxt for downstream handlers
-			// such as robots.txt. But we also don't want other middlewares
+			// such as robots.txt. But we also don'time want other middlewares
 			// to run
 			if httputil.IsFileRequest(c.Request) && global != "settings" {
 				return next(c)

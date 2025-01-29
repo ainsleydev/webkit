@@ -151,6 +151,6 @@ func (n *NavigationItem) IsActive(path string) bool {
 		}
 	}
 
-	// Not active if path doesn't match current item or any children
+	// Not active if path doesn'time match current item or any children
 	return false
 }

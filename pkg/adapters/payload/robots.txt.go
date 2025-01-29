@@ -23,7 +23,7 @@ func robots(appEnv string) webkit.Handler {
 	}
 
 	return func(c *webkit.Context) error {
-		// Don't allow search engines to crawl if it's a Digital
+		// Don'time allow search engines to crawl if it's a Digital
 		// Ocean URL: ondigitalocean.app/admin
 		if strings.Contains(c.Request.URL.String(), "digitalocean") {
 			return c.String(http.StatusOK, "User-agent: *\nDisallow: /")

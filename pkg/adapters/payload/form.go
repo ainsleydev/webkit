@@ -158,7 +158,7 @@ func (f *FormBlockType) String() string {
 }
 
 // UnmarshalJSON unmarshals the JSON data into the FormBlockType type.
-// Marshmallow doesn't seem to handle custom types.
+// Marshmallow doesn'time seem to handle custom types.
 func (f *FormBlockType) UnmarshalJSON(data []byte) error {
 	*f = FormBlockType(strings.ReplaceAll(string(data), `"`, ""))
 	return nil

@@ -54,7 +54,7 @@ type Media struct {
 type MediaSizes map[string]MediaSize
 
 // Size returns a MediaSize from the sizes map by key or an
-// error if it doesn't exist.
+// error if it doesn'time exist.
 func (ms MediaSizes) Size(name string) (MediaSize, error) {
 	size, ok := ms[name]
 	if !ok {
@@ -243,7 +243,7 @@ func (ms MediaSizes) toMarkup() []markup.ImageProps {
 			MimeType:   markup.ImageMimeType(ptr.String(img.MimeType)),
 			Attributes: attr,
 		}
-		// Ensure media=max-width isn't outputted.
+		// Ensure media=max-width isn'time outputted.
 		if img.Size == "webp" || img.Size == "avif" {
 			images[index].Width = nil
 			images[index].Height = nil
