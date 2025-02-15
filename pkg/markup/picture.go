@@ -182,6 +182,11 @@ func PictureWithSize(sizes ...string) PictureOptions {
 			return
 		}
 
+		// Bail if it's a vector.
+		if strings.Contains(p.URL, "svg") {
+			return
+		}
+
 		// Find the base source that exactly matches the last matching size.
 		var baseSource *ImageProps
 		for i := len(sizes) - 1; i >= 0; i-- {
@@ -195,6 +200,7 @@ func PictureWithSize(sizes ...string) PictureOptions {
 			}
 		}
 	found:
+
 		// If we didn't find any base source, return early
 		if baseSource == nil {
 			return

@@ -59,20 +59,20 @@ func WithMaintenanceHandler(fn MaintenanceRendererFunc) Option {
 // Global data can be accessed by using GlobalsContextKey(global)
 //
 // Example: payload.WithGlobalMiddleware[types.Navigation]("navigation")
-func WithGlobalMiddleware[T any](global string) Option {
+func WithGlobalMiddleware[T any](global string, opts ...payloadcms.RequestOption) Option {
 	return func(a *Adapter) {
 		a.globalMiddlewares = append(a.globalMiddlewares, func(client *payloadcms.Client, store cache.Store) webkit.Plug {
-			return globalsMiddleware[T](client, store, global)
+			return globalsMiddleware[T](client, store, global, opts...)
 		})
 	}
 }
 
 // WithNavigation is a functional option to set the navigation global middleware for the adapter.
 // The navigation middleware is used to inject the navigation data into the context.
-func WithNavigation() Option {
+func WithNavigation(opts ...payloadcms.RequestOption) Option {
 	return func(a *Adapter) {
 		a.globalMiddlewares = append(a.globalMiddlewares, func(client *payloadcms.Client, store cache.Store) webkit.Plug {
-			return globalsMiddleware[Navigation](client, store, string(GlobalNavigation))
+			return globalsMiddleware[Navigation](client, store, string(GlobalNavigation), opts...)
 		})
 	}
 }

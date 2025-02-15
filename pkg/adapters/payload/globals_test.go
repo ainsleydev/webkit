@@ -57,7 +57,7 @@ func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client,
 		"API Error": {
 			url: "/want",
 			mock: func(gb *payloadfakes.MockGlobalsService, _ cache.Store) {
-				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, _ any) (payloadcms.Response, error) {
+				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, _ any, _ ...payloadcms.RequestOption) (payloadcms.Response, error) {
 					return payloadcms.Response{}, assert.AnError
 				}
 			},
@@ -66,7 +66,7 @@ func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client,
 		"From API": {
 			url: "/want",
 			mock: func(gb *payloadfakes.MockGlobalsService, _ cache.Store) {
-				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, out any) (payloadcms.Response, error) {
+				gb.GetFunc = func(_ context.Context, _ payloadcms.Global, out any, _ ...payloadcms.RequestOption) (payloadcms.Response, error) {
 					*out.(*Settings) = settings
 					return payloadcms.Response{}, nil
 				}

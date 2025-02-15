@@ -175,6 +175,15 @@ func TestPictureWithSize(t *testing.T) {
 				},
 			},
 		},
+		"SVG": {
+			input: PictureProps{
+				URL: "https://example.com/original.svg",
+			},
+			sizes: []string{"thumbnail"},
+			want: PictureProps{
+				URL: "https://example.com/original.svg",
+			},
+		},
 	}
 
 	for name, test := range tt {
