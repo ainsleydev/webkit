@@ -69,7 +69,7 @@ export const htmlToLexical = (html: string): SerializedEditorState => {
 			// Insert them at a selection.
 			const selection = $getSelection();
 
-			if (selection) selection.insertNodes(nodes);
+			//if (selection) selection.insertNodes(nodes);
 		},
 		{ discrete: true },
 	);
