@@ -141,3 +141,18 @@ func TestKit_Mount(t *testing.T) {
 
 	assert.Equal(t, http.StatusNotFound, rr.Code)
 }
+
+func TestKit_Group(t *testing.T) {
+	app := New()
+
+	app.Group("/group", func(k *Kit) {
+		k.Get("/path", handler)
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/group/path", nil)
+	rr := httptest.NewRecorder()
+	app.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "test", rr.Body.String())
+}
