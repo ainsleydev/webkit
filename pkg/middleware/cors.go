@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"net/http"
+
 	"github.com/ainsleydev/webkit/pkg/webkit"
 )
 
@@ -19,15 +21,16 @@ func CORS(next webkit.Handler) webkit.Handler {
 	return func(ctx *webkit.Context) error {
 		// See: https://github.com/labstack/echo/blob/master/middleware/cors.go
 
-		//g.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		//g.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		//g.Writer.Header().Set("Access-Control-Allow-Headers", "access-control-allow-origin, Content-Mime, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Origin, Cache-Control, X-Requested-With, token")
-		//g.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-		//
-		//if g.Request.Method == "OPTIONS" {
-		//	g.AbortWithStatus(http.StatusOK)
-		//	return
-		//}
+		ctx.Response.Header().Set("Access-Control-Allow-Origin", "*")
+		ctx.Response.Header().Set("Access-Control-Allow-Credentials", "true")
+		ctx.Response.Header().Set("Access-Control-Allow-Headers", "access-control-allow-origin, Content-Mime, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Origin, Cache-Control, X-Requested-With, token")
+		ctx.Response.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if ctx.Request.Method == http.MethodOptions {
+			ctx.Response.WriteHeader(http.StatusOK)
+			return nil // Return immediately without calling next handler
+		}
+
 		return next(ctx)
 	}
 }

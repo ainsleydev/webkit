@@ -215,6 +215,28 @@ func (k *Kit) NotFound(handler Handler) {
 }
 
 // Mount mounts another handler or sub router under a specific pattern.
+// Note: Does not apply middleware.
 func (k *Kit) Mount(pattern string, handler http.Handler) {
 	k.mux.Mount(pattern, handler)
+}
+
+// Group allows you to group multiple routes together under a common path.
+// The provided function can use the `kit` to add routes, middleware, etc.
+func (k *Kit) Group(pattern string, groupFunc func(kit *Kit)) {
+	// Create a sub-router using Chi's Group functionality
+	subRouter := chi.NewRouter()
+
+	// Create a new kit with the sub-router and inherit parent's error handlers
+	subKit := &Kit{
+		ErrorHandler:    k.ErrorHandler,
+		NotFoundHandler: k.NotFoundHandler,
+		mux:             subRouter,
+		plugs:           append([]Plug{}, k.plugs...), // Copy parent plugs
+	}
+
+	// Call the provided function with the sub kit
+	groupFunc(subKit)
+
+	// Mount the subrouter to the parent router
+	k.mux.Mount(pattern, subRouter)
 }
