@@ -23,6 +23,7 @@ func CORS(next webkit.Handler) webkit.Handler {
 
 		ctx.Response.Header().Set("Access-Control-Allow-Origin", "*")
 		ctx.Response.Header().Set("Access-Control-Allow-Credentials", "true")
+		ctx.Response.Header().Set("Vary", "Origin")
 		ctx.Response.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Content-Type, Content-Mime, Content-Length, Accept-Encoding, X-CSRF-Token, X-API-Key, Authorization, Accept, Origin, Cache-Control, X-Requested-With")
 		ctx.Response.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 

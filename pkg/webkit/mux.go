@@ -223,20 +223,37 @@ func (k *Kit) Mount(pattern string, handler http.Handler) {
 // Group allows you to group multiple routes together under a common path.
 // The provided function can use the `kit` to add routes, middleware, etc.
 func (k *Kit) Group(pattern string, groupFunc func(kit *Kit)) {
-	// Create a sub-router using Chi's Group functionality
+	// Create a sub-router using Chi.
 	subRouter := chi.NewRouter()
 
-	// Create a new kit with the sub-router and inherit parent's error handlers
+	// Apply middleware from parent to the subRouter.
+	for _, plug := range k.plugs {
+		subRouter.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ctx := NewContext(w, r)
+				h := plug(func(c *Context) error {
+					r = c.Request
+					next.ServeHTTP(w, r)
+					return nil
+				})
+				if err := h(ctx); err != nil {
+					k.handleError(ctx, err)
+				}
+			})
+		})
+	}
+
+	// Create a new kit with the sub-router and inherit error handlers.
 	subKit := &Kit{
 		ErrorHandler:    k.ErrorHandler,
 		NotFoundHandler: k.NotFoundHandler,
 		mux:             subRouter,
-		plugs:           append([]Plug{}, k.plugs...), // Copy parent plugs
+		plugs:           k.plugs, // Inherit parent plugs
 	}
 
-	// Call the provided function with the sub kit
+	// Call the provided function with the sub-kit.
 	groupFunc(subKit)
 
-	// Mount the subrouter to the parent router
+	// Mount the sub router to the parent router.
 	k.mux.Mount(pattern, subRouter)
 }

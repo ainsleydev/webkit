@@ -145,14 +145,34 @@ func TestKit_Mount(t *testing.T) {
 func TestKit_Group(t *testing.T) {
 	app := New()
 
+	app.Plug(func(next Handler) Handler {
+		return func(ctx *Context) error {
+			ctx.Response.Header().Set("X-Test-Middleware", "ran")
+			if ctx.Request.Method == http.MethodOptions {
+				ctx.Response.WriteHeader(http.StatusOK)
+				return nil
+			}
+			return next(ctx)
+		}
+	})
+
 	app.Group("/group", func(k *Kit) {
 		k.Get("/path", handler)
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/group/path", nil)
-	rr := httptest.NewRecorder()
-	app.ServeHTTP(rr, req)
+	// Test GET request to the grouped route.
+	reqGet := httptest.NewRequest(http.MethodGet, "/group/path", nil)
+	rrGet := httptest.NewRecorder()
+	app.ServeHTTP(rrGet, reqGet)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, "test", rr.Body.String())
+	assert.Equal(t, http.StatusOK, rrGet.Code)
+	assert.Equal(t, "test", rrGet.Body.String())
+	assert.Equal(t, "ran", rrGet.Header().Get("X-Test-Middleware"))
+
+	// Test OPTIONS request to the same route.
+	reqOptions := httptest.NewRequest(http.MethodOptions, "/group/path", nil)
+	rrOptions := httptest.NewRecorder()
+	app.ServeHTTP(rrOptions, reqOptions)
+
+	assert.Equal(t, http.StatusOK, rrOptions.Code)
 }
