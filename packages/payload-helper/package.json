@@ -32,20 +32,20 @@
 	},
 	"files": ["dist", "bin.js", "types.js", "types.ts", "types.d.ts"],
 	"dependencies": {
-		"payload": "3.23.0",
-		"@payloadcms/db-sqlite": "3.23.0",
-		"@payloadcms/richtext-lexical": "3.23.0",
-		"@payloadcms/plugin-form-builder": "3.23.0",
-		"@payloadcms/plugin-seo": "3.23.0",
-		"@lexical/headless": "0.21.0",
-		"@lexical/html": "0.21.0",
+		"payload": "3.28.1",
+		"@payloadcms/db-sqlite": "3.28.1",
+		"@payloadcms/richtext-lexical": "3.28.1",
+		"@payloadcms/plugin-form-builder": "3.28.1",
+		"@payloadcms/plugin-seo": "3.28.1",
+		"@lexical/headless": "0.27.1",
+		"@lexical/html": "0.27.1",
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
 		"@types/json-schema": "^7.0.15",
 		"chalk": "^5.3.0",
 		"commander": "^12.1.0",
 		"dotenv": "^16.4.5",
 		"jsdom": "^24.1.1",
-		"lexical": "0.21.0",
+		"lexical": "0.27.1",
 		"mime-types": "^2.1.35"
 	},
 	"devDependencies": {
@@ -70,7 +70,7 @@
 	"pnpm": {
 		"onlyBuiltDependencies": ["sharp"],
 		"overrides": {
-			"lexical": "0.21.0"
+			"lexical": "0.27.1"
 		}
 	}
 }
