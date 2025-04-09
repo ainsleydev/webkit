@@ -222,9 +222,12 @@ func (ms MediaSizes) SortByWidth() []MediaSize {
 // toMarkup transforms media sizes into a slice of ImageProps ready for
 // rendering onto the DOM.
 func (ms MediaSizes) toMarkup() []markup.ImageProps {
-	images := make([]markup.ImageProps, len(ms))
+	images := make([]markup.ImageProps, 0, len(ms))
 	index := 0
 	for _, img := range ms.SortByWidth() {
+		if img.URL == "" {
+			continue
+		}
 		attr := markup.Attributes{
 			"data-payload-size": img.Size,
 		}
@@ -234,7 +237,7 @@ func (ms MediaSizes) toMarkup() []markup.ImageProps {
 		if img.Filename != nil {
 			attr["data-payload-media-filename"] = *img.Filename
 		}
-		images[index] = markup.ImageProps{
+		images = append(images, markup.ImageProps{
 			URL:        img.URL,
 			IsSource:   true,
 			Name:       img.Size,
@@ -242,7 +245,7 @@ func (ms MediaSizes) toMarkup() []markup.ImageProps {
 			Height:     sizeToIntPointer(img.Height),
 			MimeType:   markup.ImageMimeType(ptr.String(img.MimeType)),
 			Attributes: attr,
-		}
+		})
 		// Ensure media=max-width isn'time outputted.
 		if img.Size == "webp" || img.Size == "avif" {
 			images[index].Width = nil
