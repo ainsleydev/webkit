@@ -37,11 +37,13 @@ func Discard() {
 
 func resolveLogHandler(prefix string) slog.Handler {
 	if !env.IsDevelopment() {
-		return slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			AddSource:   false,
-			Level:       slog.LevelInfo,
-			ReplaceAttr: nil, // We don't need to replace anything at the moment, but sensitive info could be masked.
-		})
+		return jsonHandler{
+			Handler: slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+				AddSource:   false,
+				Level:       slog.LevelInfo,
+				ReplaceAttr: nil, // We don't need to replace anything at the moment, but sensitive info could be masked.
+			}),
+		}
 	}
 	return NewLocalHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: false,

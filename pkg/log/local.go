@@ -11,6 +11,8 @@ import (
 	"sync"
 
 	"github.com/logrusorgru/aurora"
+
+	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 )
 
 // LocalHandler is a handler that logs to the console in a human-readable
@@ -82,6 +84,10 @@ func (h *LocalHandler) WithGroup(name string) slog.Handler {
 
 // Handle handles the logging record and formats it.
 func (h *LocalHandler) Handle(ctx context.Context, r slog.Record) error {
+	if reqID, ok := ctx.Value(webkitctx.ContextKeyRequestID).(string); ok {
+		r.AddAttrs(slog.String(string(webkitctx.ContextKeyRequestID), reqID))
+	}
+
 	var timestamp string
 	timeAttr := slog.Attr{
 		Key:   slog.TimeKey,
