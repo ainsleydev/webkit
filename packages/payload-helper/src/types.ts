@@ -1,7 +1,6 @@
 // import type { SEOPluginConfig } from "@payloadcms/plugin-seo/types";
-import type { GlobalConfig, Tab, TextareaField, TextField, UploadField } from 'payload';
+import type { GlobalConfig, Tab, TextField, TextareaField, UploadField } from 'payload';
 // import type {SEOPluginConfig} from "@payloadcms/plugin-seo/dist/types.js";
-
 
 export type SettingsConfig = {
 	additionalTabs?: Tab[];

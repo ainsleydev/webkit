@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
 	type Payload,
 	type PayloadRequest,
@@ -8,9 +11,6 @@ import {
 	killTransaction,
 } from 'payload';
 import env from '../util/env.js';
-import path from 'node:path';
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -36,7 +36,7 @@ export type SeedOptions = {
  * @returns A promise that resolves when the seeding is complete.
  */
 export const seed = (opts: {
-	seeder: Seeder,
+	seeder: Seeder;
 	config: SanitizedConfig;
 }) => {
 	const fn = async () => {

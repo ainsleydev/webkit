@@ -1,18 +1,22 @@
-import type { GlobalConfig, GroupField, Tab, UploadField } from 'payload';
+import { type GlobalConfig, type GroupField, type Tab, type UploadField, deepMerge } from 'payload';
 import { validatePostcode, validateURL } from '../util/validation.js';
 import { countries } from './countries.js';
 import { languages } from './locales.js';
 
 /**
+ * Any additional overrides/tabs for the settings global.
+ */
+export type SettingsArgs = {
+	overrides?: Partial<Omit<GlobalConfig, 'slug' | 'fields'>>;
+	additionalTabs?: Tab[];
+};
+
+/**
  * Settings Global Configuration
  * Additional tabs will be appended to the settings page.
- * TODO, type error in here somewhere.
- *
- * @param additionalTabs
- * @constructor
  */
-export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
-	return {
+export const Settings = (args?: SettingsArgs): GlobalConfig => {
+	const defaultConfig = {
 		slug: 'settings',
 		typescript: {
 			interface: 'Settings',
@@ -25,7 +29,7 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 		},
 		fields: [
 			{
-				type: 'tabs',
+				type: 'tabs' as const,
 				tabs: [
 					{
 						label: 'Global',
@@ -349,9 +353,11 @@ export const Settings = (additionalTabs?: Tab[]): GlobalConfig => {
 							},
 						],
 					},
-					...(additionalTabs ? additionalTabs : []),
-				],
+					...(args?.additionalTabs ?? []),
+				] as Tab[],
 			},
 		],
 	};
+
+	return deepMerge(defaultConfig, args?.overrides || {});
 };

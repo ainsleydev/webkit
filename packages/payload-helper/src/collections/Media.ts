@@ -1,13 +1,13 @@
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import * as mime from 'mime-types';
 import type { CollectionConfig, Field, PayloadRequest, UploadConfig } from 'payload';
+import type { ImageSize } from 'payload';
 import env from '../util/env.js';
-import type { ImageSize } from "payload";
 
 export interface MediaArgs {
-	includeAvif?: boolean
-	additionalFields?: Field[],
-	uploadOverrides?: Partial<UploadConfig>
+	includeAvif?: boolean;
+	additionalFields?: Field[];
+	uploadOverrides?: Partial<UploadConfig>;
 }
 
 export const imageSizes: ImageSize[] = [
@@ -164,9 +164,9 @@ export const imageSizesWithAvif = (): ImageSize[] => {
 					quality: 80,
 				},
 			},
-		}
-	]
-}
+		},
+	];
+};
 
 export const Media = (args: MediaArgs = {}): CollectionConfig => {
 	let sizes = imageSizes;
