@@ -1,15 +1,14 @@
-import { type ArrayField, type Field, type GlobalConfig, type Tab, deepMerge } from 'payload';
+import type { ArrayField, Field, GlobalConfig, Tab } from 'payload';
 
 /**
- * Navigation arguments for the header and footer
+ * Navigation Configuration for the header and footer
  * nav links.
  */
-interface NavigationArgs {
+interface NavigationConfig {
 	includeFooter?: boolean;
 	header?: NavigationMenuConfig;
 	footer?: NavigationMenuConfig;
 	additionalTabs?: Tab[];
-	overrides?: Partial<GlobalConfig>;
 }
 
 /**
@@ -56,32 +55,46 @@ const navFields: Field[] = [
 		type: 'row',
 		fields: [
 			{
-				name: 'title',
+				name: 'label',
+				label: 'Label',
 				type: 'text',
-				label: 'Title',
 				required: true,
 				admin: {
 					width: '50%',
+					description: 'Enter the text that will appear as a label for the link.',
 				},
 			},
 			{
 				name: 'url',
-				type: 'text',
 				label: 'URL',
+				type: 'text',
 				required: true,
 				admin: {
 					width: '50%',
+					description: 'Enter a URL where the link will direct too.',
 				},
 			},
 		],
+	},
+	{
+		name: 'newTab',
+		label: 'Open in a new tab?',
+		type: 'checkbox',
+		defaultValue: false,
+		admin: {
+			description: 'Check this box if you would like the link to open in a new tab.',
+		},
 	},
 ];
 
 /**
  * Navigation Global Configuration
  * Additional fields will be appended to each navigation item.
+ *
+ * @constructor
+ * @param config
  */
-export const Navigation = (args?: NavigationArgs): GlobalConfig => {
+export const Navigation = (config?: NavigationConfig): GlobalConfig => {
 	const tabs: Tab[] = [
 		{
 			label: 'Header',
@@ -102,17 +115,17 @@ export const Navigation = (args?: NavigationArgs): GlobalConfig => {
 					},
 					fields: [
 						...navFields,
-						...(args?.header?.maxDepth
-							? generateChildren(0, args.header.maxDepth, navFields)
+						...(config?.header?.maxDepth
+							? generateChildren(0, config.header.maxDepth, navFields)
 							: []),
-						...(args?.header?.additionalFields ? args.header.additionalFields : []),
+						...(config?.header?.additionalFields ? config.header.additionalFields : []),
 					],
 				},
 			],
 		} as ArrayField,
 	];
 
-	if (args?.includeFooter) {
+	if (config?.includeFooter) {
 		tabs.push({
 			label: 'Footer',
 			fields: [
@@ -132,17 +145,17 @@ export const Navigation = (args?: NavigationArgs): GlobalConfig => {
 					},
 					fields: [
 						...navFields,
-						...(args?.footer?.maxDepth
-							? generateChildren(0, args.footer.maxDepth, navFields)
+						...(config?.footer?.maxDepth
+							? generateChildren(0, config.footer.maxDepth, navFields)
 							: []),
-						...(args?.footer?.additionalFields ? args.footer.additionalFields : []),
+						...(config?.footer?.additionalFields ? config.footer.additionalFields : []),
 					],
 				},
 			],
 		} as ArrayField);
 	}
 
-	const defaultConfig: GlobalConfig = {
+	return {
 		slug: 'navigation',
 		typescript: {
 			interface: 'Navigation',
@@ -156,10 +169,8 @@ export const Navigation = (args?: NavigationArgs): GlobalConfig => {
 		fields: [
 			{
 				type: 'tabs',
-				tabs: [...tabs, ...(args?.additionalTabs ?? [])] as Tab[],
+				tabs: [...tabs, ...(config?.additionalTabs ? config.additionalTabs : [])],
 			},
 		],
 	};
-
-	return deepMerge(defaultConfig, args?.overrides || {});
 };
