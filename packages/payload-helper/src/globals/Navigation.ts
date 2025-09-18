@@ -105,7 +105,6 @@ export const Navigation = (config?: NavigationConfig): GlobalConfig => {
 					label: 'Items',
 					type: 'array',
 					interfaceName: 'NavigationHeaderLinks',
-					maxRows: 8,
 					labels: {
 						singular: 'Link',
 						plural: 'Links',
@@ -136,7 +135,6 @@ export const Navigation = (config?: NavigationConfig): GlobalConfig => {
 					label: 'Items',
 					type: 'array',
 					interfaceName: 'NavigationFooterLinks',
-					maxRows: 8,
 					labels: {
 						singular: 'Link',
 						plural: 'Links',
