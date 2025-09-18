@@ -116,7 +116,8 @@ export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
 			case 'array':
 			case 'row':
 			case 'collapsible': {
-				if (field.type === 'group' && field.name === 'meta') {
+				// @ts-ignore
+				if (field.type === 'group' && field?.name === 'meta') {
 					field.typescriptSchema = [
 						() => ({ ...addGoJSONSchema('payload.SettingsMeta', true) }),
 					];
@@ -135,7 +136,8 @@ export const fieldMapper = (config: SanitizedConfig, opts: SchemaOptions) => {
 			if (field.type !== 'tabs' && field.type !== 'row' && field.type !== 'collapsible') {
 				field.typescriptSchema.push(({ jsonSchema }) => {
 					const payload = {
-						name: field.name,
+						// @ts-ignore
+						name: field?.name,
 						type: field.type,
 						label: field.label,
 					} as Record<string, unknown>;

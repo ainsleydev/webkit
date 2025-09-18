@@ -98,11 +98,12 @@ export const Navigation = (config?: NavigationConfig): GlobalConfig => {
 	const tabs: Tab[] = [
 		{
 			label: 'Header',
+			name: 'header',
 			fields: [
 				{
-					name: 'header',
-					type: 'array',
+					name: 'items',
 					label: 'Items',
+					type: 'array',
 					interfaceName: 'NavigationHeaderLinks',
 					maxRows: 8,
 					labels: {
@@ -128,11 +129,12 @@ export const Navigation = (config?: NavigationConfig): GlobalConfig => {
 	if (config?.includeFooter) {
 		tabs.push({
 			label: 'Footer',
+			name: 'footer',
 			fields: [
 				{
-					name: 'footer',
-					type: 'array',
+					name: 'items',
 					label: 'Items',
+					type: 'array',
 					interfaceName: 'NavigationFooterLinks',
 					maxRows: 8,
 					labels: {
