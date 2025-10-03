@@ -8,9 +8,6 @@ dist/
 .env
 .env.local
 /.env
-.env.*
-!.env.example
-!.env.test
 
 # IDE Directories
 .idea
@@ -58,7 +55,6 @@ coverage.out
 
 # ----------------------------------------- Javascript  --------------------------------------------
 
-node_modules
 /node_modules
 /.pnp
 .pnp.js
@@ -106,15 +102,3 @@ terraform.rc
 # ----------------------------------------- Payload CMS --------------------------------------------
 
 media/**
-
-# ----------------------------------------- SvelteKit ----------------------------------------------
-
-# Output
-.output
-.netlify
-.wrangler
-/.svelte-kit
-
-# Vite
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*

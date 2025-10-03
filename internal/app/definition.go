@@ -1,5 +1,18 @@
 package app
 
+import (
+	"io"
+
+	"github.com/goccy/go-json"
+	"github.com/spf13/afero"
+)
+
+const (
+	// JsonFileName defines the file name of the app manifest,
+	// that should appear in the root of each webkit dir.
+	JsonFileName = "app.json"
+)
+
 type (
 	Definition struct {
 		WebkitVersion string     `json:"webkit_version"`
@@ -61,3 +74,24 @@ type (
 		Value string `json:"value,omitempty"`
 	}
 )
+
+func Read(root afero.Fs) (*Definition, error) {
+	file, err := root.Open(JsonFileName)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Apply defaults and return validation errors if the user has fucked it.
+	var def Definition
+	if err := json.Unmarshal(data, &def); err != nil {
+		return nil, err
+	}
+
+	return &def, nil
+}

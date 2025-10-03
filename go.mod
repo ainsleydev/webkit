@@ -1,8 +1,6 @@
 module github.com/ainsleydev/webkit
 
-go 1.23.0
-
-toolchain go1.23.1
+go 1.25.1
 
 require (
 	dario.cat/mergo v1.0.1
@@ -24,10 +22,13 @@ require (
 	github.com/prometheus/client_golang v1.20.4
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/sirupsen/logrus v1.9.3
+	github.com/spf13/afero v1.15.0
 	github.com/stretchr/testify v1.10.0
 	github.com/tdewolff/minify/v2 v2.21.0
+	github.com/urfave/cli/v3 v3.4.1
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
 	go.uber.org/mock v0.5.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -62,14 +63,10 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.59.1 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	github.com/spf13/afero v1.15.0 // indirect
 	github.com/tdewolff/parse/v2 v2.7.18 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
-	github.com/urfave/cli/v3 v3.4.1 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
