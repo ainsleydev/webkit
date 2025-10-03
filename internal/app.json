@@ -1,0 +1,156 @@
+{
+	"webkit_version": "0.1.0",
+	"project": {
+		"name": "my-website",
+		"title": "My Website",
+		"description": "My website is a bespoke sales platform for developers and designers.",
+		"repo": "git@github.com:ainsley/my-website.git"
+	},
+	"shared": {
+		"env": {
+			"dev": [
+				{
+					"key": "FRONTEND_URL",
+					"type": "value",
+					"value": "http://localhost:3000"
+				}
+			],
+			"staging": [
+				{
+					"key": "FRONTEND_URL",
+					"type": "value",
+					"value": "https://staging.my-website.com"
+				}
+			],
+			"production": [
+				{
+					"key": "SENTRY_DSN",
+					"type": "secret",
+					"from": "sops:secrets/shared.yaml:/SENTRY_DSN"
+				},
+				{
+					"key": "FRONTEND_URL",
+					"type": "value",
+					"value": "https://my-website.com"
+				}
+			]
+		}
+	},
+	"resources": [
+		{
+			"name": "db",
+			"type": "postgres",
+			"provider": "digitalocean",
+			"config": {
+				"size": "db-s-1vcpu-1gb",
+				"engine_version": "17",
+				"region": "nyc3"
+			},
+			"outputs": ["connection_url", "host", "port", "database"]
+		},
+		{
+			"name": "store",
+			"type": "s3",
+			"provider": "digitalocean",
+			"config": {
+				"region": "ams3",
+				"acl": "public-read"
+			},
+			"outputs": ["bucket_name", "endpoint", "region"]
+		}
+	],
+	"apps": [
+		{
+			"name": "cms",
+			"type": "payload",
+			"description": "Payload CMS for managing content.",
+			"path": "services/cms",
+			"build": {
+				"dockerfile": "Dockerfile"
+			},
+			"infra": {
+				"provider": "digitalocean",
+				"type": "vm",
+				"config": {
+					"size": "s-2vcpu-4gb",
+					"region": "nyc3",
+					"domain": "cms.my-website.com",
+					"ssh_keys": ["your-ssh-key-id"]
+				}
+			},
+			"env": {
+				"dev": [
+					{
+						"key": "DATABASE_URL",
+						"type": "from_resource",
+						"from": "resource:db:connection_url"
+					},
+					{
+						"key": "PAYLOAD_SECRET",
+						"type": "secret",
+						"from": "sops:secrets/cms.yaml:/PAYLOAD_SECRET"
+					}
+				],
+				"staging": [
+					{
+						"key": "DATABASE_URL",
+						"type": "from_resource",
+						"from": "resource:db:connection_url"
+					}
+				],
+				"production": [
+					{
+						"key": "DATABASE_URL",
+						"type": "from_resource",
+						"from": "resource:db:connection_url"
+					},
+					{
+						"key": "PAYLOAD_SECRET",
+						"type": "secret",
+						"from": "github-secrets:PAYLOAD_SECRET"
+					}
+				]
+			},
+			"depends_on": ["db"]
+		},
+		{
+			"name": "web",
+			"type": "sveltekit",
+			"path": "apps/web",
+			"build": {
+				"dockerfile": "Dockerfile"
+			},
+			"infra": {
+				"provider": "digitalocean",
+				"type": "app",
+				"config": {
+					"region": "fra1",
+					"domain": "www.my-website.com",
+					"instance_count": 2,
+					"env_from_shared": true
+				}
+			},
+			"env": {
+				"dev": [
+					{
+						"key": "PUBLIC_API_URL",
+						"type": "value",
+						"value": "http://localhost:3000"
+					}
+				],
+				"production": [
+					{
+						"key": "PUBLIC_API_URL",
+						"type": "value",
+						"value": "https://api.my-website.com"
+					},
+					{
+						"key": "ASSETS_BUCKET",
+						"type": "from_resource",
+						"from": "resource:object-store:bucket"
+					}
+				]
+			}
+		}
+	]
+}

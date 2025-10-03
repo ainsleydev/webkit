@@ -1,0 +1,23 @@
+{
+    "name": "webkit-docs",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "docs:dev": "vitepress dev",
+        "docs:build": "vitepress build",
+        "docs:preview": "vitepress preview",
+        "docs:concat": "repopack --include \"**/*.md\" --ignore \"combined.md\" --style markdown -o combined.md"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.17.1",
+    "devDependencies": {
+        "@types/node": "^24.6.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3",
+        "vitepress": "2.0.0-alpha.12"
+    }
+}
