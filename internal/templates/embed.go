@@ -16,3 +16,11 @@ func LoadTemplate(name string) (*template.Template, error) {
 	}
 	return template.New(name).Parse(string(content))
 }
+
+func MustLoadTemplate(name string) *template.Template {
+	t, err := LoadTemplate(name)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}

@@ -1,4 +1,4 @@
-package cli
+package cmd
 
 import (
 	"context"
@@ -18,12 +18,10 @@ var updateCmd = &cli.Command{
 func update(_ context.Context, input commandInput) error {
 	gen := cgtools.NewGenerator(input.FS)
 
-	tpl, err := templates.LoadTemplate(".editorconfig")
+	err := gen.GenerateTemplate(".editorconfig", templates.MustLoadTemplate(".editorconfig"), nil)
 	if err != nil {
 		return err
 	}
-
-	err = gen.GenerateTemplate(".editorconfig", tpl, nil)
 
 	slog.Info("Created file, nice")
 
