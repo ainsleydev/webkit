@@ -1,0 +1,23 @@
+# Package managers
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+bun.lockb
+
+# Build / output
+.next/
+.out/
+build/
+dist/
+
+# Static assets
+/static/
+
+# Generated code
+*.min.js
+*.bundle.js
+*.css.map
+
+# Framework / tooling specific
+.svelte-kit/

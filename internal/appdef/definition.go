@@ -1,4 +1,4 @@
-package app
+package appdef
 
 import (
 	"io"
@@ -36,7 +36,7 @@ type (
 	}
 	App struct {
 		Name        string   `json:"name"`
-		Type        string   `json:"type"`
+		Type        AppType  `json:"type"`
 		Description string   `json:"description,omitempty"`
 		Path        string   `json:"path"`
 		Build       Build    `json:"build"`
@@ -75,6 +75,21 @@ type (
 	}
 )
 
+type (
+	AppType string
+)
+
+const (
+	AppTypeSvelteKit AppType = "svelte-kit"
+	AppTypeGoLang    AppType = "golang"
+	AppTypePayload   AppType = "payload-cms"
+)
+
+// String implements fmt.Stringer on the AppType.
+func (a AppType) String() string {
+	return string(a)
+}
+
 func Read(root afero.Fs) (*Definition, error) {
 	file, err := root.Open(JsonFileName)
 	if err != nil {
@@ -94,4 +109,14 @@ func Read(root afero.Fs) (*Definition, error) {
 	}
 
 	return &def, nil
+}
+
+func (d Definition) GithubLabels() []string {
+	labels := []string{"webkit"}
+
+	for _, v := range d.Apps {
+		labels = append(labels, v.Type.String())
+	}
+
+	return labels
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/app"
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
@@ -36,8 +36,8 @@ func WrapCommand(command RunCommand) cli.ActionFunc {
 
 // AppDef retrieves the main app manifest from the root
 // of the project. Exits without it.
-func (c *CommandInput) AppDef() *app.Definition {
-	read, err := app.Read(c.FS)
+func (c *CommandInput) AppDef() *appdef.Definition {
+	read, err := appdef.Read(c.FS)
 	if err != nil {
 		Exit(err)
 	}
