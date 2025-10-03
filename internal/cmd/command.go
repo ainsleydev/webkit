@@ -25,7 +25,8 @@ type commandInput struct {
 // wrapCommand wraps a RunCommand to work with urfave/cli.
 func wrapCommand(command runCommand) cli.ActionFunc {
 	return func(ctx context.Context, c *cli.Command) error {
-		fs := afero.NewOsFs()
+		// Lets temporarily use playground so we don't override any shit.
+		fs := afero.NewBasePathFs(afero.NewOsFs(), "./internal/playground")
 		input := commandInput{
 			Command: c,
 			AppDef:  app.Definition{},

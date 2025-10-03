@@ -17,6 +17,8 @@ func LoadTemplate(name string) (*template.Template, error) {
 	return template.New(name).Parse(string(content))
 }
 
+// MustLoadTemplate calls LoadTemplate but panics if the
+// template could not be parsed.
 func MustLoadTemplate(name string) *template.Template {
 	t, err := LoadTemplate(name)
 	if err != nil {

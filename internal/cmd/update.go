@@ -23,6 +23,11 @@ func update(_ context.Context, input commandInput) error {
 		return err
 	}
 
+	err = gen.GenerateTemplate(".gitignore", templates.MustLoadTemplate(".gitignore"), nil)
+	if err != nil {
+		return err
+	}
+
 	slog.Info("Created file, nice")
 
 	return nil
