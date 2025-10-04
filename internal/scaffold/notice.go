@@ -11,6 +11,7 @@ var commentMap = map[string]string{
 	".yml":          "#",
 	".editorconfig": "#",
 	".toml":         "#",
+	".js":           "//",
 	".html":         "<!-- %s -->",
 	".md":           "<!-- %s -->",
 }

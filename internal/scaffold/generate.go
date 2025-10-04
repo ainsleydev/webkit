@@ -2,6 +2,7 @@ package cgtools
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"text/template"
@@ -55,14 +56,24 @@ func (g Generator) GenerateTemplate(path string, tpl *template.Template, data an
 	return g.writeFileWithTemplate(path, tpl, data)
 }
 
-// GenerateYAML marshals content to YAML and prepends the Webkit notice if requested
-func (g Generator) GenerateYAML(path string, content any, addNotice bool) error {
+// GenerateJSON marshals content to JSON and prepends the Webkit
+// notice if requested.
+func (g Generator) GenerateJSON(path string, content any) error {
 	buf := &bytes.Buffer{}
 
-	if addNotice {
-		// Use the same notice logic as templates
-		buf.WriteString(noticeForFile(path))
+	encoder := json.NewEncoder(buf)
+	encoder.SetIndent("", "\t")
+	if err := encoder.Encode(content); err != nil {
+		return fmt.Errorf("marshalling %s: %w", path, err)
 	}
+
+	return g.WriteFile(path, buf.Bytes())
+}
+
+// GenerateYAML marshals content to YAML and prepends the Webkit
+// notice if requested.
+func (g Generator) GenerateYAML(path string, content any, addNotice bool) error {
+	buf := &bytes.Buffer{}
 
 	encoder := yaml.NewEncoder(buf)
 	encoder.SetIndent(2)
