@@ -1,13 +1,13 @@
 {
 	"name": "@ainsleydev/eslint-config",
 	"version": "0.0.2",
-	"description": "ainsley.dev styles for ESLint and Prettier",
+	"description": "ainsley.dev ESLint Configuration",
 	"license": "MIT",
-	"keywords": ["eslint", "prettier"],
+	"keywords": ["eslint", "eslintconfig"],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ainsleydev/webkit.git",
-		"directory": "packages/eslint-config-ainsleydev"
+		"directory": "packages/config-eslint"
 	},
 	"author": {
 		"name": "ainsley.dev LTD",
@@ -15,16 +15,25 @@
 		"url": "https://ainsley.dev"
 	},
 	"scripts": {
-		"publish": "npm publish --access public",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"publish": "npm publish"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"peerDependencies": {
+		"eslint": ">= 9"
+	},
+	"devDependencies": {
+		"add": "^2.0.6",
+		"eslint": "^9.37.0",
+		"eslint-plugin-import": "^2.32.0",
+		"pnpm": "^10.18.0"
 	},
 	"dependencies": {
-		"@eslint/js": "^9.3.0",
-		"eslint": "~9.3.0",
-		"globals": "^15.3.0",
-		"typescript-eslint": "^7.10.0",
-		"eslint-config-prettier": "9.0.0",
-		"eslint-plugin-jest": "^28.5.0",
-		"eslint-plugin-perfectionist": "^2.10.0"
+		"@eslint/compat": "^1.4.0",
+		"@eslint/js": "^9.37.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-perfectionist": "^4.15.1",
+		"eslint-plugin-svelte": "^3.12.4"
 	}
 }

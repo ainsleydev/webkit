@@ -18,14 +18,22 @@ var createCodeStyleFilesCmd = &cli.Command{
 func createCodeStyleFiles(_ context.Context, input cmdtools.CommandInput) error {
 	gen := cgtools.NewGenerator(input.FS)
 
-	err := gen.GenerateTemplate(".editorconfig", templates.MustLoadTemplate(".editorconfig"), nil)
-	if err != nil {
-		return err
+	files := []string{
+		".editorconfig",
+		".prettierrc",
+		".prettierignore",
+	}
+
+	for _, file := range files {
+		// Presume that the name of the generated file is the same as the
+		// one that resides in templates, but it can be changed later.
+		err := gen.GenerateTemplate(file, templates.MustLoadTemplate(file), nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	// TODO,
-	// .prettierrc
-	// .prettierignore
 	// .eslintrc
 	// .eslintignore
 	// .stylelintrc

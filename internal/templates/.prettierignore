@@ -1,23 +1,31 @@
-# Package managers
-package-lock.json
-pnpm-lock.yaml
-yarn.lock
-bun.lock
-bun.lockb
+# See: https://prettier.io/docs/ignore
+
+# Package Managers
+**/package-lock.json
+**/pnpm-lock.yaml
+**/yarn.lock
+**/bun.lock
+**/bun.lockb
 
 # Build / output
-.next/
-.out/
-build/
-dist/
+**/.next/
+**/.out/
+**/build/
+**/dist/
 
-# Static assets
-/static/
+# Static Assets
+**/static/
 
-# Generated code
+# Generated Code
 *.min.js
 *.bundle.js
 *.css.map
 
-# Framework / tooling specific
-.svelte-kit/
+# Framework / Tooling
+**/.svelte-kit/
+
+# Editor / OS
+**/.DS_Store
+**/.cache
+**/.idea
+**/.vscode
