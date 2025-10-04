@@ -81,6 +81,8 @@ export const baseConfig = [
 		'**/.svelte-kit/**',
 		'**/coverage/**',
 		'**/.turbo/**',
+		'**/migrations/**',
+		'**/importMap.js',
 	]),
 ];
 
