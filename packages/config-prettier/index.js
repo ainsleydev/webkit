@@ -1,10 +1,11 @@
 /**
  * Prettier Configuration for ainsley.dev
  *
- * Ref: https://prettier.io/docs/sharing-configurations
+ * @see https://prettier.io/docs/configuration
+ * @see https://prettier.io/docs/sharing-configurations
+ *
+ * @type {import("prettier").Config}
  */
-
-/** @type {import("prettier").Config} */
 const config = {
 	useTabs: true,
 	singleQuote: true,
