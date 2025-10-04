@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/eslint-config",
-	"version": "0.0.2",
+	"version": "0.0.4",
 	"description": "ainsley.dev ESLint Configuration",
 	"license": "MIT",
 	"keywords": ["eslint", "eslintconfig"],
@@ -32,8 +32,10 @@
 	"dependencies": {
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.37.0",
+		"@payloadcms/eslint-plugin": "^3.28.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-perfectionist": "^4.15.1",
-		"eslint-plugin-svelte": "^3.12.4"
+		"eslint-plugin-svelte": "^3.12.4",
+		"typescript-eslint": "^8.45.0"
 	}
 }

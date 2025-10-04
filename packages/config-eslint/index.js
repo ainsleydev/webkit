@@ -1,123 +1,123 @@
-import { fileURLToPath } from 'node:url';
-import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
+import payloadPlugin from '@payloadcms/eslint-plugin';
 import prettier from 'eslint-config-prettier';
-import importPlugin from 'eslint-plugin-import';
 import perfectionist from 'eslint-plugin-perfectionist';
 import svelte from 'eslint-plugin-svelte';
+import globals from 'globals';
 import ts from 'typescript-eslint';
 
-/** @typedef {import('eslint').Linter.Config} FlatConfig */
-
 /**
- * Helper to include .gitignore from project root
+ * Base ainsley.dev configuration for ESLint, it can be
+ * used in any project using JS/TS.
  */
-export function withGitignore(projectRoot) {
-	const gitignorePath = fileURLToPath(new URL('./.gitignore', projectRoot));
-	return includeIgnoreFile(gitignorePath);
-}
-
-const baseRules = {
-	'class-methods-use-this': 'off',
-	curly: ['warn', 'all'],
-	'arrow-body-style': 'off',
-	'no-restricted-exports': ['warn', { restrictDefaultExports: { direct: true } }],
-	'no-console': 'warn',
-	'no-sparse-arrays': 'off',
-	'no-underscore-dangle': 'off',
-	'no-use-before-define': 'off',
-	'object-shorthand': 'warn',
-	'no-useless-escape': 'warn',
-	'perfectionist/sort-objects': [
-		'error',
-		{
-			type: 'natural',
-			order: 'asc',
-			partitionByComment: true,
-			partitionByNewLine: true,
-			groups: ['top', 'unknown'],
-			customGroups: {
-				top: ['_id', 'id', 'name', 'slug', 'type'],
-			},
-		},
-	],
-};
-
-const typescriptRules = {
-	'@typescript-eslint/no-explicit-any': 'warn',
-	'@typescript-eslint/no-empty-object-type': 'warn',
-};
-
-/**
- * Base config (applied to all projects)
- * @type {FlatConfig[]}
- */
-const baseConfig = [
+export const base = [
 	js.configs.recommended,
 	...ts.configs.recommended,
-	perfectionist.configs['recommended-natural'],
-	prettier,
+
 	{
 		plugins: {
-			import: importPlugin,
+			perfectionist,
+		},
+		languageOptions: {
+			globals: { ...globals.browser, ...globals.node },
 		},
 		rules: {
-			...baseRules,
-			...typescriptRules,
+			// TypeScript rules
+			'@typescript-eslint/no-empty-object-type': 'warn',
+			'@typescript-eslint/no-explicit-any': 'off',
+
+			// ts-expect preferred over ts-ignore. It will error if the expected error is no longer present.
+			'@typescript-eslint/ban-ts-comment': 'warn',
+
+			// By default, it errors for unused variables. This is annoying, warnings are enough.
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{
+					vars: 'all',
+					args: 'after-used',
+					ignoreRestSiblings: false,
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					destructuredArrayIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^(_|ignore)',
+				},
+			],
+
+			// Disable no-undef for TypeScript files
+			'no-undef': 'off',
+
+			// Perfectionist import sorting
+			'perfectionist/sort-imports': [
+				'error',
+				{
+					type: 'alphabetical',
+					order: 'asc',
+					ignoreCase: true,
+					newlinesBetween: 'always',
+					internalPattern: ['^@/.*', '^\\$lib/.*'],
+					groups: [
+						'builtin',
+						'external',
+						'internal',
+						['parent', 'sibling', 'index'],
+						'object',
+						'type',
+					],
+				},
+			],
 		},
+	},
+
+	// Prettier config (should be last to override formatting rules)
+	prettier,
+
+	// Common ignore patterns that apply to most projects
+	{
+		ignores: [
+			'**/node_modules/**',
+			'**/dist/**',
+			'**/build/**',
+			'**/.next/**',
+			'**/.svelte-kit/**',
+			'**/coverage/**',
+			'**/.turbo/**',
+		],
 	},
 ];
 
 /**
- * Svelte-specific config (only applied to Svelte files)
- * @type {FlatConfig[]}
+ * Svelte Configuration
  */
-const svelteConfig = [
+export const svelteConfig = [
 	...svelte.configs.recommended,
 	...svelte.configs.prettier,
+
 	{
-		files: ['**/*.svelte'],
+		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 		languageOptions: {
 			parserOptions: {
-				parser: ts.parser,
+				projectService: true,
 				extraFileExtensions: ['.svelte'],
+				parser: ts.parser,
 			},
 		},
 		rules: {
 			'svelte/valid-compile': ['error', { ignoreWarnings: false }],
-			'svelte/no-navigation-without-resolve': ['warn'],
+			'svelte/no-navigation-without-resolve': ['off'],
 			'svelte/no-at-html-tags': 'off',
 		},
 	},
 ];
 
 /**
- * Import ordering config (applies to all file types)
- * @type {FlatConfig[]}
+ * Payload CMS configuration.
  */
-const importConfig = [
+export const payloadConfig = [
 	{
-		files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.svelte'],
-		rules: {
-			'import/order': [
-				'error',
-				{
-					groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
-					'newlines-between': 'always',
-					alphabetize: { order: 'asc', caseInsensitive: true },
-					pathGroups: [
-						{ pattern: '$lib/**', group: 'internal' },
-						{ pattern: '$app/**', group: 'internal' },
-					],
-					pathGroupsExcludedImportTypes: ['builtin'],
-				},
-			],
+		plugins: {
+			payload: payloadPlugin,
 		},
 	},
 ];
 
-/**
- * Complete ainsley.dev ESLint configuration
- * @type {FlatConfig[]}
- */
-export default [...baseConfig, ...svelteConfig, ...importConfig];
+export default base;
