@@ -1,0 +1,29 @@
+{
+	"name": "@ainsleydev/prettier-config",
+	"version": "0.0.1",
+	"description": "ainsley.dev Prettier Config",
+	"type": "module",
+	"exports": "./index.js",
+	"license": "MIT",
+	"keywords": ["prettier"],
+	"author": {
+		"name": "ainsley.dev LTD",
+		"email": "hello@ainsley.dev",
+		"url": "https://ainsley.dev"
+	},
+	"scripts": {
+		"publish": "npm publish"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"prettier-plugin-svelte": "^3.4.0"
+	},
+	"devDependencies": {
+		"prettier": "^3.6.2"
+	},
+	"peerDependencies": {
+		"prettier": ">=3.0.0"
+	}
+}
