@@ -3,6 +3,7 @@ import payloadPlugin from '@payloadcms/eslint-plugin';
 import prettier from 'eslint-config-prettier';
 import perfectionist from 'eslint-plugin-perfectionist';
 import svelte from 'eslint-plugin-svelte';
+import { globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import ts from 'typescript-eslint';
 
@@ -10,7 +11,7 @@ import ts from 'typescript-eslint';
  * Base ainsley.dev configuration for ESLint, it can be
  * used in any project using JS/TS.
  */
-export const base = [
+export const baseConfig = [
 	js.configs.recommended,
 	...ts.configs.recommended,
 
@@ -72,17 +73,15 @@ export const base = [
 	prettier,
 
 	// Common ignore patterns that apply to most projects
-	{
-		ignores: [
-			'**/node_modules/**',
-			'**/dist/**',
-			'**/build/**',
-			'**/.next/**',
-			'**/.svelte-kit/**',
-			'**/coverage/**',
-			'**/.turbo/**',
-		],
-	},
+	globalIgnores([
+		'**/node_modules/**',
+		'**/dist/**',
+		'**/build/**',
+		'**/.next/**',
+		'**/.svelte-kit/**',
+		'**/coverage/**',
+		'**/.turbo/**',
+	]),
 ];
 
 /**
@@ -120,4 +119,4 @@ export const payloadConfig = [
 	},
 ];
 
-export default base;
+export default baseConfig;

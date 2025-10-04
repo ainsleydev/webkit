@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/eslint-config",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "ainsley.dev ESLint Configuration",
 	"license": "MIT",
 	"keywords": ["eslint", "eslintconfig"],
