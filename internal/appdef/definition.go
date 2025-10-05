@@ -35,14 +35,15 @@ type (
 		Outputs  []string       `json:"outputs"`
 	}
 	App struct {
-		Name        string   `json:"name"`
-		Type        AppType  `json:"type"`
-		Description string   `json:"description,omitempty"`
-		Path        string   `json:"path"`
-		Build       Build    `json:"build"`
-		Infra       Infra    `json:"infra"`
-		Env         Env      `json:"env"`
-		DependsOn   []string `json:"depends_on,omitempty"`
+		Name        string                  `json:"name"`
+		Type        AppType                 `json:"type"`
+		Description string                  `json:"description,omitempty"`
+		Path        string                  `json:"path"`
+		Build       Build                   `json:"build"`
+		Infra       Infra                   `json:"infra"`
+		Env         Env                     `json:"env"`
+		Commands    map[Command]CommandSpec `json:"commands,omitempty"`
+		DependsOn   []string                `json:"depends_on,omitempty"`
 	}
 	Build struct {
 		Dockerfile string `json:"dockerfile"`
@@ -111,6 +112,8 @@ func Read(root afero.Fs) (*Definition, error) {
 	return &def, nil
 }
 
+// GithubLabels returns the labels that will appear on the
+// GitHub repository by looking at the application types.
 func (d Definition) GithubLabels() []string {
 	labels := []string{"webkit"}
 
@@ -119,4 +122,33 @@ func (d Definition) GithubLabels() []string {
 	}
 
 	return labels
+}
+
+// GetCommand returns the effective command for this app and operation.
+func (a *App) GetCommand(cmd Command) (command string, skip bool) {
+	// Check if user overrode it
+	spec, exists := a.Commands[cmd]
+	if !exists {
+		// Use default command.
+		if defaults, ok := defaultCommands[a.Type]; ok {
+			return defaults[cmd], false
+		}
+		// This should never happen, we always have defaults.
+		return "", true
+	}
+
+	if spec.Disabled {
+		return "", true
+	}
+
+	if spec.Cmd != "" {
+		return spec.Cmd, spec.SkipCI
+	}
+
+	// Fallback to default if override exists but has no command
+	if defaults, ok := defaultCommands[a.Type]; ok {
+		return defaults[cmd], spec.SkipCI
+	}
+
+	return "", true
 }
