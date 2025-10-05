@@ -11,5 +11,6 @@ var scaffoldCmd = &cli.Command{
 		createCodeStyleFilesCmd,
 		createGithubSettingsCmd,
 		createPackageJsonCmd,
+		createCICDCmd,
 	},
 }

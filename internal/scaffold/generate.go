@@ -72,11 +72,14 @@ func (g Generator) GenerateJSON(path string, content any) error {
 
 // GenerateYAML marshals content to YAML and prepends the Webkit
 // notice if requested.
-func (g Generator) GenerateYAML(path string, content any, addNotice bool) error {
+func (g Generator) GenerateYAML(path string, content any) error {
 	buf := &bytes.Buffer{}
+
+	buf.WriteString(noticeForFile(path))
 
 	encoder := yaml.NewEncoder(buf)
 	encoder.SetIndent(2)
+
 	if err := encoder.Encode(content); err != nil {
 		return fmt.Errorf("marshalling %s: %w", path, err)
 	}

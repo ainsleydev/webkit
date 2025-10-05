@@ -3,6 +3,8 @@ package templates
 import (
 	"embed"
 	"text/template"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 //go:embed *
@@ -14,7 +16,7 @@ func LoadTemplate(name string) (*template.Template, error) {
 	if err != nil {
 		return nil, err
 	}
-	return template.New(name).Parse(string(content))
+	return template.New(name).Funcs(sprig.FuncMap()).Parse(string(content))
 }
 
 // MustLoadTemplate calls LoadTemplate but panics if the

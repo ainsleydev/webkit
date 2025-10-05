@@ -1,0 +1,40 @@
+name: PR - {{ .Name | title }}
+
+on:
+  pull_request:
+    paths:
+      - '{{ .Path }}/**'
+
+jobs:
+{{- range .Commands }}
+  {{ .Name }}:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      {{- if eq $.App.Type "sveltekit" "payload" }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      {{- else if eq $.App.Type "golang" }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      {{- end }}
+
+      - name: {{ .Name }}
+        working-directory: {{ $.App.Path }}
+        run: {{ .Command }}
+{{- end }}

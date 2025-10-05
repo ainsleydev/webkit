@@ -42,7 +42,7 @@ type (
 		Build       Build                   `json:"build"`
 		Infra       Infra                   `json:"infra"`
 		Env         Env                     `json:"env"`
-		Commands    map[Command]CommandSpec `json:"commands,omitempty"`
+		Commands    map[Command]CommandSpec `json:"commands,omitempty" jsonschema:"oneof_type=boolean;object;string"`
 		DependsOn   []string                `json:"depends_on,omitempty"`
 	}
 	Build struct {

@@ -27,7 +27,7 @@ func createGitSettings(_ context.Context, input cmdtools.CommandInput) error {
 	// TODO:
 	// Dependabot
 
-	return gen.GenerateYAML(".github/settings.yaml", repoSettings(input), true)
+	return gen.GenerateYAML(".github/settings.yaml", repoSettings(input))
 }
 
 func repoSettings(input cmdtools.CommandInput) github.RepoSettings {

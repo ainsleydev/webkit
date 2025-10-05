@@ -52,12 +52,6 @@ func TestCommandSpecUnmarshalJSON(t *testing.T) {
 func TestAppGetCommand(t *testing.T) {
 	t.Parallel()
 
-	var commands = []Command{
-		CommandLint,
-		CommandTest,
-		CommandFormat,
-	}
-
 	t.Run("Defaults", func(t *testing.T) {
 		t.Parallel()
 

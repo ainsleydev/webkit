@@ -38,6 +38,13 @@ const (
 	CommandFormat = "format"
 )
 
+// commands defines all the commands available.
+var commands = []Command{
+	CommandLint,
+	CommandTest,
+	CommandFormat,
+}
+
 // defaultCommands defines the default actions for each
 // application type. If not overridden, these commands
 // will be used.
