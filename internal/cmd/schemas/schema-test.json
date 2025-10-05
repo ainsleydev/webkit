@@ -1,0 +1,225 @@
+{
+	"definitions": {
+		"AppdefApp": {
+			"properties": {
+				"build": {
+					"$ref": "#/definitions/AppdefBuild"
+				},
+				"commands": {
+					"additionalProperties": {
+						"$ref": "#/definitions/AppdefCommandSpec"
+					},
+					"type": "object"
+				},
+				"depends_on": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"description": {
+					"type": "string"
+				},
+				"env": {
+					"$ref": "#/definitions/AppdefEnv"
+				},
+				"infra": {
+					"$ref": "#/definitions/AppdefInfra"
+				},
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefBuild": {
+			"properties": {
+				"dockerfile": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefCommandSpec": {
+			"properties": {
+				"command": {
+					"type": "string"
+				},
+				"skip_ci": {
+					"type": "boolean"
+				},
+				"timeout": {
+					"type": "string"
+				}
+			},
+			"type": "object",
+			"oneOf": [
+				{
+					"type": "boolean"
+				},
+				{
+					"type": "string"
+				},
+				{
+					"$ref": "#/definitions/AppdefCommandSpec"
+				}
+			]
+		},
+		"AppdefEnv": {
+			"properties": {
+				"dev": {
+					"items": {
+						"$ref": "#/definitions/AppdefEnvValue"
+					},
+					"type": ["array", "null"]
+				},
+				"production": {
+					"items": {
+						"$ref": "#/definitions/AppdefEnvValue"
+					},
+					"type": ["array", "null"]
+				},
+				"staging": {
+					"items": {
+						"$ref": "#/definitions/AppdefEnvValue"
+					},
+					"type": ["array", "null"]
+				}
+			},
+			"type": "object"
+		},
+		"AppdefEnvValue": {
+			"properties": {
+				"from": {
+					"type": "string"
+				},
+				"key": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				},
+				"value": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefInfra": {
+			"properties": {
+				"config": {
+					"properties": {
+						"domain": {
+							"type": "string"
+						},
+						"env_from_shared": {
+							"type": "boolean"
+						},
+						"instance_count": {
+							"type": "integer"
+						},
+						"region": {
+							"type": "string"
+						},
+						"size": {
+							"type": "string"
+						},
+						"ssh_keys": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
+						}
+					},
+					"type": "object"
+				},
+				"provider": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefProject": {
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"repo": {
+					"type": "string"
+				},
+				"title": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefResource": {
+			"properties": {
+				"config": {
+					"additionalProperties": {},
+					"type": ["object", "null"]
+				},
+				"name": {
+					"type": "string"
+				},
+				"outputs": {
+					"items": {
+						"type": "string"
+					},
+					"type": ["array", "null"]
+				},
+				"provider": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefShared": {
+			"properties": {
+				"env": {
+					"$ref": "#/definitions/AppdefEnv"
+				}
+			},
+			"type": "object"
+		}
+	},
+	"properties": {
+		"apps": {
+			"items": {
+				"$ref": "#/definitions/AppdefApp"
+			},
+			"type": ["array", "null"]
+		},
+		"project": {
+			"$ref": "#/definitions/AppdefProject"
+		},
+		"resources": {
+			"items": {
+				"$ref": "#/definitions/AppdefResource"
+			},
+			"type": ["array", "null"]
+		},
+		"shared": {
+			"$ref": "#/definitions/AppdefShared"
+		},
+		"webkit_version": {
+			"type": "string"
+		}
+	},
+	"type": "object"
+}

@@ -1,9 +1,10 @@
 package appdef
 
 import (
+	"encoding/json"
 	"fmt"
 
-	"github.com/goccy/go-json"
+	"github.com/swaggest/jsonschema-go"
 )
 
 // CommandSpec defines an action for an App, this can run in
@@ -13,6 +14,18 @@ type CommandSpec struct {
 	SkipCI   bool   `json:"skip_ci,omitempty"`
 	Timeout  string `json:"timeout,omitempty"`
 	Disabled bool   `json:"-"` // Set during unmarshal
+}
+
+// Ensure CommandSpec implements jsonschema.OneOfExposer
+var _ jsonschema.OneOfExposer = &CommandSpec{}
+
+// JSONSchemaOneOf returns the polymorphic schema options.
+func (*CommandSpec) JSONSchemaOneOf() []interface{} {
+	return []interface{}{
+		true,          // boolean option
+		"",            // string option
+		CommandSpec{}, // object option
+	}
 }
 
 // Command defines the type of action that will be actioned.

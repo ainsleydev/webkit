@@ -50,7 +50,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.32.2 // indirect
 	github.com/aws/smithy-go v1.22.0 // indirect
+	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -60,6 +62,7 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/invopop/jsonschema v0.13.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -75,8 +78,11 @@ require (
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/swaggest/jsonschema-go v0.3.78 // indirect
+	github.com/swaggest/refl v1.4.0 // indirect
 	github.com/tdewolff/parse/v2 v2.7.18 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
+	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
