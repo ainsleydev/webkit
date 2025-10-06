@@ -1,22 +1,16 @@
-package cmd
+package operations
 
 import (
 	"context"
 
-	"github.com/urfave/cli/v3"
-
-	"github.com/ainsleydev/webkit/internal/cmd/internal"
-	"github.com/ainsleydev/webkit/internal/github"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/schemas/github"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
-var createGithubSettingsCmd = &cli.Command{
-	Name:   "git",
-	Action: cmdtools.WrapCommand(createGitSettings),
-}
-
-func createGitSettings(_ context.Context, input cmdtools.CommandInput) error {
+// CreateGitSettings scaffolds the repo settings and ignore files.
+func CreateGitSettings(_ context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(input.FS)
 
 	err := gen.Template(".gitignore", templates.MustLoadTemplate(".gitignore"), nil)

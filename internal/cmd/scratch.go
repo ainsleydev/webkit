@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"context"
-	//"github.com/invopop/jsonschema"
+
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/cmd/internal"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 )
 
 var scratchCmd = &cli.Command{

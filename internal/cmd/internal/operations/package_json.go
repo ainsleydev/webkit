@@ -1,11 +1,9 @@
-package cmd
+package operations
 
 import (
 	"context"
 
-	"github.com/urfave/cli/v3"
-
-	"github.com/ainsleydev/webkit/internal/cmd/internal"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
@@ -35,12 +33,7 @@ type (
 	}
 )
 
-var createPackageJsonCmd = &cli.Command{
-	Name:   "package-json",
-	Action: cmdtools.WrapCommand(createPackageJson),
-}
-
-func createPackageJson(_ context.Context, input cmdtools.CommandInput) error {
+func CreatePackageJson(_ context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(input.FS)
 	app := input.AppDef()
 

@@ -1,0 +1,37 @@
+package operations
+
+import (
+	"context"
+
+	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/templates"
+)
+
+var codeStyleFiles = map[string]string{
+	".editorconfig":     ".editorconfig",
+	".prettierrc":       ".prettierrc",
+	".prettierignore":   ".prettierignore",
+	".eslint.config.js": "eslint.config.js.tmpl",
+	// TODO: .stylelintrc
+}
+
+// CreateCodeStyleFiles scaffolds' developer and formatting files for
+// the project, mainly dotfiles.
+//
+// IDEA: Might be good in the AppDef if we could specify what files
+// we want to generate or exclude from this.
+func CreateCodeStyleFiles(_ context.Context, input cmdtools.CommandInput) error {
+	gen := scaffold.New(input.FS)
+	app := input.AppDef()
+
+	for file, template := range codeStyleFiles {
+		tpl := templates.MustLoadTemplate(template)
+		err := gen.Template(file, tpl, app)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

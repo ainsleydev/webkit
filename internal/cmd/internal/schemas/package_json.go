@@ -4,7 +4,7 @@
 //    packageJSON, err := UnmarshalPackageJSON(bytes)
 //    bytes, err = packageJSON.Marshal()
 
-package main
+package schemas
 
 import "encoding/json"
 
