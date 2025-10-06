@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"testing"
 
 	"github.com/goccy/go-yaml"
 	"github.com/kaptinlin/jsonschema"
+	"github.com/stretchr/testify/require"
 )
 
 // SchemaValidator wraps a compiled JSON Schema for validation.
@@ -21,22 +20,11 @@ type SchemaValidator struct {
 func SchemaFromURL(t *testing.T, url string) (*SchemaValidator, error) {
 	t.Helper()
 
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch schema from URL: %w", err)
-	}
-	defer resp.Body.Close()
+	compiler := jsonschema.NewCompiler()
+	schema, err := compiler.GetSchema(url)
+	require.NoError(t, err)
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected HTTP status: %s", resp.Status)
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read schema: %w", err)
-	}
-
-	return SchemaFromBytes(t, data)
+	return &SchemaValidator{schema: schema}, nil
 }
 
 // SchemaFromBytes compiles a JSON Schema from a byte slice.
@@ -45,9 +33,7 @@ func SchemaFromBytes(t *testing.T, data []byte) (*SchemaValidator, error) {
 
 	compiler := jsonschema.NewCompiler()
 	schema, err := compiler.Compile(data)
-	if err != nil {
-		return nil, err
-	}
+	require.NoError(t, err)
 
 	return &SchemaValidator{schema: schema}, nil
 }
