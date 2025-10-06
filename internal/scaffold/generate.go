@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"text/template"
 
@@ -42,11 +43,11 @@ const (
 
 // Bytes writes bytes to the filesystem and ensure directories exist.
 func (f FileGenerator) Bytes(path string, data []byte) error {
-	if err := f.fs.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := f.fs.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
 		return fmt.Errorf("creating directories: %w", err)
 	}
 
-	if err := afero.WriteFile(f.fs, path, data, 0o644); err != nil {
+	if err := afero.WriteFile(f.fs, path, data, os.ModePerm); err != nil {
 		return fmt.Errorf("writing file %s: %w", path, err)
 	}
 
@@ -85,7 +86,7 @@ func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
 	encoder := json.NewEncoder(buf)
 	encoder.SetIndent("", "\t")
 	if err := encoder.Encode(content); err != nil {
-		return fmt.Errorf("marshalling %s: %w", path, err)
+		return fmt.Errorf("encoding %s: %w", path, err)
 	}
 
 	return f.Bytes(path, buf.Bytes())
@@ -105,7 +106,7 @@ func (f FileGenerator) YAML(path string, content any, opts ...Option) error {
 	encoder := yaml.NewEncoder(buf)
 	encoder.SetIndent(2)
 	if err := encoder.Encode(content); err != nil {
-		return fmt.Errorf("marshalling %s: %w", path, err)
+		return fmt.Errorf("encoding %s: %w", path, err)
 	}
 
 	return f.Bytes(path, buf.Bytes())

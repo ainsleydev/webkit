@@ -1,8 +1,8 @@
-package website
+package appdef
 
 import schemaorg "github.com/ainsleydev/webkit/pkg/markup/schema"
 
-type Definition struct {
+type definitionOld struct {
 	Name          string
 	Slug          string
 	URL           string

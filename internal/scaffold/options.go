@@ -9,9 +9,9 @@ type writeOptions struct {
 }
 
 // WithScaffoldMode sets the write mode for the operation
-func WithScaffoldMode(mode WriteMode) Option {
+func WithScaffoldMode() Option {
 	return func(opts *writeOptions) {
-		opts.mode = mode
+		opts.mode = ModeScaffold
 	}
 }
 
