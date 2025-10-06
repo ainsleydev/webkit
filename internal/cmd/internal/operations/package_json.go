@@ -3,36 +3,14 @@ package operations
 import (
 	"context"
 
+	"github.com/goccy/go-json"
+
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
-type (
-	packageJSON struct {
-		Name            string            `json:"name"`
-		Version         string            `json:"version"`
-		Description     string            `json:"description"`
-		Private         bool              `json:"private"`
-		License         string            `json:"license"`
-		Type            string            `json:"type"`
-		Scripts         map[string]string `json:"scripts"`
-		DevDependencies map[string]string `json:"devDependencies"`
-		PackageManager  string            `json:"packageManager"`
-		Engines         map[string]string `json:"engines"`
-		Pnpm            packagePnpm       `json:"pnpm"`
-		Author          packageAuthor     `json:"author"`
-		Maintainers     []packageAuthor   `json:"maintainers"`
-	}
-	packageAuthor struct {
-		Name  string `json:"name"`
-		Email string `json:"email"`
-		URL   string `json:"url"`
-	}
-	packagePnpm struct {
-		OnlyBuiltDependencies []string `json:"onlyBuiltDependencies"`
-	}
-)
-
+// CreatePackageJson scaffolds a root JSON file to act as a
+// starting point for repos.
 func CreatePackageJson(_ context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(input.FS)
 	app := input.AppDef()
@@ -41,9 +19,9 @@ func CreatePackageJson(_ context.Context, input cmdtools.CommandInput) error {
 		Name:        app.Project.Name,
 		Description: app.Project.Description,
 		Version:     "1.0.0",
-		Private:     true,
-		License:     "BSD-3-Clause",
-		Type:        "module",
+		//Private:     false,
+		License: "BSD-3-Clause",
+		Type:    "module",
 		Scripts: map[string]string{
 			"preinstall": "npx only-allow pnpm",
 			"test":       "turbo test",
@@ -80,7 +58,35 @@ func CreatePackageJson(_ context.Context, input cmdtools.CommandInput) error {
 				URL:   "https://ainsley.dev",
 			},
 		},
+		BundleDependencies: json.RawMessage(`false`),
 	}
 
 	return gen.JSON("package.json", p)
 }
+
+type (
+	packageJSON struct {
+		Name               string            `json:"name"`
+		Version            string            `json:"version"`
+		Description        string            `json:"description,omitempty"`
+		Private            bool              `json:"private"`
+		License            string            `json:"license"`
+		Type               string            `json:"type"`
+		Scripts            map[string]string `json:"scripts"`
+		DevDependencies    map[string]string `json:"devDependencies"`
+		PackageManager     string            `json:"packageManager"`
+		Engines            map[string]string `json:"engines,omitempty"`
+		Pnpm               packagePnpm       `json:"pnpm,omitzero"`
+		Author             packageAuthor     `json:"author"`
+		Maintainers        []packageAuthor   `json:"maintainers"`
+		BundleDependencies json.RawMessage   `json:"bundleDependencies"`
+	}
+	packageAuthor struct {
+		Name  string `json:"name"`
+		Email string `json:"email"`
+		URL   string `json:"url"`
+	}
+	packagePnpm struct {
+		OnlyBuiltDependencies []string `json:"onlyBuiltDependencies,omitempty"`
+	}
+)

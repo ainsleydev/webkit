@@ -67,7 +67,7 @@ func TestCreateGitSettings(t *testing.T) {
 		require.NoError(t, err)
 
 		err = schema.ValidateYAML(dep)
-		assert.NoError(t, err, "Dependabot file does conform to schema")
+		assert.NoError(t, err, "Dependabot file conforms to schema")
 	})
 
 	t.Run("Errors on FS Failure", func(t *testing.T) {

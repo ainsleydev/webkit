@@ -58,26 +58,22 @@ func (v *SchemaValidator) ValidateYAML(yamlData []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to convert YAML to JSON: %w", err)
 	}
-
 	return v.ValidateJSON(jsonData)
 }
 
 // ValidateJSON validates JSON bytes against the schema.
 func (v *SchemaValidator) ValidateJSON(jsonData []byte) error {
-	result := v.schema.Validate(jsonData)
-	return handleResult(result)
+	return handleResult(v.schema.ValidateJSON(jsonData))
 }
 
 // ValidateMap validates a map against the schema.
 func (v *SchemaValidator) ValidateMap(data map[string]any) error {
-	result := v.schema.Validate(data)
-	return handleResult(result)
+	return handleResult(v.schema.ValidateMap(data))
 }
 
 // Validate validates any data against the schema.
 func (v *SchemaValidator) Validate(data any) error {
-	result := v.schema.Validate(data)
-	return handleResult(result)
+	return handleResult(v.schema.Validate(data))
 }
 
 func handleResult(result *jsonschema.EvaluationResult) error {
