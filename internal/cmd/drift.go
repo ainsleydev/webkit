@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"os"
+	goFs "io/fs"
+	"path/filepath"
 
 	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
@@ -18,39 +20,45 @@ var driftCmd = &cli.Command{
 }
 
 func driftDetection(ctx context.Context, input cmdtools.CommandInput) error {
-	// Capture modification times before update
-	before := map[string]os.FileInfo{}
-	err := afero.Walk(input.FS, ".", func(path string, info os.FileInfo, err error) error {
-		if err == nil && !info.IsDir() {
-			before[path] = info
+	fs := input.FS
+
+	before := map[string][]byte{}
+	err := afero.Walk(fs, ".", func(path string, info goFs.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return nil
 		}
+		b, _ := afero.ReadFile(fs, path)
+		before[path] = b
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("failed to snapshot files: %w", err)
+		return fmt.Errorf("snapshot failed: %w", err)
 	}
 
-	// Run update (idempotent regeneration)
+	// run update
 	if err := update(ctx, input); err != nil {
 		return fmt.Errorf("update failed: %w", err)
 	}
 
-	// Compare after update
 	var changed []string
-	_ = afero.Walk(input.FS, ".", func(path string, info os.FileInfo, err error) error {
+	_ = afero.Walk(fs, ".", func(path string, info goFs.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return nil
 		}
-		if prev, ok := before[path]; !ok {
+		after, _ := afero.ReadFile(fs, path)
+		beforeBytes, ok := before[path]
+		if !ok {
 			changed = append(changed, path+" (new)")
-		} else if info.ModTime() != prev.ModTime() || info.Size() != prev.Size() {
-			changed = append(changed, path)
+			return nil
+		}
+		if !bytes.Equal(beforeBytes, after) {
+			changed = append(changed, filepath.Clean(path))
 		}
 		return nil
 	})
 
 	if len(changed) > 0 {
-		fmt.Println("⚠️  Drift detected! The following files were modified:")
+		fmt.Println("⚠️  Drift detected! The following files differ:")
 		for _, f := range changed {
 			fmt.Println(" -", f)
 		}

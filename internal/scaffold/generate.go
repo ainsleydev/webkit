@@ -15,7 +15,7 @@ import (
 type (
 	// Generator is used for scaffolding files to a WebKit project.
 	Generator interface {
-		Bytes(path string, data []byte) error
+		Reader(path string, data []byte) error
 		Template(path string, tpl *template.Template, data any, opts ...Option) error
 		JSON(path string, content any, opts ...Option) error
 		YAML(path string, content any, opts ...Option) error
@@ -47,11 +47,19 @@ func (f FileGenerator) Bytes(path string, data []byte) error {
 		return fmt.Errorf("creating directories: %w", err)
 	}
 
+	exists, _ := afero.Exists(f.fs, path)
+	if exists {
+		fmt.Println("Updated: " + path)
+	}
+
 	if err := afero.WriteFile(f.fs, path, data, os.ModePerm); err != nil {
 		return fmt.Errorf("writing file %s: %w", path, err)
 	}
 
-	fmt.Println("Created:", path)
+	if !exists {
+		fmt.Println("Created: " + path)
+	}
+
 	return nil
 }
 
