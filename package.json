@@ -41,7 +41,7 @@
 		"*.{js,ts,cjs,mjs,d.cts,d.mts,mjs,jsx,ts,tsx,json,jsonc}": [
 			"biome format --write --no-errors-on-unmatched",
 			"biome lint --write --no-errors-on-unmatched",
-			"biome check --files-ignore-unknown=false"
+			"biome check --files-ignore-unknown=true"
 		],
 		"*.go": ["gofmt -w"],
 		"*.templ": ["templ fmt"]
