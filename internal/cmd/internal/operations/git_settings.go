@@ -9,17 +9,25 @@ import (
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
+var gitSettingsTemplates = map[string]string{
+	".gitignore":              ".gitignore",
+	".github/dependabot.yaml": ".github/dependabot.yaml.tmpl",
+}
+
 // CreateGitSettings scaffolds the repo settings and ignore files.
+//
+// TODO: Stale, Pull Request Template.
 func CreateGitSettings(_ context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(input.FS)
+	app := input.AppDef()
 
-	err := gen.Template(".gitignore", templates.MustLoadTemplate(".gitignore"), nil)
-	if err != nil {
-		return err
+	for file, template := range gitSettingsTemplates {
+		tpl := templates.MustLoadTemplate(template)
+		err := gen.Template(file, tpl, app)
+		if err != nil {
+			return err
+		}
 	}
-
-	// TODO:
-	// Dependabot
 
 	return gen.YAML(".github/settings.yaml", repoSettings(input))
 }

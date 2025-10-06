@@ -1,0 +1,18 @@
+version: 2
+updates:
+  {{- range .Apps }}
+- package-ecosystem: "{{ if eq .Language "go" }}gomod{{ else if eq .Language "js" }}npm{{ end }}"
+  directory: "/{{ .Path }}"
+  schedule:
+    interval: "weekly"
+    day: "sunday"
+    time: "04:00"
+  open-pull-requests-limit: 30
+  ignore:
+    - dependency-name: "*"
+      update-types: ["version-update:semver-patch"]
+  groups:
+    dependencies:
+      patterns:
+        - "*"
+  {{- end }}

@@ -38,7 +38,7 @@ func TestCreateCodeStyleFiles(t *testing.T) {
 		})
 		assert.NoError(t, got)
 
-		for path, _ := range codeStyleFiles {
+		for path, _ := range codeStyleTemplates {
 			file, err := afero.ReadFile(fs, path)
 			assert.NoError(t, err)
 			assert.NotEmpty(t, file)

@@ -8,7 +8,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
-var codeStyleFiles = map[string]string{
+var codeStyleTemplates = map[string]string{
 	".editorconfig":     ".editorconfig",
 	".prettierrc":       ".prettierrc",
 	".prettierignore":   ".prettierignore",
@@ -25,7 +25,7 @@ func CreateCodeStyleFiles(_ context.Context, input cmdtools.CommandInput) error 
 	gen := scaffold.New(input.FS)
 	app := input.AppDef()
 
-	for file, template := range codeStyleFiles {
+	for file, template := range codeStyleTemplates {
 		tpl := templates.MustLoadTemplate(template)
 		err := gen.Template(file, tpl, app)
 		if err != nil {

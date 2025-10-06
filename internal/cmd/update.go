@@ -5,7 +5,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 
-	cmdtools "github.com/ainsleydev/webkit/internal/cmd/internal"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 )
 
 var updateCmd = &cli.Command{
