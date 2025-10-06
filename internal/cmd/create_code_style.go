@@ -22,7 +22,7 @@ func createCodeStyleFiles(_ context.Context, input cmdtools.CommandInput) error 
 	files := map[string]string{
 		".editorconfig":     ".editorconfig",
 		".prettierrc":       ".prettierrc",
-		".prettierignore":   ".editorconfig",
+		".prettierignore":   ".prettierignore",
 		".eslint.config.js": "eslint.config.js.tmpl",
 	}
 
