@@ -1,0 +1,95 @@
+package testutil
+
+import (
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"testing"
+
+	"github.com/goccy/go-json"
+	"github.com/goccy/go-yaml"
+	"github.com/kaptinlin/jsonschema"
+)
+
+// SchemaValidator wraps a compiled JSON Schema for validation.
+type SchemaValidator struct {
+	schema *jsonschema.Schema
+}
+
+// SchemaFromURL fetches a JSON Schema from the given URL and compiles it.
+func SchemaFromURL(t *testing.T, url string) (*SchemaValidator, error) {
+	t.Helper()
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch schema from URL: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected HTTP status: %s", resp.Status)
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read schema: %w", err)
+	}
+
+	return SchemaFromBytes(t, data)
+}
+
+// SchemaFromBytes compiles a JSON Schema from a byte slice.
+func SchemaFromBytes(t *testing.T, data []byte) (*SchemaValidator, error) {
+	t.Helper()
+
+	compiler := jsonschema.NewCompiler()
+	schema, err := compiler.Compile(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SchemaValidator{schema: schema}, nil
+}
+
+// ValidateYAML validates YAML bytes against the schema.
+func (v *SchemaValidator) ValidateYAML(yamlData []byte) error {
+	jsonData, err := yaml.YAMLToJSON(yamlData)
+	if err != nil {
+		return fmt.Errorf("failed to convert YAML to JSON: %w", err)
+	}
+
+	return v.ValidateJSON(jsonData)
+}
+
+// ValidateJSON validates JSON bytes against the schema.
+func (v *SchemaValidator) ValidateJSON(jsonData []byte) error {
+	result := v.schema.Validate(jsonData)
+	return handleResult(result)
+}
+
+// ValidateMap validates a map against the schema.
+func (v *SchemaValidator) ValidateMap(data map[string]any) error {
+	result := v.schema.Validate(data)
+	return handleResult(result)
+}
+
+// Validate validates any data against the schema.
+func (v *SchemaValidator) Validate(data any) error {
+	result := v.schema.Validate(data)
+	return handleResult(result)
+}
+
+func handleResult(result *jsonschema.EvaluationResult) error {
+	details := result.GetDetailedErrors()
+	if len(details) > 0 {
+		indent, _ := json.MarshalIndent(details, "", "  ")
+		return fmt.Errorf("schema validation failed:\n%s", indent)
+	}
+
+	if !result.IsValid() {
+		return errors.New("schema is invalid")
+	}
+
+	return nil
+}

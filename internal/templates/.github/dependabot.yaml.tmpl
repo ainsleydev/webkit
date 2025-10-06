@@ -1,4 +1,5 @@
 version: 2
+enable-beta-ecosystems: true
 updates:
   {{- range .Apps }}
 - package-ecosystem: "{{ if eq .Language "go" }}gomod{{ else if eq .Language "js" }}npm{{ end }}"
