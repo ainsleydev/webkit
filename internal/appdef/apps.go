@@ -73,14 +73,13 @@ func (a *App) applyDefaults() error {
 		return fmt.Errorf("no default commands defined for app type %q", a.Type)
 	}
 
-	// Apply defaults for each command type
 	for _, cmd := range commands {
-		// Skip if user has explicitly configured this command
+		// Skip if user has explicitly configured this command.
 		if _, exists := a.Commands[cmd]; exists {
 			continue
 		}
 
-		// Apply default command if available
+		// Apply default command if available.
 		if defaultCmd, ok := defaults[cmd]; ok {
 			a.Commands[cmd] = CommandSpec{
 				Cmd: defaultCmd,
@@ -92,7 +91,6 @@ func (a *App) applyDefaults() error {
 		a.Build.Dockerfile = "Dockerfile"
 	}
 
-	// Ensure path is clean
 	if a.Path != "" {
 		a.Path = filepath.Clean(a.Path)
 	}

@@ -38,7 +38,7 @@ func Test_CreateCICD(t *testing.T) {
 			return
 		}
 
-		file, err := afero.ReadFile(fs, ".github/workflows/pr-cms.yaml")
+		file, err := afero.ReadFile(fs, ".github/workflows/app-pr-cms.yaml")
 		require.NoError(t, err)
 
 		err = testutil.ValidateYAML(t, file)
@@ -71,7 +71,7 @@ func Test_CreateCICD(t *testing.T) {
 			return
 		}
 
-		file, err := afero.ReadFile(fs, ".github/workflows/pr-web.yaml")
+		file, err := afero.ReadFile(fs, ".github/workflows/app-pr-web.yaml")
 		require.NoError(t, err)
 
 		err = testutil.ValidateYAML(t, file)
