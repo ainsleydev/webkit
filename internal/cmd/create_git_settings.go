@@ -17,9 +17,9 @@ var createGithubSettingsCmd = &cli.Command{
 }
 
 func createGitSettings(_ context.Context, input cmdtools.CommandInput) error {
-	gen := cgtools.NewGenerator(input.FS)
+	gen := scaffold.New(input.FS)
 
-	err := gen.GenerateTemplate(".gitignore", templates.MustLoadTemplate(".gitignore"), nil)
+	err := gen.Template(".gitignore", templates.MustLoadTemplate(".gitignore"), nil)
 	if err != nil {
 		return err
 	}
@@ -27,7 +27,7 @@ func createGitSettings(_ context.Context, input cmdtools.CommandInput) error {
 	// TODO:
 	// Dependabot
 
-	return gen.GenerateYAML(".github/settings.yaml", repoSettings(input))
+	return gen.YAML(".github/settings.yaml", repoSettings(input))
 }
 
 func repoSettings(input cmdtools.CommandInput) github.RepoSettings {

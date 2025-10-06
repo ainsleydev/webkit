@@ -1,4 +1,4 @@
-package cgtools
+package scaffold
 
 import (
 	"bytes"
@@ -11,23 +11,42 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Generator handles file generation on a given filesystem
-type Generator struct {
-	fs afero.Fs
+type (
+	// Generator is used for scaffolding files to a WebKit project.
+	Generator interface {
+		Bytes(path string, data []byte) error
+		Template(path string, tpl *template.Template, data any, opts ...Option) error
+		JSON(path string, content any, opts ...Option) error
+		YAML(path string, content any, opts ...Option) error
+	}
+	// FileGenerator handles file generation on a given filesystem.
+	FileGenerator struct {
+		fs afero.Fs
+	}
+)
+
+// New creates a new FileGenerator with the provided afero.Fs.
+func New(fs afero.Fs) *FileGenerator {
+	return &FileGenerator{fs: fs}
 }
 
-// NewGenerator creates a new Generator with the provided afero.Fs
-func NewGenerator(fs afero.Fs) *Generator {
-	return &Generator{fs: fs}
-}
+// WriteMode determines how files are written
+type WriteMode int
 
-// WriteFile ensures directories exist and writes the data to the path
-func (g Generator) WriteFile(path string, data []byte) error {
-	if err := g.fs.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+const (
+	// ModeGenerate always writes the file, overwriting if it exists
+	ModeGenerate WriteMode = iota
+	// ModeScaffold only writes if the file doesn't exist
+	ModeScaffold
+)
+
+// Bytes writes bytes to the filesystem and ensure directories exist.
+func (f FileGenerator) Bytes(path string, data []byte) error {
+	if err := f.fs.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("creating directories: %w", err)
 	}
 
-	if err := afero.WriteFile(g.fs, path, data, 0o644); err != nil {
+	if err := afero.WriteFile(f.fs, path, data, 0o644); err != nil {
 		return fmt.Errorf("writing file %s: %w", path, err)
 	}
 
@@ -35,30 +54,32 @@ func (g Generator) WriteFile(path string, data []byte) error {
 	return nil
 }
 
-// ScaffoldTemplate writes the template only if the file does not already exist
-func (g Generator) ScaffoldTemplate(path string, tpl *template.Template, data any) error {
-	exists, _ := afero.Exists(g.fs, path)
-	if exists {
-		fmt.Println("• skipped scaffolding", path, "- already exists")
+// Template writes a template file with the given mode.
+func (f FileGenerator) Template(path string, tpl *template.Template, data any, opts ...Option) error {
+	options := applyOptions(opts...)
+
+	if f.shouldSkipScaffold(path, options.mode) {
 		return nil
 	}
 
-	return g.writeFileWithTemplate(path, tpl, data)
-}
+	buf := &bytes.Buffer{}
+	buf.WriteString(noticeForFile(path))
 
-// GenerateTemplate writes a template file, overwriting if it already exists
-func (g Generator) GenerateTemplate(path string, tpl *template.Template, data any) error {
-	exists, _ := afero.Exists(g.fs, path)
-	if exists {
-		fmt.Println("• regenerating", path, "- already exists")
+	if err := tpl.Execute(buf, data); err != nil {
+		return fmt.Errorf("executing template %s: %w", tpl.Name(), err)
 	}
 
-	return g.writeFileWithTemplate(path, tpl, data)
+	return f.Bytes(path, buf.Bytes())
 }
 
-// GenerateJSON marshals content to JSON and prepends the Webkit
-// notice if requested.
-func (g Generator) GenerateJSON(path string, content any) error {
+// JSON writes JSON content with the given mode.
+func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
+	options := applyOptions(opts...)
+
+	if f.shouldSkipScaffold(path, options.mode) {
+		return nil
+	}
+
 	buf := &bytes.Buffer{}
 
 	encoder := json.NewEncoder(buf)
@@ -67,38 +88,39 @@ func (g Generator) GenerateJSON(path string, content any) error {
 		return fmt.Errorf("marshalling %s: %w", path, err)
 	}
 
-	return g.WriteFile(path, buf.Bytes())
+	return f.Bytes(path, buf.Bytes())
 }
 
-// GenerateYAML marshals content to YAML and prepends the Webkit
-// notice if requested.
-func (g Generator) GenerateYAML(path string, content any) error {
-	buf := &bytes.Buffer{}
+// YAML writes YAML content with the given mode.
+func (f FileGenerator) YAML(path string, content any, opts ...Option) error {
+	options := applyOptions(opts...)
 
+	if f.shouldSkipScaffold(path, options.mode) {
+		return nil
+	}
+
+	buf := &bytes.Buffer{}
 	buf.WriteString(noticeForFile(path))
 
 	encoder := yaml.NewEncoder(buf)
 	encoder.SetIndent(2)
-
 	if err := encoder.Encode(content); err != nil {
 		return fmt.Errorf("marshalling %s: %w", path, err)
 	}
 
-	return g.WriteFile(path, buf.Bytes())
+	return f.Bytes(path, buf.Bytes())
 }
 
-const command = "webkit"
-
-// writeFileWithTemplate executes the template and writes the result
-func (g Generator) writeFileWithTemplate(path string, tpl *template.Template, data any) error {
-	buf := &bytes.Buffer{}
-
-	// Inject notice automatically
-	buf.WriteString(noticeForFile(path))
-
-	if err := tpl.Execute(buf, data); err != nil {
-		return fmt.Errorf("executing template %s: %w", tpl.Name(), err)
+func (f FileGenerator) shouldSkipScaffold(path string, mode WriteMode) bool {
+	if mode != ModeScaffold {
+		return false
 	}
 
-	return g.WriteFile(path, buf.Bytes())
+	exists, _ := afero.Exists(f.fs, path) //nolint
+	if !exists {
+		return false
+	}
+
+	fmt.Println("• skipped scaffolding", path, "- already exists")
+	return true
 }

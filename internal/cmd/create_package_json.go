@@ -41,7 +41,7 @@ var createPackageJsonCmd = &cli.Command{
 }
 
 func createPackageJson(_ context.Context, input cmdtools.CommandInput) error {
-	gen := cgtools.NewGenerator(input.FS)
+	gen := scaffold.New(input.FS)
 	app := input.AppDef()
 
 	p := packageJSON{
@@ -89,5 +89,5 @@ func createPackageJson(_ context.Context, input cmdtools.CommandInput) error {
 		},
 	}
 
-	return gen.GenerateJSON("package.json", p)
+	return gen.JSON("package.json", p)
 }

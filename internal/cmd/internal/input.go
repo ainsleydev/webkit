@@ -7,7 +7,6 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
 // RunCommand is the signature for command handlers. Each command
@@ -16,9 +15,8 @@ type RunCommand func(ctx context.Context, input CommandInput) error
 
 // CommandInput provides dependencies and context to command handlers.
 type CommandInput struct {
-	FS        afero.Fs
-	Command   *cli.Command
-	Generator cgtools.Generator
+	FS      afero.Fs
+	Command *cli.Command
 }
 
 // WrapCommand wraps a RunCommand to work with urfave/cli.

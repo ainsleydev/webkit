@@ -16,7 +16,7 @@ var createCodeStyleFilesCmd = &cli.Command{
 }
 
 func createCodeStyleFiles(_ context.Context, input cmdtools.CommandInput) error {
-	gen := cgtools.NewGenerator(input.FS)
+	gen := scaffold.New(input.FS)
 	app := input.AppDef()
 
 	files := map[string]string{
@@ -30,7 +30,7 @@ func createCodeStyleFiles(_ context.Context, input cmdtools.CommandInput) error 
 
 	for file, template := range files {
 		tpl := templates.MustLoadTemplate(template)
-		err := gen.GenerateTemplate(file, tpl, app)
+		err := gen.Template(file, tpl, app)
 		if err != nil {
 			return err
 		}

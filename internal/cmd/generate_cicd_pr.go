@@ -18,7 +18,7 @@ var createCICDCmd = &cli.Command{
 }
 
 func createCICD(_ context.Context, input cmdtools.CommandInput) error {
-	gen := cgtools.NewGenerator(afero.NewBasePathFs(input.FS, "./.github"))
+	gen := scaffold.New(afero.NewBasePathFs(input.FS, "./.github"))
 
 	// TODO: We need to apply defaults to the app spec for commands to work?
 	for _, app := range input.AppDef().Apps {
@@ -26,7 +26,7 @@ func createCICD(_ context.Context, input cmdtools.CommandInput) error {
 		tpl := templates.MustLoadTemplate(".github/workflows/pr.yaml.tmpl")
 		file := fmt.Sprintf("./workflows/%s.yaml", app.Name)
 
-		err := gen.GenerateTemplate(file, tpl, app)
+		err := gen.Template(file, tpl, app)
 		if err != nil {
 			return err
 		}
