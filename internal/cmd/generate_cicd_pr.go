@@ -24,10 +24,9 @@ func createCICD(_ context.Context, input cmdtools.CommandInput) error {
 	for _, app := range input.AppDef().Apps {
 
 		tpl := templates.MustLoadTemplate(".github/workflows/pr.yaml.tmpl")
-		file := fmt.Sprintf("./workflows/%s.yaml", app.Name)
+		file := fmt.Sprintf("./workflows/pr-%s.yaml", app.Name)
 
-		err := gen.Template(file, tpl, app)
-		if err != nil {
+		if err := gen.Template(file, tpl, &app); err != nil {
 			return err
 		}
 	}

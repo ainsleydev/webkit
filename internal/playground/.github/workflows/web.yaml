@@ -2,8 +2,40 @@
 name: PR - Web
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
-      - 'apps/web/**'
+      - 'web/**'
 
 jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Format
+        working-directory: web
+        run: pnpm format
+
+      - name: Lint
+        working-directory: web
+        run: pnpm lint
+
+      - name: Test
+        working-directory: web
+        run: pnpm test

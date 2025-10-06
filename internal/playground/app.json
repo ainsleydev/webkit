@@ -62,9 +62,10 @@
 	"apps": [
 		{
 			"name": "cms",
+			"title": "CMS",
 			"type": "payload",
 			"description": "Payload CMS for managing content.",
-			"path": "services/cms",
+			"path": "cms",
 			"build": {
 				"dockerfile": "Dockerfile"
 			},
@@ -115,8 +116,9 @@
 		},
 		{
 			"name": "web",
-			"type": "sveltekit",
-			"path": "apps/web",
+			"title": "Web",
+			"type": "svelte-kit",
+			"path": "web",
 			"build": {
 				"dockerfile": "Dockerfile"
 			},

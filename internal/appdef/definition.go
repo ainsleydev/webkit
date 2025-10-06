@@ -1,6 +1,7 @@
 package appdef
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/goccy/go-json"
@@ -27,69 +28,10 @@ type (
 		Description string `json:"description" jsonschema:"required,title=Description,description=Brief description of the project"`
 		Repo        string `json:"repo" jsonschema:"required,format=uri,title=Repository,description=Git repository URL,example=git@github.com:ainsley/my-website.git"`
 	}
-	Resource struct {
-		Name     string         `json:"name"`
-		Type     string         `json:"type"`
-		Provider string         `json:"provider"`
-		Config   map[string]any `json:"config"` // Conforms to Terraform
-		Outputs  []string       `json:"outputs"`
-	}
-	App struct {
-		Name        string                  `json:"name"`
-		Type        AppType                 `json:"type"`
-		Description string                  `json:"description,omitempty"`
-		Path        string                  `json:"path"`
-		Build       Build                   `json:"build"`
-		Infra       Infra                   `json:"infra"`
-		Env         Env                     `json:"env"`
-		Commands    map[Command]CommandSpec `json:"commands,omitempty" jsonschema:"oneof_type=boolean;object;string"`
-		DependsOn   []string                `json:"depends_on,omitempty"`
-	}
-	Build struct {
-		Dockerfile string `json:"dockerfile"`
-	}
-	Infra struct {
-		Provider string `json:"provider"`
-		Type     string `json:"type"`
-		Config   struct {
-			Size          string   `json:"size,omitempty"`
-			Region        string   `json:"region"`
-			Domain        string   `json:"domain"`
-			SshKeys       []string `json:"ssh_keys,omitempty"`
-			InstanceCount int      `json:"instance_count,omitempty"`
-			EnvFromShared bool     `json:"env_from_shared,omitempty"`
-		} `json:"config"`
-	}
 	Shared struct {
 		Env Env `json:"env"`
 	}
-	Env struct {
-		Dev        []EnvValue `json:"dev"`
-		Staging    []EnvValue `json:"staging"`
-		Production []EnvValue `json:"production"`
-	}
-	EnvValue struct {
-		Key   string `json:"key"`
-		Type  string `json:"type"`
-		From  string `json:"from,omitempty"`
-		Value string `json:"value,omitempty"`
-	}
 )
-
-type (
-	AppType string
-)
-
-const (
-	AppTypeSvelteKit AppType = "svelte-kit"
-	AppTypeGoLang    AppType = "golang"
-	AppTypePayload   AppType = "payload-cms"
-)
-
-// String implements fmt.Stringer on the AppType.
-func (a AppType) String() string {
-	return string(a)
-}
 
 func Read(root afero.Fs) (*Definition, error) {
 	file, err := root.Open(JsonFileName)
@@ -104,17 +46,21 @@ func Read(root afero.Fs) (*Definition, error) {
 	}
 
 	// TODO: Apply defaults and return validation errors if the user has fucked it.
-	var def Definition
-	if err := json.Unmarshal(data, &def); err != nil {
+	def := &Definition{}
+	if err := json.Unmarshal(data, def); err != nil {
 		return nil, err
 	}
 
-	return &def, nil
+	if err = def.ApplyDefaults(); err != nil {
+		return nil, err
+	}
+
+	return def, nil
 }
 
 // GithubLabels returns the labels that will appear on the
 // GitHub repository by looking at the application types.
-func (d Definition) GithubLabels() []string {
+func (d *Definition) GithubLabels() []string {
 	labels := []string{"webkit"}
 
 	for _, v := range d.Apps {
@@ -124,31 +70,14 @@ func (d Definition) GithubLabels() []string {
 	return labels
 }
 
-// GetCommand returns the effective command for this app and operation.
-func (a *App) GetCommand(cmd Command) (command string, skip bool) {
-	// Check if user overrode it
-	spec, exists := a.Commands[cmd]
-	if !exists {
-		// Use default command.
-		if defaults, ok := defaultCommands[a.Type]; ok {
-			return defaults[cmd], false
+// ApplyDefaults ensures all required defaults are set on the Definition.
+// This should be called after unmarshaling and before validation.
+func (d *Definition) ApplyDefaults() error {
+	for i := range d.Apps {
+		if err := d.Apps[i].applyDefaults(); err != nil {
+			return fmt.Errorf("applying defaults to app %q: %w", d.Apps[i].Name, err)
 		}
-		// This should never happen, we always have defaults.
-		return "", true
 	}
 
-	if spec.Disabled {
-		return "", true
-	}
-
-	if spec.Cmd != "" {
-		return spec.Cmd, spec.SkipCI
-	}
-
-	// Fallback to default if override exists but has no command
-	if defaults, ok := defaultCommands[a.Type]; ok {
-		return defaults[cmd], spec.SkipCI
-	}
-
-	return "", true
+	return nil
 }
