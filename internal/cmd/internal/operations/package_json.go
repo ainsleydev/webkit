@@ -3,8 +3,6 @@ package operations
 import (
 	"context"
 
-	"github.com/goccy/go-json"
-
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
@@ -19,9 +17,9 @@ func CreatePackageJson(_ context.Context, input cmdtools.CommandInput) error {
 		Name:        app.Project.Name,
 		Description: app.Project.Description,
 		Version:     "1.0.0",
-		//Private:     false,
-		License: "BSD-3-Clause",
-		Type:    "module",
+		Private:     "false",
+		License:     "BSD-3-Clause",
+		Type:        "module",
 		Scripts: map[string]string{
 			"preinstall": "npx only-allow pnpm",
 			"test":       "turbo test",
@@ -58,7 +56,6 @@ func CreatePackageJson(_ context.Context, input cmdtools.CommandInput) error {
 				URL:   "https://ainsley.dev",
 			},
 		},
-		BundleDependencies: json.RawMessage(`false`),
 	}
 
 	return gen.JSON("package.json", p)
@@ -66,20 +63,19 @@ func CreatePackageJson(_ context.Context, input cmdtools.CommandInput) error {
 
 type (
 	packageJSON struct {
-		Name               string            `json:"name"`
-		Version            string            `json:"version"`
-		Description        string            `json:"description,omitempty"`
-		Private            bool              `json:"private"`
-		License            string            `json:"license"`
-		Type               string            `json:"type"`
-		Scripts            map[string]string `json:"scripts"`
-		DevDependencies    map[string]string `json:"devDependencies"`
-		PackageManager     string            `json:"packageManager"`
-		Engines            map[string]string `json:"engines,omitempty"`
-		Pnpm               packagePnpm       `json:"pnpm,omitzero"`
-		Author             packageAuthor     `json:"author"`
-		Maintainers        []packageAuthor   `json:"maintainers"`
-		BundleDependencies json.RawMessage   `json:"bundleDependencies"`
+		Name            string            `json:"name"`
+		Version         string            `json:"version"`
+		Description     string            `json:"description,omitempty"`
+		Private         string            `json:"private"`
+		License         string            `json:"license"`
+		Type            string            `json:"type"`
+		Scripts         map[string]string `json:"scripts"`
+		DevDependencies map[string]string `json:"devDependencies"`
+		PackageManager  string            `json:"packageManager"`
+		Engines         map[string]string `json:"engines,omitempty"`
+		Pnpm            packagePnpm       `json:"pnpm,omitzero"`
+		Author          packageAuthor     `json:"author"`
+		Maintainers     []packageAuthor   `json:"maintainers"`
 	}
 	packageAuthor struct {
 		Name  string `json:"name"`

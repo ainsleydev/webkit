@@ -1,13 +1,13 @@
 package testutil
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"testing"
 
-	"github.com/goccy/go-json"
 	"github.com/goccy/go-yaml"
 	"github.com/kaptinlin/jsonschema"
 )
@@ -77,15 +77,16 @@ func (v *SchemaValidator) Validate(data any) error {
 }
 
 func handleResult(result *jsonschema.EvaluationResult) error {
+	if result.IsValid() {
+		return nil
+	}
+
+	// Only get errors if actually invalid
 	details := result.GetDetailedErrors()
 	if len(details) > 0 {
 		indent, _ := json.MarshalIndent(details, "", "  ")
 		return fmt.Errorf("schema validation failed:\n%s", indent)
 	}
 
-	if !result.IsValid() {
-		return errors.New("schema is invalid")
-	}
-
-	return nil
+	return errors.New("schema is invalid")
 }
