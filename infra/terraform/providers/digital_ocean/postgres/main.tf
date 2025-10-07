@@ -1,5 +1,6 @@
 locals {
   db_prefix = lower(replace(var.name, "-", "_"))
+  has_firewall_rules = length(var.allowed_droplet_ips) > 0 || length(var.allowed_ips_addr) > 0
 }
 
 # Database Cluster
@@ -42,6 +43,7 @@ resource "digitalocean_database_connection_pool" "this" {
 # Firewall
 # Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_firewall
 resource "digitalocean_database_firewall" "this" {
+  count      = local.has_firewall_rules ? 1 : 0
   cluster_id = digitalocean_database_cluster.this.id
 
   dynamic "rule" {

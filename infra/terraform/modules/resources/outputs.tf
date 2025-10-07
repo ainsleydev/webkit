@@ -5,7 +5,7 @@
 output "connection_url" {
   description = "Database connection URL (pool)"
   value = (
-    var.type == "postgres" && var.provider == "digitalocean" ? module.do_postgres[0].connection_url :
+    var.type == "postgres" && var.cloud_provider == "digitalocean" ? module.do_postgres[0].connection_url :
     null
   )
   sensitive = true
@@ -14,7 +14,7 @@ output "connection_url" {
 output "host" {
   description = "Database host"
   value = (
-    var.type == "postgres" && var.provider == "digitalocean" ? module.do_postgres[0].host :
+    var.type == "postgres" && var.cloud_provider == "digitalocean" ? module.do_postgres[0].host :
     null
   )
 }
@@ -22,7 +22,7 @@ output "host" {
 output "port" {
   description = "Database port"
   value = (
-    var.type == "postgres" && var.provider == "digitalocean" ? module.do_postgres[0].port :
+    var.type == "postgres" && var.cloud_provider == "digitalocean" ? module.do_postgres[0].port :
     null
   )
   sensitive = true
@@ -31,7 +31,7 @@ output "port" {
 output "database" {
   description = "Database name"
   value = (
-    var.type == "postgres" && var.provider == "digitalocean" ? module.do_postgres[0].database :
+    var.type == "postgres" && var.cloud_provider == "digitalocean" ? module.do_postgres[0].database :
     null
   )
 }
@@ -43,8 +43,8 @@ output "database" {
 output "bucket_name" {
   description = "S3 bucket name"
   value = (
-    var.provider == "digitalocean" && var.type == "s3" ? module.do_bucket[0].name :
-      var.provider == "b2" && var.type == "s3" ? module.b2_bucket[0].name :
+    var.cloud_provider == "digitalocean" && var.type == "s3" ? module.do_bucket[0].name :
+      var.cloud_provider == "b2" && var.type == "s3" ? module.b2_bucket[0].name :
       null
   )
 }
@@ -52,7 +52,7 @@ output "bucket_name" {
 output "endpoint" {
   description = "S3 endpoint URL"
   value = (
-    var.provider == "digitalocean" && var.type == "s3" ? module.do_bucket[0].domain_name :
+    var.cloud_provider == "digitalocean" && var.type == "s3" ? module.do_bucket[0].domain_name :
     null
   )
 }
@@ -60,7 +60,7 @@ output "endpoint" {
 output "region" {
   description = "S3 region"
   value = (
-    var.provider == "digitalocean" && var.type == "s3" ? module.do_bucket[0].region :
+    var.cloud_provider == "digitalocean" && var.type == "s3" ? module.do_bucket[0].region :
     null
   )
 }

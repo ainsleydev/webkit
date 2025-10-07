@@ -1,10 +1,10 @@
 terraform {
-  required_version = ">= 2.0.0"
+  required_version = ">= 1.13.0"
 
-  backend "s3" {
-    # Backend configuration will be provided via backend.hcl
-    # at runtime: terraform init -backend-config=backend.hcl
-  }
+  //backend "s3" {
+  # Backend configuration will be provided via backend.hcl
+  # at runtime: terraform init -backend-config=backend.hcl
+  //}
 
   required_providers {
     digitalocean = {
@@ -13,7 +13,7 @@ terraform {
     }
     b2 = {
       source  = "Backblaze/b2"
-      version = "~> 1.0"
+      version = "~> 0.10.0"
     }
   }
 }
@@ -27,15 +27,15 @@ provider "b2" {}
 
 # Instantiate each resource from the manifest
 module "resources" {
-  for_each = { for r in var.resources : r.name => r }
+  for_each = {for r in var.resources : r.name => r}
   source   = "./modules/resources"
 
-  project_name = var.project_name
-  name         = each.value.name
-  type         = each.value.type
-  provider     = each.value.provider
-  config       = each.value.config
-  tags         = var.tags
+  project_name   = var.project_name
+  name           = each.value.name
+  type           = each.value.type
+  cloud_provider = each.value.provider
+  config         = each.value.config
+  tags           = var.tags
 }
 
 # TODO: "apps"

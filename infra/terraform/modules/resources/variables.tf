@@ -18,13 +18,13 @@ variable "type" {
   }
 }
 
-variable "provider" {
+variable "cloud_provider" {
   description = "Cloud provider (digitalocean, aws, b2, etc.)"
   type        = string
 
   validation {
-    condition = contains(["digitalocean", "b2"], var.type)
-    error_message = "Type must be one of: digitalocean, b2"
+    condition     = contains(["digitalocean", "b2"], var.cloud_provider)
+    error_message = "Provider must be one of: digitalocean, b2"
   }
 }
 
