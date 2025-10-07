@@ -80,5 +80,6 @@ module "apps" {
   tags              = local.common_tags
 
   # Apps may depend on resources being created first.
+  resource_outputs = module.resources
   depends_on = [module.resources]
 }

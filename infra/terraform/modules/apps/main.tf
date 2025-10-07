@@ -30,7 +30,29 @@ module "do_app" {
   image_tag          = var.image_tag
   github_config      = var.github_config
   health_check_path  = try(var.platform_config.health_check_path, "/")
-  envs               = var.env_vars
+
+  /**
+  env_vars = [
+    {
+      key   = "DATABASE_URL"
+      value = "resource:db.connection_url"  # String with special prefix
+      type  = "SECRET"
+    }
+  ]
+   */
+  envs = [
+    for env in var.env_vars : {
+      key = env.key
+      value = (
+        startswith(env.value, "resource:")
+        ? var.resource_outputs[split(".", trimprefix(env.value, "resource:"))[0]][split(".", trimprefix(env.value, "resource:"))[1]]
+        : env.value
+      )
+      scope = try(env.scope, "RUN_TIME")
+      type  = try(env.type, "GENERAL")
+    }
+  ]
+
   domains = [
     for d in var.domains : {
       name     = d.name

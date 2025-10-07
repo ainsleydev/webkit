@@ -44,6 +44,22 @@ variable "app_type" {
   }
 }
 
+variable "resource_outputs" {
+  description = "Outputs from resources module for env var resolution"
+  type        = any
+}
+
+variable "env_vars" {
+  description = "Environment variables for the app"
+  type = list(object({
+    key   = string
+    value = string
+    scope = optional(string, "RUN_TIME")
+    type  = optional(string, "GENERAL")
+  }))
+  default = []
+}
+
 variable "domains" {
   description = "List of domains from the app manifest"
   type = list(object({
@@ -70,16 +86,7 @@ variable "github_config" {
   })
 }
 
-variable "env_vars" {
-  description = "Environment variables for the app"
-  type = list(object({
-    key   = string
-    value = string
-    scope = optional(string, "RUN_TIME")
-    type  = optional(string, "GENERAL")
-  }))
-  default = []
-}
+
 
 variable "ssh_keys" {
   description = "List of SSH key names to apply to VMs"

@@ -8,14 +8,21 @@ module "do_postgres" {
   count  = var.platform_provider == "digitalocean" && var.platform_type == "postgres" ? 1 : 0
   source = "../../providers/digital_ocean/postgres"
 
-  name                = "${var.project_name}-${var.name}"
+  name                = var.name
   pg_version          = try(var.platform_config.pg_version, "17")
   size                = try(var.platform_config.size, "db-s-1vcpu-1gb")
   region              = try(var.platform_config.region, "lon1")
   node_count          = try(var.platform_config.node_count, 1)
-  allowed_droplet_ips = try(var.platform_config.allowed_droplet_ips, [])
-  allowed_ips_addr    = try(var.platform_config.allowed_ips_addr, [])
   tags                = try(var.tags, [])
+
+  allowed_ips_addr    = try(
+    jsondecode(var.platform_config.allowed_ips_addr),
+    []
+  )
+  allowed_droplet_ips    = try(
+    jsondecode(var.platform_config.allowed_droplet_ips),
+    []
+  )
 }
 
 # DigitalOcean S3 Bucket (Spaces)
