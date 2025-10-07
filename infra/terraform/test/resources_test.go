@@ -152,6 +152,7 @@ func TestTerraform_Resources_Spaces(t *testing.T) {
 
 func TestTerraform_PostgresApply(t *testing.T) {
 	t.Parallel()
+	t.Skip("Needs Digital Ocean envs")
 
 	options := &terraform.Options{
 		TerraformDir: "../",
