@@ -8,6 +8,32 @@ variable "name" {
   type        = string
 }
 
+
+variable "platform_type" {
+  description = "Infrastructure type (vm, container, serverless)"
+  type        = string
+
+  validation {
+    condition     = contains(["vm", "container", "serverless"], var.platform_type)
+    error_message = "Platform type must be one of: vm, container, serverless"
+  }
+}
+
+variable "platform_provider" {
+  description = "Platform provider (digitalocean, aws, etc.)"
+  type        = string
+
+  validation {
+    condition     = contains(["digitalocean"], var.platform_provider)
+    error_message = "Provider must be: digitalocean"
+  }
+}
+
+variable "platform_config" {
+  description = "Provider-specific configuration from manifest"
+  type        = any
+}
+
 variable "app_type" {
   description = "App type (sveltekit, golang, payload-cms)"
   type        = string
@@ -16,31 +42,6 @@ variable "app_type" {
     condition     = contains(["sveltekit", "golang", "payload-cms"], var.app_type)
     error_message = "App type must be one of: sveltekit, golang, payload-cms"
   }
-}
-
-variable "cloud_provider" {
-  description = "Cloud provider (digitalocean, aws, etc.)"
-  type        = string
-
-  validation {
-    condition     = contains(["digitalocean"], var.cloud_provider)
-    error_message = "Provider must be: digitalocean"
-  }
-}
-
-variable "infra_type" {
-  description = "Infrastructure type (vm, container, serverless)"
-  type        = string
-
-  validation {
-    condition     = contains(["vm", "container", "serverless"], var.infra_type)
-    error_message = "Infra type must be one of: vm, container, serverless"
-  }
-}
-
-variable "infra_config" {
-  description = "Provider-specific infrastructure configuration from manifest"
-  type        = any
 }
 
 variable "image_tag" {
@@ -69,10 +70,10 @@ variable "env_vars" {
   default = []
 }
 
-variable "user_ssh_key_name" {
-  description = "Default SSH key name for droplets"
-  type        = string
-  default     = ""
+variable "ssh_keys" {
+  description = "List of SSH key names to apply to VMs"
+  type        = list(string)
+  default     = []
 }
 
 variable "tags" {

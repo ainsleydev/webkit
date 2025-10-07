@@ -1,5 +1,7 @@
+# Lookup all existing SSH keys from DigitalOcean based on the names provided
 data "digitalocean_ssh_key" "this" {
-  name = var.user_ssh_key_name
+  for_each = toset(var.ssh_keys)
+  name     = each.value
 }
 
 resource "tls_private_key" "this" {
@@ -21,10 +23,10 @@ resource "digitalocean_droplet" "this" {
   region = var.droplet_region
   tags   = var.tags
 
-  ssh_keys = [
-    data.digitalocean_ssh_key.this.id,
-    digitalocean_ssh_key.this.id,
-  ]
+  ssh_keys = concat(
+    [for k in data.digitalocean_ssh_key.this : k.id],
+    [digitalocean_ssh_key.this.id]
+  )
 
   lifecycle {
     create_before_destroy = true

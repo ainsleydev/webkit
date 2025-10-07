@@ -3,9 +3,19 @@ variable "project_name" {
   description = "Name of the client that will be prefixed on all resources"
 }
 
-variable "project_title" {
+# variable "project_title" {
+#   type        = string
+#   description = "Nice name of the client that will appear in project settings"
+# }
+
+variable "environment" {
   type        = string
-  description = "Nice name of the client that will appear in project settings"
+  description = "The environment the platform is currently running on"
+
+  validation {
+    condition     = contains(["development", "staging", "production"], var.environment)
+    error_message = "Type must be one of: development, stgaing, production"
+  }
 }
 
 variable "resources" {
@@ -13,7 +23,7 @@ variable "resources" {
     name     = string
     type     = string
     provider = string
-    config   = any
+    config   = map(any)
     outputs  = optional(list(string), [])
   }))
   description = "List of resources from the app.json manifest"
@@ -29,7 +39,7 @@ variable "apps" {
     infra = object({
       provider = string
       type     = string
-      config   = any
+      config   = map(any)
     })
     env_vars = optional(list(object({
       key   = string
@@ -48,6 +58,11 @@ variable "tags" {
   default     = []
 }
 
+variable "ssh_keys" {
+  description = "List of SSH key names to apply to droplets"
+  type        = list(string)
+  default     = []
+}
 
 # variable "digital_ocean_config" {
 #   type = object({
@@ -66,6 +81,7 @@ variable "github_config" {
   })
   description = "Configuration for the Github repo"
 }
+
 
 # variable "back_blaze_config" {
 #   type = object({

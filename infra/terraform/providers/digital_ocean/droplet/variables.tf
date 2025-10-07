@@ -3,11 +3,6 @@ variable "name" {
   type        = string
 }
 
-variable "user_ssh_key_name" {
-  description = "The name of the existing SSH key in DigitalOcean"
-  type        = string
-}
-
 variable "droplet_size" {
   description = "The instance size slug, defaults to smallest"
   type        = string
@@ -18,6 +13,12 @@ variable "droplet_region" {
   description = "The region of the droplet, defaults to London"
   type        = string
   default     = "lon1"
+}
+
+variable "ssh_keys" {
+  description = "List of SSH key names to apply to the droplet"
+  type        = list(string)
+  default     = []
 }
 
 variable "tags" {

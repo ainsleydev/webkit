@@ -5,34 +5,34 @@
 
 # DigitalOcean Postgres
 module "do_postgres" {
-  count  = var.cloud_provider == "digitalocean" && var.type == "postgres" ? 1 : 0
+  count  = var.platform_provider == "digitalocean" && var.platform_type == "postgres" ? 1 : 0
   source = "../../providers/digital_ocean/postgres"
 
-  name                = var.name
-  pg_version          = try(var.config.engine_version, null)
-  size                = try(var.config.size, null)
-  region              = try(var.config.region, null)
-  node_count          = try(var.config.node_count, null)
-  allowed_droplet_ips = try(var.config.allowed_droplet_ips, [])
-  allowed_ips_addr    = try(var.config.allowed_ips_addr, [])
+  name                = "${var.project_name}-${var.name}"
+  pg_version          = try(var.platform_config.pg_version, "17")
+  size                = try(var.platform_config.size, "db-s-1vcpu-1gb")
+  region              = try(var.platform_config.region, "lon1")
+  node_count          = try(var.platform_config.node_count, 1)
+  allowed_droplet_ips = try(var.platform_config.allowed_droplet_ips, [])
+  allowed_ips_addr    = try(var.platform_config.allowed_ips_addr, [])
   tags                = try(var.tags, [])
 }
 
 # DigitalOcean S3 Bucket (Spaces)
 module "do_bucket" {
-  count  = var.cloud_provider == "digitalocean" && var.type == "s3" ? 1 : 0
+  count  = var.platform_provider == "digitalocean" && var.platform_type == "s3" ? 1 : 0
   source = "../../providers/digital_ocean/bucket"
 
   name   = var.name
-  region = try(var.config.region, null)
-  acl    = try(var.config.acl, null)
+  region = try(var.platform_config.region, null)
+  acl    = try(var.platform_config.acl, null)
 }
 
 # B2 S3 Bucket
 module "b2_bucket" {
-  count  = var.cloud_provider == "b2" && var.type == "s3" ? 1 : 0
+  count  = var.platform_provider == "b2" && var.platform_type == "s3" ? 1 : 0
   source = "../../providers/b2/bucket"
 
   bucket_name = var.name
-  acl         = try(var.config.acl, null)
+  acl         = try(var.platform_config.acl, null)
 }

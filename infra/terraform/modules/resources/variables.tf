@@ -8,27 +8,27 @@ variable "name" {
   type        = string
 }
 
-variable "type" {
+variable "platform_type" {
   description = "Resource type (postgres, s3, etc.)"
   type        = string
 
   validation {
-    condition     = contains(["postgres", "s3"], var.type)
+    condition     = contains(["postgres", "s3"], var.platform_type)
     error_message = "Type must be one of: postgres, s3"
   }
 }
 
-variable "cloud_provider" {
-  description = "Cloud provider (digitalocean, aws, b2, etc.)"
+variable "platform_provider" {
+  description = "Platform provider (digitalocean, aws, b2, etc.)"
   type        = string
 
   validation {
-    condition     = contains(["digitalocean", "b2"], var.cloud_provider)
+    condition     = contains(["digitalocean", "b2"], var.platform_provider)
     error_message = "Provider must be one of: digitalocean, b2"
   }
 }
 
-variable "config" {
+variable "platform_config" {
   description = "Provider-specific configuration from manifest"
   type        = any
 }

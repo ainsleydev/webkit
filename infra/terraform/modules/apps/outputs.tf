@@ -7,7 +7,7 @@
 output "ip_address" {
   description = "IP address of the VM"
   value = (
-    var.infra_type == "vm" && var.cloud_provider == "digitalocean" ? module.do_droplet[0].ip_address :
+    var.platform_type == "vm" && var.platform_provider == "digitalocean" ? module.do_droplet[0].ip_address :
     null
   )
 }
@@ -15,7 +15,7 @@ output "ip_address" {
 output "droplet_id" {
   description = "ID of the droplet"
   value = (
-    var.infra_type == "vm" && var.cloud_provider == "digitalocean" ? module.do_droplet[0].id :
+    var.platform_type == "vm" && var.platform_provider == "digitalocean" ? module.do_droplet[0].id :
     null
   )
 }
@@ -23,7 +23,7 @@ output "droplet_id" {
 output "ssh_private_key" {
   description = "SSH private key for the VM"
   value = (
-    var.infra_type == "vm" && var.cloud_provider == "digitalocean" ? module.do_droplet[0].ssh_private_key :
+    var.platform_type == "vm" && var.platform_provider == "digitalocean" ? module.do_droplet[0].ssh_private_key :
     null
   )
   sensitive = true
@@ -33,7 +33,7 @@ output "ssh_private_key" {
 output "app_id" {
   description = "ID of the App Platform app"
   value = (
-    var.infra_type == "container" && var.cloud_provider == "digitalocean" ? module.do_app[0].id :
+    var.platform_type == "container" && var.platform_provider == "digitalocean" ? module.do_app[0].id :
     null
   )
 }
@@ -41,7 +41,7 @@ output "app_id" {
 output "app_url" {
   description = "Live URL of the app"
   value = (
-    var.infra_type == "container" && var.cloud_provider == "digitalocean" ? module.do_app[0].live_url :
+    var.platform_type == "container" && var.platform_provider == "digitalocean" ? module.do_app[0].live_url :
     null
   )
 }
@@ -49,27 +49,27 @@ output "app_url" {
 output "app_domain" {
   description = "Live domain of the app"
   value = (
-    var.infra_type == "container" && var.cloud_provider == "digitalocean" ? module.do_app[0].live_domain :
+    var.platform_type == "container" && var.platform_provider == "digitalocean" ? module.do_app[0].live_domain :
     null
   )
 }
 
 # DNS Outputs
-output "dns_fqdn" {
-  description = "Fully qualified domain name"
-  value = (
-    var.infra_type == "vm" && length(module.dns_record) > 0 ? module.dns_record[0].fqdn :
-    null
-  )
-}
+# output "dns_fqdn" {
+#   description = "Fully qualified domain name"
+#   value = (
+#     var.platform_type == "vm" && length(module.dns_record) > 0 ? module.dns_record[0].fqdn :
+#     null
+#   )
+# }
 
 # Common Outputs
-output "infra_type" {
+output "platform_type" {
   description = "Type of infrastructure provisioned"
-  value       = var.infra_type
+  value       = var.platform_type
 }
 
-output "cloud_provider" {
+output "platform_provider" {
   description = "Cloud provider used"
-  value       = var.cloud_provider
+  value       = var.platform_provider
 }
