@@ -4,11 +4,6 @@
 # Maps generic infra types to provider-specific resources
 #
 
-locals {
-  # Extract domain from config for DNS record
-  domain = try(var.platform_config.domain, null)
-}
-
 # DigitalOcean Droplet (VM)
 module "do_droplet" {
   count  = var.platform_provider == "digitalocean" && var.platform_type == "vm" ? 1 : 0
@@ -35,17 +30,15 @@ module "do_app" {
   image_tag          = var.image_tag
   github_config      = var.github_config
   health_check_path  = try(var.platform_config.health_check_path, "/")
-
-  # Configure domain if provided
-  domains = local.domain != null ? [
-    {
-      name = local.domain
-      type = "PRIMARY"
+  envs               = var.env_vars
+  domains = [
+    for d in var.domains : {
+      name     = d.name
+      type     = upper(d.type) # PRIMARY, ALIAS, UNMANAGED
+      zone     = d.zone
+      wildcard = d.wildcard
     }
-  ] : []
-
-  # Environment variables will be passed through
-  envs = var.env_vars
+  ]
 }
 
 # DNS Record for VM-based apps

@@ -75,6 +75,7 @@ module "apps" {
   image_tag         = try(each.value.image_tag, "latest")
   github_config     = var.github_config
   ssh_keys          = try(var.ssh_keys, [])
+  domains           = try(each.value.domains, [])
   env_vars          = try(each.value.env_vars, [])
   tags              = local.common_tags
 

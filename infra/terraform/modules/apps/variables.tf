@@ -44,6 +44,17 @@ variable "app_type" {
   }
 }
 
+variable "domains" {
+  description = "List of domains from the app manifest"
+  type = list(object({
+    name     = string
+    type     = string
+    zone     = optional(string)
+    wildcard = optional(bool, false)
+  }))
+  default = []
+}
+
 variable "image_tag" {
   description = "Docker image tag to deploy"
   type        = string

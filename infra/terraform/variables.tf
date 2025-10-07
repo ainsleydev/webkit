@@ -41,6 +41,12 @@ variable "apps" {
       type     = string
       config   = map(any)
     })
+    domains = optional(list(object({
+      name     = string
+      type     = string
+      zone     = optional(string)
+      wildcard = optional(bool, false)
+    })), [])
     env_vars = optional(list(object({
       key   = string
       value = string
