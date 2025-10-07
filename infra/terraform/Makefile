@@ -18,7 +18,8 @@ fmt:
 
 # Initialize Terraform with backend
 init:
-	terraform init -backend-config=$(BACKEND)
+	terraform init
+	#terraform init -backend-config=$(BACKEND)
 
 # Initialize and upgrade Terraform modules/providers
 init-upgrade:

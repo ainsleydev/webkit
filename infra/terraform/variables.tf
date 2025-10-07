@@ -3,19 +3,13 @@ variable "project_name" {
   description = "Name of the client that will be prefixed on all resources"
 }
 
-variable "project_nice_name" {
+variable "project_title" {
   type        = string
   description = "Nice name of the client that will appear in project settings"
 }
 
-variable "url" {
-  type        = string
-  description = "The URL of the project, without host or scheme e.g hello.com"
-}
+variable digital_ocean_api_key {
 
-variable "api_key" {
-  type        = string
-  description = "The key/token used to access ht"
 }
 
 variable "digital_ocean_config" {
