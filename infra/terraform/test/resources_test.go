@@ -5,12 +5,15 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTerraform_Resources_Postgres(t *testing.T) {
 	t.Parallel()
 
-	options := setupTerraform(t, "postgres.tfvars")
+	options, teardown := setupTerraform(t, "postgres.tfvars")
+	defer teardown()
+
 	plan, err := terraform.InitAndPlanAndShowWithStructE(t, options)
 
 	t.Log("Plan Succeeded")
@@ -82,7 +85,9 @@ func TestTerraform_Resources_Postgres(t *testing.T) {
 func TestTerraform_Resources_Spaces(t *testing.T) {
 	t.Parallel()
 
-	options := setupTerraform(t, "spaces.tfvars")
+	options, teardown := setupTerraform(t, "spaces.tfvars")
+	defer teardown()
+
 	plan, err := terraform.InitAndPlanAndShowWithStructE(t, options)
 
 	t.Log("Plan Succeeded")
@@ -143,4 +148,42 @@ func TestTerraform_Resources_Spaces(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, resource)
 	}
+}
+
+func TestTerraform_PostgresApply(t *testing.T) {
+	t.Parallel()
+
+	options := &terraform.Options{
+		TerraformDir: "../",
+		VarFiles:     []string{"./fixtures/postgres.tfvars"},
+	}
+	defer terraform.Destroy(t, options)
+
+	// Initialize and apply the Terraform configuration
+	_, err := terraform.InitAndApplyE(t, options)
+	require.NoError(t, err)
+
+	// Optionally show the final state for debugging
+	state := terraform.ShowWithStruct(t, options)
+
+	t.Log("Terraform Apply succeeded")
+
+	// Verify expected resources exist in the state
+	expectedResources := []string{
+		"digitalocean_database_cluster",
+		"digitalocean_database_db",
+		"digitalocean_database_user",
+		"digitalocean_database_connection_pool",
+		"digitalocean_database_firewall",
+	}
+
+	for _, resType := range expectedResources {
+		t.Run(resType, func(t *testing.T) {
+			resource, err := findResource(resType, state.ResourcePlannedValuesMap)
+			assert.NoError(t, err)
+			assert.NotNil(t, resource)
+		})
+	}
+
+	t.Log("All expected resources found in applied state")
 }
