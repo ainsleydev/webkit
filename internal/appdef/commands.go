@@ -33,9 +33,9 @@ type Command string
 
 // Command constants.
 const (
-	CommandLint   = "lint"
-	CommandTest   = "test"
-	CommandFormat = "format"
+	CommandLint   Command = "lint"
+	CommandTest   Command = "test"
+	CommandFormat Command = "format"
 )
 
 // commands defines all the commands available.

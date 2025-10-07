@@ -15,23 +15,22 @@ type (
 		Build       Build                   `json:"build"`
 		Infra       Infra                   `json:"infra"`
 		Env         Env                     `json:"env"`
+		Domains     []Domain                `json:"domains,omitempty"`
 		Commands    map[Command]CommandSpec `json:"commands,omitempty" jsonschema:"oneof_type=boolean;object;string"`
-		DependsOn   []string                `json:"depends_on,omitempty"`
 	}
 	Build struct {
 		Dockerfile string `json:"dockerfile"`
 	}
 	Infra struct {
-		Provider string `json:"provider"`
+		Provider string         `json:"provider"`
+		Type     string         `json:"type"`
+		Config   map[string]any `json:"config"`
+	}
+	Domain struct {
+		Name     string `json:"name"`
 		Type     string `json:"type"`
-		Config   struct {
-			Size          string   `json:"size,omitempty"`
-			Region        string   `json:"region"`
-			Domain        string   `json:"domain"`
-			SshKeys       []string `json:"ssh_keys,omitempty"`
-			InstanceCount int      `json:"instance_count,omitempty"`
-			EnvFromShared bool     `json:"env_from_shared,omitempty"`
-		} `json:"config"`
+		Zone     string `json:"zone,omitempty"`
+		Wildcard bool   `json:"wildcard,omitempty"`
 	}
 )
 
@@ -60,6 +59,21 @@ var appTypeToLanguages = map[AppType]string{
 // Either "go" or "js".
 func (a *App) Language() string {
 	return appTypeToLanguages[a.Type]
+}
+
+// DomainType defines the type of domain that should be provisioned.
+type DomainType string
+
+// DomainType constants.
+const (
+	DomainTypePrimary   DomainType = "primary"
+	DomainTypeAlias     DomainType = "alias"
+	DomainTypeUnmanaged DomainType = "unmanaged"
+)
+
+// String implements fmt.Stringer on the DomainType.
+func (d DomainType) String() string {
+	return string(d)
 }
 
 func (a *App) applyDefaults() error {

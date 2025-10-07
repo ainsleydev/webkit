@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestResourceTypeString(t *testing.T) {
+func TestResourceType_String(t *testing.T) {
 	t.Parallel()
 
 	got := ResourceTypePostgres.String()
@@ -15,7 +15,7 @@ func TestResourceTypeString(t *testing.T) {
 
 }
 
-func TestResourceProviderString(t *testing.T) {
+func TestResourceProvider_String(t *testing.T) {
 	t.Parallel()
 
 	got := ResourceProviderDigitalOcean.String()
