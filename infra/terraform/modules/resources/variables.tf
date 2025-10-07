@@ -13,7 +13,7 @@ variable "type" {
   type        = string
 
   validation {
-    condition = contains(["postgres", "s3"], var.type)
+    condition     = contains(["postgres", "s3"], var.type)
     error_message = "Type must be one of: postgres, s3"
   }
 }
@@ -35,6 +35,6 @@ variable "config" {
 
 variable "tags" {
   description = "Additional tags"
-  type = list(string)
-  default = []
+  type        = list(string)
+  default     = []
 }

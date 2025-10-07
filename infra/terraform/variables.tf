@@ -22,12 +22,21 @@ variable "resources" {
 
 variable "apps" {
   type = list(object({
-    name = string
-    title = string
-    type = string
-    provider = string
-    config   = any
-    outputs  = optional(list(string), [])
+    name      = string
+    type      = string
+    path      = optional(string)
+    image_tag = optional(string, "latest")
+    infra = object({
+      provider = string
+      type     = string
+      config   = any
+    })
+    env_vars = optional(list(object({
+      key   = string
+      value = string
+      scope = optional(string, "RUN_TIME")
+      type  = optional(string, "GENERAL")
+    })), [])
   }))
   description = "List of apps from the app.json manifest"
   default     = []
@@ -48,16 +57,16 @@ variable "tags" {
 #   })
 #   description = "Configuration for the Digital Ocean provider"
 # }
-#
-# variable "github_config" {
-#   type = object({
-#     user  = string
-#     repo  = string
-#     token = string
-#   })
-#   description = "Configuration for the Github repo"
-# }
-#
+
+variable "github_config" {
+  type = object({
+    user  = string
+    repo  = string
+    token = string
+  })
+  description = "Configuration for the Github repo"
+}
+
 # variable "back_blaze_config" {
 #   type = object({
 #     application_key_id = string

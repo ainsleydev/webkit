@@ -44,8 +44,8 @@ output "bucket_name" {
   description = "S3 bucket name"
   value = (
     var.cloud_provider == "digitalocean" && var.type == "s3" ? module.do_bucket[0].name :
-      var.cloud_provider == "b2" && var.type == "s3" ? module.b2_bucket[0].name :
-      null
+    var.cloud_provider == "b2" && var.type == "s3" ? module.b2_bucket[0].name :
+    null
   )
 }
 

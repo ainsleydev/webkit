@@ -25,9 +25,11 @@ terraform {
 provider "digitalocean" {}
 provider "b2" {}
 
-# Instantiate each resource from the manifest
+#
+# Resources (databases, storage, etc.)
+#
 module "resources" {
-  for_each = {for r in var.resources : r.name => r}
+  for_each = { for r in var.resources : r.name => r }
   source   = "./modules/resources"
 
   project_name   = var.project_name
@@ -35,7 +37,28 @@ module "resources" {
   type           = each.value.type
   cloud_provider = each.value.provider
   config         = each.value.config
-  tags           = var.tags
+  tags           = concat([var.project_name], var.tags)
 }
 
-# TODO: "apps"
+#
+# Apps (services, applications)
+#
+module "apps" {
+  for_each = { for a in var.apps : a.name => a }
+  source   = "./modules/apps"
+
+  project_name      = var.project_name
+  name              = each.value.name
+  app_type          = each.value.type
+  infra_type        = each.value.infra.type
+  cloud_provider    = each.value.infra.provider
+  infra_config      = each.value.infra.config
+  image_tag         = try(each.value.image_tag, "latest")
+  github_config     = var.github_config
+  user_ssh_key_name = var.user_ssh_key_name
+  env_vars          = try(each.value.env_vars, [])
+  tags              = try(var.tags, [])
+
+  # Apps may depend on resources being created first.
+  depends_on = [module.resources]
+}

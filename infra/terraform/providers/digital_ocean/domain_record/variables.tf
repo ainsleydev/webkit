@@ -5,7 +5,7 @@ variable "domain" {
 
 variable "name" {
   description = "The name of the record"
-  type = string
+  type        = string
 }
 
 variable "value" {

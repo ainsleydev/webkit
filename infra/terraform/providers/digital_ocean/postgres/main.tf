@@ -1,5 +1,5 @@
 locals {
-  db_prefix = lower(replace(var.name, "-", "_"))
+  db_prefix          = lower(replace(var.name, "-", "_"))
   has_firewall_rules = length(var.allowed_droplet_ips) > 0 || length(var.allowed_ips_addr) > 0
 }
 

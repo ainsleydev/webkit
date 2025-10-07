@@ -15,7 +15,7 @@ module "do_postgres" {
   node_count          = try(var.config.node_count, null)
   allowed_droplet_ips = try(var.config.allowed_droplet_ips, [])
   allowed_ips_addr    = try(var.config.allowed_ips_addr, [])
-  tags                = concat([var.project_name], var.tags)
+  tags                = try(var.tags, [])
 }
 
 # DigitalOcean S3 Bucket (Spaces)
