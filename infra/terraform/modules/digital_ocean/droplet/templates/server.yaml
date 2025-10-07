@@ -1,0 +1,25 @@
+#cloud-config
+hostname: ${name}
+
+# Debug with
+# cat /var/log/cloud-init.log
+# cat /var/log/cloud-init-output.log
+
+# Update packages
+package_update: true
+package_upgrade: true
+
+# Install required packages
+packages:
+  - software-properties-common
+  - curl
+
+runcmd:
+  # Add Ansible PPA and install latest version
+  - apt-add-repository --yes --update ppa:ansible/ansible
+  - apt install -y ansible
+
+  # Optional: reboot to ensure updates & hostname take effect
+  - reboot
+
+final_message: 'Server with Ansible is ready after $UPTIME seconds'

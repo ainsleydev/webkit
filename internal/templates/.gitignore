@@ -36,6 +36,9 @@ Thumbs.db
 *.so
 *.dylib
 
+# Other
+tmp
+
 # ----------------------------------------- GoLang  ------------------------------------------------
 
 # Go workspace file
@@ -97,7 +100,14 @@ override.tf.json
 *_override.tf.json
 .terraformrc
 terraform.rc
+*backend.hcl
+
+secrets/
+*.key
+*.pem
+credentials.*
 
 # ----------------------------------------- Payload CMS --------------------------------------------
 
 media/**
+*.db
