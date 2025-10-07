@@ -1,9 +1,9 @@
-variable "domain_name" {
+variable "name" {
   description = "Name of the domain"
   type        = string
 }
 
-variable "domain_ip" {
+variable "ip" {
   description = "IP of the domain"
-  type = string
+  type        = string
 }

@@ -12,6 +12,10 @@ setup:
 lint:
 	tflint
 
+# Form Terraform files
+fmt:
+	terraform fmt -recursive
+
 # Initialize Terraform with backend
 init:
 	terraform init -backend-config=$(BACKEND)

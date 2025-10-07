@@ -72,12 +72,12 @@ module "bucket" {
 module "postgres" {
   source = "./modules/digital_ocean/postgres"
 
-  name       = "${var.project_name}-db"
-  size       = "db-s-1vcpu-1gb"
-  region     = "lon1"
-  node_count = 1
+  name                = "${var.project_name}-db"
+  size                = "db-s-1vcpu-1gb"
+  region              = "lon1"
+  node_count          = 1
   allowed_droplet_ips = [module.cms.droplet_id]
-  allowed_ips_addr = ["185.16.161.205"] // School Lane
+  allowed_ips_addr    = ["185.16.161.205"] // School Lane
 }
 
 # ------------------------------------------------------------------------------
@@ -211,25 +211,25 @@ locals {
     "DO_SPACES_ACCESS_KEY" = var.digital_ocean_config.spaces_access_key
     "DO_SPACES_SECRET_KEY" = var.digital_ocean_config.spaces_secret_key
     "DO_SPACES_BUCKET"     = module.bucket.name
-    "DO_SPACES_REGION" = module.bucket.region
+    "DO_SPACES_REGION"     = module.bucket.region
 
     # Server (CMS)
     "CMS_SERVER_IP"       = module.cms.droplet_ip_address
     "CMS_SERVER_USER"     = "root"
     "CMS_SSH_PRIVATE_KEY" = module.cms.ssh_private_key
-    "CMS_PAYLOAD_SECRET" = var.payload_config.secret
+    "CMS_PAYLOAD_SECRET"  = var.payload_config.secret
 
     # Database
-    "DATABASE_ID" = module.postgres.postgres_id
+    "DATABASE_ID"  = module.postgres.postgres_id
     "DATABASE_URL" = module.postgres.postgres_pool_uri
 
     # BackBlaze
     "B2_APPLICATION_KEY"    = var.back_blaze_config.application_key
     "B2_APPLICATION_KEY_ID" = var.back_blaze_config.application_key_id
-    "B2_BUCKET_NAME" = module.b2_backup.bucket_name
+    "B2_BUCKET_NAME"        = module.b2_backup.bucket_name
 
     # Slack
-    "SLACK_BOT_TOKEN" = var.slack_config.bot_token
+    "SLACK_BOT_TOKEN"  = var.slack_config.bot_token
     "SLACK_CHANNEL_ID" = slack_conversation.project_channel.id
 
     # Misc - TODO, these will become dynamic at some point.

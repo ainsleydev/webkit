@@ -1,4 +1,4 @@
-output "bucket_id" {
+output "id" {
   description = "The ID of the S3 bucket"
   value       = b2_bucket.this.id
 }

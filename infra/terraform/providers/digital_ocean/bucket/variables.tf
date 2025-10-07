@@ -14,9 +14,3 @@ variable "acl" {
   type        = string
   default     = "public-read"
 }
-
-variable "tags" {
-  description = "List of tags to apply to the resource"
-  type        = list(string)
-  default     = []
-}

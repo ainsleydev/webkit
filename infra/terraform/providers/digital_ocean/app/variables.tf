@@ -14,7 +14,6 @@ variable "domains" {
   default = []
 }
 
-
 variable "region" {
   description = "The region slug where the app should be deployed."
   type        = string

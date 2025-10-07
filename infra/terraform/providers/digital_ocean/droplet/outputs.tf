@@ -1,14 +1,14 @@
-output "droplet_ip_address" {
-  description = "The IPv4 address of the Droplet"
-  value       = digitalocean_droplet.this.ipv4_address
-}
-
-output "droplet_id" {
+output "id" {
   description = "The ID of the Droplet"
   value       = digitalocean_droplet.this.id
 }
 
-output "droplet_urn" {
+output "ip_address" {
+  description = "The IPv4 address of the Droplet"
+  value       = digitalocean_droplet.this.ipv4_address
+}
+
+output "urn" {
   description = "The URN of the Droplet"
   value       = digitalocean_droplet.this.urn
 }

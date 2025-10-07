@@ -11,22 +11,22 @@ output "slack_channel" {
 # CMS
 
 output "cms_server_ip" {
-  value = module.cms.droplet_ip_address
+  value       = module.cms.droplet_ip_address
   description = "The IP of the CMS droplet"
 }
 
 output "cms_server_private_key" {
-  value = module.cms.ssh_private_key
+  value       = module.cms.ssh_private_key
   description = "The private key of the CMS droplet"
-  sensitive = true
+  sensitive   = true
 }
 
 # Database
 
 output "database_uri" {
-  value = module.postgres.postgres_pool_uri
+  value       = module.postgres.postgres_pool_uri
   description = "URI of the Postgres pool"
-  sensitive = true
+  sensitive   = true
 }
 
 # Bucket

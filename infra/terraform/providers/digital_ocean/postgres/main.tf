@@ -3,32 +3,32 @@ locals {
 }
 
 resource "digitalocean_database_cluster" "this" {
-  name = var.name
-  engine = "pg"
-  version = var.pg_version
-  size = var.size
-  region = var.region
+  name       = var.name
+  engine     = "pg"
+  version    = var.pg_version
+  size       = var.size
+  region     = var.region
   node_count = var.node_count
-  tags = var.tags
+  tags       = var.tags
 }
 
 resource "digitalocean_database_user" "this" {
   cluster_id = digitalocean_database_cluster.this.id
-  name = "${local.db_prefix}_admin"
+  name       = "${local.db_prefix}_admin"
 }
 
 resource "digitalocean_database_db" "this" {
   cluster_id = digitalocean_database_cluster.this.id
-  name = local.db_prefix
+  name       = local.db_prefix
 }
 
 resource "digitalocean_database_connection_pool" "this" {
   cluster_id = digitalocean_database_cluster.this.id
-  name = "${local.db_prefix}_pool"
-  mode = "transaction"
-  size = 20
-  db_name = digitalocean_database_db.this.name
-  user = digitalocean_database_user.this.name
+  name       = "${local.db_prefix}_pool"
+  mode       = "transaction"
+  size       = 20
+  db_name    = digitalocean_database_db.this.name
+  user       = digitalocean_database_user.this.name
 }
 
 resource "digitalocean_database_firewall" "this" {
@@ -37,7 +37,7 @@ resource "digitalocean_database_firewall" "this" {
   dynamic "rule" {
     for_each = var.allowed_droplet_ips
     content {
-      type = "droplet"
+      type  = "droplet"
       value = rule.value
     }
   }
@@ -45,7 +45,7 @@ resource "digitalocean_database_firewall" "this" {
   dynamic "rule" {
     for_each = var.allowed_ips_addr
     content {
-      type = "ip_addr"
+      type  = "ip_addr"
       value = rule.value
     }
   }

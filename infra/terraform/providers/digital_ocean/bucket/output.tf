@@ -15,7 +15,7 @@ output "name" {
 
 output "region" {
   description = "What region the bucket was crearted in"
-  value = digitalocean_spaces_bucket.this.region
+  value       = digitalocean_spaces_bucket.this.region
 }
 
 output "domain_name" {

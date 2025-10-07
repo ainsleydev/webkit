@@ -5,6 +5,6 @@ variable "bucket_name" {
 
 variable "acl" {
   description = "ACL of the bucket, defaults to allPrivate"
-  type = string
-  default = "allPrivate"
+  type        = string
+  default     = "allPrivate"
 }

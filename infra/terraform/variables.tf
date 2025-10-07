@@ -18,7 +18,7 @@ variable "api_key" {
   description = "The key/token used to access ht"
 }
 
-variable digital_ocean_config {
+variable "digital_ocean_config" {
   type = object({
     api_key           = string
     spaces_access_key = string
@@ -27,7 +27,7 @@ variable digital_ocean_config {
   description = "Configuration for the Digital Ocean provider"
 }
 
-variable github_config {
+variable "github_config" {
   type = object({
     user  = string
     repo  = string
@@ -49,7 +49,7 @@ variable "better_stack_token" {
   sensitive = true
 }
 
-variable payload_config {
+variable "payload_config" {
   type = object({
     secret  = string
     api_key = string
@@ -57,11 +57,11 @@ variable payload_config {
   description = "Configuration for Payload CMS"
 }
 
-variable slack_config {
+variable "slack_config" {
   type = object({
-    base_user = string
+    base_user  = string
     bot_token  = string
-    user_token  = string
+    user_token = string
   })
   description = "Configuration for Slack"
 }
