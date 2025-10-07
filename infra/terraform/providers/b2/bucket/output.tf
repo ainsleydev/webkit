@@ -3,12 +3,12 @@ output "id" {
   value       = b2_bucket.this.id
 }
 
-output "bucket_name" {
+output "name" {
   description = "The name of the S3 bucket"
   value       = b2_bucket.this.bucket_name
 }
 
-output "bucket_info" {
+output "info" {
   description = "The metadata associated with the S3 bucket"
   value       = b2_bucket.this.bucket_info
 }

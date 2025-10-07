@@ -1,3 +1,5 @@
+# App Platform
+# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/app
 resource "digitalocean_app" "this" {
 
   spec {
