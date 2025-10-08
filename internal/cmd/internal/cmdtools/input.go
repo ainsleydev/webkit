@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 // RunCommand is the signature for command handlers. Each command
@@ -24,10 +25,10 @@ type CommandInput struct {
 // Wrap wraps a RunCommand to work with urfave/cli.
 func Wrap(command RunCommand) cli.ActionFunc {
 	return func(ctx context.Context, c *cli.Command) error {
-		// Let's temporarily use playground so we don't override any shit.
-		fs := afero.NewBasePathFs(afero.NewOsFs(), "./internal/playground")
-		if os.Getenv("APP_ENV") == "production" {
-			fs = afero.NewOsFs()
+		fs := afero.NewOsFs()
+		if os.Getenv("APP_ENV") == env.Development {
+			// Let's temporarily use playground so we don't override any shit.
+			fs = afero.NewBasePathFs(afero.NewOsFs(), "./internal/playground")
 		}
 		input := CommandInput{
 			Command: c,
