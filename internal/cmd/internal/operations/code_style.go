@@ -9,10 +9,10 @@ import (
 )
 
 var codeStyleTemplates = map[string]string{
-	".editorconfig":     ".editorconfig",
-	".prettierrc":       ".prettierrc",
-	".prettierignore":   ".prettierignore",
-	".eslint.config.js": "eslint.config.js.tmpl",
+	".editorconfig":    ".editorconfig",
+	".prettierrc":      ".prettierrc",
+	".prettierignore":  ".prettierignore",
+	"eslint.config.js": "eslint.config.js.tmpl",
 	// TODO: .stylelintrc
 }
 

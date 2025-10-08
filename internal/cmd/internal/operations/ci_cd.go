@@ -17,18 +17,18 @@ import (
 // WebKit application.
 func CreateCICD(_ context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(afero.NewBasePathFs(input.FS, "./.github"))
-	app := input.AppDef()
+	appDef := input.AppDef()
 
-	for _, app := range app.Apps {
+	for _, app := range appDef.Apps {
 		tpl := templates.MustLoadTemplate(".github/workflows/pr.yaml.tmpl")
-		file := fmt.Sprintf("./workflows/app-pr-%s.yaml", app.Name)
+		file := fmt.Sprintf("./workflows/pr-%s.yaml", app.Name)
 
 		if err := gen.Template(file, tpl, &app); err != nil {
 			return err
 		}
 	}
 
-	for _, resource := range app.Resources {
+	for _, resource := range appDef.Resources {
 		backupEnabled := resource.Backup.Enabled
 
 		if resource.Type == appdef.ResourceTypePostgres && backupEnabled {
@@ -42,13 +42,13 @@ func CreateCICD(_ context.Context, input cmdtools.CommandInput) error {
 	}
 
 	// Generate Terraform (temp, scratch)
-	if err := gen.Template(
-		"./workflows/infra-terraform-plan.yaml",
-		templates.MustLoadTemplate(".github/workflows/terraform-plan.yaml.tmpl"),
-		&app,
-	); err != nil {
-		return err
-	}
+	//if err := gen.Template(
+	//	"./workflows/infra-terraform-plan.yaml",
+	//	templates.MustLoadTemplate(".github/workflows/terraform-plan.yaml.tmpl"),
+	//	&app,
+	//); err != nil {
+	//	return err
+	//}
 
 	return nil
 }

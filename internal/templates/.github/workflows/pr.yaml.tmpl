@@ -35,9 +35,13 @@ jobs:
           go-version: '1.25'
 {{- end }}
 
-{{- range $name, $spec := .Commands }}
+{{- range $spec := .OrderedCommands }}
+{{- if not $spec.Disabled }}
 
-      - name: {{ $name.String | title }}
+      - name: {{ $spec.Name | title }}
+{{- if $.Path }}
         working-directory: {{ $.Path }}
-        run: {{ if $spec.Cmd }}{{ $spec.Cmd }}{{ else }}echo "No command defined"{{ end }}
+{{- end }}
+        run: {{ $spec.Cmd }}
+{{- end }}
 {{- end }}

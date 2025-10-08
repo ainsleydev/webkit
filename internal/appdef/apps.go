@@ -16,7 +16,7 @@ type (
 		Infra       Infra                   `json:"infra"`
 		Env         Environment             `json:"env"`
 		Domains     []Domain                `json:"domains,omitempty"`
-		Commands    map[Command]CommandSpec `json:"commands,omitempty" jsonschema:"oneof_type=boolean;object;string"`
+		Commands    map[Command]CommandSpec `json:"Commands,omitempty" jsonschema:"oneof_type=boolean;object;string"`
 	}
 	Build struct {
 		Dockerfile string `json:"dockerfile"`
@@ -76,18 +76,36 @@ func (d DomainType) String() string {
 	return string(d)
 }
 
+// OrderedCommands returns the app's commands in canonical order
+// with Name populated.
+func (a *App) OrderedCommands() []CommandSpec {
+	var ordered []CommandSpec
+
+	for _, cmd := range Commands {
+		spec, exists := a.Commands[cmd]
+		if !exists {
+			// Should not happen because applyDefaults populates them
+			continue
+		}
+		spec.Name = cmd.String() // Populate name for templates.
+		ordered = append(ordered, spec)
+	}
+
+	return ordered
+}
+
 func (a *App) applyDefaults() error {
 	if a.Commands == nil {
 		a.Commands = make(map[Command]CommandSpec)
 	}
 
-	// Get default commands for this app type
+	// Get default Commands for this app type
 	defaults, hasDefaults := defaultCommands[a.Type]
 	if !hasDefaults {
-		return fmt.Errorf("no default commands defined for app type %q", a.Type)
+		return fmt.Errorf("no default Commands defined for app type %q", a.Type)
 	}
 
-	for _, cmd := range commands {
+	for _, cmd := range Commands {
 		// Skip if user has explicitly configured this command.
 		if _, exists := a.Commands[cmd]; exists {
 			continue

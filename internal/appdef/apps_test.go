@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAppType_String(t *testing.T) {
@@ -42,4 +43,36 @@ func TestDomainType_String(t *testing.T) {
 	got := DomainTypePrimary.String()
 	assert.Equal(t, "primary", got)
 	assert.IsType(t, "", got)
+}
+
+func TestApp_OrderedCommands(t *testing.T) {
+	t.Parallel()
+
+	app := &App{
+		Name: "web",
+		Type: AppTypeGoLang,
+		Path: "./",
+	}
+
+	err := app.applyDefaults()
+	require.NoError(t, err)
+
+	commands := app.OrderedCommands()
+	require.Len(t, commands, 4)
+
+	t.Log("In Order")
+	{
+		assert.Equal(t, "format", commands[0].Name)
+		assert.Equal(t, "lint", commands[1].Name)
+		assert.Equal(t, "test", commands[2].Name)
+		assert.Equal(t, "build", commands[3].Name)
+	}
+
+	t.Log("Check CMD is Populated")
+	{
+		assert.Equal(t, "gofmt -w .", commands[0].Cmd)
+		assert.Equal(t, "golangci-lint run", commands[1].Cmd)
+		assert.Equal(t, "go test ./...", commands[2].Cmd)
+		assert.Equal(t, "go build main.go", commands[3].Cmd)
+	}
 }

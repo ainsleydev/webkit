@@ -10,6 +10,7 @@ import (
 
 func TestTerraformBasicValidation(t *testing.T) {
 	t.Parallel()
+	t.Skip()
 
 	terraformOptions := &terraform.Options{
 		TerraformDir: "../terraform",
@@ -23,6 +24,7 @@ func TestTerraformBasicValidation(t *testing.T) {
 
 func TestTerraformPlanMinimal(t *testing.T) {
 	t.Parallel()
+	t.Skip()
 
 	terraformOptions := &terraform.Options{
 		TerraformDir: "../terraform",

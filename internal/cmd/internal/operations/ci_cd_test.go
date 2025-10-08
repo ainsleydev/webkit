@@ -1,6 +1,8 @@
 package operations
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -26,17 +28,19 @@ func TestCreateCICD(t *testing.T) {
 				input: appdef.App{
 					Name:  "cms",
 					Title: "CMS",
+					Path:  "./cms",
 					Type:  appdef.AppTypePayload,
 				},
-				want: ".github/workflows/app-pr-cms.yaml",
+				want: ".github/workflows/pr-cms.yaml",
 			},
 			"Go": {
 				input: appdef.App{
 					Name:  "web",
 					Title: "Web",
+					Path:  "./web",
 					Type:  appdef.AppTypeGoLang,
 				},
-				want: ".github/workflows/app-pr-web.yaml",
+				want: ".github/workflows/pr-web.yaml",
 			},
 		}
 
@@ -45,27 +49,52 @@ func TestCreateCICD(t *testing.T) {
 				t.Parallel()
 
 				fs := afero.NewMemMapFs()
-
-				def := &appdef.Definition{
-					Apps: []appdef.App{test.input},
-				}
+				def := &appdef.Definition{Apps: []appdef.App{test.input}}
+				require.NoError(t, def.ApplyDefaults())
 
 				err := CreateCICD(t.Context(), cmdtools.CommandInput{
 					FS:          fs,
 					AppDefCache: def,
 				})
-				if err != nil {
-					return
-				}
+				require.NoError(t, err)
 
 				file, err := afero.ReadFile(fs, test.want)
 				require.NoError(t, err)
 
-				err = testutil.ValidateYAML(t, file)
-				assert.NoError(t, err)
+				t.Log("YAML is valid")
+				{
+					err = testutil.ValidateYAML(t, file)
+					assert.NoError(t, err)
+				}
 
-				err = testutil.ValidateGithubAction(t, file)
-				require.NoError(t, err)
+				content := string(file)
+				fmt.Print(string(content))
+
+				t.Log("Github Action is validated")
+				{
+					err = testutil.ValidateGithubAction(t, file)
+					require.NoError(t, err)
+				}
+
+				t.Log("Commands are in order")
+				{
+					content := string(file)
+
+					// Get positions for each command in the canonical order
+					var positions []int
+					for _, cmd := range appdef.Commands {
+						pos := strings.Index(content, "name: "+strings.Title(cmd.String()))
+						if pos != -1 {
+							positions = append(positions, pos)
+						}
+					}
+
+					// Verify positions are in ascending order
+					for i := 0; i < len(positions)-1; i++ {
+						assert.Less(t, positions[i], positions[i+1],
+							"commands should appear in order defined by appdef.Commands")
+					}
+				}
 			})
 		}
 	})
