@@ -13,7 +13,7 @@ import (
 func TestCreateCodeStyleFiles(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Creates Successfully", func(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
@@ -31,7 +31,7 @@ func TestCreateCodeStyleFiles(t *testing.T) {
 		}
 	})
 
-	t.Run("Errors on Failure", func(t *testing.T) {
+	t.Run("Error", func(t *testing.T) {
 		t.Parallel()
 
 		got := CreateCodeStyleFiles(t.Context(), cmdtools.CommandInput{

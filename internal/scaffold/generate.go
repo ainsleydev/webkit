@@ -15,7 +15,7 @@ import (
 type (
 	// Generator is used for scaffolding files to a WebKit project.
 	Generator interface {
-		Reader(path string, data []byte) error
+		Bytes(path string, data []byte, opts ...Option) error
 		Template(path string, tpl *template.Template, data any, opts ...Option) error
 		JSON(path string, content any, opts ...Option) error
 		YAML(path string, content any, opts ...Option) error
@@ -42,7 +42,13 @@ const (
 )
 
 // Bytes writes bytes to the filesystem and ensure directories exist.
-func (f FileGenerator) Bytes(path string, data []byte) error {
+func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
+	options := applyOptions(opts...)
+
+	if f.shouldSkipScaffold(path, options.mode) {
+		return nil
+	}
+
 	if err := f.fs.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
 		return fmt.Errorf("creating directories: %w", err)
 	}
@@ -65,12 +71,6 @@ func (f FileGenerator) Bytes(path string, data []byte) error {
 
 // Template writes a template file with the given mode.
 func (f FileGenerator) Template(path string, tpl *template.Template, data any, opts ...Option) error {
-	options := applyOptions(opts...)
-
-	if f.shouldSkipScaffold(path, options.mode) {
-		return nil
-	}
-
 	buf := &bytes.Buffer{}
 	buf.WriteString(noticeForFile(path))
 
@@ -78,17 +78,11 @@ func (f FileGenerator) Template(path string, tpl *template.Template, data any, o
 		return fmt.Errorf("executing template %s: %w", tpl.Name(), err)
 	}
 
-	return f.Bytes(path, buf.Bytes())
+	return f.Bytes(path, buf.Bytes(), opts...)
 }
 
 // JSON writes JSON content with the given mode.
 func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
-	options := applyOptions(opts...)
-
-	if f.shouldSkipScaffold(path, options.mode) {
-		return nil
-	}
-
 	buf := &bytes.Buffer{}
 
 	encoder := json.NewEncoder(buf)
@@ -97,17 +91,11 @@ func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
 		return fmt.Errorf("encoding %s: %w", path, err)
 	}
 
-	return f.Bytes(path, buf.Bytes())
+	return f.Bytes(path, buf.Bytes(), opts...)
 }
 
 // YAML writes YAML content with the given mode.
 func (f FileGenerator) YAML(path string, content any, opts ...Option) error {
-	options := applyOptions(opts...)
-
-	if f.shouldSkipScaffold(path, options.mode) {
-		return nil
-	}
-
 	buf := &bytes.Buffer{}
 	buf.WriteString(noticeForFile(path))
 
@@ -117,7 +105,7 @@ func (f FileGenerator) YAML(path string, content any, opts ...Option) error {
 		return fmt.Errorf("encoding %s: %w", path, err)
 	}
 
-	return f.Bytes(path, buf.Bytes())
+	return f.Bytes(path, buf.Bytes(), opts...)
 }
 
 func (f FileGenerator) shouldSkipScaffold(path string, mode WriteMode) bool {

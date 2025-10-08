@@ -22,7 +22,7 @@
 		"precommit": "npx lint-staged",
 		"prepare": "husky",
 		"setup-deps": "bash bin/setup.sh",
-		"webkit": "go run main.go ${npm_config_argv[@]}",
+		"webkit": "APP_ENV=development go run main.go ${npm_config_argv[@]}",
 		"build": "go build -o webkit && go install",
 		"check": "pnpm format && pnpm lint && pnpm test",
 		"format": "pnpm format:go && biome check --write .",
