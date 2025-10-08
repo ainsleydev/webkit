@@ -23,7 +23,7 @@
 			"production": {
 				"SENTRY_DSN": {
 					"source": "sops",
-					"path": "secrets/shared.yaml:SENTRY_DSN"
+					"path": "production.yaml:SENTRY_DSN"
 				},
 				"FRONTEND_URL": {
 					"source": "value",
@@ -83,7 +83,7 @@
 					},
 					"PAYLOAD_SECRET": {
 						"source": "sops",
-						"path": "secrets/cms.yaml:PAYLOAD_SECRET"
+						"path": "production.yaml:PAYLOAD_SECRET"
 					}
 				},
 				"staging": {
@@ -99,7 +99,7 @@
 					},
 					"PAYLOAD_SECRET": {
 						"source": "sops",
-						"path": "secrets/production.yaml:PAYLOAD_SECRET"
+						"path": "production.yaml:PAYLOAD_SECRET"
 					}
 				}
 			},

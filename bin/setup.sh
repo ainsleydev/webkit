@@ -7,6 +7,8 @@ echo "🔧 Setting up development environment..."
 declare -A tools=(
   [rg]="ripgrep"
   [jq]="jq"
+  [sops]="sops"
+  [age]="age"
 )
 
 # Install each one

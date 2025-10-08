@@ -20,19 +20,26 @@ type CommandInput struct {
 	FS          afero.Fs
 	Command     *cli.Command
 	AppDefCache *appdef.Definition
+	BaseDir     string
 }
 
 // Wrap wraps a RunCommand to work with urfave/cli.
 func Wrap(command RunCommand) cli.ActionFunc {
 	return func(ctx context.Context, c *cli.Command) error {
 		fs := afero.NewOsFs()
+		dir := "./"
+
 		if os.Getenv("APP_ENV") == env.Development {
 			// Let's temporarily use playground so we don't override any shit.
-			fs = afero.NewBasePathFs(afero.NewOsFs(), "./internal/playground")
+			path := "./internal/playground"
+			fs = afero.NewBasePathFs(afero.NewOsFs(), path)
+			dir = path
 		}
+
 		input := CommandInput{
 			Command: c,
 			FS:      fs,
+			BaseDir: dir,
 		}
 		return command(ctx, input)
 	}

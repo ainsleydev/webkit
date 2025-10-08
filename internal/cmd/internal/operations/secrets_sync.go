@@ -1,9 +1,9 @@
-// cmd/internal/operations/secrets_sync.go
 package operations
 
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -11,7 +11,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/sops"
+	"github.com/ainsleydev/webkit/internal/secrets/sops"
 )
 
 // SecretsSync adds missing secret placeholders to SOPS files based on app.json.
@@ -118,7 +118,7 @@ func extractSOPSReferences(app *appdef.Definition) []secretReference {
 
 			ref := &secretReference{
 				Key:      sopsPath.Key,
-				FilePath: sopsPath.File,
+				FilePath: filepath.Join("resources", "secrets", sopsPath.File),
 				AppNames: []string{appName},
 			}
 			keyToRef[refKey] = ref
@@ -175,7 +175,7 @@ func processSecretFile(fs afero.Fs, filePath string, secrets []secretReference) 
 	}
 
 	// Check if file is encrypted
-	if sops.IsEncrypted(content) {
+	if sops.IsContentEncrypted(content) {
 		result.encrypted = true
 		result.messages = append(result.messages, "⚠ File is encrypted - decrypt first with:")
 		result.messages = append(result.messages, fmt.Sprintf("  sops %s", filePath))
