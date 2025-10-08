@@ -21,6 +21,7 @@
 	"scripts": {
 		"precommit": "npx lint-staged",
 		"prepare": "husky",
+		"build": "go build -o webkit && go install",
 		"check": "pnpm format && pnpm lint && pnpm test",
 		"format": "pnpm format:go && biome check --write .",
 		"format:go": "go fmt ./...",
