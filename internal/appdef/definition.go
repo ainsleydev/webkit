@@ -29,7 +29,7 @@ type (
 		Repo        string `json:"repo" jsonschema:"required,format=uri,title=Repository,description=Git repository URL,example=git@github.com:ainsley/my-website.git"`
 	}
 	Shared struct {
-		Env Env `json:"env"`
+		Env Environment `json:"env"`
 	}
 )
 

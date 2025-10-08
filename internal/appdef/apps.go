@@ -14,7 +14,7 @@ type (
 		Path        string                  `json:"path"`
 		Build       Build                   `json:"build"`
 		Infra       Infra                   `json:"infra"`
-		Env         Env                     `json:"env"`
+		Env         Environment             `json:"env"`
 		Domains     []Domain                `json:"domains,omitempty"`
 		Commands    map[Command]CommandSpec `json:"commands,omitempty" jsonschema:"oneof_type=boolean;object;string"`
 	}

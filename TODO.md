@@ -3,6 +3,7 @@
 - The `config` part of the infrastructure block should be json encoded (all of it).
 - Figure out a clever way to use Terratest, when should we be used this, E2E or integration?
 - Start generating the Terraform plan CICD workflow.
+- Husky hooks for lint staged, left hook etc.
 
 ## Nice Ideas
 
