@@ -13,7 +13,23 @@ updates:
     - dependency-name: "*"
       update-types: ["version-update:semver-patch"]
   groups:
+    {{- if eq .Type "payload" }}
+    payload:
+      patterns:
+        - "@payloadcms/*"
+        - "payload"
+        - "@ainsleydev/payload-helper"
+      update-types:
+        - "minor"
+        - "patch"
+    {{- end }}
     dependencies:
       patterns:
         - "*"
+      exclude-patterns:
+        {{- if eq .Type "payload" }}
+        - "@payloadcms/*"
+        - "payload"
+        - "@ainsleydev/payload-helper"
+        {{- end }}
   {{- end }}

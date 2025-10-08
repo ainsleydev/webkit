@@ -28,18 +28,19 @@ func CreateCICD(_ context.Context, input cmdtools.CommandInput) error {
 		}
 	}
 
-	for _, resource := range appDef.Resources {
-		backupEnabled := resource.Backup.Enabled
-
-		if resource.Type == appdef.ResourceTypePostgres && backupEnabled {
-			tpl := templates.MustLoadTemplate(".github/workflows/backup-postgres.yaml.tmpl")
-			file := fmt.Sprintf("./workflows/resource-backup-%s.yaml", resource.Name)
-
-			if err := gen.Template(file, tpl, &resource); err != nil {
-				return err
-			}
-		}
-	}
+	// TODO: After Terraform
+	//for _, resource := range appDef.Resources {
+	//	backupEnabled := resource.Backup.Enabled
+	//
+	//	if resource.Type == appdef.ResourceTypePostgres && backupEnabled {
+	//		tpl := templates.MustLoadTemplate(".github/workflows/backup-postgres.yaml.tmpl")
+	//		file := fmt.Sprintf("./workflows/resource-backup-%s.yaml", resource.Name)
+	//
+	//		if err := gen.Template(file, tpl, &resource); err != nil {
+	//			return err
+	//		}
+	//	}
+	//}
 
 	// Generate Terraform (temp, scratch)
 	//if err := gen.Template(
