@@ -122,6 +122,7 @@ func TestEnvValue_ParseSOPSPath(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			got, err := test.input.ParseSOPSPath()
 			assert.Equal(t, test.want, got)
 			assert.Equal(t, test.wantErr, err != nil)

@@ -8,32 +8,28 @@
 	},
 	"shared": {
 		"env": {
-			"dev": [
-				{
-					"key": "FRONTEND_URL",
-					"type": "value",
+			"dev": {
+				"FRONTEND_URL": {
+					"source": "value",
 					"value": "http://localhost:3000"
 				}
-			],
-			"staging": [
-				{
-					"key": "FRONTEND_URL",
-					"type": "value",
+			},
+			"staging": {
+				"FRONTEND_URL": {
+					"source": "value",
 					"value": "https://staging.my-website.com"
 				}
-			],
-			"production": [
-				{
-					"key": "SENTRY_DSN",
-					"type": "secret",
-					"from": "sops:secrets/shared.yaml:/SENTRY_DSN"
+			},
+			"production": {
+				"SENTRY_DSN": {
+					"source": "sops",
+					"path": "secrets/shared.yaml:SENTRY_DSN"
 				},
-				{
-					"key": "FRONTEND_URL",
-					"type": "value",
+				"FRONTEND_URL": {
+					"source": "value",
 					"value": "https://my-website.com"
 				}
-			]
+			}
 		}
 	},
 	"resources": [
@@ -80,37 +76,32 @@
 				}
 			},
 			"env": {
-				"dev": [
-					{
-						"key": "DATABASE_URL",
-						"type": "from_resource",
-						"from": "resource:db:connection_url"
+				"dev": {
+					"DATABASE_URL": {
+						"source": "resource",
+						"value": "db.connection_url"
 					},
-					{
-						"key": "PAYLOAD_SECRET",
-						"type": "secret",
-						"from": "sops:secrets/cms.yaml:/PAYLOAD_SECRET"
+					"PAYLOAD_SECRET": {
+						"source": "sops",
+						"path": "secrets/cms.yaml:PAYLOAD_SECRET"
 					}
-				],
-				"staging": [
-					{
-						"key": "DATABASE_URL",
-						"type": "from_resource",
-						"from": "resource:db:connection_url"
+				},
+				"staging": {
+					"DATABASE_URL": {
+						"source": "resource",
+						"value": "db.connection_url"
 					}
-				],
-				"production": [
-					{
-						"key": "DATABASE_URL",
-						"type": "from_resource",
-						"from": "resource:db:connection_url"
+				},
+				"production": {
+					"DATABASE_URL": {
+						"source": "resource",
+						"value": "db.connection_url"
 					},
-					{
-						"key": "PAYLOAD_SECRET",
-						"type": "secret",
-						"from": "github-secrets:PAYLOAD_SECRET"
+					"PAYLOAD_SECRET": {
+						"source": "sops",
+						"path": "secrets/production.yaml:PAYLOAD_SECRET"
 					}
-				]
+				}
 			},
 			"depends_on": ["db"]
 		},
@@ -133,25 +124,22 @@
 				}
 			},
 			"env": {
-				"dev": [
-					{
-						"key": "PUBLIC_API_URL",
-						"type": "value",
+				"dev": {
+					"PUBLIC_API_URL": {
+						"source": "value",
 						"value": "http://localhost:3000"
 					}
-				],
-				"production": [
-					{
-						"key": "PUBLIC_API_URL",
-						"type": "value",
+				},
+				"production": {
+					"PUBLIC_API_URL": {
+						"source": "value",
 						"value": "https://api.my-website.com"
 					},
-					{
-						"key": "ASSETS_BUCKET",
-						"type": "from_resource",
-						"from": "resource:object-store:bucket"
+					"ASSETS_BUCKET": {
+						"source": "resource",
+						"value": "store.bucket_name"
 					}
-				]
+				}
 			}
 		}
 	]

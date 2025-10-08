@@ -16,7 +16,11 @@ func LoadTemplate(name string) (*template.Template, error) {
 	if err != nil {
 		return nil, err
 	}
-	return template.New(name).Funcs(sprig.FuncMap()).Parse(string(content))
+
+	funcs := sprig.FuncMap()
+	funcs["secret"] = secret
+
+	return template.New(name).Funcs(funcs).Parse(string(content))
 }
 
 // MustLoadTemplate calls LoadTemplate but panics if the

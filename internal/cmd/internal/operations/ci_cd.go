@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goccy/go-json"
 	"github.com/spf13/afero"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
@@ -40,5 +41,25 @@ func CreateCICD(_ context.Context, input cmdtools.CommandInput) error {
 		}
 	}
 
+	// Generate Terraform (temp, scratch)
+	if err := gen.Template(
+		"./workflows/infra-terraform-plan.yaml",
+		templates.MustLoadTemplate(".github/workflows/terraform-plan.yaml.tmpl"),
+		&app,
+	); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func temp(definition appdef.Definition) (string, error) {
+	apps := definition.Apps
+
+	str, err := json.Marshal(apps)
+	if err != nil {
+		return "", err
+	}
+
+	return string(str), nil
 }
