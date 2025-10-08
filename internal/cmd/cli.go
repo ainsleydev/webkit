@@ -21,6 +21,7 @@ func Run() {
 		Commands: []*cli.Command{
 			updateCmd,
 			scaffoldCmd,
+			secretsCmd,
 			driftCmd,
 			scratchCmd,
 		},
