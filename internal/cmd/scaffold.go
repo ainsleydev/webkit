@@ -8,24 +8,23 @@ import (
 )
 
 var scaffoldCmd = &cli.Command{
-	Name:   "scaffold",
-	Hidden: true,
+	Name: "scaffold",
 	Commands: []*cli.Command{
 		{
 			Name:   "code-style",
-			Action: cmdtools.WrapCommand(operations.CreateCodeStyleFiles),
+			Action: cmdtools.Wrap(operations.CreateCodeStyleFiles),
 		},
 		{
 			Name:   "git",
-			Action: cmdtools.WrapCommand(operations.CreateGitSettings),
+			Action: cmdtools.Wrap(operations.CreateGitSettings),
 		},
 		{
 			Name:   "package-json",
-			Action: cmdtools.WrapCommand(operations.CreatePackageJson),
+			Action: cmdtools.Wrap(operations.CreatePackageJson),
 		},
 		{
 			Name:   "cicd",
-			Action: cmdtools.WrapCommand(operations.CreateCICD),
+			Action: cmdtools.Wrap(operations.CreateCICD),
 		},
 	},
 }

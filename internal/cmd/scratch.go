@@ -11,7 +11,7 @@ import (
 var scratchCmd = &cli.Command{
 	Name:   "scratch",
 	Hidden: true,
-	Action: cmdtools.WrapCommand(func(ctx context.Context, input cmdtools.CommandInput) error {
+	Action: cmdtools.Wrap(func(ctx context.Context, input cmdtools.CommandInput) error {
 
 		return nil
 

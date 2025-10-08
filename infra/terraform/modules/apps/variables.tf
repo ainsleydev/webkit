@@ -35,12 +35,12 @@ variable "platform_config" {
 }
 
 variable "app_type" {
-  description = "App type (sveltekit, golang, payload-cms)"
+  description = "App type (svelte-kit, golang, payload)"
   type        = string
 
   validation {
-    condition     = contains(["sveltekit", "golang", "payload-cms"], var.app_type)
-    error_message = "App type must be one of: sveltekit, golang, payload-cms"
+    condition     = contains(["svelte-kit", "golang", "payload"], var.app_type)
+    error_message = "App type must be one of: svelte-kit, golang, payload"
   }
 }
 

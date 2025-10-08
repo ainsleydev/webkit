@@ -2,6 +2,7 @@ package cmdtools
 
 import (
 	"context"
+	"os"
 
 	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
@@ -20,11 +21,14 @@ type CommandInput struct {
 	AppDefCache *appdef.Definition
 }
 
-// WrapCommand wraps a RunCommand to work with urfave/cli.
-func WrapCommand(command RunCommand) cli.ActionFunc {
+// Wrap wraps a RunCommand to work with urfave/cli.
+func Wrap(command RunCommand) cli.ActionFunc {
 	return func(ctx context.Context, c *cli.Command) error {
 		// Let's temporarily use playground so we don't override any shit.
 		fs := afero.NewBasePathFs(afero.NewOsFs(), "./internal/playground")
+		if os.Getenv("APP_ENV") == "production" {
+			fs = afero.NewOsFs()
+		}
 		input := CommandInput{
 			Command: c,
 			FS:      fs,

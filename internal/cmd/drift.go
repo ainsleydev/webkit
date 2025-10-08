@@ -16,7 +16,7 @@ import (
 var driftCmd = &cli.Command{
 	Name:        "drift",
 	Description: "Detect file drift caused by outdated WebKit templates",
-	Action:      cmdtools.WrapCommand(driftDetection),
+	Action:      cmdtools.Wrap(driftDetection),
 }
 
 func driftDetection(ctx context.Context, input cmdtools.CommandInput) error {

@@ -13,7 +13,7 @@ var updateCmd = &cli.Command{
 	Name:        "update",
 	Usage:       "Update project dependencies from app.json",
 	Description: "Rebuilds all generated files based on current app.json configuration",
-	Action:      cmdtools.WrapCommand(update),
+	Action:      cmdtools.Wrap(update),
 }
 
 var updateOps = []cmdtools.RunCommand{
