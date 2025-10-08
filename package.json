@@ -21,6 +21,8 @@
 	"scripts": {
 		"precommit": "npx lint-staged",
 		"prepare": "husky",
+		"setup-deps": "bash bin/setup.sh",
+		"run": "go run main.go",
 		"build": "go build -o webkit && go install",
 		"check": "pnpm format && pnpm lint && pnpm test",
 		"format": "pnpm format:go && biome check --write .",
@@ -29,7 +31,8 @@
 		"lint": "pnpm lint:go && pnpm lint:js",
 		"lint:go": "golangci-lint run --fix ./...",
 		"lint:js": "biome lint --write .",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"todo": "rg --no-heading --color always -n -e '//.*\\bTODO\\b|#.*\\bTODO\\b|/\\*.*\\bTODO\\b.*\\*/' --glob '!node_modules' --glob '!dist' --glob '!.git' --glob '!vendor' --glob '!.idea'"
 	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
