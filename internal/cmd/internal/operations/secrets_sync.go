@@ -4,8 +4,6 @@ package operations
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -13,6 +11,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/sops"
 )
 
 // SecretsSync adds missing secret placeholders to SOPS files based on app.json.
@@ -21,7 +20,7 @@ func SecretsSync(_ context.Context, input cmdtools.CommandInput) error {
 	app := input.AppDef()
 	fs := input.FS
 
-	// Extract all SOPS references from app.json.
+	// Extract all SOPS references from app.json
 	secretRefs := extractSOPSReferences(app)
 	if len(secretRefs) == 0 {
 		fmt.Println("No secrets with source: 'sops' found in app.json")
@@ -37,6 +36,7 @@ func SecretsSync(_ context.Context, input cmdtools.CommandInput) error {
 		totalAdded     int
 		totalSkipped   int
 		totalEncrypted int
+		totalMissing   int
 	)
 
 	// Process each file
@@ -51,6 +51,7 @@ func SecretsSync(_ context.Context, input cmdtools.CommandInput) error {
 
 		totalAdded += result.added
 		totalSkipped += result.skipped
+		totalMissing += result.missing
 		if result.encrypted {
 			totalEncrypted++
 		}
@@ -59,10 +60,17 @@ func SecretsSync(_ context.Context, input cmdtools.CommandInput) error {
 	// Print summary
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Printf("Summary: %d secrets added, %d skipped", totalAdded, totalSkipped)
+	if totalMissing > 0 {
+		fmt.Printf(", %d files missing", totalMissing)
+	}
 	if totalEncrypted > 0 {
 		fmt.Printf(", %d encrypted files skipped", totalEncrypted)
 	}
 	fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+	if totalMissing > 0 {
+		fmt.Println("\n💡 Run 'webkit scaffold secrets' to create missing files")
+	}
 
 	return nil
 }
@@ -78,6 +86,7 @@ type secretReference struct {
 type syncResult struct {
 	added     int
 	skipped   int
+	missing   int
 	encrypted bool
 	messages  []string
 }
@@ -104,40 +113,29 @@ func extractSOPSReferences(app *appdef.Definition) []secretReference {
 			refKey := fmt.Sprintf("%s:%s", sopsPath.File, sopsPath.Key)
 			if existing, ok := keyToRef[refKey]; ok {
 				existing.AppNames = append(existing.AppNames, appName)
-			} else {
-				ref := &secretReference{
-					Key:      sopsPath.Key,
-					FilePath: sopsPath.File,
-					AppNames: []string{appName},
-				}
-				keyToRef[refKey] = ref
-				refs = append(refs, *ref)
+				continue
 			}
+
+			ref := &secretReference{
+				Key:      sopsPath.Key,
+				FilePath: sopsPath.File,
+				AppNames: []string{appName},
+			}
+			keyToRef[refKey] = ref
+			refs = append(refs, *ref)
 		}
 	}
 
-	// Extract from shared env
-	if app.Shared.Env.Dev != nil {
-		processEnvVars(app.Shared.Env.Dev, "shared")
-	}
-	if app.Shared.Env.Staging != nil {
-		processEnvVars(app.Shared.Env.Staging, "shared")
-	}
-	if app.Shared.Env.Production != nil {
-		processEnvVars(app.Shared.Env.Production, "shared")
-	}
+	// Walk shared environments
+	app.Shared.Env.Walk(func(envName string, envVars appdef.EnvVar) {
+		processEnvVars(envVars, "shared")
+	})
 
-	// Extract from each app's env
+	// Walk each app’s environments
 	for _, appItem := range app.Apps {
-		if appItem.Env.Dev != nil {
-			processEnvVars(appItem.Env.Dev, appItem.Name)
-		}
-		if appItem.Env.Staging != nil {
-			processEnvVars(appItem.Env.Staging, appItem.Name)
-		}
-		if appItem.Env.Production != nil {
-			processEnvVars(appItem.Env.Production, appItem.Name)
-		}
+		appItem.Env.Walk(func(envName string, envVars appdef.EnvVar) {
+			processEnvVars(envVars, appItem.Name)
+		})
 	}
 
 	return refs
@@ -164,13 +162,8 @@ func processSecretFile(fs afero.Fs, filePath string, secrets []secretReference) 
 	}
 
 	if !exists {
-		// Create the file
-		if err := createSecretFile(fs, filePath, secrets); err != nil {
-			result.messages = append(result.messages, fmt.Sprintf("✗ Error creating file: %v", err))
-			return result
-		}
-		result.added = len(secrets)
-		result.messages = append(result.messages, fmt.Sprintf("• Created file with %d secrets", len(secrets)))
+		result.missing = 1
+		result.messages = append(result.messages, fmt.Sprintf("✗ File does not exist - run 'webkit scaffold secrets' first"))
 		return result
 	}
 
@@ -182,7 +175,7 @@ func processSecretFile(fs afero.Fs, filePath string, secrets []secretReference) 
 	}
 
 	// Check if file is encrypted
-	if isEncrypted(content) {
+	if sops.IsEncrypted(content) {
 		result.encrypted = true
 		result.messages = append(result.messages, "⚠ File is encrypted - decrypt first with:")
 		result.messages = append(result.messages, fmt.Sprintf("  sops %s", filePath))
@@ -230,33 +223,4 @@ func processSecretFile(fs afero.Fs, filePath string, secrets []secretReference) 
 	}
 
 	return result
-}
-
-// createSecretFile creates a new secret file with the given secrets
-func createSecretFile(fs afero.Fs, filePath string, secrets []secretReference) error {
-	// Ensure directory exists
-	dir := filepath.Dir(filePath)
-	if err := fs.MkdirAll(dir, os.ModePerm); err != nil {
-		return err
-	}
-
-	var content strings.Builder
-	env := strings.TrimSuffix(filepath.Base(filePath), ".yaml")
-
-	content.WriteString(fmt.Sprintf("# %s environment secrets\n", env))
-	content.WriteString("# Generated by webkit secrets sync\n\n")
-
-	for _, secret := range secrets {
-		appList := strings.Join(secret.AppNames, ", ")
-		content.WriteString(fmt.Sprintf("# Used by: %s\n", appList))
-		content.WriteString(fmt.Sprintf("%s: \"REPLACE_ME_%s\"\n\n", secret.Key, strings.ToUpper(secret.Key)))
-	}
-
-	return afero.WriteFile(fs, filePath, []byte(content.String()), 0644)
-}
-
-// isEncrypted checks if a file is SOPS encrypted
-func isEncrypted(content []byte) bool {
-	// SOPS encrypted files contain "sops:" metadata
-	return strings.Contains(string(content), "sops:")
 }

@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"github.com/urfave/cli/v3"
+
+	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/operations"
 )
 
 var secretsCmd = &cli.Command{
@@ -13,7 +16,7 @@ var secretsCmd = &cli.Command{
 			Name:        "sync",
 			Usage:       "Sync secret placeholders from app.json",
 			Description: "Reads app.json and adds placeholder entries for all secrets with source: 'sops'",
-			//Action:      cmdtools.Wrap(operations.SyncSecrets),
+			Action:      cmdtools.Wrap(operations.SecretsSync),
 		},
 		{
 			Name:        "sync",

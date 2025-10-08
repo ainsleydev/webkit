@@ -3,6 +3,8 @@ package appdef
 import (
 	"fmt"
 	"strings"
+
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 type (
@@ -42,6 +44,20 @@ const (
 // String implements fmt.Stringer on the EnvSource.
 func (e EnvSource) String() string {
 	return string(e)
+}
+
+// Walk walks through each non-nil environment (dev, staging, production),
+// calling fn(envName, envVars) for each one.
+func (e Environment) Walk(fn func(envName string, envVars EnvVar)) {
+	if e.Dev != nil {
+		fn(env.Development, e.Dev)
+	}
+	if e.Staging != nil {
+		fn(env.Staging, e.Staging)
+	}
+	if e.Production != nil {
+		fn(env.Production, e.Production)
+	}
 }
 
 // SOPSPath represents a parsed SOPS file path and key
