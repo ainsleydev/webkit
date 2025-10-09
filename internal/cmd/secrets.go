@@ -9,6 +9,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/operations"
+	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
 )
 
@@ -35,7 +36,14 @@ var secretsCmd = &cli.Command{
 			Description: "Encrypts all plaintext secret files in the secrets/ directory using SOPS and age.",
 			Action: cmdtools.Wrap(func(ctx context.Context, input cmdtools.CommandInput) error {
 				fmt.Println("Encrypting secret files...")
-				return sops.EncryptFile(filepath.Join(input.BaseDir, "resources", "secrets", "production.yaml"))
+
+				prov, err := age.NewProvider()
+				if err != nil {
+					return err
+				}
+
+				path := filepath.Join(input.BaseDir, "resources", "secrets", "production.yaml")
+				return sops.NewClient(prov).Encrypt(path)
 			}),
 		},
 		{
@@ -44,7 +52,14 @@ var secretsCmd = &cli.Command{
 			Description: "Decrypts all encrypted secret files in the secrets/ directory using SOPS and age.",
 			Action: cmdtools.Wrap(func(ctx context.Context, input cmdtools.CommandInput) error {
 				fmt.Println("Decrypting secret files...")
-				return sops.DecryptFile(filepath.Join(input.BaseDir, "resources", "secrets", "production.yaml"))
+
+				prov, err := age.NewProvider()
+				if err != nil {
+					return err
+				}
+
+				path := filepath.Join(input.BaseDir, "resources", "secrets", "production.yaml")
+				return sops.NewClient(prov).Decrypt(path)
 			}),
 			//Action: cmdtools.WrapCommand(operations.DecryptSecrets),
 		},
