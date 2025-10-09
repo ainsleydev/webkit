@@ -52,12 +52,12 @@ func (e Environment) Walk(fn func(env string, name string, value EnvValue)) {
 		}
 	}
 	if e.Staging != nil {
-		for name, val := range e.Dev {
+		for name, val := range e.Staging {
 			fn(env.Staging, name, val)
 		}
 	}
 	if e.Production != nil {
-		for name, val := range e.Dev {
+		for name, val := range e.Production {
 			fn(env.Production, name, val)
 		}
 	}
