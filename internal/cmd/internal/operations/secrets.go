@@ -8,6 +8,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -36,16 +37,15 @@ func CreateSecretFiles(_ context.Context, input cmdtools.CommandInput) error {
 
 // generateSOPSConfig creates the .sops.yaml configuration file
 func generateSOPSConfig(gen scaffold.Generator) error {
-	config := map[string]interface{}{
-		"creation_rules": []map[string]interface{}{
+	config := map[string]any{
+		"creation_rules": []map[string]any{
 			{
 				"path_regex": `secrets/.*\.yaml$`,
-				"age":        "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p",
+				"age":        secrets.AgePublicKey,
 			},
 		},
 	}
-
-	return gen.YAML(".sops.yaml", config, scaffold.WithScaffoldMode())
+	return gen.YAML(".sops.yaml", config)
 }
 
 // generateEmptySecretFile creates an empty secret file with instructions
