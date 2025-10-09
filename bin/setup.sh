@@ -9,6 +9,7 @@ declare -A tools=(
   [jq]="jq"
   [sops]="sops"
   [age]="age"
+  [repomix]="repomix"
 )
 
 # Install each one

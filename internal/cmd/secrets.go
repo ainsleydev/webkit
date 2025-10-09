@@ -28,7 +28,6 @@ var secretsCmd = &cli.Command{
 			Name:        "validate",
 			Usage:       "Validate that all secrets from app.json exist in secret files",
 			Description: "Ensures every secret referenced in app.json has a corresponding entry in SOPS files",
-			//Action:      cmdtools.Wr(operations.ValidateSecrets),
 		},
 		{
 			Name:        "encrypt",
@@ -61,7 +60,6 @@ var secretsCmd = &cli.Command{
 				path := filepath.Join(input.BaseDir, "resources", "secrets", "production.yaml")
 				return sops.NewClient(prov).Decrypt(path)
 			}),
-			//Action: cmdtools.WrapCommand(operations.DecryptSecrets),
 		},
 	},
 }
