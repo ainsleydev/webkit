@@ -19,6 +19,23 @@ func setupClient(t *testing.T) (*Client, *cmdutil.MemRunner) {
 	return client, mock
 }
 
+//func TestNewGitCommandMissing(t *testing.T) {
+//	t.Parallel()
+//
+//	t.Run("Git Not Found In PATH", func(t *testing.T) {
+//		t.Parallel()
+//
+//		// Patch cmdutil.Exists to simulate git missing
+//		origExists := cmdutil.Exists
+//		cmdutil.Exists = func(name string) bool { return false }
+//		defer func() { cmdutil.Exists = origExists }()
+//
+//		_, err := New(nil)
+//		assert.Error(t, err)
+//		assert.Contains(t, err.Error(), "git command not found")
+//	})
+//}
+
 func TestIsRepository(t *testing.T) {
 	t.Parallel()
 

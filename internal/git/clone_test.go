@@ -100,6 +100,20 @@ func TestClone(t *testing.T) {
 		assert.Contains(t, err.Error(), "URL is required")
 	})
 
+	t.Run("MkdirAll Failure", func(t *testing.T) {
+		t.Parallel()
+
+		client, _ := setupClient(t)
+		cfg := CloneConfig{
+			URL:       "https://example.com/repo.git",
+			LocalPath: "/invalid/\x00path/repo", // Illegal path
+		}
+
+		err := client.Clone(t.Context(), cfg)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "creating parent dir")
+	})
+
 	t.Run("Runner Error", func(t *testing.T) {
 		t.Parallel()
 
@@ -115,6 +129,7 @@ func TestClone(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "git clone failed")
 	})
+
 }
 
 func TestCloneOrUpdate(t *testing.T) {
@@ -132,6 +147,26 @@ func TestCloneOrUpdate(t *testing.T) {
 		}
 
 		mock.AddStub("git clone", cmdutil.Result{Output: "cloned"})
+
+		err := client.CloneOrUpdate(t.Context(), cfg)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Ref Empty Defaults To Main", func(t *testing.T) {
+		t.Parallel()
+
+		client, mock := setupClient(t)
+		localPath := t.TempDir() + "/repo"
+		touchGitDir(t, localPath)
+
+		mock.AddStub("git fetch", cmdutil.Result{Output: "fetched"})
+		mock.AddStub("git reset", cmdutil.Result{Output: "reset"})
+
+		cfg := CloneConfig{
+			URL:       "https://example.com/repo.git",
+			LocalPath: localPath,
+			Ref:       "", // Empty ref
+		}
 
 		err := client.CloneOrUpdate(t.Context(), cfg)
 		assert.NoError(t, err)

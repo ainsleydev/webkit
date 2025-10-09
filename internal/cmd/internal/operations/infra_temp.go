@@ -2,166 +2,167 @@ package operations
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/hashicorp/terraform-exec/tfexec"
-	"github.com/spf13/afero"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/cmdutil"
 	"github.com/ainsleydev/webkit/internal/config"
-	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/git"
 )
 
 const (
-	webkitInfraRepo    = "https://github.com/webkit/infra.git"
-	webkitInfraVersion = "v1.0.0" // TODO: Match webkit CLI version
+	webkitInfraRepo = "https://github.com/ainsleydev/webkit-infra.git"
+	webkitInfraRef  = "main" // or version tag like "v1.2.3"
 )
 
-// InfraPlan clones the webkit-infra repository and runs terraform plan locally
+// InfraPlan runs terraform plan using the webkit-infra repository
+//
+// This function:
+// 1. Clones or updates the webkit-infra repository
+// 2. Writes app.json to the terraform working directory
+// 3. Initializes terraform with the appropriate backend
+// 4. Runs terraform plan to preview infrastructure changes
+//
+// Note: app.json is passed to terraform unmodified. If terraform cannot
+// handle the app.json structure, this will be noted but not block execution.
 func InfraPlan(ctx context.Context, input cmdtools.CommandInput) error {
 	app := input.AppDef()
 
-	// 1. Prepare webkit config directory (~/.config/webkit)
-	infraDir, err := prepareInfraDirectory()
+	// 1. Determine where to clone webkit-infra repo
+	configDir, err := config.Dir()
 	if err != nil {
-		return fmt.Errorf("preparing infra directory: %w", err)
+		return fmt.Errorf("getting config dir: %w", err)
 	}
 
-	fmt.Printf("📁 Using infra directory: %s\n", infraDir)
+	infraPath := filepath.Join(configDir, "webkit-infra")
 
-	// 2. Clone/update webkit-infra repository
-	if err := ensureInfraRepo(infraDir); err != nil {
-		return fmt.Errorf("ensuring infra repo: %w", err)
+	// 2. Clone or update webkit-infra repository using the git package
+	if err := ensureWebKitInfra(ctx, infraPath); err != nil {
+		return err
 	}
 
-	// 3. Write app.json to infra directory
-	gen := scaffold.New(afero.NewOsFs())
-	tfVarsPath := filepath.Join(infraDir, "project.auto.tfvars.json")
-	if err := gen.JSON(tfVarsPath, app); err != nil {
-		return fmt.Errorf("writing terraform vars: %w", err)
+	// 3. Navigate to infra subdirectory (where Terraform root is)
+	terraformDir := filepath.Join(infraPath, "infra")
+
+	// 4. Write app.json to the terraform directory
+	// This passes the app definition to terraform with no modifications
+	if err := writeAppJSON(terraformDir, app); err != nil {
+		return fmt.Errorf("writing app.json: %w", err)
 	}
 
-	fmt.Println("✓ Generated project.auto.tfvars.json")
-
-	// 4. Configure backend (safe for local dev)
-	backendPath := filepath.Join(infraDir, "backend.tf")
-	if err := writeLocalBackend(backendPath, app.Project.Name); err != nil {
-		return fmt.Errorf("configuring backend: %w", err)
-	}
-
-	fmt.Println("✓ Configured local backend")
-
-	// 5. Find terraform binary
-	terraformPath, err := findTerraformBinary()
-	if err != nil {
-		return fmt.Errorf("finding terraform: %w", err)
-	}
-
-	// 6. Initialize Terraform client
-	tf, err := tfexec.NewTerraform(infraDir, terraformPath)
+	// 5. Initialize Terraform
+	tf, err := initTerraform(ctx, terraformDir)
 	if err != nil {
 		return fmt.Errorf("initializing terraform: %w", err)
 	}
 
-	// Set stdout/stderr so user sees output
-	tf.SetStdout(os.Stdout)
-	tf.SetStderr(os.Stderr)
-
-	// 7. Run terraform init
-	fmt.Println("\n🔧 Initializing Terraform...")
-	if err := tf.Init(ctx, tfexec.Upgrade(false)); err != nil {
-		return fmt.Errorf("terraform init: %w", err)
+	// 6. Run terraform plan
+	fmt.Println("Running terraform plan...")
+	if err := runTerraformPlan(ctx, tf); err != nil {
+		return fmt.Errorf("terraform plan failed: %w", err)
 	}
 
-	// 8. Run terraform plan
-	fmt.Println("\n📋 Running Terraform Plan...")
-	hasChanges, err := tf.Plan(ctx)
+	fmt.Println("Terraform plan completed successfully!")
+	return nil
+}
+
+// ensureWebKitInfra clones or updates the webkit-infra repository
+func ensureWebKitInfra(ctx context.Context, infraPath string) error {
+	// Create git client with default runner
+	gitClient, err := git.New(cmdutil.DefaultRunner())
 	if err != nil {
-		return fmt.Errorf("terraform plan: %w", err)
+		return fmt.Errorf("creating git client: %w", err)
 	}
 
-	if hasChanges {
-		fmt.Println("\n⚠️  Changes detected!")
-	} else {
-		fmt.Println("\n✓ No changes detected")
+	cfg := git.CloneConfig{
+		URL:       webkitInfraRepo,
+		LocalPath: infraPath,
+		Ref:       webkitInfraRef,
+		Depth:     1, // Shallow clone for faster downloads
+	}
+
+	fmt.Printf("Ensuring webkit-infra repository at %s...\n", infraPath)
+	if err := gitClient.CloneOrUpdate(ctx, cfg); err != nil {
+		return fmt.Errorf("cloning/updating webkit-infra: %w", err)
 	}
 
 	return nil
 }
 
-// prepareInfraDirectory ensures ~/.config/webkit/infra exists
-func prepareInfraDirectory() (string, error) {
-	configDir, err := config.Dir()
+// writeAppJSON writes the app definition to app.json in the terraform directory
+// The app.json is passed to terraform with no modifications
+func writeAppJSON(terraformDir string, app *appdef.Definition) error {
+	appJSONPath := filepath.Join(terraformDir, "app.json")
+
+	// Marshal the app definition to JSON with indentation for readability
+	data, err := json.MarshalIndent(app, "", "  ")
 	if err != nil {
-		return "", err
+		return fmt.Errorf("marshaling app definition: %w", err)
 	}
 
-	infraDir := filepath.Join(configDir, "infra")
-	if err := os.MkdirAll(infraDir, 0755); err != nil {
-		return "", fmt.Errorf("creating infra directory: %w", err)
+	// Write app.json to the terraform directory
+	if err := os.WriteFile(appJSONPath, data, 0644); err != nil {
+		return fmt.Errorf("writing app.json file: %w", err)
 	}
 
-	return infraDir, nil
+	fmt.Printf("Wrote app.json to %s\n", appJSONPath)
+
+	// NOTE: If terraform cannot handle app.json in this format, we note it here
+	// but do not block execution as per requirements
+	fmt.Println("Note: app.json passed to terraform unmodified")
+	fmt.Println("If terraform cannot parse this format, terraform init/plan will fail")
+
+	return nil
 }
 
-// ensureInfraRepo clones or updates the webkit-infra repository
-func ensureInfraRepo(infraDir string) error {
-	gitDir := filepath.Join(infraDir, ".git")
-
-	// Check if repo already exists
-	if _, err := os.Stat(gitDir); err == nil {
-		fmt.Println("📦 Updating webkit-infra repository...")
-		return updateRepo(infraDir)
+// initTerraform initializes terraform in the given directory
+func initTerraform(ctx context.Context, workingDir string) (*tfexec.Terraform, error) {
+	// Find terraform executable in PATH
+	terraformPath, err := findTerraformExecutable()
+	if err != nil {
+		return nil, err
 	}
 
-	// Clone fresh
-	fmt.Println("📦 Cloning webkit-infra repository...")
-	return cloneRepo(infraDir)
+	// Create terraform executor
+	tf, err := tfexec.NewTerraform(workingDir, terraformPath)
+	if err != nil {
+		return nil, fmt.Errorf("creating terraform executor: %w", err)
+	}
+
+	// Initialize terraform
+	fmt.Println("Initializing terraform...")
+	if err := tf.Init(ctx, tfexec.Upgrade(true)); err != nil {
+		return nil, fmt.Errorf("terraform init: %w", err)
+	}
+
+	return tf, nil
 }
 
-// cloneRepo clones the webkit-infra repository
-func cloneRepo(infraDir string) error {
-	cmd := exec.Command("git", "clone",
-		"--depth", "1",
-		"--branch", webkitInfraVersion,
-		webkitInfraRepo,
-		infraDir,
-	)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+// runTerraformPlan executes terraform plan
+func runTerraformPlan(ctx context.Context, tf *tfexec.Terraform) error {
+	// Run terraform plan
+	// The plan output will be printed to stdout automatically
+	_, err := tf.Plan(ctx)
+	if err != nil {
+		return fmt.Errorf("executing plan: %w", err)
+	}
+
+	return nil
 }
 
-// updateRepo pulls latest changes
-func updateRepo(infraDir string) error {
-	cmd := exec.Command("git", "pull", "origin", webkitInfraVersion)
-	cmd.Dir = infraDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
-// writeLocalBackend configures Terraform to use local state for development
-func writeLocalBackend(path string, projectName string) error {
-	backend := fmt.Sprintf(`terraform {
-  backend "local" {
-    path = "terraform-%s.tfstate"
-  }
-}
-`, projectName)
-
-	return os.WriteFile(path, []byte(backend), 0644)
-}
-
-// findTerraformBinary locates the terraform executable
-func findTerraformBinary() (string, error) {
-	// Check if terraform is in PATH
+// findTerraformExecutable locates the terraform binary in PATH
+func findTerraformExecutable() (string, error) {
+	// Try to find terraform in PATH
 	path, err := exec.LookPath("terraform")
 	if err != nil {
-		return "", fmt.Errorf("terraform not found in PATH. Please install terraform: https://www.terraform.io/downloads")
+		return "", fmt.Errorf("terraform not found in PATH: %w", err)
 	}
 	return path, nil
 }
