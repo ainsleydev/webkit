@@ -28,22 +28,26 @@ func (cfg CloneConfig) Validate() error {
 	return nil
 }
 
-// Clone clones a git repository to the specified path
+// Clone creates a new local copy of a remote repository.
+// Parent directories are created automatically to avoid manual setup.
 func (c Client) Clone(ctx context.Context, cfg CloneConfig) error {
 	if err := cfg.Validate(); err != nil {
 		return err
 	}
 
+	// Create parent directory to avoid "no such file or directory" errors
 	if err := os.MkdirAll(filepath.Dir(cfg.LocalPath), os.ModePerm); err != nil {
 		return fmt.Errorf("creating parent dir: %w", err)
 	}
 
 	args := []string{"clone"}
 
+	// Shallow clone reduces download time and disk usage for large repos
 	if cfg.Depth > 0 {
 		args = append(args, "--depth", fmt.Sprintf("%d", cfg.Depth))
 	}
 
+	// Allows cloning specific branches/tags without fetching all refs
 	if cfg.Ref != "" {
 		args = append(args, "--branch", cfg.Ref)
 	}
@@ -59,28 +63,37 @@ func (c Client) Clone(ctx context.Context, cfg CloneConfig) error {
 	return nil
 }
 
+// CloneOrUpdate ensures a repository exists and is up to date.
+// Useful for idempotent operations where initial state
+// is not important.
 func (c Client) CloneOrUpdate(ctx context.Context, cfg CloneConfig) error {
 	if IsRepository(cfg.LocalPath) {
 		ref := cfg.Ref
 		if ref == "" {
-			ref = "main" // or "master", depending on your needs
+			// Defaults to main to match conventions.
+			ref = "main"
 		}
 		return c.Update(ctx, cfg.LocalPath, ref)
 	}
 	return c.Clone(ctx, cfg)
 }
 
+// Update synchronizes a local repository with the remote ref.
+// Uses reset --hard to discard local changes, ensuring a
+// clean state matching remote.
 func (c Client) Update(ctx context.Context, repoPath, ref string) error {
 	if !IsRepository(repoPath) {
 		return fmt.Errorf("not a git repository: %s", repoPath)
 	}
 
+	// Fetch updates the remote tracking branch without modifying working directory
 	fetchCmd := cmdutil.NewCommand("git", "fetch", "origin", ref)
 	fetchCmd.Dir = repoPath
 	if res := c.Runner.Run(ctx, fetchCmd); res.Err != nil {
 		return fmt.Errorf("git fetch failed: %w", res.Err)
 	}
 
+	// Hard reset discards local changes to ensure consistency with remote
 	resetCmd := cmdutil.NewCommand("git", "reset", "--hard", "origin/"+ref)
 	resetCmd.Dir = repoPath
 	if res := c.Runner.Run(ctx, resetCmd); res.Err != nil {
