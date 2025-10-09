@@ -88,3 +88,54 @@ func (d *Definition) ApplyDefaults() error {
 
 	return nil
 }
+
+/*** Env Stuff **/
+
+// MergeAllEnvironments merges shared environment variables with all apps' environments.
+// App-specific values take precedence over shared ones. If multiple apps define the same variable,
+// the last app in the list wins.
+func (d *Definition) MergeAllEnvironments() Environment {
+	merged := d.mergeEnvironments(d.Shared.Env)
+
+	for _, app := range d.Apps {
+		merged = d.mergeEnvironments(merged, app.Env)
+	}
+
+	return merged
+}
+
+// MergeAppEnvironment merges shared environment variables with a single app's environment.
+// The app's variables take precedence over the shared ones.
+func (d *Definition) MergeAppEnvironment(appName string) (Environment, bool) {
+	var app *App
+	for i := range d.Apps {
+		if d.Apps[i].Name == appName {
+			app = &d.Apps[i]
+			break
+		}
+	}
+
+	if app == nil {
+		return Environment{}, false
+	}
+
+	return d.mergeEnvironments(d.Shared.Env, app.Env), true
+}
+
+// mergeEnvironments merges multiple Environment structs left-to-right.
+// Later environments override earlier ones.
+func (d *Definition) mergeEnvironments(envs ...Environment) Environment {
+	merged := Environment{
+		Dev:        make(EnvVar),
+		Staging:    make(EnvVar),
+		Production: make(EnvVar),
+	}
+
+	for _, env := range envs {
+		merged.Dev = mergeVars(merged.Dev, env.Dev)
+		merged.Staging = mergeVars(merged.Staging, env.Staging)
+		merged.Production = mergeVars(merged.Production, env.Production)
+	}
+
+	return merged
+}

@@ -1,9 +1,6 @@
 package appdef
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -28,7 +25,7 @@ type (
 type EnvSource string
 
 const (
-	// EnvSourceValue is a static string value.
+	// EnvSourceValue is a static string value (default).
 	// Example: "https://api.example.com"
 	EnvSourceValue EnvSource = "value"
 
@@ -48,44 +45,32 @@ func (e EnvSource) String() string {
 
 // Walk walks through each non-nil environment (dev, staging, production),
 // calling fn(envName, envVars) for each one.
-func (e Environment) Walk(fn func(envName string, envVars EnvVar)) {
+func (e Environment) Walk(fn func(env string, name string, value EnvValue)) {
 	if e.Dev != nil {
-		fn(env.Development, e.Dev)
+		for name, val := range e.Dev {
+			fn(env.Development, name, val)
+		}
 	}
 	if e.Staging != nil {
-		fn(env.Staging, e.Staging)
+		for name, val := range e.Dev {
+			fn(env.Staging, name, val)
+		}
 	}
 	if e.Production != nil {
-		fn(env.Production, e.Production)
+		for name, val := range e.Dev {
+			fn(env.Production, name, val)
+		}
 	}
 }
 
-// SOPSPath represents a parsed SOPS file path and key
-type SOPSPath struct {
-	// Path to the SOPS encrypted file (e.g., "secrets/production.yaml")
-	File string
-	// Key within the SOPS file (e.g., "API_KEY")
-	Key string
-}
-
-// ParseSOPSPath splits the SOPS path into file and key parts.
-//
-// Example:
-// "secrets/production.yaml:PAYLOAD_SECRET"
-// ↓
-// SOPSPath{File: "secrets/production.yaml", Key: "PAYLOAD_SECRET"}
-func (e EnvValue) ParseSOPSPath() (SOPSPath, error) {
-	if e.Source != EnvSourceSOPS {
-		return SOPSPath{}, fmt.Errorf("not a SOPS source")
+// mergeVars merges `override` into `base`, with `override`
+// taking precedence (usually app/shared).
+func mergeVars(base, override EnvVar) EnvVar {
+	if base == nil {
+		base = make(EnvVar)
 	}
-
-	parts := strings.Split(e.Path, ":")
-	if len(parts) != 2 {
-		return SOPSPath{}, fmt.Errorf("invalid SOPS path format: %s (expected format: file:key)", e.Path)
+	for k, v := range override {
+		base[k] = v
 	}
-
-	return SOPSPath{
-		File: parts[0],
-		Key:  parts[1],
-	}, nil
+	return base
 }
