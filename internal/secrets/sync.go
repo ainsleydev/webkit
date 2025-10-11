@@ -28,7 +28,7 @@ type SecretInfo struct {
 // Sync performs the secrets sync operation.
 // It extracts SOPS references from app.json, groups them by file,
 // and adds missing placeholders to each secret file.
-func Sync(cfg SyncConfig) (*SyncResults, error) {
+func Sync(cfg SyncConfig) *SyncResults {
 	def := cfg.AppDef
 
 	// 1. Merge all the environment variables and gather them as
@@ -37,7 +37,7 @@ func Sync(cfg SyncConfig) (*SyncResults, error) {
 	for _, app := range def.Apps {
 		e, ok := def.MergeAppEnvironment(app.Name)
 		if !ok {
-			return &SyncResults{}, nil
+			return &SyncResults{}
 		}
 		e.Walk(func(env string, name string, val appdef.EnvValue) {
 			if val.Source != appdef.EnvSourceSOPS {
@@ -54,7 +54,7 @@ func Sync(cfg SyncConfig) (*SyncResults, error) {
 	// 2. Deduplicate (same key in same env used by multiple apps).
 	refs = deduplicateByKey(refs)
 	if len(refs) == 0 {
-		return &SyncResults{}, nil
+		return &SyncResults{}
 	}
 
 	// 3. Group by file (environment determines the file).
@@ -69,7 +69,7 @@ func Sync(cfg SyncConfig) (*SyncResults, error) {
 		results.Files = append(results.Files, processFile(cfg.FS, filePath, secrets))
 	}
 
-	return results, nil
+	return results
 }
 
 type reference struct {

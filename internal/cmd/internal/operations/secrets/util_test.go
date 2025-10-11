@@ -1,15 +1,15 @@
 package secrets
 
 import (
-	"path/filepath"
+	"os"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ainsleydev/webkit/internal/secrets"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
-	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 type mockEncrypterDecrypter struct {
@@ -26,36 +26,27 @@ func (m mockEncrypterDecrypter) Decrypt(_ string) error {
 
 var _ sops.EncrypterDecrypter = (*mockEncrypterDecrypter)(nil)
 
-func setupTestSecretFiles(t *testing.T, fs afero.Fs, baseDir string) {
+func setupEncryptedProdFile(t *testing.T, content string) cmdtools.CommandInput {
 	t.Helper()
 
-	environments := []string{env.Development, env.Staging, env.Production}
-	for _, e := range environments {
-		path := filepath.Join(baseDir, secrets.FilePath, e+".yaml")
+	ageIdentity, err := age.NewIdentity()
+	require.NoError(t, err)
+	t.Setenv(age.KeyEnvVar, ageIdentity.String())
 
-		// Create directory
-		dir := filepath.Dir(path)
-		require.NoError(t, fs.MkdirAll(dir, 0755))
+	tmpDir := t.TempDir()
+	fs := afero.NewBasePathFs(afero.NewOsFs(), tmpDir)
 
-		// Write plaintext secret file with actual secret values
-		content := `# ` + e + ` environment secrets
-SECRET_KEY: "test_secret_value_` + e + `"
-API_TOKEN: "token_123_` + e + `"
-DATABASE_PASSWORD: "super_secret_password_` + e + `"
-`
-		require.NoError(t, afero.WriteFile(fs, path, []byte(content), 0600))
+	input := cmdtools.CommandInput{
+		FS:      fs,
+		BaseDir: tmpDir,
+		Command: GetCmd,
 	}
-}
+	err = CreateFiles(t.Context(), input)
+	require.NoError(t, err)
 
-func setupSOPSConfig(t *testing.T, fs afero.Fs, baseDir string, agePublicKey string) {
-	t.Helper()
+	path := "resources/secrets/production.yaml"
+	err = afero.WriteFile(input.FS, path, []byte(content), os.ModePerm)
+	require.NoError(t, err)
 
-	sopsConfig := `creation_rules:
-  - path_regex: secrets/.*\.yaml$
-    age: ` + agePublicKey + `
-`
-	configPath := filepath.Join(baseDir, "resources", ".sops.yaml")
-	dir := filepath.Dir(configPath)
-	require.NoError(t, fs.MkdirAll(dir, 0755))
-	require.NoError(t, afero.WriteFile(fs, configPath, []byte(sopsConfig), 0644))
+	return input
 }

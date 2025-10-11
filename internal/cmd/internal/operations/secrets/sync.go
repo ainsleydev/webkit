@@ -25,13 +25,10 @@ var SyncCmd = &cli.Command{
 func Sync(_ context.Context, input cmdtools.CommandInput) error {
 	app := input.AppDef()
 
-	results, err := secrets.Sync(secrets.SyncConfig{
+	results := secrets.Sync(secrets.SyncConfig{
 		FS:     input.FS,
 		AppDef: app,
 	})
-	if err != nil {
-		return fmt.Errorf("syncing secrets: %w", err)
-	}
 
 	if len(results.Files) == 0 {
 		fmt.Println("No secrets with source: 'sops' found in app.json")
@@ -46,6 +43,12 @@ func Sync(_ context.Context, input cmdtools.CommandInput) error {
 
 	// Print summary
 	printSummary(results)
+
+	for _, file := range results.Files {
+		if file.Error != nil {
+			fmt.Println("hello")
+		}
+	}
 
 	// Return error if any files had errors
 	if results.HasErrors() {

@@ -21,7 +21,7 @@ var EncryptCmd = &cli.Command{
 	Action:      cmdtools.Wrap(Encrypt),
 }
 
-func Encrypt(ctx context.Context, input cmdtools.CommandInput) error {
+func Encrypt(_ context.Context, input cmdtools.CommandInput) error {
 	client, err := input.SOPSClient()
 	if err != nil {
 		return err
