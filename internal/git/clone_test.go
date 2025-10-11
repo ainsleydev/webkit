@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ainsleydev/webkit/internal/cmdutil"
+	"github.com/ainsleydev/webkit/internal/executil"
 )
 
 func TestCloneConfigValidate(t *testing.T) {
@@ -72,7 +72,7 @@ func TestClone(t *testing.T) {
 		t.Parallel()
 
 		client, mock := setupClient(t)
-		mock.AddStub("git clone", cmdutil.Result{Output: "cloned!"})
+		mock.AddStub("git clone", executil.Result{Output: "cloned!"})
 
 		cfg := CloneConfig{
 			URL:       "https://example.com/repo.git",
@@ -118,7 +118,7 @@ func TestClone(t *testing.T) {
 		t.Parallel()
 
 		client, mock := setupClient(t)
-		mock.AddStub("git clone", cmdutil.Result{Err: assert.AnError})
+		mock.AddStub("git clone", executil.Result{Err: assert.AnError})
 
 		cfg := CloneConfig{
 			URL:       "https://example.com/repo.git",
@@ -146,7 +146,7 @@ func TestCloneOrUpdate(t *testing.T) {
 			Ref:       "main",
 		}
 
-		mock.AddStub("git clone", cmdutil.Result{Output: "cloned"})
+		mock.AddStub("git clone", executil.Result{Output: "cloned"})
 
 		err := client.CloneOrUpdate(t.Context(), cfg)
 		assert.NoError(t, err)
@@ -159,8 +159,8 @@ func TestCloneOrUpdate(t *testing.T) {
 		localPath := t.TempDir() + "/repo"
 		touchGitDir(t, localPath)
 
-		mock.AddStub("git fetch", cmdutil.Result{Output: "fetched"})
-		mock.AddStub("git reset", cmdutil.Result{Output: "reset"})
+		mock.AddStub("git fetch", executil.Result{Output: "fetched"})
+		mock.AddStub("git reset", executil.Result{Output: "reset"})
 
 		cfg := CloneConfig{
 			URL:       "https://example.com/repo.git",
@@ -179,8 +179,8 @@ func TestCloneOrUpdate(t *testing.T) {
 		localPath := t.TempDir() + "/repo"
 		touchGitDir(t, localPath)
 
-		mock.AddStub("git fetch", cmdutil.Result{Output: "fetched"})
-		mock.AddStub("git reset", cmdutil.Result{Output: "reset"})
+		mock.AddStub("git fetch", executil.Result{Output: "fetched"})
+		mock.AddStub("git reset", executil.Result{Output: "reset"})
 
 		cfg := CloneConfig{
 			URL:       "https://example.com/repo.git",
@@ -220,7 +220,7 @@ func TestCloneOrUpdate(t *testing.T) {
 			Ref:       "main",
 		}
 
-		mock.AddStub("git clone", cmdutil.Result{Err: assert.AnError})
+		mock.AddStub("git clone", executil.Result{Err: assert.AnError})
 
 		err := client.CloneOrUpdate(t.Context(), cfg)
 		assert.Error(t, err)
@@ -234,7 +234,7 @@ func TestCloneOrUpdate(t *testing.T) {
 		localPath := t.TempDir() + "/repo"
 		touchGitDir(t, localPath)
 
-		mock.AddStub("git fetch", cmdutil.Result{Err: assert.AnError})
+		mock.AddStub("git fetch", executil.Result{Err: assert.AnError})
 
 		cfg := CloneConfig{
 			URL:       "https://example.com/repo.git",
@@ -255,8 +255,8 @@ func TestUpdate(t *testing.T) {
 		t.Parallel()
 
 		client, mock := setupClient(t)
-		mock.AddStub("git fetch", cmdutil.Result{Output: "fetched"})
-		mock.AddStub("git reset", cmdutil.Result{Output: "reset"})
+		mock.AddStub("git fetch", executil.Result{Output: "fetched"})
+		mock.AddStub("git reset", executil.Result{Output: "reset"})
 
 		repoPath := t.TempDir()
 		touchGitDir(t, repoPath)
@@ -280,7 +280,7 @@ func TestUpdate(t *testing.T) {
 		t.Parallel()
 
 		client, mock := setupClient(t)
-		mock.AddStub("git fetch", cmdutil.Result{Err: assert.AnError})
+		mock.AddStub("git fetch", executil.Result{Err: assert.AnError})
 
 		repoPath := t.TempDir()
 		touchGitDir(t, repoPath)
@@ -294,8 +294,8 @@ func TestUpdate(t *testing.T) {
 		t.Parallel()
 
 		client, mock := setupClient(t)
-		mock.AddStub("git fetch", cmdutil.Result{Output: "fetched"})
-		mock.AddStub("git reset", cmdutil.Result{Err: assert.AnError})
+		mock.AddStub("git fetch", executil.Result{Output: "fetched"})
+		mock.AddStub("git reset", executil.Result{Err: assert.AnError})
 
 		repoPath := t.TempDir()
 		touchGitDir(t, repoPath)

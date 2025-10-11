@@ -1,4 +1,4 @@
-package cmdutil
+package executil
 
 import (
 	"context"
@@ -13,16 +13,18 @@ type MemRunner struct {
 	mu    sync.Mutex
 	calls []Command
 	stubs map[string]Result
+	errs  map[string]error
 }
 
 // NewMemRunner creates a new runner that stubs calls.
 func NewMemRunner() *MemRunner {
 	return &MemRunner{
 		stubs: make(map[string]Result),
+		errs:  make(map[string]error),
 	}
 }
 
-func (r *MemRunner) Run(_ context.Context, cmd Command) Result {
+func (r *MemRunner) Run(_ context.Context, cmd Command) (Result, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -31,24 +33,27 @@ func (r *MemRunner) Run(_ context.Context, cmd Command) Result {
 	cmdLine := cmd.String()
 	for prefix, stub := range r.stubs {
 		if strings.HasPrefix(cmdLine, prefix) {
-			// Always set the actual command line
 			stub.CmdLine = cmdLine
-			return stub
+			return stub, r.errs[prefix] // Returns error if set
 		}
 	}
 
 	return Result{
 		CmdLine: cmdLine,
 		Output:  "",
-		Err:     fmt.Errorf("no stub for command: %s", cmdLine),
-	}
+	}, fmt.Errorf("no stub for command: %s", cmdLine)
 }
 
 // AddStub registers a command prefix and a fake result.
-func (r *MemRunner) AddStub(prefix string, result Result) {
+func (r *MemRunner) AddStub(prefix string, result Result, err error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.stubs[prefix] = result
+	if err != nil {
+		r.errs[prefix] = err
+	} else {
+		delete(r.errs, prefix)
+	}
 }
 
 // Calls returns all commands that were executed.

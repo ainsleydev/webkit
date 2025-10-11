@@ -6,6 +6,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/operations"
 )
 
 var scratchCmd = &cli.Command{
@@ -13,6 +14,7 @@ var scratchCmd = &cli.Command{
 	Hidden: true,
 	Action: cmdtools.Wrap(func(ctx context.Context, input cmdtools.CommandInput) error {
 
+		return operations.Test(ctx, input)
 		return nil
 
 		//// Create reflector with custom configuration

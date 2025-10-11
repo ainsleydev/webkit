@@ -1,7 +1,7 @@
-package cmdutil
+package executil
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,12 +14,11 @@ func TestMemRunner_Run(t *testing.T) {
 		t.Parallel()
 
 		runner := NewMemRunner()
-		runner.AddStub("git status", Result{Output: "nothing to commit"})
-
+		runner.AddStub("git status", Result{Output: "nothing to commit"}, nil)
 		cmd := NewCommand("git", "status")
-		got := runner.Run(t.Context(), cmd)
 
-		assert.NoError(t, got.Err)
+		got, err := runner.Run(t.Context(), cmd)
+		assert.NoError(t, err)
 		assert.Equal(t, "git status", got.CmdLine)
 		assert.Equal(t, "nothing to commit", got.Output)
 	})
@@ -29,10 +28,10 @@ func TestMemRunner_Run(t *testing.T) {
 
 		runner := NewMemRunner()
 		cmd := NewCommand("git", "status")
-		got := runner.Run(t.Context(), cmd)
 
-		assert.Error(t, got.Err)
-		assert.Contains(t, got.Err.Error(), "no stub for command")
+		got, err := runner.Run(t.Context(), cmd)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "no stub for command")
 		assert.Equal(t, "git status", got.CmdLine)
 	})
 
@@ -40,12 +39,11 @@ func TestMemRunner_Run(t *testing.T) {
 		t.Parallel()
 
 		runner := NewMemRunner()
-		runner.AddStub("git", Result{Output: "git output"})
-
+		runner.AddStub("git", Result{Output: "git output"}, nil)
 		cmd := NewCommand("git", "status")
-		got := runner.Run(t.Context(), cmd)
 
-		assert.NoError(t, got.Err)
+		got, err := runner.Run(t.Context(), cmd)
+		assert.NoError(t, err)
 		assert.Equal(t, "git output", got.Output)
 		assert.Equal(t, "git status", got.CmdLine)
 	})
@@ -56,14 +54,13 @@ func TestMemRunner_Run(t *testing.T) {
 		runner := NewMemRunner()
 		runner.AddStub("fail", Result{
 			Output: "error output",
-			Err:    errors.New("command failed"),
-		})
+		}, fmt.Errorf("command failed"))
 
 		cmd := NewCommand("fail")
-		got := runner.Run(t.Context(), cmd)
+		got, err := runner.Run(t.Context(), cmd)
 
-		assert.Error(t, got.Err)
-		assert.Contains(t, got.Err.Error(), "command failed")
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "command failed")
 		assert.Equal(t, "error output", got.Output)
 		assert.Equal(t, "fail", got.CmdLine)
 	})
@@ -73,7 +70,7 @@ func TestMemRunner_Calls(t *testing.T) {
 	t.Parallel()
 
 	runner := NewMemRunner()
-	runner.AddStub("echo", Result{Output: "test"})
+	runner.AddStub("echo", Result{Output: "test"}, nil)
 
 	cmd1 := NewCommand("echo", "hello")
 	cmd2 := NewCommand("echo", "world")
@@ -92,7 +89,7 @@ func TestMemRunner_Reset(t *testing.T) {
 	t.Parallel()
 
 	runner := NewMemRunner()
-	runner.AddStub("test", Result{Output: "output"})
+	runner.AddStub("test", Result{Output: "output"}, nil)
 
 	cmd := NewCommand("test", "arg")
 	runner.Run(t.Context(), cmd)
@@ -104,6 +101,6 @@ func TestMemRunner_Reset(t *testing.T) {
 	assert.Len(t, runner.Calls(), 0)
 
 	// Stubs should be cleared too
-	result := runner.Run(t.Context(), cmd)
-	assert.Error(t, result.Err)
+	_, err := runner.Run(t.Context(), cmd)
+	assert.Error(t, err)
 }

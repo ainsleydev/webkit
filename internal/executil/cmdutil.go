@@ -1,4 +1,4 @@
-package cmdutil
+package executil
 
 import (
 	"context"
@@ -11,7 +11,7 @@ type (
 	// Runner is the interface for running external commands
 	// using exec.Command.
 	Runner interface {
-		Run(ctx context.Context, cmd Command) Result
+		Run(ctx context.Context, cmd Command) (Result, error)
 	}
 	// Command defines all options for running a command.
 	Command struct {
@@ -27,7 +27,6 @@ type (
 	Result struct {
 		CmdLine string
 		Output  string
-		Err     error
 	}
 )
 

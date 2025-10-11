@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ainsleydev/webkit/internal/cmdutil"
+	"github.com/ainsleydev/webkit/internal/executil"
 	"github.com/ainsleydev/webkit/internal/git"
 )
 
@@ -25,7 +25,7 @@ func TestIntegration_Clone(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	defer cancel()
 
-	client, err := git.New(cmdutil.DefaultRunner())
+	client, err := git.New(executil.DefaultRunner())
 	require.NoError(t, err)
 
 	tmpDir := t.TempDir()
@@ -76,7 +76,7 @@ func TestIntegration_Update(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
-	client, err := git.New(cmdutil.DefaultRunner())
+	client, err := git.New(executil.DefaultRunner())
 	require.NoError(t, err)
 
 	tmpDir := t.TempDir()
@@ -119,7 +119,7 @@ func TestIntegration_CloneOrUpdate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
-	client, err := git.New(cmdutil.DefaultRunner())
+	client, err := git.New(executil.DefaultRunner())
 	require.NoError(t, err)
 
 	tmpDir := t.TempDir()

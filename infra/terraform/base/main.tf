@@ -49,7 +49,7 @@ locals {
 #
 module "resources" {
   for_each = { for r in var.resources : r.name => r }
-  source   = "./modules/resources"
+  source   = "../modules/resources"
 
   project_name      = var.project_name
   name              = each.value.name
@@ -64,7 +64,7 @@ module "resources" {
 #
 module "apps" {
   for_each = { for a in var.apps : a.name => a }
-  source   = "./modules/apps"
+  source   = "../modules/apps"
 
   project_name      = var.project_name
   name              = each.value.name

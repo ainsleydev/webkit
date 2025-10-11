@@ -1,4 +1,4 @@
-package cmdutil
+package executil
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ func DefaultRunner() Runner {
 	return &ExecRunner{}
 }
 
-func (e ExecRunner) Run(ctx context.Context, cmd Command) Result {
+func (e ExecRunner) Run(ctx context.Context, cmd Command) (Result, error) {
 	result := Result{
 		CmdLine: cmd.String(),
 	}
@@ -52,7 +52,6 @@ func (e ExecRunner) Run(ctx context.Context, cmd Command) Result {
 
 	// Run
 	err := c.Run()
-	result.Err = err
 	result.Output = stdoutBuf.String() + stderrBuf.String()
-	return result
+	return result, err
 }

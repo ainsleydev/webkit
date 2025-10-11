@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ainsleydev/webkit/internal/cmdutil"
+	"github.com/ainsleydev/webkit/internal/executil"
 )
 
 // CloneConfig configures repository cloning
@@ -54,10 +54,10 @@ func (c Client) Clone(ctx context.Context, cfg CloneConfig) error {
 
 	args = append(args, cfg.URL, cfg.LocalPath)
 
-	cmd := cmdutil.NewCommand("git", args...)
-	res := c.Runner.Run(ctx, cmd)
-	if res.Err != nil {
-		return fmt.Errorf("git clone failed: %w", res.Err)
+	cmd := executil.NewCommand("git", args...)
+	_, err := c.Runner.Run(ctx, cmd)
+	if err != nil {
+		return fmt.Errorf("git clone failed: %w", err)
 	}
 
 	return nil
@@ -87,17 +87,19 @@ func (c Client) Update(ctx context.Context, repoPath, ref string) error {
 	}
 
 	// Fetch updates the remote tracking branch without modifying working directory
-	fetchCmd := cmdutil.NewCommand("git", "fetch", "origin", ref)
+	fetchCmd := executil.NewCommand("git", "fetch", "origin", ref)
 	fetchCmd.Dir = repoPath
-	if res := c.Runner.Run(ctx, fetchCmd); res.Err != nil {
-		return fmt.Errorf("git fetch failed: %w", res.Err)
+	_, err := c.Runner.Run(ctx, fetchCmd)
+	if err != nil {
+		return fmt.Errorf("git fetch failed: %w", err)
 	}
 
 	// Hard reset discards local changes to ensure consistency with remote
-	resetCmd := cmdutil.NewCommand("git", "reset", "--hard", "origin/"+ref)
+	resetCmd := executil.NewCommand("git", "reset", "--hard", "origin/"+ref)
 	resetCmd.Dir = repoPath
-	if res := c.Runner.Run(ctx, resetCmd); res.Err != nil {
-		return fmt.Errorf("git reset failed: %w", res.Err)
+	_, err = c.Runner.Run(ctx, resetCmd)
+	if err != nil {
+		return fmt.Errorf("git reset failed: %w", err)
 	}
 
 	return nil

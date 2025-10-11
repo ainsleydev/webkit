@@ -6,17 +6,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ainsleydev/webkit/internal/cmdutil"
+	"github.com/ainsleydev/webkit/internal/executil"
 )
 
 type Client struct {
-	Runner cmdutil.Runner
+	Runner executil.Runner
 }
 
 // New creates a git client with the provided command runner.
 // Validates git is available to fail fast rather than on first operation.
-func New(runner cmdutil.Runner) (*Client, error) {
-	if !cmdutil.Exists("git") {
+func New(runner executil.Runner) (*Client, error) {
+	if !executil.Exists("git") {
 		return nil, errors.New("git command not found in $PATH")
 	}
 	return &Client{Runner: runner}, nil

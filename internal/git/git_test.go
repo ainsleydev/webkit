@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ainsleydev/webkit/internal/cmdutil"
+	"github.com/ainsleydev/webkit/internal/executil"
 )
 
-func setupClient(t *testing.T) (*Client, *cmdutil.MemRunner) {
+func setupClient(t *testing.T) (*Client, *executil.MemRunner) {
 	t.Helper()
-	mock := cmdutil.NewMemRunner()
+	mock := executil.NewMemRunner()
 	client, err := New(mock)
 	require.NoError(t, err)
 	return client, mock

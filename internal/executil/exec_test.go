@@ -1,4 +1,4 @@
-package cmdutil
+package executil
 
 import (
 	"bytes"
@@ -97,8 +97,8 @@ func TestExecRunner_Run(t *testing.T) {
 			t.Parallel()
 			runner := DefaultRunner()
 
-			got := runner.Run(t.Context(), test.input)
-			assert.NoError(t, got.Err)
+			got, err := runner.Run(t.Context(), test.input)
+			assert.NoError(t, err)
 			assert.Equal(t, test.wantCmdLine, got.CmdLine)
 			for _, w := range test.wantOutput {
 				assert.Contains(t, got.Output, w)
@@ -112,10 +112,9 @@ func TestExecRunner_Run(t *testing.T) {
 		runner := DefaultRunner()
 		cmd := NewCommand("sh", "-c", "exit 42")
 
-		result := runner.Run(t.Context(), cmd)
-
-		assert.Error(t, result.Err)
-		assert.Contains(t, result.Err.Error(), "exit status 42")
+		_, err := runner.Run(t.Context(), cmd)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "exit status 42")
 	})
 
 	t.Run("Command Not Found", func(t *testing.T) {
@@ -124,7 +123,7 @@ func TestExecRunner_Run(t *testing.T) {
 		runner := DefaultRunner()
 		cmd := NewCommand("this-command-does-not-exist")
 
-		result := runner.Run(t.Context(), cmd)
-		assert.Error(t, result.Err)
+		_, err := runner.Run(t.Context(), cmd)
+		assert.Error(t, err)
 	})
 }

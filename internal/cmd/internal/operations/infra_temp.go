@@ -4,16 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/terraform-exec/tfexec"
 
+	"github.com/ainsleydev/webkit/infra/terraform"
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/cmdutil"
 	"github.com/ainsleydev/webkit/internal/config"
+	"github.com/ainsleydev/webkit/internal/executil"
+	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/git"
 )
 
@@ -21,6 +25,81 @@ const (
 	webkitInfraRepo = "https://github.com/ainsleydev/webkit-infra.git"
 	webkitInfraRef  = "main" // or version tag like "v1.2.3"
 )
+
+func Test(ctx context.Context, input cmdtools.CommandInput) error {
+	tmpDir, err := os.MkdirTemp("", "webkit-tf")
+	if err != nil {
+		return err
+	}
+	defer func(path string) {
+		if err = os.RemoveAll(path); err != nil {
+			slog.ErrorContext(ctx, "Failed to remove temp dir", slog.String("path", path))
+		}
+	}(tmpDir)
+
+	fmt.Println("Temp dir:", tmpDir)
+
+	// Copy embedded templates to the working directory
+	err = fsext.CopyAllEmbed(tfembed.Templates, tmpDir)
+	if err != nil {
+		return err
+	}
+
+	whichCmd := executil.NewCommand("which", "terraform")
+	run, err := executil.DefaultRunner().Run(ctx, whichCmd)
+	if err != nil {
+		return err
+	}
+	tfPath := strings.TrimSpace(run.Output)
+
+	// Create terraform executor
+	tfDir := filepath.Join(tmpDir, "base")
+	tf, err := tfexec.NewTerraform(tfDir, tfPath)
+	if err != nil {
+		return fmt.Errorf("creating terraform executor: %w", err)
+	}
+
+	fmt.Println("Initializing Terraform...")
+	if err = tf.Init(ctx, tfexec.Upgrade(true)); err != nil {
+		return fmt.Errorf("terraform init: %w", err)
+	}
+
+	fmt.Println("Making Plan....")
+	_, err = tf.Plan(ctx,
+		tfexec.Var("project_name=hey!"),
+		tfexec.Var("environment=production!"),
+	)
+	if err != nil {
+		return fmt.Errorf("executing plan: %w", err)
+	}
+
+	state, err := tf.Show(context.Background())
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(state)
+
+	return nil
+
+	//fmt.Println(run.Output)
+	//os.Exit(1)
+	//// Run Terraform commands
+	//tf, err := tfexec.NewTerraform(tmp, "/usr/local/bin/terraform")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//ctx := context.Background()
+	//if err := tf.Init(ctx); err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//if err := tf.Plan(ctx); err != nil {
+	//	log.Fatal(err)
+	//}
+
+}
 
 // InfraPlan runs terraform plan using the webkit-infra repository
 //
@@ -76,7 +155,7 @@ func InfraPlan(ctx context.Context, input cmdtools.CommandInput) error {
 // ensureWebKitInfra clones or updates the webkit-infra repository
 func ensureWebKitInfra(ctx context.Context, infraPath string) error {
 	// Create git client with default runner
-	gitClient, err := git.New(cmdutil.DefaultRunner())
+	gitClient, err := git.New(executil.DefaultRunner())
 	if err != nil {
 		return fmt.Errorf("creating git client: %w", err)
 	}
