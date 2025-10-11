@@ -2,16 +2,14 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"path/filepath"
+	"os"
 
+	"github.com/charmbracelet/lipgloss/tree"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/operations/infra"
-	"github.com/ainsleydev/webkit/internal/secrets"
-	"github.com/ainsleydev/webkit/internal/secrets/age"
-	"github.com/ainsleydev/webkit/internal/secrets/sops"
+	"github.com/ainsleydev/webkit/internal/printer"
 )
 
 var scratchCmd = &cli.Command{
@@ -19,17 +17,48 @@ var scratchCmd = &cli.Command{
 	Hidden: true,
 	Action: cmdtools.Wrap(func(ctx context.Context, input cmdtools.CommandInput) error {
 
-		prov, err := age.NewProvider()
-		if err != nil {
-			return err
-		}
+		c := printer.New(os.Stdout)
 
-		client := sops.NewClient(prov)
+		c.Success("Deployment completed successfully.")
+		c.Info("Fetching configuration...")
+		c.Warn("Config file deprecated, using fallback.")
+		c.Error("Failed to connect to database.")
 
-		path := filepath.Join(input.BaseDir, secrets.FilePath, "production.yaml")
-		toMap, err := sops.DecryptFileToMap(client, path)
+		c.Table(
+			[]string{"Service", "Status"},
+			[][]string{
+				{"Database", "Running"},
+				{"API", "Stopped"},
+			},
+		)
 
-		fmt.Print(toMap, err)
+		c.List("Config loaded", "Deployment started", "Done ✅")
+
+		c.Tree("project",
+			"cmd",
+			"internal",
+			tree.New().Root("pkg").Child("config", "printer", "infra"),
+		)
+
+		//p.Title("Hello")
+		//p.LineBreak()
+		//
+		//p.FatalError(errors.New("Eree"))
+		//p.Title("World")
+		//p.StatusList("hey", []printer.StatusListItem{
+		//	{false, "Status"},
+		//})
+		//prov, err := age.NewProvider()
+		//if err != nil {
+		//	return err
+		//}
+		//
+		//client := sops.NewClient(prov)
+		//
+		//path := filepath.Join(input.BaseDir, secrets.FilePath, "production.yaml")
+		//toMap, err := sops.DecryptFileToMap(client, path)
+		//
+		//fmt.Print(toMap, err)
 
 		return nil
 
