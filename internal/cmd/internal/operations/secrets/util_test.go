@@ -8,8 +8,23 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/secrets"
+	"github.com/ainsleydev/webkit/internal/secrets/sops"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
+
+type mockEncrypterDecrypter struct {
+	err error
+}
+
+func (m mockEncrypterDecrypter) Encrypt(_ string) error {
+	return m.err
+}
+
+func (m mockEncrypterDecrypter) Decrypt(_ string) error {
+	return m.err
+}
+
+var _ sops.EncrypterDecrypter = (*mockEncrypterDecrypter)(nil)
 
 func setupTestSecretFiles(t *testing.T, fs afero.Fs, baseDir string) {
 	t.Helper()

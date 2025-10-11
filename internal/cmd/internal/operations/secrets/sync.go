@@ -5,9 +5,18 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/urfave/cli/v3"
+
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets"
 )
+
+var SyncCmd = &cli.Command{
+	Name:        "sync",
+	Usage:       "Sync secret placeholders from app.json",
+	Description: "Reads app.json and adds placeholder entries for all secrets with source: 'sops'",
+	Action:      cmdtools.Wrap(Sync),
+}
 
 // Sync adds missing secret placeholders to SOPS files based on app.json.
 // This command reads environment variables with source: "sops" and ensures

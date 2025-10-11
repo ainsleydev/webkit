@@ -19,6 +19,7 @@ func DecryptFileToMap(ec EncrypterDecrypter, filePath string) (map[string]any, e
 		return nil, fmt.Errorf("failed to read sops file: %w", err)
 	}
 
+	fmt.Println(string(content))
 	var data map[string]any
 	if err = yaml.Unmarshal(content, &data); err != nil {
 		return nil, fmt.Errorf("failed to parse sops content: %w", err)

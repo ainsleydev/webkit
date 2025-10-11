@@ -1,6 +1,7 @@
 package secrets
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -57,13 +58,14 @@ func TestCreateSecretFiles(t *testing.T) {
 		}
 	})
 
-	t.Run("Error", func(t *testing.T) {
+	t.Run("SOPS Config Error", func(t *testing.T) {
 		t.Parallel()
 
 		got := CreateFiles(t.Context(), cmdtools.CommandInput{
 			FS:          &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()},
 			AppDefCache: &appdef.Definition{},
 		})
+		fmt.Println(got)
 		assert.Error(t, got)
 	})
 }

@@ -178,26 +178,22 @@ func TestWritePrivateKey(t *testing.T) {
 	})
 }
 
-//func TestAgeKey_ReadWriteRoundTrip(t *testing.T) {
-//	identity, err := age.GenerateX25519Identity()
-//	require.NoError(t, err)
-//
-//	tmpHome := t.TempDir()
-//	t.Setenv("HOME", tmpHome)
-//	require.NoError(t, os.Unsetenv(KeyEnvVar))
-//
-//	err = WritePrivateKey(identity.String())
-//	require.NoError(t, err)
-//
-//	key, err := ReadIdentity()
-//	require.NoError(t, err)
-//
-//	assert.Equal(t, identity.String(), key)
-//
-//	parsedIdentity, err := age.ParseX25519Identity(key)
-//	require.NoError(t, err)
-//	assert.Equal(t, identity.Recipient().String(), parsedIdentity.Recipient().String())
-//}
+func TestAgeKey_ReadWriteRoundTrip(t *testing.T) {
+	identity, err := NewIdentity()
+	require.NoError(t, err)
+
+	tmpHome := t.TempDir()
+	t.Setenv("HOME", tmpHome)
+	require.NoError(t, os.Unsetenv(KeyEnvVar))
+
+	err = WritePrivateKey(identity.String())
+	require.NoError(t, err)
+
+	key, err := ReadIdentity()
+	require.NoError(t, err)
+
+	assert.Equal(t, identity.String(), key.String())
+}
 
 func TestExtractPublicKey(t *testing.T) {
 	t.Parallel()

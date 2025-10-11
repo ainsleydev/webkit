@@ -35,55 +35,6 @@ func newClient(provider Provider) (*Client, *executil.MemRunner) {
 	return client, mem
 }
 
-func TestClient_Encrypt(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Already Encrypted", func(t *testing.T) {
-		t.Parallel()
-		client, mem := newClient(&fakeProvider{})
-
-		mem.AddStub("sops --encrypt", executil.Result{},
-			errors.New("contains a top-level entry called 'sops'"))
-
-		err := client.Encrypt("file.yaml")
-		assert.ErrorIs(t, err, ErrAlreadyEncrypted)
-	})
-
-	t.Run("Provider Error", func(t *testing.T) {
-		t.Parallel()
-		client, _ := newClient(&fakeProvider{err: fmt.Errorf("provider failure")})
-
-		err := client.Encrypt("file.yaml")
-		assert.Error(t, err)
-		assert.EqualError(t, err, "provider failure")
-	})
-
-	t.Run("Encrypt CLI Failure", func(t *testing.T) {
-		t.Parallel()
-		client, mem := newClient(&fakeProvider{})
-
-		mem.AddStub("sops --encrypt", executil.Result{
-			Output: "some error",
-		}, fmt.Errorf("exit status 1"))
-
-		err := client.Encrypt("file.yaml")
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "sops encrypt failed")
-	})
-
-	t.Run("Success", func(t *testing.T) {
-		t.Parallel()
-		client, mem := newClient(&fakeProvider{})
-
-		mem.AddStub("sops --encrypt", executil.Result{
-			Output: "encrypted",
-		}, nil)
-
-		err := client.Encrypt("file.yaml")
-		assert.NoError(t, err)
-	})
-}
-
 func TestClient_Decrypt(t *testing.T) {
 	t.Parallel()
 
@@ -120,6 +71,66 @@ func TestClient_Decrypt(t *testing.T) {
 		}, nil)
 
 		err := client.Decrypt("file.yaml")
+		assert.NoError(t, err)
+	})
+}
+
+func TestClient_Encrypt(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Already Encrypted", func(t *testing.T) {
+		t.Parallel()
+		client, mem := newClient(&fakeProvider{})
+
+		mem.AddStub("sops --encrypt", executil.Result{},
+			errors.New("contains a top-level entry called 'sops'"))
+
+		err := client.Encrypt("file.yaml")
+		assert.ErrorIs(t, err, ErrAlreadyEncrypted)
+	})
+
+	t.Run("Doesn't Error Empty File", func(t *testing.T) {
+		t.Parallel()
+		client, mem := newClient(&fakeProvider{})
+
+		mem.AddStub("sops --encrypt", executil.Result{},
+			errors.New("it must contain at least one document"))
+
+		err := client.Encrypt("file.yaml")
+		assert.NoError(t, err)
+	})
+
+	t.Run("Provider Error", func(t *testing.T) {
+		t.Parallel()
+		client, _ := newClient(&fakeProvider{err: fmt.Errorf("provider failure")})
+
+		err := client.Encrypt("file.yaml")
+		assert.Error(t, err)
+		assert.EqualError(t, err, "provider failure")
+	})
+
+	t.Run("Encrypt CLI Failure", func(t *testing.T) {
+		t.Parallel()
+		client, mem := newClient(&fakeProvider{})
+
+		mem.AddStub("sops --encrypt", executil.Result{
+			Output: "some error",
+		}, fmt.Errorf("exit status 1"))
+
+		err := client.Encrypt("file.yaml")
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "sops encrypt failed")
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+		client, mem := newClient(&fakeProvider{})
+
+		mem.AddStub("sops --encrypt", executil.Result{
+			Output: "encrypted",
+		}, nil)
+
+		err := client.Encrypt("file.yaml")
 		assert.NoError(t, err)
 	})
 }

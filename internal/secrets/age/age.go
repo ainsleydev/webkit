@@ -71,6 +71,11 @@ func WritePrivateKey(key string) error {
 	return nil
 }
 
+// NewIdentity is a helper function for generating age.X25519Identity.
+func NewIdentity() (*age.X25519Identity, error) {
+	return age.GenerateX25519Identity()
+}
+
 // extractPublicKey extracts the public key from an age private key
 func extractPublicKey(privateKey string) (string, error) {
 	identity, err := age.ParseX25519Identity(privateKey)

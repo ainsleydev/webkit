@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/ainsleydev/webkit/internal/executil"
@@ -41,7 +40,6 @@ type (
 type Client struct {
 	provider Provider
 	runner   executil.Runner
-	exec     func(ctx context.Context, name string, arg ...string) *exec.Cmd
 }
 
 // NewClient creates a SOPS client with the specified provider
@@ -49,7 +47,6 @@ func NewClient(provider Provider) *Client {
 	return &Client{
 		provider: provider,
 		runner:   executil.DefaultRunner(),
-		exec:     exec.CommandContext,
 	}
 }
 
@@ -89,6 +86,8 @@ func (c Client) Encrypt(filePath string) error {
 
 	if err != nil && strings.Contains(err.Error(), "contains a top-level entry called 'sops'") {
 		return ErrAlreadyEncrypted
+	} else if err != nil && strings.Contains(err.Error(), "it must contain at least one document") {
+		return nil // If the file is empty, don't worry :)
 	} else if err != nil {
 		return fmt.Errorf("sops encrypt failed: %s: %w", outStr, err)
 	}

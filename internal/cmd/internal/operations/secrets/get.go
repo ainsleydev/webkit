@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
@@ -45,23 +46,24 @@ var GetCmd = &cli.Command{
 // Use with caution.
 func Get(_ context.Context, input cmdtools.CommandInput) error {
 	cmd := input.Command
-	env := cmd.String("env")
+	enviro := cmd.String("env")
 	key := cmd.String("key")
 
-	client, err := getSopsClient()
+	client, err := input.SOPSClient()
 	if err != nil {
 		return err
 	}
 
-	path := filepath.Join(input.BaseDir, secrets.FilePath, env+".yaml")
+	path := filepath.Join(input.BaseDir, secrets.FilePath, enviro+".yaml")
 	vals, err := sops.DecryptFileToMap(client, path)
+	fmt.Println(vals, err)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "decoding sops to map")
 	}
 
 	value, ok := vals[key]
 	if !ok {
-		return fmt.Errorf("key %q not found for env: %s", key, env)
+		return fmt.Errorf("key %v not found for env: %s", key, enviro)
 	}
 
 	fmt.Println(value)

@@ -23,7 +23,7 @@ type CommandInput struct {
 	Command     *cli.Command
 	AppDefCache *appdef.Definition
 	BaseDir     string
-	SOPSCache   *sops.Client
+	SOPSCache   sops.EncrypterDecrypter
 }
 
 // Wrap wraps a RunCommand to work with urfave/cli.
@@ -66,7 +66,7 @@ func (c *CommandInput) AppDef() *appdef.Definition {
 
 // SOPSClient returns a cached sops.Client or initialises it
 // by using an age provider.
-func (c *CommandInput) SOPSClient() (*sops.Client, error) {
+func (c *CommandInput) SOPSClient() (sops.EncrypterDecrypter, error) {
 	if c.SOPSCache != nil {
 		return c.SOPSCache, nil
 	}

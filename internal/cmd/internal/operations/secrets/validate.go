@@ -4,9 +4,30 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/urfave/cli/v3"
+
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets"
 )
+
+var ValidateCmd = &cli.Command{
+	Name:        "validate",
+	Usage:       "Validate that all secrets from app.json exist in secret files",
+	Description: "Ensures every secret referenced in app.json has a corresponding entry in SOPS files",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "check-orphans",
+			Usage:   "Report keys in SOPS files not referenced in app.json",
+			Aliases: []string{"o"},
+		},
+		&cli.BoolFlag{
+			Name:    "allow-encrypted",
+			Usage:   "Attempt to validate encrypted files (requires SOPS/age access)",
+			Aliases: []string{"e"},
+		},
+	},
+	Action: cmdtools.Wrap(Validate),
+}
 
 // Validate validates that all secrets referenced in app.json exist in SOPS files
 func Validate(ctx context.Context, input cmdtools.CommandInput) error {

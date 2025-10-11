@@ -5,7 +5,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
 )
 
-func getSopsClient() (sops.EncrypterDecrypter, error) {
+func mustGetSopsClient() (sops.EncrypterDecrypter, error) {
 	prov, err := age.NewProvider()
 	if err != nil {
 		return nil, err
