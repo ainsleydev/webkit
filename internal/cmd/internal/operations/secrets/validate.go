@@ -1,4 +1,4 @@
-package operations
+package secrets
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"github.com/ainsleydev/webkit/internal/secrets"
 )
 
-// SecretsValidate validates that all secrets referenced in app.json exist in SOPS files
-func SecretsValidate(ctx context.Context, input cmdtools.CommandInput) error {
+// Validate validates that all secrets referenced in app.json exist in SOPS files
+func Validate(ctx context.Context, input cmdtools.CommandInput) error {
 	app := input.AppDef()
 
 	checkOrphans := input.Command.Bool("check-orphans")

@@ -1,4 +1,4 @@
-package operations
+package secrets
 
 import (
 	"context"
@@ -9,11 +9,11 @@ import (
 	"github.com/ainsleydev/webkit/internal/secrets"
 )
 
-// SecretsSync adds missing secret placeholders to SOPS files based on app.json.
+// Sync adds missing secret placeholders to SOPS files based on app.json.
 // This command reads environment variables with source: "sops" and ensures
 // corresponding placeholder entries exist in the appropriate secret files.
 // Only works with unencrypted files.
-func SecretsSync(_ context.Context, input cmdtools.CommandInput) error {
+func Sync(_ context.Context, input cmdtools.CommandInput) error {
 	app := input.AppDef()
 
 	results, err := secrets.Sync(secrets.SyncConfig{

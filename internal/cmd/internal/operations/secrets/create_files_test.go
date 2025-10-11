@@ -1,4 +1,4 @@
-package operations
+package secrets
 
 import (
 	"testing"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/testutil"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -20,7 +21,7 @@ func TestCreateSecretFiles(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 
-		err := CreateSecretFiles(t.Context(), cmdtools.CommandInput{
+		err := CreateFiles(t.Context(), cmdtools.CommandInput{
 			FS:          fs,
 			AppDefCache: &appdef.Definition{},
 		})
@@ -46,8 +47,12 @@ func TestCreateSecretFiles(t *testing.T) {
 				path := "resources/secrets/" + enviro + ".yaml"
 
 				exists, err := afero.Exists(fs, path)
-				assert.NoError(t, err, "File should exist: "+path)
-				assert.True(t, exists, "File should exist: "+path)
+				assert.NoError(t, err)
+				assert.True(t, exists)
+
+				file, err := afero.ReadFile(fs, path)
+				assert.NoError(t, err)
+				assert.Empty(t, string(file))
 			}
 		}
 	})
@@ -55,8 +60,8 @@ func TestCreateSecretFiles(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		t.Parallel()
 
-		got := CreateSecretFiles(t.Context(), cmdtools.CommandInput{
-			FS:          &errCreateFs{Fs: afero.NewMemMapFs()},
+		got := CreateFiles(t.Context(), cmdtools.CommandInput{
+			FS:          &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()},
 			AppDefCache: &appdef.Definition{},
 		})
 		assert.Error(t, got)

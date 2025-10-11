@@ -4,7 +4,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/operations"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/operations/secrets"
 )
 
 var secretsCmd = &cli.Command{
@@ -16,7 +16,7 @@ var secretsCmd = &cli.Command{
 			Name:        "sync",
 			Usage:       "Sync secret placeholders from app.json",
 			Description: "Reads app.json and adds placeholder entries for all secrets with source: 'sops'",
-			Action:      cmdtools.Wrap(operations.SecretsSync),
+			Action:      cmdtools.Wrap(secrets.Sync),
 		},
 		{
 			Name:        "validate",
@@ -34,19 +34,19 @@ var secretsCmd = &cli.Command{
 					Aliases: []string{"e"},
 				},
 			},
-			Action: cmdtools.Wrap(operations.SecretsValidate),
+			Action: cmdtools.Wrap(secrets.Validate),
 		},
 		{
 			Name:        "encrypt",
 			Usage:       "Encrypt secret files with SOPS",
 			Description: "Encrypts all plaintext secret files in the secrets/ directory using SOPS and age.",
-			Action:      cmdtools.Wrap(operations.SecretsEncrypt),
+			Action:      cmdtools.Wrap(secrets.EncryptFiles),
 		},
 		{
 			Name:        "decrypt",
 			Usage:       "Decrypt secret files with SOPS",
 			Description: "Decrypts all encrypted secret files in the secrets/ directory using SOPS and age.",
-			Action:      cmdtools.Wrap(operations.SecretsDecrypt),
+			Action:      cmdtools.Wrap(secrets.DecryptFiles),
 		},
 	},
 }

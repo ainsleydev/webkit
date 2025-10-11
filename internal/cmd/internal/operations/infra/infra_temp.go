@@ -1,4 +1,4 @@
-package operations
+package infra
 
 import (
 	"context"
@@ -58,6 +58,8 @@ func Test(ctx context.Context, input cmdtools.CommandInput) error {
 	if err != nil {
 		return fmt.Errorf("creating terraform executor: %w", err)
 	}
+
+	// Resolve env vars
 
 	fmt.Println("Initializing Terraform...")
 	if err = tf.Init(ctx, tfexec.Upgrade(true)); err != nil {

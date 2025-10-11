@@ -74,7 +74,7 @@ func TestCreateGitSettings(t *testing.T) {
 		t.Parallel()
 
 		err := CreateGitSettings(t.Context(), cmdtools.CommandInput{
-			FS:          &errCreateFs{Fs: afero.NewMemMapFs()},
+			FS:          &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()},
 			AppDefCache: &appdef.Definition{},
 		})
 		assert.Error(t, err)

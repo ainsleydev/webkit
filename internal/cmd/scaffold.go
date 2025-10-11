@@ -5,6 +5,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/operations"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/operations/secrets"
 )
 
 var scaffoldCmd = &cli.Command{
@@ -35,7 +36,7 @@ var scaffoldCmd = &cli.Command{
 		{
 			Name:   "secrets",
 			Usage:  "Generate empty SOPS secret files and configuration",
-			Action: cmdtools.Wrap(operations.CreateSecretFiles),
+			Action: cmdtools.Wrap(secrets.CreateFiles),
 		},
 	},
 }
