@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"path/filepath"
@@ -23,9 +24,12 @@ func DecryptFiles(ctx context.Context, input cmdtools.CommandInput) error {
 
 	client := sops.NewClient(prov)
 
-	for _, e := range []string{env.Development, env.Staging, env.Production} {
+	for _, e := range env.All {
 		path := filepath.Join(input.BaseDir, secrets.FilePath, e+".yaml")
-		if err = client.Decrypt(path); err != nil {
+		err = client.Decrypt(path)
+		if errors.Is(err, sops.ErrNotEncrypted) {
+			continue
+		} else if err != nil {
 			slog.ErrorContext(ctx, "Failed to decrypt secret file", "error", err, "file", path)
 		}
 	}

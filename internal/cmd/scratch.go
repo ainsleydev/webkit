@@ -2,17 +2,36 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"path/filepath"
 
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/operations/infra"
+	"github.com/ainsleydev/webkit/internal/secrets"
+	"github.com/ainsleydev/webkit/internal/secrets/age"
+	"github.com/ainsleydev/webkit/internal/secrets/sops"
 )
 
 var scratchCmd = &cli.Command{
 	Name:   "scratch",
 	Hidden: true,
 	Action: cmdtools.Wrap(func(ctx context.Context, input cmdtools.CommandInput) error {
+
+		prov, err := age.NewProvider()
+		if err != nil {
+			return err
+		}
+
+		client := sops.NewClient(prov)
+
+		path := filepath.Join(input.BaseDir, secrets.FilePath, "production.yaml")
+		toMap, err := sops.DecryptFileToMap(client, path)
+
+		fmt.Print(toMap, err)
+
+		return nil
 
 		return infra.Test(ctx, input)
 		return nil

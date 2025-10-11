@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/ainsleydev/webkit/internal/executil"
 )
 
 type (
@@ -38,6 +40,7 @@ type (
 // Client executes SOPS operations using a configured provider.
 type Client struct {
 	provider Provider
+	runner   executil.Runner
 	exec     func(ctx context.Context, name string, arg ...string) *exec.Cmd
 }
 
@@ -45,6 +48,7 @@ type Client struct {
 func NewClient(provider Provider) *Client {
 	return &Client{
 		provider: provider,
+		runner:   executil.DefaultRunner(),
 		exec:     exec.CommandContext,
 	}
 }
@@ -62,11 +66,9 @@ var (
 func (c Client) Decrypt(filePath string) error {
 	outStr, err := c.runSopsCommand("--decrypt", "--in-place", filePath)
 
-	if strings.Contains(outStr, "sops metadata not found") {
+	if err != nil && strings.Contains(err.Error(), "sops metadata not found") {
 		return ErrNotEncrypted
-	}
-
-	if err != nil {
+	} else if err != nil {
 		return fmt.Errorf("sops decrypt failed: %s: %w", outStr, err)
 	}
 
@@ -85,11 +87,9 @@ func (c Client) Encrypt(filePath string) error {
 	outStr, err := c.runSopsCommand(args...)
 	outStr = strings.TrimSpace(outStr)
 
-	if strings.Contains(outStr, "contains a top-level entry called 'sops'") {
+	if err != nil && strings.Contains(err.Error(), "contains a top-level entry called 'sops'") {
 		return ErrAlreadyEncrypted
-	}
-
-	if err != nil {
+	} else if err != nil {
 		return fmt.Errorf("sops encrypt failed: %s: %w", outStr, err)
 	}
 
@@ -97,13 +97,26 @@ func (c Client) Encrypt(filePath string) error {
 }
 
 func (c Client) runSopsCommand(args ...string) (string, error) {
-	cmd := c.exec(context.Background(), "sops", args...)
-	cmd.Env = os.Environ()
+	cmd := executil.NewCommand("sops", args...)
 
-	for k, v := range c.provider.Environment() {
-		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
+	// Start with OS environment
+	cmd.Env = make(map[string]string)
+	for _, kv := range os.Environ() {
+		parts := strings.SplitN(kv, "=", 2)
+		if len(parts) == 2 {
+			cmd.Env[parts[0]] = parts[1]
+		}
 	}
 
-	output, err := cmd.CombinedOutput()
-	return string(output), err
+	// Overlay provider environment (overrides OS vars if needed).
+	for k, v := range c.provider.Environment() {
+		cmd.Env[k] = v
+	}
+
+	result, err := c.runner.Run(context.Background(), cmd)
+	if err != nil {
+		return "", fmt.Errorf("%w: %s", err, result.Output)
+	}
+
+	return result.Output, nil
 }

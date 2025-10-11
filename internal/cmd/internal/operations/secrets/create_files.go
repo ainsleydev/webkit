@@ -22,8 +22,7 @@ func CreateFiles(_ context.Context, input cmdtools.CommandInput) error {
 		return fmt.Errorf("generating .sops.yaml: %w", err)
 	}
 
-	environments := []string{env.Development, env.Staging, env.Production}
-	for _, enviro := range environments {
+	for _, enviro := range env.All {
 		filePath := fmt.Sprintf("secrets/%s.yaml", enviro)
 
 		// If we generate a file that has YAML commentary in the file,

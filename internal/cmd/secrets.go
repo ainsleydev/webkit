@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"fmt"
+	"slices"
+
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/operations/secrets"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 var secretsCmd = &cli.Command{
@@ -47,6 +51,32 @@ var secretsCmd = &cli.Command{
 			Usage:       "Decrypt secret files with SOPS",
 			Description: "Decrypts all encrypted secret files in the secrets/ directory using SOPS and age.",
 			Action:      cmdtools.Wrap(secrets.DecryptFiles),
+		},
+		{
+			Name:        "get",
+			Usage:       "Retrieve a secret from a specific environment",
+			Description: "Fetches the value of a secret from the chosen environment (development, staging, production)",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     "env",
+					Usage:    "Environment to fetch the secret from (development, staging, production)",
+					Aliases:  []string{"e"},
+					Required: true,
+					Validator: func(s string) error {
+						if !slices.Contains(env.All, s) {
+							return fmt.Errorf("invalid environment: %s", s)
+						}
+						return nil
+					},
+				},
+				&cli.StringFlag{
+					Name:     "key",
+					Usage:    "The key/name of the secret to retrieve",
+					Aliases:  []string{"k"},
+					Required: true,
+				},
+			},
+			Action: cmdtools.Wrap(secrets.Get),
 		},
 	},
 }

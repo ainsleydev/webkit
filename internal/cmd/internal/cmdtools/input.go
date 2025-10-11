@@ -8,6 +8,8 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/secrets/age"
+	"github.com/ainsleydev/webkit/internal/secrets/sops"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -21,6 +23,7 @@ type CommandInput struct {
 	Command     *cli.Command
 	AppDefCache *appdef.Definition
 	BaseDir     string
+	SOPSCache   *sops.Client
 }
 
 // Wrap wraps a RunCommand to work with urfave/cli.
@@ -59,4 +62,18 @@ func (c *CommandInput) AppDef() *appdef.Definition {
 	c.AppDefCache = read
 
 	return read
+}
+
+// SOPSClient returns a cached sops.Client or initialises it
+// by using an age provider.
+func (c *CommandInput) SOPSClient() (*sops.Client, error) {
+	if c.SOPSCache != nil {
+		return c.SOPSCache, nil
+	}
+	prov, err := age.NewProvider()
+	if err != nil {
+		return nil, err
+	}
+	c.SOPSCache = sops.NewClient(prov)
+	return c.SOPSCache, nil
 }

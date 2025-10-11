@@ -1,11 +1,14 @@
 package sops
 
 import (
+	"errors"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ainsleydev/webkit/internal/executil"
 )
 
 func TestDecryptFileToMap(t *testing.T) {
@@ -29,10 +32,9 @@ func TestDecryptFileToMap(t *testing.T) {
 		file, teardown := setup(t)
 		defer teardown()
 
-		client := newClient(t,
-			&fakeProvider{},
-			fakeCmdOutput("sops metadata not found", 1),
-		)
+		client, mem := newClient(&fakeProvider{})
+		mem.AddStub("sops --decrypt", executil.Result{},
+			errors.New("sops metadata not found"))
 
 		got, err := DecryptFileToMap(client, file.Name())
 		assert.Nil(t, got)
@@ -42,14 +44,11 @@ func TestDecryptFileToMap(t *testing.T) {
 	t.Run("Read File Error", func(t *testing.T) {
 		t.Parallel()
 
-		client := newClient(t,
-			&fakeProvider{},
-			fakeCmdOutput("", 0),
-		)
+		client, mem := newClient(&fakeProvider{})
+		mem.AddStub("sops --decrypt", executil.Result{}, nil)
 
-		toMap, err := DecryptFileToMap(client, "wrong")
-		assert.Nil(t, toMap)
-		assert.Error(t, err)
+		got, err := DecryptFileToMap(client, "wrong-path.yaml")
+		assert.Nil(t, got)
 		assert.ErrorContains(t, err, "failed to read sops file")
 	})
 
@@ -59,14 +58,13 @@ func TestDecryptFileToMap(t *testing.T) {
 		file, teardown := setup(t)
 		defer teardown()
 
-		// Write invalid YAML content
 		_, err := file.WriteString("key: value\nunbalanced")
 		require.NoError(t, err)
 
-		client := newClient(t,
-			&fakeProvider{},
-			fakeCmdOutput("", 0),
-		)
+		client, mem := newClient(&fakeProvider{})
+		mem.AddStub("sops --decrypt", executil.Result{
+			Output: "key: value\nunbalanced",
+		}, nil)
 
 		got, err := DecryptFileToMap(client, file.Name())
 		assert.Nil(t, got)
@@ -78,20 +76,21 @@ func TestDecryptFileToMap(t *testing.T) {
 
 		file, teardown := setup(t)
 		defer teardown()
-
 		_, err := file.WriteString("key: value\n")
 		require.NoError(t, err)
 
-		// Fake client just returns success
-		client := newClient(t,
-			&fakeProvider{},
-			fakeCmdOutput("", 0),
-		)
+		client, mem := newClient(&fakeProvider{})
+		mem.AddStub("sops --decrypt --in-place", executil.Result{
+			Output: "",
+		}, nil)
+
+		mem.AddStub("sops --encrypt --age test-key --in-place", executil.Result{
+			Output: "",
+		}, nil)
 
 		data, err := DecryptFileToMap(client, file.Name())
 		require.NoError(t, err)
 		require.NotNil(t, data)
-
 		assert.Equal(t, "value", data["key"])
 	})
 }
