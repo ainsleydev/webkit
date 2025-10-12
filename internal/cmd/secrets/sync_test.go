@@ -1,7 +1,6 @@
 package secrets
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -28,12 +26,7 @@ func TestSync(t *testing.T) {
 	t.Run("No Files", func(t *testing.T) {
 		t.Parallel()
 
-		buf := &bytes.Buffer{}
-		input := cmdtools.CommandInput{
-			FS:          afero.NewMemMapFs(),
-			AppDefCache: &appdef.Definition{},
-		}
-		input.Printer().SetWriter(buf)
+		input, buf := setup(t, &appdef.Definition{})
 
 		got := Sync(t.Context(), input)
 		assert.NoError(t, got)
@@ -49,13 +42,7 @@ func TestSync(t *testing.T) {
 			},
 		}
 
-		fs := afero.NewMemMapFs()
-		buf := &bytes.Buffer{}
-		input := cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: def,
-		}
-		input.Printer().SetWriter(buf)
+		input, buf := setup(t, def)
 
 		got := Sync(t.Context(), input)
 		assert.NoError(t, got, "No production.yaml file causes error")
@@ -71,17 +58,11 @@ func TestSync(t *testing.T) {
 			},
 		}
 
-		fs := afero.NewMemMapFs()
-		path := secrets.FilePathFromEnv(env.Production)
-		err := afero.WriteFile(fs, path, []byte(`wrong\Yaml`), os.ModePerm)
-		require.NoError(t, err)
+		input, buf := setup(t, def)
 
-		buf := &bytes.Buffer{}
-		input := cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: def,
-		}
-		input.Printer().SetWriter(buf)
+		path := secrets.FilePathFromEnv(env.Production)
+		err := afero.WriteFile(input.FS, path, []byte(`wrong\Yaml`), os.ModePerm)
+		require.NoError(t, err)
 
 		got := Sync(t.Context(), input)
 		assert.Error(t, got)
@@ -95,10 +76,8 @@ func TestSync(t *testing.T) {
 			},
 		}
 
-		buf := &bytes.Buffer{}
-		input := setupEncryptedProdFile(t, `KEY: "1234"`)
+		input, buf := setupEncryptedProdFile(t, `KEY: "1234"`)
 		input.AppDefCache = def
-		input.Printer().SetWriter(buf)
 
 		// This will (hopefully) encrypt the files so it's skipped.
 		err := Encrypt(t.Context(), input)
@@ -126,20 +105,13 @@ func TestSync(t *testing.T) {
 			},
 		}
 
-		fs := afero.NewMemMapFs()
+		input, buf := setup(t, def)
 		path := secrets.FilePathFromEnv(env.Production)
 
 		// Write a file that already contains the secret
 		initialContent := `SECRET_KEY: "EXISTING_VALUE"`
-		err := afero.WriteFile(fs, path, []byte(initialContent), 0644)
+		err := afero.WriteFile(input.FS, path, []byte(initialContent), 0644)
 		require.NoError(t, err)
-
-		buf := &bytes.Buffer{}
-		input := cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: def,
-		}
-		input.Printer().SetWriter(buf)
 
 		got := Sync(t.Context(), input)
 		assert.NoError(t, got)
@@ -149,7 +121,7 @@ func TestSync(t *testing.T) {
 		assert.Contains(t, out, "• 0 added, 1 skipped")
 
 		// File content should remain unchanged
-		file, err := afero.ReadFile(fs, path)
+		file, err := afero.ReadFile(input.FS, path)
 		require.NoError(t, err)
 		assert.Contains(t, string(file), `SECRET_KEY: "EXISTING_VALUE"`)
 	})
@@ -163,11 +135,7 @@ func TestSync(t *testing.T) {
 			},
 		}
 
-		fs := afero.NewMemMapFs()
-		input := cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: def,
-		}
+		input, _ := setup(t, def)
 
 		err := CreateFiles(t.Context(), input)
 		assert.NoError(t, err)
@@ -175,7 +143,7 @@ func TestSync(t *testing.T) {
 		got := Sync(t.Context(), input)
 		assert.NoError(t, got)
 
-		file, err := afero.ReadFile(fs, secrets.FilePathFromEnv(env.Production))
+		file, err := afero.ReadFile(input.FS, secrets.FilePathFromEnv(env.Production))
 		assert.NoError(t, err)
 		assert.Contains(t, string(file), `SECRET_KEY: "REPLACE_ME_SECRET_KEY"`)
 	})
@@ -190,11 +158,7 @@ func TestSync(t *testing.T) {
 			},
 		}
 
-		fs := afero.NewMemMapFs()
-		input := cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: def,
-		}
+		input, _ := setup(t, def)
 
 		err := CreateFiles(t.Context(), input)
 		assert.NoError(t, err)
@@ -202,7 +166,7 @@ func TestSync(t *testing.T) {
 		got := Sync(t.Context(), input)
 		assert.NoError(t, got)
 
-		file, err := afero.ReadFile(fs, secrets.FilePathFromEnv(env.Production))
+		file, err := afero.ReadFile(input.FS, secrets.FilePathFromEnv(env.Production))
 		assert.NoError(t, err)
 		assert.Contains(t, string(file), `SECRET_KEY: "REPLACE_ME_SECRET_KEY"`)
 	})

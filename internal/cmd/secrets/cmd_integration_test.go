@@ -12,11 +12,10 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/executil"
+	"github.com/ainsleydev/webkit/internal/secrets/age"
 )
 
 func TestSecretsIntegration(t *testing.T) {
-	t.Skip()
-
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
@@ -26,9 +25,12 @@ func TestSecretsIntegration(t *testing.T) {
 	}
 
 	ctx := t.Context()
-
 	tmpDir := t.TempDir()
 	fs := afero.NewBasePathFs(afero.NewOsFs(), tmpDir)
+
+	ageIdentity, err := age.NewIdentity()
+	require.NoError(t, err)
+	t.Setenv(age.KeyEnvVar, ageIdentity.String())
 
 	input := cmdtools.CommandInput{
 		FS:      fs,
@@ -60,8 +62,11 @@ func TestSecretsIntegration(t *testing.T) {
 		},
 	}
 
-	err := CreateFiles(ctx, input)
-	assert.NoError(t, err)
+	t.Log("Creates Files")
+	{
+		err = CreateFiles(ctx, input)
+		assert.NoError(t, err)
+	}
 
 	// Sync doesnt write values for you, it only writes placeholders
 	// so we need to write back to the file.

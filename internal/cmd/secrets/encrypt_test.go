@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"errors"
+	"io"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -24,6 +25,7 @@ func TestEncrypt(t *testing.T) {
 				err: errors.New("sops encrypt error"),
 			},
 		}
+		input.Printer().SetWriter(io.Discard)
 
 		err := Encrypt(ctx, input)
 		assert.Error(t, err)
@@ -31,7 +33,7 @@ func TestEncrypt(t *testing.T) {
 	})
 
 	t.Run("Encrypts Successfully", func(t *testing.T) {
-		input := setupEncryptedProdFile(t, `KEY: "1234"`)
+		input, _ := setupEncryptedProdFile(t, `KEY: "1234"`)
 
 		err := Encrypt(ctx, input)
 		assert.NoError(t, err)

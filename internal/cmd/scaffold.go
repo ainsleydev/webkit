@@ -5,7 +5,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/operations"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/operations/secrets"
+	"github.com/ainsleydev/webkit/internal/cmd/secrets"
 )
 
 var scaffoldCmd = &cli.Command{

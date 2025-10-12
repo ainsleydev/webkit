@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"errors"
+	"io"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -28,6 +29,7 @@ func TestDecrypt(t *testing.T) {
 				err: errors.New("sops decrypt error"),
 			},
 		}
+		input.Printer().SetWriter(io.Discard)
 
 		err = Decrypt(ctx, input)
 		assert.Error(t, err)
@@ -42,6 +44,8 @@ func TestDecrypt(t *testing.T) {
 			BaseDir: tmpDir,
 			Command: GetCmd,
 		}
+		input.Printer().SetWriter(io.Discard)
+
 		err = CreateFiles(ctx, input)
 		assert.NoError(t, err)
 

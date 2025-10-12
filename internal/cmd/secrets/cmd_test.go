@@ -1,13 +1,14 @@
 package secrets
 
 import (
-	"io"
+	"bytes"
 	"os"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
@@ -27,7 +28,21 @@ func (m mockEncrypterDecrypter) Decrypt(_ string) error {
 
 var _ sops.EncrypterDecrypter = (*mockEncrypterDecrypter)(nil)
 
-func setupEncryptedProdFile(t *testing.T, content string) cmdtools.CommandInput {
+func setup(t *testing.T, def *appdef.Definition) (cmdtools.CommandInput, *bytes.Buffer) {
+	t.Helper()
+
+	fs := afero.NewMemMapFs()
+	buf := &bytes.Buffer{}
+	input := cmdtools.CommandInput{
+		FS:          fs,
+		AppDefCache: def,
+	}
+	input.Printer().SetWriter(buf)
+
+	return input, buf
+}
+
+func setupEncryptedProdFile(t *testing.T, content string) (cmdtools.CommandInput, *bytes.Buffer) {
 	t.Helper()
 
 	ageIdentity, err := age.NewIdentity()
@@ -37,12 +52,13 @@ func setupEncryptedProdFile(t *testing.T, content string) cmdtools.CommandInput 
 	tmpDir := t.TempDir()
 	fs := afero.NewBasePathFs(afero.NewOsFs(), tmpDir)
 
+	buf := &bytes.Buffer{}
 	input := cmdtools.CommandInput{
 		FS:      fs,
 		BaseDir: tmpDir,
 		Command: GetCmd,
 	}
-	input.Printer().SetWriter(io.Discard)
+	input.Printer().SetWriter(buf)
 	err = CreateFiles(t.Context(), input)
 	require.NoError(t, err)
 
@@ -50,5 +66,5 @@ func setupEncryptedProdFile(t *testing.T, content string) cmdtools.CommandInput 
 	err = afero.WriteFile(input.FS, path, []byte(content), os.ModePerm)
 	require.NoError(t, err)
 
-	return input
+	return input, buf
 }

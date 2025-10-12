@@ -7,7 +7,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/cmd/internal/operations/secrets"
+	"github.com/ainsleydev/webkit/internal/cmd/secrets"
 	"github.com/ainsleydev/webkit/pkg/log"
 )
 

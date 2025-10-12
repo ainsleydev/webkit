@@ -1,7 +1,6 @@
 package secrets
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +13,7 @@ func TestGet(t *testing.T) {
 	ctx := t.Context()
 
 	t.Run("Decode Error", func(t *testing.T) {
-		input := setupEncryptedProdFile(t, `KEY: "1234"\ninvalid`)
+		input, _ := setupEncryptedProdFile(t, `KEY: "1234"\ninvalid`)
 
 		err := Get(ctx, input)
 		assert.Error(t, err)
@@ -22,7 +21,7 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("No Key or All Flag", func(t *testing.T) {
-		input := setupEncryptedProdFile(t, `KEY: "1234"`)
+		input, _ := setupEncryptedProdFile(t, `KEY: "1234"`)
 		require.NoError(t, input.Command.Set("env", env.Production))
 
 		err := Get(ctx, input)
@@ -31,7 +30,7 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("Key Not Found", func(t *testing.T) {
-		input := setupEncryptedProdFile(t, `KEY: "1234"`)
+		input, _ := setupEncryptedProdFile(t, `KEY: "1234"`)
 		require.NoError(t, input.Command.Set("env", env.Production))
 		require.NoError(t, input.Command.Set("key", "wrong"))
 
@@ -41,9 +40,7 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("Single Key Success", func(t *testing.T) {
-		input := setupEncryptedProdFile(t, `KEY: "1234"`)
-		buf := &bytes.Buffer{}
-		input.Printer().SetWriter(buf)
+		input, buf := setupEncryptedProdFile(t, `KEY: "1234"`)
 
 		require.NoError(t, input.Command.Set("env", env.Production))
 		require.NoError(t, input.Command.Set("key", "KEY"))
@@ -56,11 +53,8 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("All Keys Success", func(t *testing.T) {
-		input := setupEncryptedProdFile(t, `KEY1: "1234"
+		input, buf := setupEncryptedProdFile(t, `KEY1: "1234"
 KEY2: "abcd"`)
-
-		buf := &bytes.Buffer{}
-		input.Printer().SetWriter(buf)
 
 		require.NoError(t, input.Command.Set("env", env.Production))
 		require.NoError(t, input.Command.Set("all", "true"))
