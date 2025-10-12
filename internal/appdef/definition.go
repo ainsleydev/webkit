@@ -34,6 +34,10 @@ type (
 	}
 )
 
+/************************************
+	General
+************************************/
+
 func Read(root afero.Fs) (*Definition, error) {
 	file, err := root.Open(JsonFileName)
 	if err != nil {
@@ -89,7 +93,9 @@ func (d *Definition) ApplyDefaults() error {
 	return nil
 }
 
-/**** Env *****/
+/************************************
+	Env
+************************************/
 
 // MergeAllEnvironments merges shared environment variables with all apps' environments.
 // App-specific values take precedence over shared ones. If multiple apps define the same variable,

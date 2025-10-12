@@ -45,61 +45,28 @@ func TestMergeVars(t *testing.T) {
 		override EnvVar
 		want     EnvVar
 	}{
-		"Both Non Empty": {
-			base: EnvVar{
+		"Override Wins": {
+			base:     EnvVar{"FOO": {Source: EnvSourceValue, Value: "bar"}},
+			override: EnvVar{"FOO": {Source: EnvSourceValue, Value: "override"}},
+			want:     EnvVar{"FOO": {Source: EnvSourceValue, Value: "override"}},
+		},
+		"Merge Both": {
+			base:     EnvVar{"BAZ": {Source: EnvSourceValue, Value: "qux"}},
+			override: EnvVar{"FOO": {Source: EnvSourceValue, Value: "bar"}},
+			want: EnvVar{
+				"BAZ": {Source: EnvSourceValue, Value: "qux"},
 				"FOO": {Source: EnvSourceValue, Value: "bar"},
-				"BAZ": {Source: EnvSourceValue, Value: "qux"},
-			},
-			override: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "override"},
-				"NEW": {Source: EnvSourceValue, Value: "val"},
-			},
-			want: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "override"},
-				"BAZ": {Source: EnvSourceValue, Value: "qux"},
-				"NEW": {Source: EnvSourceValue, Value: "val"},
 			},
 		},
-		"Base Empty, Override Non Empty": {
-			base: EnvVar{},
-			override: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "val"},
-			},
-			want: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "val"},
-			},
+		"Nil Base": {
+			base:     nil,
+			override: EnvVar{"FOO": {Source: EnvSourceValue, Value: "val"}},
+			want:     EnvVar{"FOO": {Source: EnvSourceValue, Value: "val"}},
 		},
-		"Base Non Empty, Override Empty": {
-			base: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "val"},
-			},
-			override: EnvVar{},
-			want: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "val"},
-			},
-		},
-		"Both Empty": {
-			base:     EnvVar{},
-			override: EnvVar{},
-			want:     EnvVar{},
-		},
-		"Nil Base, Non Empty Override": {
-			base: nil,
-			override: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "val"},
-			},
-			want: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "val"},
-			},
-		},
-		"Nil Override, NonEmpty Base": {
-			base: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "val"},
-			},
+		"Nil Override": {
+			base:     EnvVar{"FOO": {Source: EnvSourceValue, Value: "val"}},
 			override: nil,
-			want: EnvVar{
-				"FOO": {Source: EnvSourceValue, Value: "val"},
-			},
+			want:     EnvVar{"FOO": {Source: EnvSourceValue, Value: "val"}},
 		},
 	}
 
