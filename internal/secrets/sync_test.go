@@ -27,7 +27,7 @@ func TestSync(t *testing.T) {
 
 		results, err := Sync(cfg)
 		require.NoError(t, err)
-		assert.Empty(t, results.Files)
+		assert.Empty(t, results)
 		assert.Equal(t, 0, results.TotalAdded())
 	})
 

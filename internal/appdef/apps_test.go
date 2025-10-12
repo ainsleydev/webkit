@@ -76,3 +76,164 @@ func TestApp_OrderedCommands(t *testing.T) {
 		assert.Equal(t, "go build main.go", commands[3].Cmd)
 	}
 }
+
+func TestMergeAllEnvironments(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		def  Definition
+		want Environment
+	}{
+		"Shared only": {
+			def: Definition{
+				Shared: Shared{
+					Env: Environment{
+						Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "shared"}},
+					},
+				},
+			},
+			want: Environment{
+				Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "shared"}},
+			},
+		},
+		"App overrides shared": {
+			def: Definition{
+				Shared: Shared{
+					Env: Environment{
+						Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "shared"}},
+					},
+				},
+				Apps: []App{
+					{
+						Name: "app1",
+						Env: Environment{
+							Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "app"}},
+						},
+					},
+				},
+			},
+			want: Environment{
+				Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "app"}},
+			},
+		},
+		"Multiple apps, last wins": {
+			def: Definition{
+				Shared: Shared{
+					Env: Environment{
+						Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "shared"}},
+					},
+				},
+				Apps: []App{
+					{
+						Name: "app1",
+						Env: Environment{
+							Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "first"}},
+						},
+					},
+					{
+						Name: "app2",
+						Env: Environment{
+							Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "second"}},
+						},
+					},
+				},
+			},
+			want: Environment{
+				Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "second"}},
+			},
+		},
+		"App only, no shared": {
+			def: Definition{
+				Apps: []App{
+					{
+						Name: "app1",
+						Env: Environment{
+							Dev: EnvVar{"BAR": {Source: EnvSourceValue, Value: "val"}},
+						},
+					},
+				},
+			},
+			want: Environment{
+				Dev: EnvVar{"BAR": {Source: EnvSourceValue, Value: "val"}},
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := test.def.MergeAllEnvironments()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestMergeAppEnvironment(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		def       Definition
+		appName   string
+		want      Environment
+		wantFound bool
+	}{
+		"App exists, shared only": {
+			def: Definition{
+				Shared: Shared{
+					Env: Environment{
+						Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "shared"}},
+					},
+				},
+				Apps: []App{
+					{Name: "app1"},
+				},
+			},
+			appName: "app1",
+			want: Environment{
+				Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "shared"}},
+			},
+			wantFound: true,
+		},
+		"App exists, overrides shared": {
+			def: Definition{
+				Shared: Shared{
+					Env: Environment{
+						Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "shared"}},
+					},
+				},
+				Apps: []App{
+					{
+						Name: "app1",
+						Env: Environment{
+							Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "app"}},
+						},
+					},
+				},
+			},
+			appName: "app1",
+			want: Environment{
+				Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "app"}},
+			},
+			wantFound: true,
+		},
+		"App not found": {
+			def: Definition{
+				Shared: Shared{
+					Env: Environment{
+						Dev: EnvVar{"FOO": {Source: EnvSourceValue, Value: "shared"}},
+					},
+				},
+			},
+			appName:   "nonexistent",
+			want:      Environment{},
+			wantFound: false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got, found := test.def.MergeAppEnvironment(test.appName)
+			assert.Equal(t, test.wantFound, found)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}

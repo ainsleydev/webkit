@@ -33,6 +33,12 @@ func (c *Console) Print(msg string) {
 	c.write(msg)
 }
 
+// Println writes plain, unstyled text to the console, with a linebreak.
+func (c *Console) Println(msg string) {
+	c.write(msg)
+	c.LineBreak()
+}
+
 // Printf writes plain, unstyled text to the console,  with formatting.
 func (c *Console) Printf(msg string, args ...any) {
 	c.write(fmt.Sprintf(msg, args...))

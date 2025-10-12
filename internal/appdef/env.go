@@ -69,6 +69,9 @@ func mergeVars(base, override EnvVar) EnvVar {
 	if base == nil {
 		base = make(EnvVar)
 	}
+	if override == nil {
+		override = make(EnvVar)
+	}
 	for k, v := range override {
 		base[k] = v
 	}
