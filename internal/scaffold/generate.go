@@ -10,6 +10,8 @@ import (
 
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
+
+	"github.com/ainsleydev/webkit/internal/printer"
 )
 
 type (
@@ -22,13 +24,17 @@ type (
 	}
 	// FileGenerator handles file generation on a given filesystem.
 	FileGenerator struct {
-		fs afero.Fs
+		Printer *printer.Console
+		fs      afero.Fs
 	}
 )
 
 // New creates a new FileGenerator with the provided afero.Fs.
 func New(fs afero.Fs) *FileGenerator {
-	return &FileGenerator{fs: fs}
+	return &FileGenerator{
+		Printer: printer.New(os.Stdout),
+		fs:      fs,
+	}
 }
 
 // WriteMode determines how files are written
@@ -55,7 +61,7 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 
 	exists, _ := afero.Exists(f.fs, path)
 	if exists {
-		fmt.Println("Updated: " + path)
+		f.Printer.Print("Updated: " + path)
 	}
 
 	if err := afero.WriteFile(f.fs, path, data, os.ModePerm); err != nil {
@@ -63,7 +69,7 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 	}
 
 	if !exists {
-		fmt.Println("Created: " + path)
+		f.Printer.Print("Created: " + path)
 	}
 
 	return nil

@@ -46,8 +46,8 @@ var GetCmd = &cli.Command{
 	Action: cmdtools.Wrap(Get),
 }
 
-// Get retrieves a singular decrypted secret by environment.
-// Use with caution.
+// Get retrieves a singular or all decrypted secret(s) by environment.
+// Use with caution, it displays confidential secrets.
 func Get(_ context.Context, input cmdtools.CommandInput) error {
 	cmd := input.Command
 	enviro := cmd.String("env")
