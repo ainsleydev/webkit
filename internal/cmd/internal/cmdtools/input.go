@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/printer"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
 	"github.com/ainsleydev/webkit/pkg/env"
@@ -24,6 +25,7 @@ type CommandInput struct {
 	AppDefCache *appdef.Definition
 	BaseDir     string
 	SOPSCache   sops.EncrypterDecrypter
+	printer     *printer.Console
 }
 
 // Wrap wraps a RunCommand to work with urfave/cli.
@@ -44,6 +46,7 @@ func Wrap(command RunCommand) cli.ActionFunc {
 			FS:      fs,
 			BaseDir: dir,
 		}
+
 		return command(ctx, input)
 	}
 }
@@ -64,16 +67,24 @@ func (c *CommandInput) AppDef() *appdef.Definition {
 	return read
 }
 
+// Printer returns a new console writer to stdout.
+func (c *CommandInput) Printer() *printer.Console {
+	if c.printer == nil {
+		c.printer = printer.New(os.Stdout)
+	}
+	return c.printer
+}
+
 // SOPSClient returns a cached sops.Client or initialises it
 // by using an age provider.
-func (c *CommandInput) SOPSClient() (sops.EncrypterDecrypter, error) {
+func (c *CommandInput) SOPSClient() sops.EncrypterDecrypter {
 	if c.SOPSCache != nil {
-		return c.SOPSCache, nil
+		return c.SOPSCache
 	}
 	prov, err := age.NewProvider()
 	if err != nil {
-		return nil, err
+		Exit(err)
 	}
 	c.SOPSCache = sops.NewClient(prov)
-	return c.SOPSCache, nil
+	return c.SOPSCache
 }

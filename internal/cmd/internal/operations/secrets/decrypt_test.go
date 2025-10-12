@@ -19,14 +19,6 @@ func TestDecrypt(t *testing.T) {
 
 	tmpDir := t.TempDir()
 
-	t.Run("Client Error", func(t *testing.T) {
-		input := cmdtools.CommandInput{Command: GetCmd}
-
-		err = Decrypt(ctx, input)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "age")
-	})
-
 	t.Run("SOPS Error", func(t *testing.T) {
 		input := cmdtools.CommandInput{
 			FS:      afero.NewBasePathFs(afero.NewOsFs(), tmpDir),

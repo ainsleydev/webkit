@@ -31,11 +31,11 @@ func Sync(_ context.Context, input cmdtools.CommandInput) error {
 	})
 
 	if len(results.Files) == 0 {
-		fmt.Println("No secrets with source: 'sops' found in app.json")
+		input.Printer().Warn("No secrets with source: 'sops' found in app.json")
 		return nil
 	}
 
-	fmt.Println("Syncing secrets from app.json...")
+	input.Printer().Info("Syncing secrets from app.json...")
 
 	for _, file := range results.Files {
 		printFileResult(file)

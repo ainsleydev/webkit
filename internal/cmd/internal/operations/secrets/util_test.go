@@ -1,6 +1,7 @@
 package secrets
 
 import (
+	"io"
 	"os"
 	"testing"
 
@@ -41,6 +42,7 @@ func setupEncryptedProdFile(t *testing.T, content string) cmdtools.CommandInput 
 		BaseDir: tmpDir,
 		Command: GetCmd,
 	}
+	input.Printer().SetWriter(io.Discard)
 	err = CreateFiles(t.Context(), input)
 	require.NoError(t, err)
 

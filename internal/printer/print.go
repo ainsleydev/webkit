@@ -33,6 +33,11 @@ func (c *Console) Print(msg string) {
 	c.write(msg)
 }
 
+// Printf writes plain, unstyled text to the console,  with formatting.
+func (c *Console) Printf(msg string, args ...any) {
+	c.write(fmt.Sprintf(msg, args...))
+}
+
 // Success prints a success message with a checkmark icon and success color.
 func (c *Console) Success(msg string) {
 	c.write(styles.Success.Render(fmt.Sprintf("%s %s", styles.IconSuccess, msg)))
@@ -59,5 +64,8 @@ func (c *Console) LineBreak() {
 }
 
 func (c *Console) write(s string) {
+	if c.writer == nil { // Guard check
+		return
+	}
 	_, _ = io.WriteString(c.writer, s+"\n")
 }

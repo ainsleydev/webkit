@@ -1,6 +1,7 @@
 package secrets
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -27,13 +28,16 @@ func TestSync(t *testing.T) {
 	t.Run("No Files", func(t *testing.T) {
 		t.Parallel()
 
-		got := Sync(t.Context(), cmdtools.CommandInput{
+		buf := &bytes.Buffer{}
+		input := cmdtools.CommandInput{
 			FS:          afero.NewMemMapFs(),
 			AppDefCache: &appdef.Definition{},
-		})
+		}
+		input.Printer().SetWriter(buf)
 
+		got := Sync(t.Context(), input)
 		assert.NoError(t, got)
-		// TODO: Assert "No secrets" in std out.
+		assert.Contains(t, buf.String(), "No secrets")
 	})
 
 	t.Run("Scaffold Error", func(t *testing.T) {
@@ -46,13 +50,16 @@ func TestSync(t *testing.T) {
 		}
 
 		fs := afero.NewMemMapFs()
+		buf := &bytes.Buffer{}
 		input := cmdtools.CommandInput{
 			FS:          fs,
 			AppDefCache: def,
 		}
+		input.Printer().SetWriter(buf)
 
 		got := Sync(t.Context(), input)
 		assert.NoError(t, got, "No production.yaml file causes error")
+		//assert.Contains(t, buf.String(), "")
 
 		// TODO: Capture stdout
 	})

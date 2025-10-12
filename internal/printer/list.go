@@ -15,7 +15,7 @@ func (c *Console) List(items ...any) {
 	itemStyle := lipgloss.NewStyle().Foreground(styles.ColorInfo)
 
 	l := list.New(items...).
-		Enumerator(list.Alphabet).
+		Enumerator(list.Bullet).
 		EnumeratorStyle(enumeratorStyle).
 		ItemStyle(itemStyle)
 

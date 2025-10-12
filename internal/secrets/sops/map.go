@@ -1,6 +1,7 @@
 package sops
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,8 +11,9 @@ import (
 // DecryptFileToMap decrypts a file using the provided Decrypter and
 // returns the content as a map[string]any.
 func DecryptFileToMap(ec EncrypterDecrypter, filePath string) (map[string]any, error) {
-	if err := ec.Decrypt(filePath); err != nil {
-		return nil, err
+	decryptErr := ec.Decrypt(filePath)
+	if decryptErr != nil && !errors.Is(decryptErr, ErrNotEncrypted) {
+		return nil, decryptErr
 	}
 
 	content, err := os.ReadFile(filePath)
@@ -19,12 +21,17 @@ func DecryptFileToMap(ec EncrypterDecrypter, filePath string) (map[string]any, e
 		return nil, fmt.Errorf("failed to read sops file: %w", err)
 	}
 
-	fmt.Println(string(content))
 	var data map[string]any
 	if err = yaml.Unmarshal(content, &data); err != nil {
 		return nil, fmt.Errorf("failed to parse sops content: %w", err)
 	}
 
-	// Make sure the file is encrypted after we've
-	return data, ec.Encrypt(filePath)
+	// Only re-encrypt if we actually decrypted it.
+	if decryptErr == nil {
+		if encErr := ec.Encrypt(filePath); encErr != nil {
+			return nil, encErr
+		}
+	}
+
+	return data, nil
 }

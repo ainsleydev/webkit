@@ -26,19 +26,35 @@ func TestDecryptFileToMap(t *testing.T) {
 		}
 	}
 
-	t.Run("Decryption fails", func(t *testing.T) {
+	t.Run("Decryption Fails", func(t *testing.T) {
 		t.Parallel()
 
 		file, teardown := setup(t)
 		defer teardown()
 
 		client, mem := newClient(&fakeProvider{})
-		mem.AddStub("sops --decrypt", executil.Result{},
-			errors.New("sops metadata not found"))
+		mem.AddStub("sops --decrypt", executil.Result{}, errors.New("unexpected failure"))
 
 		got, err := DecryptFileToMap(client, file.Name())
 		assert.Nil(t, got)
-		assert.ErrorIs(t, err, ErrNotEncrypted)
+		assert.ErrorContains(t, err, "unexpected failure")
+	})
+
+	t.Run("Already Decrypted", func(t *testing.T) {
+		t.Parallel()
+
+		file, teardown := setup(t)
+		defer teardown()
+		_, err := file.WriteString("key: value\n")
+		require.NoError(t, err)
+
+		client, mem := newClient(&fakeProvider{})
+		mem.AddStub("sops --decrypt --in-place", executil.Result{}, ErrNotEncrypted)
+
+		data, err := DecryptFileToMap(client, file.Name())
+		require.NoError(t, err)
+		require.NotNil(t, data)
+		assert.Equal(t, "value", data["key"])
 	})
 
 	t.Run("Read File Error", func(t *testing.T) {

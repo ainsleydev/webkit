@@ -56,6 +56,17 @@ func (r *MemRunner) AddStub(prefix string, result Result, err error) {
 	}
 }
 
+func (r *MemRunner) Called(prefix string) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, call := range r.calls {
+		if strings.HasPrefix(call.String(), prefix) {
+			return true
+		}
+	}
+	return false
+}
+
 // Calls returns all commands that were executed.
 func (r *MemRunner) Calls() []Command {
 	r.mu.Lock()

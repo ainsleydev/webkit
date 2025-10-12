@@ -3,7 +3,6 @@ package secrets
 import (
 	"context"
 	"errors"
-	"fmt"
 	"path/filepath"
 
 	"github.com/urfave/cli/v3"
@@ -22,17 +21,14 @@ var DecryptCmd = &cli.Command{
 }
 
 func Decrypt(_ context.Context, input cmdtools.CommandInput) error {
-	client, err := input.SOPSClient()
-	if err != nil {
-		return err
-	}
+	client := input.SOPSClient()
 
-	fmt.Println("Decrypting secret files...")
+	input.Printer().Printf("Decrypting secret files...\n")
 
 	var errs []error
 	for _, e := range env.All {
 		path := filepath.Join(input.BaseDir, secrets.FilePath, e+".yaml")
-		err = client.Decrypt(path)
+		err := client.Decrypt(path)
 		if errors.Is(err, sops.ErrNotEncrypted) {
 			continue
 		} else if err != nil {
@@ -44,7 +40,7 @@ func Decrypt(_ context.Context, input cmdtools.CommandInput) error {
 		return errors.Join(errs...)
 	}
 
-	fmt.Println("Successfully decrypted secret files")
+	input.Printer().Success("Successfully decrypted secret files")
 
 	return nil
 }

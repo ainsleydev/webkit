@@ -33,10 +33,14 @@ var GetCmd = &cli.Command{
 			},
 		},
 		&cli.StringFlag{
-			Name:     "key",
-			Usage:    "The key/name of the secret to retrieve",
-			Aliases:  []string{"k"},
-			Required: true,
+			Name:    "key",
+			Usage:   "The key/name of the secret to retrieve",
+			Aliases: []string{"k"},
+		},
+		&cli.BoolFlag{
+			Name:    "all",
+			Usage:   "Print all secrets from the environment",
+			Aliases: []string{"a"},
 		},
 	},
 	Action: cmdtools.Wrap(Get),
@@ -48,25 +52,33 @@ func Get(_ context.Context, input cmdtools.CommandInput) error {
 	cmd := input.Command
 	enviro := cmd.String("env")
 	key := cmd.String("key")
-
-	client, err := input.SOPSClient()
-	if err != nil {
-		return err
-	}
+	showAll := cmd.Bool("all")
+	client := input.SOPSClient()
 
 	path := filepath.Join(input.BaseDir, secrets.FilePath, enviro+".yaml")
 	vals, err := sops.DecryptFileToMap(client, path)
-	fmt.Println(vals, err)
 	if err != nil {
 		return errors.Wrap(err, "decoding sops to map")
 	}
 
-	value, ok := vals[key]
-	if !ok {
-		return fmt.Errorf("key %v not found for env: %s", key, enviro)
+	switch {
+	case showAll:
+		input.Printer().Success(fmt.Sprintf("All secrets retrieved for environment: %s\n", enviro))
+		var items []string
+		for k, v := range vals {
+			items = append(items, fmt.Sprintf("%s: %s", k, v))
+		}
+		input.Printer().List(items)
+	case key != "":
+		value, ok := vals[key]
+		if !ok {
+			return fmt.Errorf("key %v not found for env: %s", key, enviro)
+		}
+		input.Printer().Success(fmt.Sprintf("Successfully retrieved secret from environment: %s\n", enviro))
+		input.Printer().Printf("%s=%v", key, value)
+	default:
+		return fmt.Errorf("either --key or --all must be provided")
 	}
-
-	fmt.Println(value)
 
 	return nil
 }
