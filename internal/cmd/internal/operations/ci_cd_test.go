@@ -11,11 +11,16 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/testutil"
+	"github.com/ainsleydev/webkit/internal/util/executil"
+	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
 func TestCreateCICD(t *testing.T) {
 	t.Parallel()
+
+	if !executil.Exists("action-validator") {
+		t.Skip("action-validator CLI not found in PATH; skipping integration test")
+	}
 
 	t.Run("PRs", func(t *testing.T) {
 		t.Parallel()

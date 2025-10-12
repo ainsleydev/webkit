@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ainsleydev/webkit/internal/executil"
+	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
 type fakeProvider struct {

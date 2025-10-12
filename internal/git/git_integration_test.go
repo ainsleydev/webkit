@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package git_test
 
@@ -13,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ainsleydev/webkit/internal/executil"
 	"github.com/ainsleydev/webkit/internal/git"
+	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
 func TestIntegration_Clone(t *testing.T) {

@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ainsleydev/webkit/internal/testutil"
+	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
 func setup(t *testing.T) *FileGenerator {

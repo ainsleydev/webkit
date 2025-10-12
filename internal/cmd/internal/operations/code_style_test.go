@@ -8,7 +8,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/testutil"
+	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
 func TestCreateCodeStyleFiles(t *testing.T) {

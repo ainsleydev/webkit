@@ -11,8 +11,8 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/executil"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
+	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
 func TestSecretsIntegration(t *testing.T) {

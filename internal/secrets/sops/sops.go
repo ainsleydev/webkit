@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ainsleydev/webkit/internal/executil"
+	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
 type (

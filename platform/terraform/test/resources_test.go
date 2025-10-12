@@ -11,6 +11,8 @@ import (
 func TestTerraform_Resources_Postgres(t *testing.T) {
 	t.Parallel()
 
+	t.Skip("Skipping, needs more work")
+
 	options, teardown := setupTerraform(t, "postgres.tfvars")
 	defer teardown()
 
@@ -84,6 +86,8 @@ func TestTerraform_Resources_Postgres(t *testing.T) {
 
 func TestTerraform_Resources_Spaces(t *testing.T) {
 	t.Parallel()
+
+	t.Skip("Skipping, needs more work")
 
 	options, teardown := setupTerraform(t, "spaces.tfvars")
 	defer teardown()

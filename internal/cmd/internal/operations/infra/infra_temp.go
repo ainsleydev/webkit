@@ -12,13 +12,13 @@ import (
 
 	"github.com/hashicorp/terraform-exec/tfexec"
 
-	"github.com/ainsleydev/webkit/infra/terraform"
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/config"
-	"github.com/ainsleydev/webkit/internal/executil"
 	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/git"
+	"github.com/ainsleydev/webkit/internal/util/executil"
+	"github.com/ainsleydev/webkit/platform/terraform"
 )
 
 const (

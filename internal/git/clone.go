@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ainsleydev/webkit/internal/executil"
+	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
 // CloneConfig configures repository cloning

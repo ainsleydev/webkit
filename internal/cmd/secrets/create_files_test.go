@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/testutil"
+	"github.com/ainsleydev/webkit/internal/util/testutil"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
