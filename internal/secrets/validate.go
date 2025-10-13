@@ -115,20 +115,20 @@ func buildExpectedSecretsMap(def *appdef.Definition) map[string]map[string]bool 
 	}
 
 	// Collect secrets from shared environment
-	def.Shared.Env.Walk(func(env string, name string, value appdef.EnvValue) {
-		if value.Source == appdef.EnvSourceSOPS {
-			expected[env][name] = true
-		}
-	})
-
-	// Collect secrets from each app's environment
-	for _, app := range def.Apps {
-		app.Env.Walk(func(env string, name string, value appdef.EnvValue) {
-			if value.Source == appdef.EnvSourceSOPS {
-				expected[env][name] = true
-			}
-		})
-	}
+	//def.Shared.Env.Walk(func(env string, name string, value appdef.EnvValue) {
+	//	if value.Source == appdef.EnvSourceSOPS {
+	//		expected[env][name] = true
+	//	}
+	//})
+	//
+	//// Collect secrets from each app's environment
+	//for _, app := range def.Apps {
+	//	app.Env.Walk(func(env string, name string, value appdef.EnvValue) {
+	//		if value.Source == appdef.EnvSourceSOPS {
+	//			expected[env][name] = true
+	//		}
+	//	})
+	//}
 
 	return expected
 }

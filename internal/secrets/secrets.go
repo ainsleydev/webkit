@@ -11,6 +11,8 @@ const AgePublicKey = "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmc
 // reside in the Webkit app. Needs a base path prepended.
 var FilePath = filepath.Join("resources", "secrets")
 
+// FilePathFromEnv returns a filepath based off the environment.
+// For example: resources/secrets/{production}.yaml
 func FilePathFromEnv(env string) string {
 	return filepath.Join(FilePath, env+".yaml")
 }

@@ -1,91 +1,122 @@
 package secrets
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-// ResolvedEnvVar represents an environment variable that has been
-// fully resolved (decrypted if necessary) and is ready for Terraform.
-type ResolvedEnvVar struct {
-	Key   string
-	Value string
-	Type  EnvVarType
+// ResolveConfig defines the data needed in order to decrypt the
+// definitions environments secrets.
+type ResolveConfig struct {
+	SOPSClient sops.EncrypterDecrypter
 }
 
-// EnvVarType indicates how Terraform should handle the variable
-type EnvVarType string
-
-const (
-	EnvVarTypeGeneral EnvVarType = "GENERAL"
-	EnvVarTypeSecret  EnvVarType = "SECRET"
-)
-
-// Resolver decrypts and resolves environment variables from the app definition
-type Resolver struct {
-	sopsClient sops.EncrypterDecrypter
-}
-
-// NewResolver creates a new environment variable resolver with SOPS support
-func NewResolver() (*Resolver, error) {
-	// Initialize age provider (checks SOPS_AGE_KEY env var or ~/.config/webkit/age.key)
-	ageProvider, err := age.NewProvider()
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize age provider: %w", err)
+func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) error {
+	// Resolve shared environment
+	if err := resolveAllEnvs(ctx, cfg, &def.Shared.Env); err != nil {
+		return fmt.Errorf("resolving shared env: %w", err)
 	}
 
-	return &Resolver{
-		sopsClient: sops.NewClient(ageProvider),
-	}, nil
+	// Resolve each app environment
+	for i := range def.Apps {
+		if err := resolveAllEnvs(ctx, cfg, &def.Apps[i].Env); err != nil {
+			return fmt.Errorf("resolving app %q env: %w", def.Apps[i].Name, err)
+		}
+	}
+
+	return nil
 }
 
-// ResolveEnvironmentVariables resolves all environment variables for a given environment.
-// It handles three source types:
-// - "value": static string value (pass through)
-// - "resource": Terraform resource reference (formatted as "resource:name.output")
-// - "sops": encrypted secret (decrypted using SOPS)
-func (r *Resolver) ResolveEnvironmentVariables(envVars appdef.EnvVar) (appdef.EnvVar, error) {
-	resolved := make([]ResolvedEnvVar, 0, len(envVars))
+// resolveAllEnvs resolves all variables in an Environment (dev, staging, production)
+func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Environment) error {
+	if enviro.Dev != nil {
+		if err := resolveEnvironment(ctx, cfg, env.Development, enviro.Dev); err != nil {
+			return err
+		}
+	}
+	if enviro.Staging != nil {
+		if err := resolveEnvironment(ctx, cfg, env.Staging, enviro.Staging); err != nil {
+			return err
+		}
+	}
+	if enviro.Production != nil {
+		if err := resolveEnvironment(ctx, cfg, env.Production, enviro.Production); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	for key, config := range envVars {
-		var resolvedVar ResolvedEnvVar
-		var err error
-
-		switch config.Source {
-		case appdef.EnvSourceValue:
-			// Static value - use as-is
-			resolvedVar = ResolvedEnvVar{
-				Key:   key,
-				Value: config.Value,
-				Type:  EnvVarTypeGeneral,
-			}
-
-		case appdef.EnvSourceResource:
-			// Resource reference - format for Terraform to resolve later
-			// e.g., "db.connection_url" → "resource:db.connection_url"
-			resolvedVar = ResolvedEnvVar{
-				Key:   key,
-				Value: fmt.Sprintf("resource:%s", config.Value),
-				Type:  EnvVarTypeGeneral,
-			}
-
-		case appdef.EnvSourceSOPS:
-			// SOPS secret - decrypt now
-			//resolvedVar, err = r.decryptSOPSSecret(key, config.Value)
-			if err != nil {
-				return nil, fmt.Errorf("failed to decrypt %s: %w", key, err)
-			}
-
-		default:
-			return nil, fmt.Errorf("unknown env var source type: %s for key: %s", config.Source, key)
+func resolveEnvironment(ctx context.Context, cfg ResolveConfig, env string, vars appdef.EnvVar) error {
+	for key, config := range vars {
+		resolveFn, ok := resolver[config.Source]
+		if !ok {
+			return fmt.Errorf("unknown env source type: %s", config.Source)
 		}
 
-		resolved = append(resolved, resolvedVar)
+		rc := resolveContext{
+			cfg:    cfg,
+			env:    env,
+			key:    key,
+			config: config,
+			vars:   vars,
+		}
+
+		if err := resolveFn(ctx, rc); err != nil {
+			return err
+		}
 	}
 
-	return nil, nil
-	//return resolved, nil
+	return nil
+}
+
+type resolveContext struct {
+	cfg    ResolveConfig
+	env    string
+	key    string
+	config appdef.EnvValue
+	vars   appdef.EnvVar
+}
+
+type resolveFunc func(ctx context.Context, rc resolveContext) error
+
+var resolver = map[appdef.EnvSource]resolveFunc{
+	// Static value - use as-is
+	appdef.EnvSourceValue: func(ctx context.Context, rc resolveContext) error {
+		return nil
+	},
+	// We haven't implemented this yet, but hopefully we can do
+	// so when we get Terraform outputs.
+	appdef.EnvSourceResource: func(_ context.Context, rc resolveContext) error {
+		return nil
+	},
+	// SOPS secret - decrypt now
+	appdef.EnvSourceSOPS: func(_ context.Context, rc resolveContext) error {
+		path := FilePathFromEnv(rc.env)
+
+		// If it's an internal error and not decrypted, bail early
+		// as we can't resolve much!
+		resolvedMap, err := sops.DecryptFileToMap(rc.cfg.SOPSClient, path)
+		if err != nil && !errors.Is(err, sops.ErrNotEncrypted) {
+			return err
+		}
+
+		secret, ok := resolvedMap[rc.key]
+		if !ok {
+			return fmt.Errorf("secret '%s' not found", rc.key)
+		}
+
+		rc.vars[rc.key] = appdef.EnvValue{
+			Source: rc.config.Source,
+			Value:  secret,
+			Path:   rc.config.Path,
+		}
+
+		return nil
+	},
 }
