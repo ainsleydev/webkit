@@ -55,7 +55,7 @@ func Get(_ context.Context, input cmdtools.CommandInput) error {
 	showAll := cmd.Bool("all")
 	client := input.SOPSClient()
 
-	path := filepath.Join(input.BaseDir, secrets.FilePath, enviro+".yaml")
+	path := filepath.Join(input.BaseDir, secrets.FilePathFromEnv(enviro))
 	vals, err := sops.DecryptFileToMap(client, path)
 	if err != nil {
 		return errors.Wrap(err, "decoding sops to map")

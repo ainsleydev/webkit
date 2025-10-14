@@ -4,12 +4,12 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// Commands defines the secret commands for interacting, generating and
+// Command defines the secret commands for interacting, generating and
 // manipulating the resources/sops/{env} SOPS encrypted YAML files.
-var Commands = &cli.Command{
+var Command = &cli.Command{
 	Name:        "secrets",
 	Usage:       "Manage SOPS-encrypted secret files",
-	Description: "Commands for working with secret files defined in app.json",
+	Description: "Command for working with secret files defined in app.json",
 	Commands: []*cli.Command{
 		SyncCmd,
 		EncryptCmd,

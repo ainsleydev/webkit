@@ -7,6 +7,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/cmd/env"
 	"github.com/ainsleydev/webkit/internal/cmd/secrets"
 	"github.com/ainsleydev/webkit/pkg/log"
 )
@@ -22,8 +23,10 @@ func Run() {
 		Commands: []*cli.Command{
 			updateCmd,
 			scaffoldCmd,
-			secrets.Commands,
+			secrets.Command,
+			env.Command,
 			driftCmd,
+			printCmd,
 			scratchCmd,
 		},
 	}

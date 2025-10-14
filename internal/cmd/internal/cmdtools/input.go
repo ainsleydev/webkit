@@ -2,7 +2,6 @@ package cmdtools
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/spf13/afero"
@@ -84,7 +83,6 @@ func (c *CommandInput) SOPSClient() sops.EncrypterDecrypter {
 	}
 	prov, err := age.NewProvider()
 	if err != nil {
-		fmt.Println(err)
 		Exit(err)
 	}
 	c.SOPSCache = sops.NewClient(prov)
