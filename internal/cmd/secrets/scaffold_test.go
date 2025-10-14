@@ -12,7 +12,7 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-func TestCreateSecretFiles(t *testing.T) {
+func TestScaffold(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestCreateSecretFiles(t *testing.T) {
 		t.Log("Secret Files Created")
 		{
 			for _, enviro := range env.All {
-				path := "resources/secrets/" + enviro + ".yaml"
+				path := "resources/secrets/" + enviro.String() + ".yaml"
 
 				exists, err := afero.Exists(input.FS, path)
 				assert.NoError(t, err)
@@ -52,7 +52,7 @@ func TestCreateSecretFiles(t *testing.T) {
 		}
 	})
 
-	t.Run("SOPS Config Error", func(t *testing.T) {
+	t.Run("Create Error", func(t *testing.T) {
 		t.Parallel()
 
 		input, _ := setup(t, &appdef.Definition{})

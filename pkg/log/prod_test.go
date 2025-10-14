@@ -15,7 +15,7 @@ import (
 func TestJsonHandler(t *testing.T) {
 	ctx := context.WithValue(context.Background(), webkitctx.ContextKeyRequestID, "12345")
 
-	err := os.Setenv(env.AppEnvironmentKey, env.Production)
+	err := os.Setenv(env.AppEnvironmentKey, env.Production.String())
 	require.NoError(t, err)
 
 	Bootstrap("test")

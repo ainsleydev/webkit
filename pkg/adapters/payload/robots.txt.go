@@ -11,7 +11,7 @@ import (
 
 // robots returns a handler function that generates the robots.txt content
 // based on the default Payload settings.
-func robots(appEnv string) webkit.Handler {
+func robots(appEnv env.Environment) webkit.Handler {
 	defaultRobots := func(c *webkit.Context) error {
 		// Always allow robots in production if it's not found via settings
 		if appEnv == env.Production {

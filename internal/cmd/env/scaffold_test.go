@@ -1,0 +1,70 @@
+package env
+
+import (
+	"path/filepath"
+	"testing"
+
+	"github.com/spf13/afero"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/util/testutil"
+	"github.com/ainsleydev/webkit/pkg/env"
+)
+
+func TestScaffold(t *testing.T) {
+	t.Parallel()
+
+	appDef := &appdef.Definition{
+		WebkitVersion: "",
+		Project:       appdef.Project{},
+		Shared:        appdef.Shared{},
+		Resources:     nil,
+		Apps: []appdef.App{
+			{Name: "app1", Path: "./app1"},
+			{Name: "app2", Path: "app2/nested"},
+		},
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		input, _ := setup(t, appDef)
+
+		err := Scaffold(t.Context(), input)
+		assert.NoError(t, err)
+
+		for _, app := range appDef.Apps {
+			for _, envName := range environmentsWithDotEnv {
+				t.Logf("Checking .env file for app %s (%s)", app.Name, envName)
+
+				fileName := ".env"
+				if envName != env.Development {
+					fileName = ".env." + envName.String()
+				}
+
+				path := filepath.Join(app.Path, fileName)
+
+				exists, err := afero.Exists(input.FS, path)
+				assert.NoError(t, err)
+				assert.Truef(t, exists, "%s should exist", path)
+
+				content, err := afero.ReadFile(input.FS, path)
+				assert.NoError(t, err)
+				assert.NotEmptyf(t, content, "%s should not be empty", path)
+				assert.Contains(t, string(content), scaffold.WebKitNotice)
+			}
+		}
+	})
+
+	t.Run("Create Error", func(t *testing.T) {
+		t.Parallel()
+
+		input, _ := setup(t, appDef)
+		input.FS = &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()}
+
+		got := Scaffold(t.Context(), input)
+		assert.Error(t, got)
+	})
+}

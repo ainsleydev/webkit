@@ -18,7 +18,7 @@ func TestAdapter_Robots(t *testing.T) {
 
 	tt := map[string]struct {
 		ctx  func(c *webkit.Context)
-		env  string
+		env  env.Environment
 		want string
 	}{
 		"Nil robots Production": {

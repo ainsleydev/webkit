@@ -27,7 +27,7 @@ func Decrypt(_ context.Context, input cmdtools.CommandInput) error {
 
 	var errs []error
 	for _, e := range env.All {
-		path := filepath.Join(input.BaseDir, secrets.FilePath, e+".yaml")
+		path := filepath.Join(input.BaseDir, secrets.FilePath, e.String()+".yaml")
 		err := client.Decrypt(path)
 		if errors.Is(err, sops.ErrNotEncrypted) {
 			continue

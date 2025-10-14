@@ -19,10 +19,18 @@ var ScaffoldCmd = &cli.Command{
 func Scaffold(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 
-	for _, app := range appDef.Apps {
-		err := writeMapToFile(input.FS, nil, app, "production", true)
-		if err != nil {
-			return err
+	for _, env := range environmentsWithDotEnv {
+		for _, app := range appDef.Apps {
+			err := writeMapToFile(writeArgs{
+				FS:          input.FS,
+				Vars:        nil, // Just generate the notice.
+				App:         app,
+				Environment: env,
+				IsScaffold:  true,
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 

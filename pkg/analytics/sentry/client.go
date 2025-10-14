@@ -18,7 +18,7 @@ func Init(dsn string) (func(), error) {
 		Dsn:              dsn,
 		Debug:            false,
 		AttachStacktrace: true,
-		Environment:      env.AppEnvironment(),
+		Environment:      env.AppEnvironment().String(),
 	})
 	if err != nil {
 		return func() {}, err

@@ -12,12 +12,20 @@ import (
 // Environment definitions.
 const (
 	// Development env definition.
-	Development string = "development"
+	Development Environment = "development"
 	// Staging env definition.
-	Staging = "staging"
+	Staging Environment = "staging"
 	// Production env definition.
-	Production = "production"
+	Production Environment = "production"
 )
+
+// Environment represents the type of env.
+type Environment string
+
+// String implements fmt.Stringer on Command.
+func (e Environment) String() string {
+	return string(e)
+}
 
 // Common keys
 const (
@@ -27,7 +35,7 @@ const (
 
 var (
 	// All defines all environments combined.
-	All = []string{
+	All = []Environment{
 		Development,
 		Staging,
 		Production,
@@ -80,8 +88,8 @@ func GetOrError(key string) (string, error) {
 }
 
 // AppEnvironment returns the app environment.
-func AppEnvironment() string {
-	return strings.ToLower(Get(AppEnvironmentKey, Development))
+func AppEnvironment() Environment {
+	return Environment(strings.ToLower(Get(AppEnvironmentKey, Development.String())))
 }
 
 // IsDevelopment returns whether we are running the app in development.

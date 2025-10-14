@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"slices"
 
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
@@ -26,9 +25,9 @@ var GetCmd = &cli.Command{
 			Aliases:  []string{"e"},
 			Required: true,
 			Validator: func(s string) error {
-				if !slices.Contains(env.All, s) {
-					return fmt.Errorf("invalid environment: %s", s)
-				}
+				//if !slices.Contains(env.All, s) {
+				//	return fmt.Errorf("invalid environment: %s", s)
+				//}
 				return nil
 			},
 		},
@@ -55,7 +54,7 @@ func Get(_ context.Context, input cmdtools.CommandInput) error {
 	showAll := cmd.Bool("all")
 	client := input.SOPSClient()
 
-	path := filepath.Join(input.BaseDir, secrets.FilePathFromEnv(enviro))
+	path := filepath.Join(input.BaseDir, secrets.FilePathFromEnv(env.Environment(enviro)))
 	vals, err := sops.DecryptFileToMap(client, path)
 	if err != nil {
 		return errors.Wrap(err, "decoding sops to map")

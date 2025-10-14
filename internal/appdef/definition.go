@@ -101,10 +101,10 @@ func (d *Definition) ApplyDefaults() error {
 // App-specific values take precedence over shared ones. If multiple apps define the same variable,
 // the last app in the list wins.
 func (d *Definition) MergeAllEnvironments() Environment {
-	merged := d.mergeEnvironments(d.Shared.Env)
+	merged := mergeEnvironments(d.Shared.Env)
 
 	for _, app := range d.Apps {
-		merged = d.mergeEnvironments(merged, app.Env)
+		merged = mergeEnvironments(merged, app.Env)
 	}
 
 	return merged
@@ -125,12 +125,16 @@ func (d *Definition) MergeAppEnvironment(appName string) (Environment, bool) {
 		return Environment{}, false
 	}
 
-	return d.mergeEnvironments(d.Shared.Env, app.Env), true
+	return mergeEnvironments(d.Shared.Env, app.Env), true
+}
+
+func (a *App) MergeEnvironments(shared Environment) Environment {
+	return mergeEnvironments(shared, a.Env)
 }
 
 // mergeEnvironments merges multiple Environment structs left-to-right.
 // Later environments override earlier ones.
-func (d *Definition) mergeEnvironments(envs ...Environment) Environment {
+func mergeEnvironments(envs ...Environment) Environment {
 	merged := Environment{
 		Dev:        make(EnvVar),
 		Staging:    make(EnvVar),

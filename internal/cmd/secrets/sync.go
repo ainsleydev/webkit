@@ -13,6 +13,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 var SyncCmd = &cli.Command{
@@ -78,11 +79,11 @@ type syncFile struct {
 func syncSecrets(fs afero.Fs, def *appdef.Definition) []syncFile {
 	type ref struct {
 		Key string
-		Env string
+		Env env.Environment
 	}
 
 	var refs []ref
-	def.MergeAllEnvironments().Walk(func(env string, name string, value appdef.EnvValue) {
+	def.MergeAllEnvironments().Walk(func(env env.Environment, name string, value appdef.EnvValue) {
 		if value.Source == appdef.EnvSourceSOPS {
 			refs = append(refs, ref{Key: name, Env: env})
 		}
@@ -93,7 +94,7 @@ func syncSecrets(fs afero.Fs, def *appdef.Definition) []syncFile {
 	}
 
 	// Group by environment (file)
-	group := map[string][]string{}
+	group := map[env.Environment][]string{}
 	for _, r := range refs {
 		group[r.Env] = append(group[r.Env], r.Key)
 	}

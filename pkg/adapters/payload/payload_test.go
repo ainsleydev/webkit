@@ -61,7 +61,7 @@ func TestNew_OK(t *testing.T) {
 		apiKey  = "api-key"
 	)
 
-	t.Setenv(env.AppEnvironmentKey, env.Production)
+	t.Setenv(env.AppEnvironmentKey, env.Production.String())
 
 	got, err := New(
 		WithWebkit(webkit.New()),
@@ -79,6 +79,6 @@ func TestNew_OK(t *testing.T) {
 
 	assert.Equal(t, got.baseURL, baseURL)
 	assert.Equal(t, got.apiKey, apiKey)
-	assert.Equal(t, got.env[env.AppEnvironmentKey], env.Production)
+	assert.EqualValues(t, got.env[env.AppEnvironmentKey], env.Production)
 	assert.Equal(t, os.Getenv(envPayloadURL), baseURL)
 }

@@ -30,7 +30,7 @@ func TestGlobalsMiddleware(t *testing.T) {
 func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client, store cache.Store) webkit.Plug) {
 	t.Helper()
 
-	err := os.Setenv(env.AppEnvironmentKey, env.Production)
+	err := os.Setenv(env.AppEnvironmentKey, env.Production.String())
 	require.NoError(t, err)
 
 	settings := Settings{

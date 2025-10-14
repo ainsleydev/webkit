@@ -1,9 +1,12 @@
 package appdef
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 func TestEnvSource_String(t *testing.T) {
@@ -24,8 +27,9 @@ func TestEnvironment_Walk(t *testing.T) {
 	}
 
 	var got []string
-	e.Walk(func(envName string, name string, value EnvValue) {
-		got = append(got, envName+":"+name+"="+value.Value)
+	e.Walk(func(envName env.Environment, name string, value EnvValue) {
+		val := fmt.Sprintf("%s:%s=%v", envName, name, value.Value)
+		got = append(got, val)
 	})
 
 	want := []string{

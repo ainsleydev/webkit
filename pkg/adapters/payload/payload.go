@@ -50,7 +50,7 @@ func New(options ...Option) (*Adapter, error) {
 		cache:              cache.NewInMemory(time.Hour * 24), // Default cache store.
 		maintenanceHandler: defaultMaintenanceRenderer,
 		env: map[string]string{
-			env.AppEnvironmentKey: env.Get(env.AppEnvironmentKey, env.Production),
+			env.AppEnvironmentKey: env.Get(env.AppEnvironmentKey, env.Production.String()),
 		},
 	}
 
@@ -124,7 +124,7 @@ func (a Adapter) attachHandlers() {
 	}
 
 	// Routes
-	a.kit.Get("/robots.txt", robots(a.env[env.AppEnvironmentKey]))
+	a.kit.Get("/robots.txt", robots(env.Environment(a.env[env.AppEnvironmentKey])))
 	a.kit.Get("/sitemap.xml", sitemap())
 	a.kit.Post("/cache/", cacheBust(a.cache))
 }

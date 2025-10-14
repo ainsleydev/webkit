@@ -52,7 +52,7 @@ func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Envir
 	return nil
 }
 
-func resolveEnvironment(ctx context.Context, cfg ResolveConfig, env string, vars appdef.EnvVar) error {
+func resolveEnvironment(ctx context.Context, cfg ResolveConfig, env env.Environment, vars appdef.EnvVar) error {
 	for key, config := range vars {
 		resolveFn, ok := resolver[config.Source]
 		if !ok {
@@ -77,7 +77,7 @@ func resolveEnvironment(ctx context.Context, cfg ResolveConfig, env string, vars
 
 type resolveContext struct {
 	cfg    ResolveConfig
-	env    string
+	env    env.Environment
 	key    string
 	config appdef.EnvValue
 	vars   appdef.EnvVar

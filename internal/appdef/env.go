@@ -45,7 +45,7 @@ func (e EnvSource) String() string {
 
 // EnvironmentWalker defines the type for walking a collection of
 // environment variables.
-type EnvironmentWalker func(env string, name string, value EnvValue)
+type EnvironmentWalker func(env env.Environment, name string, value EnvValue)
 
 // Walk walks through each non-nil environment (dev, staging, production),
 // calling fn(envName, envVars) for each one.

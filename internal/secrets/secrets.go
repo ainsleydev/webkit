@@ -2,6 +2,8 @@ package secrets
 
 import (
 	"path/filepath"
+
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 // AgePublicKey is the public key for encrypting SOPS files.
@@ -13,6 +15,6 @@ var FilePath = filepath.Join("resources", "secrets")
 
 // FilePathFromEnv returns a filepath based off the environment.
 // For example: resources/secrets/{production}.yaml
-func FilePathFromEnv(env string) string {
-	return filepath.Join(FilePath, env+".yaml")
+func FilePathFromEnv(e env.Environment) string {
+	return filepath.Join(FilePath, e.String()+".yaml")
 }

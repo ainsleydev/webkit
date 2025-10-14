@@ -22,7 +22,7 @@ func TestGet(t *testing.T) {
 
 	t.Run("No Key or All Flag", func(t *testing.T) {
 		input, _ := setupEncryptedProdFile(t, `KEY: "1234"`)
-		require.NoError(t, input.Command.Set("env", env.Production))
+		require.NoError(t, input.Command.Set("env", env.Production.String()))
 
 		err := Get(ctx, input)
 		assert.Error(t, err)
@@ -31,7 +31,7 @@ func TestGet(t *testing.T) {
 
 	t.Run("Key Not Found", func(t *testing.T) {
 		input, _ := setupEncryptedProdFile(t, `KEY: "1234"`)
-		require.NoError(t, input.Command.Set("env", env.Production))
+		require.NoError(t, input.Command.Set("env", env.Production.String()))
 		require.NoError(t, input.Command.Set("key", "wrong"))
 
 		err := Get(ctx, input)
@@ -42,7 +42,7 @@ func TestGet(t *testing.T) {
 	t.Run("Single Key Success", func(t *testing.T) {
 		input, buf := setupEncryptedProdFile(t, `KEY: "1234"`)
 
-		require.NoError(t, input.Command.Set("env", env.Production))
+		require.NoError(t, input.Command.Set("env", env.Production.String()))
 		require.NoError(t, input.Command.Set("key", "KEY"))
 
 		err := Get(ctx, input)
@@ -56,7 +56,7 @@ func TestGet(t *testing.T) {
 		input, buf := setupEncryptedProdFile(t, `KEY1: "1234"
 KEY2: "abcd"`)
 
-		require.NoError(t, input.Command.Set("env", env.Production))
+		require.NoError(t, input.Command.Set("env", env.Production.String()))
 		require.NoError(t, input.Command.Set("all", "true"))
 
 		err := Get(ctx, input)
