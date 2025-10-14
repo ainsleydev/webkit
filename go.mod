@@ -2,7 +2,10 @@ module github.com/ainsleydev/webkit
 
 go 1.25.1
 
-tool github.com/atombender/go-jsonschema
+tool (
+	github.com/atombender/go-jsonschema
+	go.uber.org/mock/mockgen
+)
 
 require (
 	dario.cat/mergo v1.0.2
