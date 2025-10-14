@@ -55,6 +55,11 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 		return nil
 	}
 
+	if options.notice {
+		notice := []byte(noticeForFile(path))
+		data = append(notice, data...)
+	}
+
 	if err := f.fs.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
 		return fmt.Errorf("creating directories: %w", err)
 	}
@@ -84,6 +89,8 @@ func (f FileGenerator) Template(path string, tpl *template.Template, data any, o
 		return fmt.Errorf("executing template %s: %w", tpl.Name(), err)
 	}
 
+	opts = append(opts, WithNotice(false))
+
 	return f.Bytes(path, buf.Bytes(), opts...)
 }
 
@@ -96,6 +103,8 @@ func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
 	if err := encoder.Encode(content); err != nil {
 		return fmt.Errorf("encoding %s: %w", path, err)
 	}
+
+	opts = append(opts, WithNotice(false))
 
 	return f.Bytes(path, buf.Bytes(), opts...)
 }
@@ -110,6 +119,8 @@ func (f FileGenerator) YAML(path string, content any, opts ...Option) error {
 	if err := encoder.Encode(content); err != nil {
 		return fmt.Errorf("encoding %s: %w", path, err)
 	}
+
+	opts = append(opts, WithNotice(false))
 
 	return f.Bytes(path, buf.Bytes(), opts...)
 }

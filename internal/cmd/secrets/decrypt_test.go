@@ -46,7 +46,7 @@ func TestDecrypt(t *testing.T) {
 		}
 		input.Printer().SetWriter(io.Discard)
 
-		err = CreateFiles(ctx, input)
+		err = Scaffold(ctx, input)
 		assert.NoError(t, err)
 
 		err = Decrypt(ctx, input)

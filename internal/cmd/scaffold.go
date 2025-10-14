@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/cmd/env"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/operations"
 	"github.com/ainsleydev/webkit/internal/cmd/secrets"
@@ -36,7 +37,12 @@ var scaffoldCmd = &cli.Command{
 		{
 			Name:   "secrets",
 			Usage:  "Generate empty SOPS secret files and configuration",
-			Action: cmdtools.Wrap(secrets.CreateFiles),
+			Action: cmdtools.Wrap(secrets.Scaffold),
+		},
+		{
+			Name:   "env",
+			Usage:  "TODO",
+			Action: cmdtools.Wrap(env.Scaffold),
 		},
 	},
 }

@@ -11,6 +11,7 @@ var Command = &cli.Command{
 	Usage:       "Manage SOPS-encrypted secret files",
 	Description: "Command for working with secret files defined in app.json",
 	Commands: []*cli.Command{
+		ScaffoldCmd,
 		SyncCmd,
 		EncryptCmd,
 		DecryptCmd,

@@ -11,6 +11,7 @@ var Command = &cli.Command{
 	Usage:       "Manage environment variables",
 	Description: "Command for working with the environment files defined in app.json",
 	Commands: []*cli.Command{
+		ScaffoldCmd,
 		SyncCmd,
 	},
 }

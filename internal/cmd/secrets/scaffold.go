@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/afero"
+	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/scaffold"
@@ -12,10 +13,16 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-// CreateFiles generates the basic SOPS secret file structure.
+var ScaffoldCmd = &cli.Command{
+	Name:   "scaffold",
+	Usage:  "Generate empty SOPS secret files and configuration",
+	Action: cmdtools.Wrap(Scaffold),
+}
+
+// Scaffold generates the basic SOPS secret file structure.
 // This creates empty secret files and SOPS configuration without
 // parsing app.json.
-func CreateFiles(_ context.Context, input cmdtools.CommandInput) error {
+func Scaffold(_ context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(afero.NewBasePathFs(input.FS, "resources"))
 
 	if err := generateSOPSConfig(gen); err != nil {

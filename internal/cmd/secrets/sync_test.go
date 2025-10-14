@@ -137,7 +137,7 @@ func TestSync(t *testing.T) {
 
 		input, _ := setup(t, def)
 
-		err := CreateFiles(t.Context(), input)
+		err := Scaffold(t.Context(), input)
 		assert.NoError(t, err)
 
 		got := Sync(t.Context(), input)
@@ -160,7 +160,7 @@ func TestSync(t *testing.T) {
 
 		input, _ := setup(t, def)
 
-		err := CreateFiles(t.Context(), input)
+		err := Scaffold(t.Context(), input)
 		assert.NoError(t, err)
 
 		got := Sync(t.Context(), input)

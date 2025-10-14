@@ -13,6 +13,7 @@ var commentMap = map[string]string{
 	".go":           "//",
 	".yaml":         "#",
 	".yml":          "#",
+	".env":          "#",
 	".editorconfig": "#",
 	".toml":         "#",
 	".js":           "//",

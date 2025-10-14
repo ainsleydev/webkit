@@ -59,7 +59,7 @@ func setupEncryptedProdFile(t *testing.T, content string) (cmdtools.CommandInput
 		Command: GetCmd,
 	}
 	input.Printer().SetWriter(buf)
-	err = CreateFiles(t.Context(), input)
+	err = Scaffold(t.Context(), input)
 	require.NoError(t, err)
 
 	path := "resources/secrets/production.yaml"

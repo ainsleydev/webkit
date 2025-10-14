@@ -20,7 +20,7 @@ func TestCreateSecretFiles(t *testing.T) {
 
 		input, _ := setup(t, &appdef.Definition{})
 
-		err := CreateFiles(t.Context(), input)
+		err := Scaffold(t.Context(), input)
 		assert.NoError(t, err)
 
 		t.Log(".sops.yaml Created")
@@ -58,7 +58,7 @@ func TestCreateSecretFiles(t *testing.T) {
 		input, _ := setup(t, &appdef.Definition{})
 		input.FS = &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()}
 
-		got := CreateFiles(t.Context(), input)
+		got := Scaffold(t.Context(), input)
 		assert.Error(t, got)
 	})
 }

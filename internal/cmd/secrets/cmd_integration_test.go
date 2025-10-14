@@ -64,7 +64,7 @@ func TestSecretsIntegration(t *testing.T) {
 
 	t.Log("Creates Files")
 	{
-		err = CreateFiles(ctx, input)
+		err = Scaffold(ctx, input)
 		assert.NoError(t, err)
 	}
 
