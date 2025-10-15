@@ -1,15 +1,17 @@
 package env
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/scaffold"
-	"github.com/ainsleydev/webkit/internal/util/testutil"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -58,13 +60,20 @@ func TestScaffold(t *testing.T) {
 		}
 	})
 
-	t.Run("Create Error", func(t *testing.T) {
-		t.Parallel()
+	t.Run("Write Error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+
+		fsMock := mocks.NewMockFS(ctrl)
+		fsMock.EXPECT().
+			MkdirAll(gomock.Any(), gomock.Any()).
+			Return(fmt.Errorf("mkdir error"))
 
 		input, _ := setup(t, appDef)
-		input.FS = &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()}
+		input.FS = fsMock
+		input.SOPSCache = mocks.NewMockEncrypterDecrypter(ctrl)
 
-		got := Scaffold(t.Context(), input)
-		assert.Error(t, got)
+		err := Scaffold(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "mkdir error")
 	})
 }

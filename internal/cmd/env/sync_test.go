@@ -2,19 +2,25 @@ package env
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/util/testutil"
+	"github.com/ainsleydev/webkit/internal/mocks"
+	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 func TestSync(t *testing.T) {
-	t.Parallel()
+	ctx := t.Context()
+	ageIdentity, err := age.NewIdentity()
+	require.NoError(t, err)
 
 	appDef := &appdef.Definition{
 		WebkitVersion: "",
@@ -27,8 +33,8 @@ func TestSync(t *testing.T) {
 				Path: "./app1",
 				Env: appdef.Environment{
 					Production: appdef.EnvVar{
-						"FOO": {Value: "bar"},
-						"BAZ": {Value: "qux"},
+						"FOO": {Value: "bar", Source: appdef.EnvSourceValue},
+						"BAZ": {Value: "qux", Source: appdef.EnvSourceValue},
 					},
 				},
 			},
@@ -37,19 +43,62 @@ func TestSync(t *testing.T) {
 				Path: "app2/nested",
 				Env: appdef.Environment{
 					Production: appdef.EnvVar{
-						"HELLO": {Value: "world"},
+						"HELLO": {Value: "world", Source: appdef.EnvSourceValue},
 					},
 				},
 			},
 		},
 	}
 
+	t.Run("Decrypt Error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mock := mocks.NewMockEncrypterDecrypter(ctrl)
+		mock.EXPECT().
+			Decrypt(gomock.Any()).
+			Return(fmt.Errorf("decrypt error"))
+
+		appDef := &appdef.Definition{
+			Shared: appdef.Shared{
+				Env: appdef.Environment{
+					Production: appdef.EnvVar{
+						"HELLO": {Value: "world", Source: appdef.EnvSourceSOPS},
+					},
+				},
+			},
+		}
+
+		input, _ := setup(t, appDef)
+		input.SOPSCache = mock
+
+		err = Sync(ctx, input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "decrypt error")
+	})
+
+	t.Run("Write Error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+
+		fsMock := mocks.NewMockFS(ctrl)
+		fsMock.EXPECT().
+			MkdirAll(gomock.Any(), gomock.Any()).
+			Return(fmt.Errorf("mkdir error"))
+
+		input, _ := setup(t, appDef)
+		input.FS = fsMock
+		input.SOPSCache = mocks.NewMockEncrypterDecrypter(ctrl)
+
+		err = Sync(ctx, input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "mkdir error")
+	})
+
 	t.Run("Success", func(t *testing.T) {
-		t.Parallel()
+		t.Setenv(age.KeyEnvVar, ageIdentity.String())
+		defer os.Unsetenv(age.KeyEnvVar)
 
 		input, _ := setup(t, appDef)
 
-		err := Sync(t.Context(), input)
+		err = Sync(ctx, input)
 		assert.NoError(t, err)
 
 		for _, app := range appDef.Apps {
@@ -80,7 +129,7 @@ func TestSync(t *testing.T) {
 	})
 
 	t.Run("Marshal Error", func(t *testing.T) {
-		t.Parallel()
+		ctrl := gomock.NewController(t)
 
 		orig := dotEnvMarshaller
 		defer func() { dotEnvMarshaller = orig }()
@@ -89,19 +138,10 @@ func TestSync(t *testing.T) {
 		}
 
 		input, _ := setup(t, appDef)
+		input.SOPSCache = mocks.NewMockEncrypterDecrypter(ctrl)
 
-		err := Sync(t.Context(), input)
+		err = Sync(t.Context(), input)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "marshal error")
-	})
-
-	t.Run("Write Error", func(t *testing.T) {
-		t.Parallel()
-
-		input, _ := setup(t, appDef)
-		input.FS = &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()}
-
-		err := Sync(t.Context(), input)
-		assert.Error(t, err)
 	})
 }

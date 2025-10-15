@@ -2,10 +2,12 @@ package env
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/secrets"
 )
 
 var SyncCmd = &cli.Command{
@@ -18,18 +20,19 @@ var SyncCmd = &cli.Command{
 func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 
-	//err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
-	//	SOPSClient: input.SOPSClient(),
-	//})
-	//if err != nil {
-	//	return err
-	//}
+	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
+		SOPSClient: input.SOPSClient(),
+	})
+	fmt.Println(err)
+	if err != nil {
+		return err
+	}
 
 	for _, app := range appDef.Apps {
 		mergedApp := app.MergeEnvironments(appDef.Shared.Env)
 
 		for _, enviro := range environmentsWithDotEnv {
-			err := writeMapToFile(writeArgs{
+			err = writeMapToFile(writeArgs{
 				FS:          input.FS,
 				Vars:        mergedApp.Production,
 				App:         app,

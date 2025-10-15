@@ -10,6 +10,8 @@ import (
 	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
+//go:generate go tool go.uber.org/mock/mockgen -source=sops.go -destination ../../mocks/sops.go -package=mocks
+
 type (
 	// Encrypter encrypts a SOPS file using the CLI with the specified
 	// provider. Uses the SOPS CLI, assumes it's installed.
