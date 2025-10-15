@@ -110,28 +110,6 @@ func (d *Definition) MergeAllEnvironments() Environment {
 	return merged
 }
 
-// MergeAppEnvironment merges shared environment variables with a single app's environment.
-// The app's variables take precedence over the shared ones.
-func (d *Definition) MergeAppEnvironment(appName string) (Environment, bool) {
-	var app *App
-	for i := range d.Apps {
-		if d.Apps[i].Name == appName {
-			app = &d.Apps[i]
-			break
-		}
-	}
-
-	if app == nil {
-		return Environment{}, false
-	}
-
-	return mergeEnvironments(d.Shared.Env, app.Env), true
-}
-
-func (a *App) MergeEnvironments(shared Environment) Environment {
-	return mergeEnvironments(shared, a.Env)
-}
-
 // mergeEnvironments merges multiple Environment structs left-to-right.
 // Later environments override earlier ones.
 func mergeEnvironments(envs ...Environment) Environment {

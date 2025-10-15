@@ -94,3 +94,98 @@ func TestApp_OrderedCommands(t *testing.T) {
 		}
 	})
 }
+
+func TestApp_MergeEnvironments(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		app    App
+		shared Environment
+		want   Environment
+	}{
+		"No Shared Env": {
+			app: App{
+				Name: "app1",
+				Env: Environment{
+					Dev:        EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+					Staging:    EnvVar{"KEY2": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+					Production: EnvVar{"KEY3": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+				},
+			},
+			shared: Environment{},
+			want: Environment{
+				Dev:        EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+				Staging:    EnvVar{"KEY2": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+				Production: EnvVar{"KEY3": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+			},
+		},
+		"App Overrides Shared": {
+			app: App{
+				Name: "app1",
+				Env: Environment{
+					Dev:        EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+					Staging:    EnvVar{"KEY2": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+					Production: EnvVar{"KEY3": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+				},
+			},
+			shared: Environment{
+				Dev:        EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "shared"}, "KEY2": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+				Staging:    EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "shared"}, "KEY3": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+				Production: EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+			},
+			want: Environment{
+				Dev:        EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "app1"}, "KEY2": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+				Staging:    EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "shared"}, "KEY2": EnvValue{Source: EnvSourceValue, Value: "app1"}, "KEY3": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+				Production: EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "shared"}, "KEY3": EnvValue{Source: EnvSourceValue, Value: "app1"}},
+			},
+		},
+		"Empty App Env Uses Shared": {
+			app: App{
+				Name: "app1",
+				Env:  Environment{},
+			},
+			shared: Environment{
+				Dev:        EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+				Staging:    EnvVar{"KEY2": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+				Production: EnvVar{"KEY3": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+			},
+			want: Environment{
+				Dev:        EnvVar{"KEY1": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+				Staging:    EnvVar{"KEY2": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+				Production: EnvVar{"KEY3": EnvValue{Source: EnvSourceValue, Value: "shared"}},
+			},
+		},
+		"Different Source Types Override": {
+			app: App{
+				Name: "app1",
+				Env: Environment{
+					Dev: EnvVar{
+						"KEY1": EnvValue{Source: EnvSourceSOPS, Path: "secrets/app.yaml:KEY1"},
+					},
+				},
+			},
+			shared: Environment{
+				Dev: EnvVar{
+					"KEY1": EnvValue{Source: EnvSourceValue, Value: "shared_value"},
+					"KEY2": EnvValue{Source: EnvSourceResource, Value: "shared.resource"},
+				},
+			},
+			want: Environment{
+				Dev: EnvVar{
+					"KEY1": EnvValue{Source: EnvSourceSOPS, Path: "secrets/app.yaml:KEY1"},
+					"KEY2": EnvValue{Source: EnvSourceResource, Value: "shared.resource"},
+				},
+				Staging:    EnvVar{},
+				Production: EnvVar{},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := tc.app.MergeEnvironments(tc.shared)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

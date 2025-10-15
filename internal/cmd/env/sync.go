@@ -2,7 +2,6 @@ package env
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/urfave/cli/v3"
 
@@ -17,13 +16,13 @@ var SyncCmd = &cli.Command{
 	Action:      cmdtools.Wrap(Sync),
 }
 
+// Sync
 func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 
 	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
 		SOPSClient: input.SOPSClient(),
 	})
-	fmt.Println(err)
 	if err != nil {
 		return err
 	}

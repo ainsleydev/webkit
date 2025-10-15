@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"testing"
 	"text/template"
 
 	"github.com/spf13/afero"
@@ -31,8 +33,13 @@ type (
 
 // New creates a new FileGenerator with the provided afero.Fs.
 func New(fs afero.Fs) *FileGenerator {
+	var w io.Writer
+	w = os.Stdout
+	if testing.Testing() {
+		w = io.Discard
+	}
 	return &FileGenerator{
-		Printer: printer.New(os.Stdout),
+		Printer: printer.New(w),
 		fs:      fs,
 	}
 }

@@ -94,6 +94,12 @@ func (a *App) OrderedCommands() []CommandSpec {
 	return ordered
 }
 
+// MergeEnvironments merges the shared env with the apps,
+// with the app specific variables taking precedence.
+func (a *App) MergeEnvironments(shared Environment) Environment {
+	return mergeEnvironments(shared, a.Env)
+}
+
 func (a *App) applyDefaults() error {
 	if a.Commands == nil {
 		a.Commands = make(map[Command]CommandSpec)

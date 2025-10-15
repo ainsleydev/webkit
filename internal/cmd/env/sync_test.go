@@ -2,7 +2,6 @@ package env
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -22,6 +21,8 @@ func TestSync(t *testing.T) {
 	ageIdentity, err := age.NewIdentity()
 	require.NoError(t, err)
 
+	// App Definition only with values, not secrets, so we don't
+	// have to create SOPS files for unit testing env files.
 	appDef := &appdef.Definition{
 		WebkitVersion: "",
 		Project:       appdef.Project{},
@@ -57,7 +58,7 @@ func TestSync(t *testing.T) {
 			Decrypt(gomock.Any()).
 			Return(fmt.Errorf("decrypt error"))
 
-		appDef := &appdef.Definition{
+		appDefSops := &appdef.Definition{
 			Shared: appdef.Shared{
 				Env: appdef.Environment{
 					Production: appdef.EnvVar{
@@ -67,7 +68,7 @@ func TestSync(t *testing.T) {
 			},
 		}
 
-		input, _ := setup(t, appDef)
+		input, _ := setup(t, appDefSops)
 		input.SOPSCache = mock
 
 		err = Sync(ctx, input)
@@ -94,7 +95,6 @@ func TestSync(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		t.Setenv(age.KeyEnvVar, ageIdentity.String())
-		defer os.Unsetenv(age.KeyEnvVar)
 
 		input, _ := setup(t, appDef)
 
