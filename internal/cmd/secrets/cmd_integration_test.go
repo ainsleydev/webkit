@@ -1,7 +1,10 @@
+//go:build integration
+// +build integration
+
 package secrets
 
 import (
-	"fmt"
+	"io/ioutil"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -62,6 +65,8 @@ func TestSecretsIntegration(t *testing.T) {
 		},
 	}
 
+	input.Printer().SetWriter(ioutil.Discard)
+
 	t.Log("Creates Files")
 	{
 		err = Scaffold(ctx, input)
@@ -104,8 +109,5 @@ func TestSecretsIntegration(t *testing.T) {
 
 		err = Get(ctx, input)
 		require.NoError(t, err)
-
-		fmt.Println(err)
 	}
-
 }

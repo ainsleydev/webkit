@@ -11,22 +11,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
-	"github.com/ainsleydev/webkit/internal/secrets/sops"
 )
-
-type mockEncrypterDecrypter struct {
-	err error
-}
-
-func (m mockEncrypterDecrypter) Encrypt(_ string) error {
-	return m.err
-}
-
-func (m mockEncrypterDecrypter) Decrypt(_ string) error {
-	return m.err
-}
-
-var _ sops.EncrypterDecrypter = (*mockEncrypterDecrypter)(nil)
 
 func setup(t *testing.T, def *appdef.Definition) (cmdtools.CommandInput, *bytes.Buffer) {
 	t.Helper()

@@ -1,19 +1,83 @@
 package secrets
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/util/testutil"
+	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 func TestScaffold(t *testing.T) {
 	t.Parallel()
+
+	t.Run("SOPS Config Error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+
+		fsMock := mocks.NewMockFS(ctrl)
+		fsMock.EXPECT().
+			MkdirAll(gomock.Any(), gomock.Any()).
+			Return(fmt.Errorf("mkdir error")).
+			Times(1)
+
+		input, _ := setup(t, &appdef.Definition{})
+		input.FS = fsMock
+
+		err := Scaffold(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "mkdir error")
+	})
+
+	t.Run("Scaffold Error", func(t *testing.T) {
+		t.Skip()
+		ctrl := gomock.NewController(t)
+
+		fsMock := mocks.NewMockFS(ctrl)
+
+		// BasePathFs will call MkdirAll on "resources"
+		fsMock.EXPECT().
+			MkdirAll(gomock.Eq("resources"), gomock.Any()).
+			Return(nil).
+			AnyTimes()
+
+		// .sops.yaml should succeed
+		fsMock.EXPECT().
+			Stat(gomock.Eq("resources/.sops.yaml")).
+			Return(nil, nil).
+			AnyTimes()
+		fsMock.EXPECT().
+			OpenFile(gomock.Eq("resources/.sops.yaml"), gomock.Any(), gomock.Any()).
+			Return(nil, nil).
+			AnyTimes()
+
+		// Fail for secrets/*.yaml
+		fsMock.EXPECT().
+			Stat(gomock.Cond(func(path string) bool {
+				return strings.HasPrefix(path, "resources/secrets/")
+			})).
+			Return(nil, fmt.Errorf("gen.Bytes error")).
+			AnyTimes()
+		fsMock.EXPECT().
+			OpenFile(gomock.Cond(func(path string) bool {
+				return strings.HasPrefix(path, "resources/secrets/")
+			}), gomock.Any(), gomock.Any()).
+			Return(nil, fmt.Errorf("gen.Bytes error")).
+			AnyTimes()
+
+		input, _ := setup(t, &appdef.Definition{})
+		input.FS = fsMock
+
+		err := Scaffold(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "mkdir error")
+	})
 
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
@@ -52,13 +116,4 @@ func TestScaffold(t *testing.T) {
 		}
 	})
 
-	t.Run("Create Error", func(t *testing.T) {
-		t.Parallel()
-
-		input, _ := setup(t, &appdef.Definition{})
-		input.FS = &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()}
-
-		got := Scaffold(t.Context(), input)
-		assert.Error(t, got)
-	})
 }

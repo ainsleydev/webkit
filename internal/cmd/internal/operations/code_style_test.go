@@ -1,14 +1,16 @@
 package operations
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/util/testutil"
+	"github.com/ainsleydev/webkit/internal/mocks"
 )
 
 func TestCreateCodeStyleFiles(t *testing.T) {
@@ -18,11 +20,12 @@ func TestCreateCodeStyleFiles(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-
-		got := CreateCodeStyleFiles(t.Context(), cmdtools.CommandInput{
+		input := cmdtools.CommandInput{
 			FS:          fs,
 			AppDefCache: &appdef.Definition{},
-		})
+		}
+
+		got := CreateCodeStyleFiles(t.Context(), input)
 		assert.NoError(t, got)
 
 		for path, _ := range codeStyleTemplates {
@@ -32,13 +35,21 @@ func TestCreateCodeStyleFiles(t *testing.T) {
 		}
 	})
 
-	t.Run("Error", func(t *testing.T) {
+	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 
-		got := CreateCodeStyleFiles(t.Context(), cmdtools.CommandInput{
-			FS:          &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()},
+		ctrl := gomock.NewController(t)
+		fsMock := mocks.NewMockFS(ctrl)
+		fsMock.EXPECT().
+			MkdirAll(gomock.Any(), gomock.Any()).
+			Return(fmt.Errorf("mkdir error"))
+
+		input := cmdtools.CommandInput{
+			FS:          fsMock,
 			AppDefCache: &appdef.Definition{},
-		})
+		}
+
+		got := CreateCodeStyleFiles(t.Context(), input)
 		assert.Error(t, got)
 	})
 }

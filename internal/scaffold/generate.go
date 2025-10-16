@@ -142,6 +142,6 @@ func (f FileGenerator) shouldSkipScaffold(path string, mode WriteMode) bool {
 		return false
 	}
 
-	fmt.Println("• skipped scaffolding", path, "- already exists")
+	f.Printer.Print("• skipped scaffolding " + path + " - already exists")
 	return true
 }

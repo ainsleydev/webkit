@@ -1,14 +1,17 @@
 package operations
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
@@ -70,13 +73,21 @@ func TestCreateGitSettings(t *testing.T) {
 		assert.NoError(t, err, "Dependabot file conforms to schema")
 	})
 
-	t.Run("Errors on FS Failure", func(t *testing.T) {
+	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 
-		err := CreateGitSettings(t.Context(), cmdtools.CommandInput{
-			FS:          &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()},
+		ctrl := gomock.NewController(t)
+		fsMock := mocks.NewMockFS(ctrl)
+		fsMock.EXPECT().
+			MkdirAll(gomock.Any(), gomock.Any()).
+			Return(fmt.Errorf("mkdir error"))
+
+		input := cmdtools.CommandInput{
+			FS:          fsMock,
 			AppDefCache: &appdef.Definition{},
-		})
-		assert.Error(t, err)
+		}
+
+		got := CreateGitSettings(t.Context(), input)
+		assert.Error(t, got)
 	})
 }

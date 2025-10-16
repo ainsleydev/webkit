@@ -5,6 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 func TestAppType_String(t *testing.T) {
@@ -43,6 +45,34 @@ func TestDomainType_String(t *testing.T) {
 	got := DomainTypePrimary.String()
 	assert.Equal(t, "primary", got)
 	assert.IsType(t, "", got)
+}
+
+func TestApp_ShouldUseNPM(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		appType AppType
+		usesNPM *bool
+		want    bool
+	}{
+		"Payload Default":        {appType: AppTypePayload, usesNPM: nil, want: true},
+		"SvelteKit Default":      {appType: AppTypeSvelteKit, usesNPM: nil, want: true},
+		"GoLang Default":         {appType: AppTypeGoLang, usesNPM: nil, want: false},
+		"Payload Explicit False": {appType: AppTypePayload, usesNPM: ptr.BoolPtr(false), want: false},
+		"GoLang Explicit True":   {appType: AppTypeGoLang, usesNPM: ptr.BoolPtr(true), want: true},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			a := App{
+				Type:    test.appType,
+				UsesNPM: test.usesNPM,
+			}
+			got := a.ShouldUseNPM()
+			assert.Equal(t, test.want, got)
+		})
+	}
 }
 
 func TestApp_OrderedCommands(t *testing.T) {

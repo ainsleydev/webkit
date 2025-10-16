@@ -29,6 +29,23 @@ func TestScaffold(t *testing.T) {
 		},
 	}
 
+	t.Run("Write Error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+
+		fsMock := mocks.NewMockFS(ctrl)
+		fsMock.EXPECT().
+			MkdirAll(gomock.Any(), gomock.Any()).
+			Return(fmt.Errorf("mkdir error"))
+
+		input, _ := setup(t, appDef)
+		input.FS = fsMock
+		input.SOPSCache = mocks.NewMockEncrypterDecrypter(ctrl)
+
+		err := Scaffold(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "mkdir error")
+	})
+
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
@@ -39,7 +56,9 @@ func TestScaffold(t *testing.T) {
 
 		for _, app := range appDef.Apps {
 			for _, envName := range environmentsWithDotEnv {
-				t.Logf("Checking .env file for app %s (%s)", app.Name, envName)
+				if testing.Verbose() {
+					t.Logf("Checking .env file for app %s (%s)", app.Name, envName)
+				}
 
 				fileName := ".env"
 				if envName != env.Development {
@@ -60,20 +79,4 @@ func TestScaffold(t *testing.T) {
 		}
 	})
 
-	t.Run("Write Error", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-
-		fsMock := mocks.NewMockFS(ctrl)
-		fsMock.EXPECT().
-			MkdirAll(gomock.Any(), gomock.Any()).
-			Return(fmt.Errorf("mkdir error"))
-
-		input, _ := setup(t, appDef)
-		input.FS = fsMock
-		input.SOPSCache = mocks.NewMockEncrypterDecrypter(ctrl)
-
-		err := Scaffold(t.Context(), input)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "mkdir error")
-	})
 }

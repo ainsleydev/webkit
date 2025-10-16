@@ -15,6 +15,7 @@ type (
 		Build       Build                   `json:"build"`
 		Infra       Infra                   `json:"infra"`
 		Env         Environment             `json:"env"`
+		UsesNPM     *bool                   `json:"usesNPM"`
 		Domains     []Domain                `json:"domains,omitempty"`
 		Commands    map[Command]CommandSpec `json:"Commands,omitempty" jsonschema:"oneof_type=boolean;object;string"`
 	}
@@ -98,6 +99,16 @@ func (a *App) OrderedCommands() []CommandSpec {
 // with the app specific variables taking precedence.
 func (a *App) MergeEnvironments(shared Environment) Environment {
 	return mergeEnvironments(shared, a.Env)
+}
+
+// ShouldUseNPM returns whether this app should be included in
+// pnpm workspace. It checks the UsesNPM field first, and if
+// not set, defaults based on Language().
+func (a *App) ShouldUseNPM() bool {
+	if a.UsesNPM != nil {
+		return *a.UsesNPM
+	}
+	return a.Language() == "js"
 }
 
 func (a *App) applyDefaults() error {

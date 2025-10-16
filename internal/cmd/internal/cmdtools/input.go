@@ -2,6 +2,7 @@ package cmdtools
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/spf13/afero"
@@ -34,7 +35,8 @@ func Wrap(command RunCommand) cli.ActionFunc {
 		fs := afero.NewOsFs()
 		dir := "./"
 
-		if env.IsDevelopment() {
+		fmt.Println(env.AppEnvironment())
+		if env.AppEnvironment() == env.Development {
 			// Let's temporarily use playground so we don't override any shit.
 			path := "./internal/playground"
 			fs = afero.NewBasePathFs(afero.NewOsFs(), path)

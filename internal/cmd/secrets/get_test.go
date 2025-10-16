@@ -10,12 +10,10 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	ctx := t.Context()
-
 	t.Run("Decode Error", func(t *testing.T) {
 		input, _ := setupEncryptedProdFile(t, `KEY: "1234"\ninvalid`)
 
-		err := Get(ctx, input)
+		err := Get(t.Context(), input)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "decoding sops to map")
 	})
@@ -24,7 +22,7 @@ func TestGet(t *testing.T) {
 		input, _ := setupEncryptedProdFile(t, `KEY: "1234"`)
 		require.NoError(t, input.Command.Set("env", env.Production.String()))
 
-		err := Get(ctx, input)
+		err := Get(t.Context(), input)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "either --key or --all must be provided")
 	})
@@ -34,7 +32,7 @@ func TestGet(t *testing.T) {
 		require.NoError(t, input.Command.Set("env", env.Production.String()))
 		require.NoError(t, input.Command.Set("key", "wrong"))
 
-		err := Get(ctx, input)
+		err := Get(t.Context(), input)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "key wrong not found")
 	})
@@ -45,7 +43,7 @@ func TestGet(t *testing.T) {
 		require.NoError(t, input.Command.Set("env", env.Production.String()))
 		require.NoError(t, input.Command.Set("key", "KEY"))
 
-		err := Get(ctx, input)
+		err := Get(t.Context(), input)
 		require.NoError(t, err)
 
 		out := buf.String()
@@ -59,7 +57,7 @@ KEY2: "abcd"`)
 		require.NoError(t, input.Command.Set("env", env.Production.String()))
 		require.NoError(t, input.Command.Set("all", "true"))
 
-		err := Get(ctx, input)
+		err := Get(t.Context(), input)
 		require.NoError(t, err)
 
 		out := buf.String()
