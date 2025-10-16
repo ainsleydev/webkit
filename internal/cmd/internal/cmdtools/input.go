@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
 
@@ -89,4 +91,8 @@ func (c *CommandInput) SOPSClient() sops.EncrypterDecrypter {
 	}
 	c.SOPSCache = sops.NewClient(prov)
 	return c.SOPSCache
+}
+
+func (c *CommandInput) Spinner() *spinner.Spinner {
+	return spinner.New(spinner.CharSets[9], 100*time.Millisecond)
 }

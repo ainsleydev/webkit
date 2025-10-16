@@ -12,7 +12,7 @@ import (
 )
 
 var printCmd = &cli.Command{
-	Name:        "scratch",
+	Name:        "printer",
 	Description: "Utility to function to display the output of the printer",
 	Hidden:      true,
 	Action: cmdtools.Wrap(func(ctx context.Context, input cmdtools.CommandInput) error {
