@@ -22,7 +22,7 @@ var tests = []struct {
 
 func TestString(t *testing.T) {
 	for index, test := range tests {
-		t.Run(fmt.Sprintf("Test Name %d", index), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Test Key %d", index), func(t *testing.T) {
 			got := String(test.len)
 			assert.Equal(t, test.len, int64(len(got)))
 		})

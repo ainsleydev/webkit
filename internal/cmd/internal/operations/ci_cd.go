@@ -35,7 +35,7 @@ func CreateCICD(_ context.Context, input cmdtools.CommandInput) error {
 	//
 	//	if resource.Type == appdef.ResourceTypePostgres && backupEnabled {
 	//		tpl := templates.MustLoadTemplate(".github/workflows/backup-postgres.yaml.tmpl")
-	//		file := fmt.Sprintf("./workflows/resource-backup-%s.yaml", resource.Name)
+	//		file := fmt.Sprintf("./workflows/resource-backup-%s.yaml", resource.Key)
 	//
 	//		if err := gen.Template(file, tpl, &resource); err != nil {
 	//			return err

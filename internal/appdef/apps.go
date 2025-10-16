@@ -13,7 +13,7 @@ type (
 		Description string                  `json:"description,omitempty"`
 		Path        string                  `json:"path"`
 		Build       Build                   `json:"build"`
-		Infra       Infra                   `json:"infra"`
+		Infra       *Infra                  `json:"infra"`
 		Env         Environment             `json:"env"`
 		UsesNPM     *bool                   `json:"usesNPM"`
 		Domains     []Domain                `json:"domains,omitempty"`

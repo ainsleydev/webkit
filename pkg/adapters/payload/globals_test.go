@@ -34,7 +34,7 @@ func GlobalMiddlewareTestHelper(t *testing.T, fn func(client *payloadcms.Client,
 	require.NoError(t, err)
 
 	settings := Settings{
-		SiteName: ptr.StringPtr("Site Name"),
+		SiteName: ptr.StringPtr("Site Key"),
 	}
 
 	tt := map[string]struct {

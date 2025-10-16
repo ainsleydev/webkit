@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -102,4 +103,19 @@ func getTerraformPath(ctx context.Context) (string, error) {
 		return "", err
 	}
 	return strings.TrimSpace(run.Output), nil
+}
+
+// writeTFVarsFile writes Terraform variables to a JSON file.
+// Terraform automatically loads *.auto.tfvars.json files.
+func writeTFVarsFile(path string, vars TFVars) error {
+	data, err := json.MarshalIndent(vars, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshaling tfvars to json: %w", err)
+	}
+
+	if err = os.WriteFile(path, data, os.ModePerm); err != nil {
+		return fmt.Errorf("writing tfvars file: %w", err)
+	}
+
+	return nil
 }

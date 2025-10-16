@@ -83,9 +83,9 @@ func syncSecrets(fs afero.Fs, def *appdef.Definition) []syncFile {
 	}
 
 	var refs []ref
-	def.MergeAllEnvironments().Walk(func(env env.Environment, name string, value appdef.EnvValue) {
-		if value.Source == appdef.EnvSourceSOPS {
-			refs = append(refs, ref{Key: name, Env: env})
+	def.MergeAllEnvironments().Walk(func(entry appdef.EnvWalkEntry) {
+		if entry.Source == appdef.EnvSourceSOPS {
+			refs = append(refs, ref{Key: entry.Key, Env: entry.Environment})
 		}
 	})
 

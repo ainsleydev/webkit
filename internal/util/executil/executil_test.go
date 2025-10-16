@@ -25,7 +25,7 @@ func TestCommand_String(t *testing.T) {
 			input: NewCommand("build", "-o", "bin/app"),
 			want:  "build -o bin/app",
 		},
-		"Empty Name": {
+		"Empty Key": {
 			input: NewCommand(""),
 			want:  "",
 		},

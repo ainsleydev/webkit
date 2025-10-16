@@ -27,8 +27,8 @@ func TestEnvironment_Walk(t *testing.T) {
 	}
 
 	var got []string
-	e.Walk(func(envName env.Environment, name string, value EnvValue) {
-		val := fmt.Sprintf("%s:%s=%v", envName, name, value.Value)
+	e.Walk(func(entry EnvWalkEntry) {
+		val := fmt.Sprintf("%s:%s=%v", entry.Environment, entry.Key, entry.Value)
 		got = append(got, val)
 	})
 
@@ -39,6 +39,33 @@ func TestEnvironment_Walk(t *testing.T) {
 	}
 
 	assert.ElementsMatch(t, want, got)
+}
+
+func TestEnvironment_WalkE(t *testing.T) {
+	t.Parallel()
+
+	e := Environment{
+		Dev:        EnvVar{"DEBUG": {Value: "true"}},
+		Staging:    EnvVar{"DEBUG": {Value: "true"}},
+		Production: EnvVar{"DEBUG": {Value: "false"}},
+	}
+
+	var got []string
+	err := e.WalkE(func(entry EnvWalkEntry) error {
+		if entry.Environment == env.Production {
+			return fmt.Errorf("stop at production")
+		}
+		val := fmt.Sprintf("%s:%s=%v", entry.Environment, entry.Key, entry.Value)
+		got = append(got, val)
+		return nil
+	})
+
+	assert.Error(t, err)
+	assert.ErrorContains(t, err, "production")
+	assert.ElementsMatch(t, []string{
+		"development:DEBUG=true",
+		"staging:DEBUG=true",
+	}, got)
 }
 
 func TestMergeVars(t *testing.T) {

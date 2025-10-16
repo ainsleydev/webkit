@@ -130,7 +130,7 @@ func (mr *MockFSMockRecorder) MkdirAll(path, perm any) *gomock.Call {
 // Name mocks base method.
 func (m *MockFS) Name() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Name")
+	ret := m.ctrl.Call(m, "Key")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
@@ -138,7 +138,7 @@ func (m *MockFS) Name() string {
 // Name indicates an expected call of Name.
 func (mr *MockFSMockRecorder) Name() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockFS)(nil).Name))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Key", reflect.TypeOf((*MockFS)(nil).Name))
 }
 
 // Open mocks base method.

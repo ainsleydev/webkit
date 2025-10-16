@@ -66,7 +66,7 @@ func (ms MediaSizes) Size(name string) (MediaSize, error) {
 // MediaSize defines the fields for the different sizes of media when they
 // are uploaded to PayloadCMS.
 type MediaSize struct {
-	Size     string   `json:"-"` // Name of the media size 	e.g. (thumbnail, small, medium, large)
+	Size     string   `json:"-"` // Key of the media size 	e.g. (thumbnail, small, medium, large)
 	URL      string   `json:"url,omitempty"`
 	Filename *string  `json:"filename,omitempty"`
 	Filesize *float64 `json:"filesize,omitempty"`

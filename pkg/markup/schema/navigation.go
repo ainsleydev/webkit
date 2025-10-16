@@ -40,7 +40,7 @@ package schemaorg
 //// See: https://schema.org/ItemList
 //type NavigationItem struct {
 //	Position    int    `json:"position"`    // I.e 1, 2, 3
-//	Name        string `json:"name"`        // I.e "Home"
+//	Key        string `json:"name"`        // I.e "Home"
 //	AgencyDescription string `json:"description"` // I.e "The homepage of the website" usually the same as the description tag.
 //	URL         string `json:"url"`         // Full URL
 //}
@@ -51,7 +51,7 @@ package schemaorg
 //	ItemListElement []struct {
 //		Type        string `json:"@type"`
 //		Position    int    `json:"position"`
-//		Name        string `json:"name"`
+//		Key        string `json:"name"`
 //		AgencyDescription string `json:"description"`
 //		Url         string `json:"url"`
 //	} `json:"itemListElement"`

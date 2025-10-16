@@ -43,83 +43,81 @@ func (e EnvSource) String() string {
 	return string(e)
 }
 
-// EnvironmentWalker defines the type for walking a collection of
-// environment variables.
-type EnvironmentWalker func(env env.Environment, name string, value EnvValue)
+// EnvWalkEntry holds the details of a single environment variable during iteration.
+type EnvWalkEntry struct {
+	Environment env.Environment
+	Key         string
+	Value       any
+	Source      EnvSource
+	Path        string
+	Map         EnvVar
+}
 
-// Walk walks through each non-nil environment (dev, staging, production),
-// calling fn(envName, envVars) for each one.
+// EnvironmentWalker defines a function that processes one environment entry.
+type EnvironmentWalker func(entry EnvWalkEntry)
+
+// EnvironmentWalkerE defines a function that processes one environment entry and may return an error.
+type EnvironmentWalkerE func(entry EnvWalkEntry) error
+
+// Walk iterates over all environments and calls fn for each environment variable.
 func (e Environment) Walk(fn EnvironmentWalker) {
-	if e.Dev != nil {
-		for name, val := range e.Dev {
-			fn(env.Development, name, val)
+	_ = e.walkEnvs(func(envName env.Environment, vars EnvVar) error {
+		for key, val := range vars {
+			fn(EnvWalkEntry{
+				Environment: envName,
+				Key:         key,
+				Value:       val.Value,
+				Source:      val.Source,
+				Path:        val.Path,
+				Map:         vars,
+			})
 		}
-	}
-	if e.Staging != nil {
-		for name, val := range e.Staging {
-			fn(env.Staging, name, val)
-		}
-	}
-	if e.Production != nil {
-		for name, val := range e.Production {
-			fn(env.Production, name, val)
-		}
-	}
+		return nil
+	})
 }
 
-// EnvironmentWalkerContext contains the context for walking environment variables
-type EnvironmentWalkerContext struct {
-	Env   string
-	Name  string
-	Value EnvValue
-	Vars  EnvVar // The map being iterated over
+// WalkE iterates over all environments and calls fn for each environment variable.
+// If fn returns an error, iteration stops and the error is returned.
+func (e Environment) WalkE(fn EnvironmentWalkerE) error {
+	return e.walkEnvs(func(envName env.Environment, vars EnvVar) error {
+		for key, val := range vars {
+			if err := fn(EnvWalkEntry{
+				Environment: envName,
+				Key:         key,
+				Value:       val.Value,
+				Source:      val.Source,
+				Path:        val.Path,
+				Map:         vars,
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
-// EnvironmentWalker defines the type for walking a collection of
-// environment variables.
-//type EnvironmentWalker func(ctx EnvironmentWalkerContext) error
-//
-//// Walk walks through each non-nil environment (dev, staging, production),
-//// calling fn(envName, envVars) for each one.
-//func (e Environment) Walk(fn EnvironmentWalker) error {
-//	if e.Dev != nil {
-//		for name, val := range e.Dev {
-//			if err := fn(EnvironmentWalkerContext{
-//				Env:   env.Development,
-//				Name:  name,
-//				Value: val,
-//				Vars:  e.Dev,
-//			}); err != nil {
-//				return err
-//			}
-//		}
-//	}
-//	if e.Staging != nil {
-//		for name, val := range e.Staging {
-//			if err := fn(EnvironmentWalkerContext{
-//				Env:   env.Staging,
-//				Name:  name,
-//				Value: val,
-//				Vars:  e.Staging,
-//			}); err != nil {
-//				return err
-//			}
-//		}
-//	}
-//	if e.Production != nil {
-//		for name, val := range e.Production {
-//			if err := fn(EnvironmentWalkerContext{
-//				Env:   env.Production,
-//				Name:  name,
-//				Value: val,
-//				Vars:  e.Production,
-//			}); err != nil {
-//				return err
-//			}
-//		}
-//	}
-//	return nil
-//}
+// walkEnvs is the internal helper that iterates over environments.
+func (e Environment) walkEnvs(fn func(envName env.Environment, vars EnvVar) error) error {
+	envs := []struct {
+		name env.Environment
+		vars EnvVar
+	}{
+		{env.Development, e.Dev},
+		{env.Staging, e.Staging},
+		{env.Production, e.Production},
+	}
+
+	for _, envData := range envs {
+		if envData.vars == nil {
+			continue
+		}
+		if err := fn(envData.name, envData.vars); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // mergeVars merges `override` into `base`, with `override`
 // taking precedence (usually app/shared).

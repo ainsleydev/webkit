@@ -24,7 +24,7 @@ type (
 		Apps          []App      `json:"apps"`
 	}
 	Project struct {
-		Name        string `json:"name" jsonschema:"required,pattern=^[a-z0-9-]+$,title=Project Name,description=Machine-readable project name (kebab-case),example=my-website"`
+		Name        string `json:"name" jsonschema:"required,pattern=^[a-z0-9-]+$,title=Project Key,description=Machine-readable project name (kebab-case),example=my-website"`
 		Title       string `json:"title" jsonschema:"required,title=Project Title,description=Human-readable project title,example=My Website"`
 		Description string `json:"description" jsonschema:"required,title=Description,description=Brief description of the project"`
 		Repo        string `json:"repo" jsonschema:"required,format=uri,title=Repository,description=Git repository URL,example=git@github.com:ainsley/my-website.git"`
