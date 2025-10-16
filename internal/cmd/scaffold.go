@@ -35,6 +35,16 @@ var scaffoldCmd = &cli.Command{
 			Action: cmdtools.Wrap(operations.CreateCICD),
 		},
 		{
+			Name:   "pnpm-workspace",
+			Usage:  "Generate pnpm-workspace file if there are any compatible apps.",
+			Action: cmdtools.Wrap(operations.CreatePNPMWorkspace),
+		},
+		{
+			Name:   "turbo",
+			Usage:  "Generate turbo.json file if there are any compatible apps.",
+			Action: cmdtools.Wrap(operations.CreateTurboJson),
+		},
+		{
 			Name:   "secrets",
 			Usage:  "Generate empty SOPS secret files and configuration",
 			Action: cmdtools.Wrap(secrets.Scaffold),
