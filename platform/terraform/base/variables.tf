@@ -20,11 +20,11 @@ variable "environment" {
 
 variable "resources" {
   type = list(object({
-    name     = string
-    type     = string
-    provider = string
-    config   = map(any)
-    outputs  = optional(list(string), [])
+    name              = string
+    platform_type     = string
+    platform_provider = string
+    config            = any
+    outputs           = optional(list(string), [])
   }))
   description = "List of resources from the app.json manifest"
   default     = []
@@ -32,15 +32,13 @@ variable "resources" {
 
 variable "apps" {
   type = list(object({
-    name      = string
-    type      = string
-    path      = optional(string)
-    image_tag = optional(string, "latest")
-    infra = object({
-      provider = string
-      type     = string
-      config   = map(any)
-    })
+    name              = string
+    platform_type     = string
+    platform_provider = string
+    app_type          = string
+    path              = optional(string)
+    image_tag         = optional(string, "latest")
+    config            = any
     domains = optional(list(object({
       name     = string
       type     = string
@@ -77,6 +75,7 @@ variable "ssh_keys" {
 #     spaces_secret_key = string
 #   })
 #   description = "Configuration for the Digital Ocean provider"
+#   sensitive = true
 # }
 
 variable "github_config" {
@@ -86,8 +85,8 @@ variable "github_config" {
     token = string
   })
   description = "Configuration for the Github repo"
+  sensitive = true
 }
-
 
 # variable "back_blaze_config" {
 #   type = object({
@@ -95,8 +94,11 @@ variable "github_config" {
 #     application_key    = string
 #   })
 #   description = "Configuration for BackBlaze B2"
+#   sensitive =  true
 # }
-#
+
+# --------------------------------------- TODO --------------------------------------- #
+
 # variable "better_stack_token" {
 #   type      = string
 #   sensitive = true

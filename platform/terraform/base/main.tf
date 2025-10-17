@@ -53,8 +53,8 @@ module "resources" {
 
   project_name      = var.project_name
   name              = each.value.name
-  platform_type     = each.value.type
-  platform_provider = each.value.provider
+  platform_type     = each.value.platform_type
+  platform_provider = each.value.platform_provider
   platform_config   = each.value.config
   tags              = local.common_tags
 }
@@ -68,10 +68,10 @@ module "apps" {
 
   project_name      = var.project_name
   name              = each.value.name
-  app_type          = each.value.type
-  platform_type     = each.value.infra.type
-  platform_provider = each.value.infra.provider
-  platform_config   = each.value.infra.config
+  app_type          = each.value.app_type
+  platform_type     = each.value.platform_type
+  platform_provider = each.value.platform_provider
+  platform_config   = each.value.config
   image_tag         = try(each.value.image_tag, "latest")
   github_config     = var.github_config
   ssh_keys          = try(var.ssh_keys, [])

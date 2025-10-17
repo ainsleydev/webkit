@@ -4,7 +4,10 @@
 		"name": "my-website",
 		"title": "My Website",
 		"description": "My website is a bespoke sales platform for developers and designers.",
-		"repo": "git@github.com:ainsley/my-website.git"
+		"repo": {
+			"owner": "ainsleydev",
+			"repo": "my-website"
+		}
 	},
 	"shared": {
 		"env": {
@@ -75,8 +78,7 @@
 				"config": {
 					"size": "s-2vcpu-4gb",
 					"region": "nyc3",
-					"domain": "cms.my-website.com",
-					"ssh_keys": ["your-ssh-key-id"]
+					"domain": "cms.my-website.com"
 				}
 			},
 			"env": {
@@ -119,7 +121,7 @@
 			},
 			"infra": {
 				"provider": "digitalocean",
-				"type": "app",
+				"type": "container",
 				"config": {
 					"region": "fra1",
 					"domain": "www.my-website.com",

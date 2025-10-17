@@ -2,12 +2,12 @@ package infra
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/infra"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 var PlanCmd = &cli.Command{
@@ -17,7 +17,7 @@ var PlanCmd = &cli.Command{
 }
 
 func Plan(ctx context.Context, input cmdtools.CommandInput) error {
-	_ = input.AppDef()
+	appDef := input.AppDef()
 	printer := input.Printer()
 
 	printer.Info("Generating executive plan from app definition")
@@ -40,18 +40,26 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	printer.Println("Making Plan...")
 	spinner.Start()
 
-	if err = terraform.Plan(ctx); err != nil {
+	plan, err := terraform.Plan(ctx, env.Production, appDef)
+	if err != nil {
 		return err
 	}
 
 	spinner.Stop()
 
-	state, err := terraform.Show(context.Background())
-	if err != nil {
-		return err
+	if plan.ResourceChanges != nil {
+		printer.Printf("\nResource Changes:\n")
+		for _, rc := range plan.ResourceChanges {
+			printer.Printf("  - %s (%s): %v\n", rc.Address, rc.Type, rc.Change.Actions)
+		}
 	}
 
-	fmt.Println(state)
+	if plan.OutputChanges != nil {
+		printer.Printf("\nOutput Changes:\n")
+		for name, change := range plan.OutputChanges {
+			printer.Printf("  - %s: %v -> %v\n", name, change.Before, change.After)
+		}
+	}
 
 	return nil
 }

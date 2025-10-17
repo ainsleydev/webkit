@@ -13,7 +13,7 @@ type (
 		Description string                  `json:"description,omitempty"`
 		Path        string                  `json:"path"`
 		Build       Build                   `json:"build"`
-		Infra       *Infra                  `json:"infra"`
+		Infra       Infra                   `json:"infra"`
 		Env         Environment             `json:"env"`
 		UsesNPM     *bool                   `json:"usesNPM"`
 		Domains     []Domain                `json:"domains,omitempty"`
@@ -23,9 +23,9 @@ type (
 		Dockerfile string `json:"dockerfile"`
 	}
 	Infra struct {
-		Provider string         `json:"provider"`
-		Type     string         `json:"type"`
-		Config   map[string]any `json:"config"`
+		Provider ResourceProvider `json:"provider"`
+		Type     string           `json:"type"`
+		Config   map[string]any   `json:"config"`
 	}
 	Domain struct {
 		Name     string `json:"name"`

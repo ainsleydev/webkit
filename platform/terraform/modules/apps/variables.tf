@@ -8,7 +8,6 @@ variable "name" {
   type        = string
 }
 
-
 variable "platform_type" {
   description = "Infrastructure type (vm, container, serverless)"
   type        = string
@@ -85,8 +84,6 @@ variable "github_config" {
     token = string
   })
 }
-
-
 
 variable "ssh_keys" {
   description = "List of SSH key names to apply to VMs"
