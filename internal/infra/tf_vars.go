@@ -2,7 +2,6 @@ package infra
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -33,20 +32,20 @@ type (
 	}
 	// tfApp represents an application in Terraform variable format.
 	tfApp struct {
-		Name             string                `json:"name"`
-		PlatformType     string                `json:"platform_type"`
-		PlatformProvider string                `json:"platform_provider"`
-		AppType          string                `json:"app_type"`
-		Path             string                `json:"path"`
-		Config           map[string]any        `json:"config"`
-		Environment      map[string][]tfEnvVar `json:"environment,omitempty"`
-		Outputs          []string              `json:"outputs,omitempty"`
+		Name             string         `json:"name"`
+		PlatformType     string         `json:"platform_type"`
+		PlatformProvider string         `json:"platform_provider"`
+		AppType          string         `json:"app_type"`
+		Path             string         `json:"path"`
+		Config           map[string]any `json:"config"`
+		Environment      []tfEnvVar     `json:"environment,omitempty"`
 	}
 	// tfEnvVar represents an environment variable for Terraform
 	tfEnvVar struct {
 		Key    string `json:"key"`
 		Value  any    `json:"value,omitempty"`
 		Source string `json:"source,omitempty"`
+		Scope  string `json:"scope,omitempty"`
 	}
 	// tfGithubConfig is used to pull image containers from GH
 	// container registry.
@@ -55,27 +54,29 @@ type (
 		Repo  string `json:"repo"`
 		Token string `json:"token"`
 	}
-	tfDigitalOceanConfig struct {
-	}
 )
 
 // tfVarsFromDefinition transforms an appdef.Definition into Terraform variables.
-// It converts the app.json structure into the format expected by the
-// webkit-infra Terraform modules.
+// It should directly map what's defined in /platform/base/variables.tf, if it
+// doesn't, then provisioning probably won't work.
 func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, error) {
 	if def == nil {
-		return tfVars{}, fmt.Errorf("definition cannot be nil")
+		return tfVars{}, errors.New("definition cannot be nil")
+	}
+
+	if len(def.Apps) == 0 && len(def.Resources) == 0 {
+		return tfVars{}, errors.New("no app or resources are defined")
 	}
 
 	vars := tfVars{
 		ProjectName: def.Project.Name,
 		Environment: env.String(),
+		Apps:        make([]tfApp, 0, len(def.Apps)),
+		Resources:   make([]tfResource, 0, len(def.Resources)),
 		GithubConfig: tfGithubConfig{
 			User: def.Project.Repo.Owner,
 			Repo: def.Project.Repo.Repo,
 		},
-		Apps:      make([]tfApp, 0, len(def.Apps)),
-		Resources: make([]tfResource, 0, len(def.Resources)),
 	}
 
 	for _, res := range def.Resources {
@@ -89,7 +90,7 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 	}
 
 	for _, app := range def.Apps {
-		tfApp := tfApp{
+		tfA := tfApp{
 			Name:             app.Name,
 			PlatformType:     app.Infra.Type,
 			PlatformProvider: app.Infra.Provider.String(),
@@ -98,18 +99,24 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 			Path:             app.Path,
 		}
 
-		var tfEnvVars []tfEnvVar
 		app.MergeEnvironments(def.Shared.Env).
 			Walk(func(entry appdef.EnvWalkEntry) {
-				tfEnv := tfEnvVar{
+				if entry.Environment != env {
+					return
+				}
+				scope := "SECRET"
+				if entry.Source == appdef.EnvSourceValue {
+					scope = "GENERAL"
+				}
+				tfA.Environment = append(tfA.Environment, tfEnvVar{
 					Key:    entry.Key,
 					Value:  entry.Value,
 					Source: entry.Source.String(),
-				}
-				tfEnvVars = append(tfEnvVars, tfEnv)
+					Scope:  scope,
+				})
 			})
 
-		vars.Apps = append(vars.Apps, tfApp)
+		vars.Apps = append(vars.Apps, tfA)
 	}
 
 	return vars, nil

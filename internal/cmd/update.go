@@ -5,8 +5,9 @@ import (
 
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/cmd/cicd"
+	"github.com/ainsleydev/webkit/internal/cmd/files"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/operations"
 )
 
 var updateCmd = &cli.Command{
@@ -17,10 +18,10 @@ var updateCmd = &cli.Command{
 }
 
 var updateOps = []cmdtools.RunCommand{
-	operations.CreateCodeStyleFiles,
-	operations.CreateGitSettings,
-	operations.CreatePackageJson,
-	operations.CreateCICD,
+	files.CreateCodeStyleFiles,
+	files.CreateGitSettings,
+	files.CreatePackageJson,
+	cicd.CreatePRWorkflow,
 }
 
 func update(ctx context.Context, input cmdtools.CommandInput) error {

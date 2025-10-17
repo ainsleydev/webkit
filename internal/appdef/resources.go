@@ -24,7 +24,7 @@ type ResourceType string
 // ResourceType constants.
 const (
 	ResourceTypePostgres ResourceType = "postgres"
-	ResourceTypeS3       AppType      = "s3"
+	ResourceTypeS3       ResourceType = "s3"
 )
 
 // String implements fmt.Stringer on the ResourceType.

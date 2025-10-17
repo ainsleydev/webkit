@@ -78,6 +78,7 @@ func (t *Terraform) Init(ctx context.Context) error {
 	if err = tf.Init(ctx, tfexec.Upgrade(true)); err != nil {
 		return fmt.Errorf("terraform init: %w", err)
 	}
+
 	return nil
 }
 

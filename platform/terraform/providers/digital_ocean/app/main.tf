@@ -66,8 +66,9 @@ resource "digitalocean_app" "this" {
         content {
           key   = env.value.key
           value = env.value.value
-          scope = lookup(env.value, "scope", "RUN_TIME")
           type  = lookup(env.value, "type", "GENERAL")
+          # Potential to make this more flexible in the future if needed.
+          scope = "RUN_AND_BUILD_TIME"
         }
       }
     }
