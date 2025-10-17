@@ -1,7 +1,12 @@
 terraform {
   required_version = ">= 1.13.0"
 
-  # Backend configuration created on CI (backend.hcl)
+  # Backend configuration - details provided via backend.hcl
+  backend "s3" {
+    bucket = ""
+    key    = ""
+    region = ""
+  }
 
   required_providers {
     digitalocean = {
@@ -51,7 +56,7 @@ locals {
 # Resources (databases, storage, etc.)
 #
 module "resources" {
-  for_each = { for r in var.resources : r.name => r }
+  for_each = {for r in var.resources : r.name => r}
   source   = "../modules/resources"
 
   project_name      = var.project_name
@@ -66,7 +71,7 @@ module "resources" {
 # Apps (services, applications)
 #
 module "apps" {
-  for_each = { for a in var.apps : a.name => a }
+  for_each = {for a in var.apps : a.name => a}
   source   = "../modules/apps"
 
   project_name      = var.project_name
@@ -75,14 +80,14 @@ module "apps" {
   platform_type     = each.value.platform_type
   platform_provider = each.value.platform_provider
   platform_config   = each.value.config
-  image_tag         = try(each.value.image_tag, "latest")
+  image_tag = try(each.value.image_tag, "latest")
   github_config     = var.github_config
-  ssh_keys          = try(var.ssh_keys, [])
-  domains           = try(each.value.domains, [])
-  env_vars          = try(each.value.env_vars, [])
-  tags              = local.common_tags
+  ssh_keys = try(var.ssh_keys, [])
+  domains = try(each.value.domains, [])
+  env_vars = try(each.value.env_vars, [])
+  tags = local.common_tags
 
   # Apps may depend on resources being created first.
   resource_outputs = module.resources
-  depends_on       = [module.resources]
+  depends_on = [module.resources]
 }

@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,11 +23,14 @@ import (
 // Terraform represents the type for interacting with the
 // terraform exec CLI.
 type Terraform struct {
-	path   string
-	tmpDir string
-	env    TFEnvironment
-	tf     terraformExecutor
-	fs     afero.Fs
+	appDef          *appdef.Definition
+	path            string
+	tmpDir          string
+	env             TFEnvironment
+	tf              terraformExecutor
+	tmp             tfexec.Terraform
+	fs              afero.Fs
+	useLocalBackend bool
 }
 
 //go:generate go tool go.uber.org/mock/mockgen -source=tf.go -destination ./internal/tfmocks/tf.go -package=tfmocks
@@ -34,9 +38,12 @@ type Terraform struct {
 // terraformExecutor defines the interface for terraform operations
 // using tf exec.
 type terraformExecutor interface {
+	SetStdout(w io.Writer)
+	SetStderr(w io.Writer)
 	Init(ctx context.Context, opts ...tfexec.InitOption) error
 	Plan(ctx context.Context, opts ...tfexec.PlanOption) (bool, error)
 	Apply(ctx context.Context, opts ...tfexec.ApplyOption) error
+	ApplyJSON(ctx context.Context, w io.Writer, opts ...tfexec.ApplyOption) error
 	ShowPlanFileRaw(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (string, error)
 	ShowPlanFile(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (*tfjson.Plan, error)
 }
@@ -45,7 +52,7 @@ type terraformExecutor interface {
 // the terraform binary on the system.
 //
 // Returns an error if terraform cannot be found in PATH.
-func NewTerraform(ctx context.Context, fs afero.Fs) (*Terraform, error) {
+func NewTerraform(ctx context.Context, appDef *appdef.Definition) (*Terraform, error) {
 	path, err := getTerraformPath(ctx)
 	if err != nil {
 		return nil, err
@@ -55,9 +62,11 @@ func NewTerraform(ctx context.Context, fs afero.Fs) (*Terraform, error) {
 		return nil, err
 	}
 	return &Terraform{
-		path: path,
-		fs:   fs,
-		env:  tfEnv,
+		appDef:          appDef,
+		path:            path,
+		fs:              afero.NewOsFs(),
+		env:             tfEnv,
+		useLocalBackend: false,
 	}, nil
 }
 
@@ -90,16 +99,17 @@ func (t *Terraform) Init(ctx context.Context) error {
 	}
 	t.tf = tf
 
-	baseDir := filepath.Join(tmpDir, "base")
-	if err = writeBackendConfig(t.fs, baseDir, t.env); err != nil {
+	backendPath, err := t.writeS3Backend(tfDir, env.Production)
+	if err != nil {
 		return err
 	}
 
-	if err = writeProviderConfig(t.fs, baseDir, t.env); err != nil {
-		return err
-	}
-
-	if err = tf.Init(ctx, tfexec.Upgrade(true)); err != nil {
+	if err = tf.Init(ctx,
+		tfexec.Upgrade(true),
+		tfexec.Backend(!t.useLocalBackend), // Only use backend on prod.
+		tfexec.Reconfigure(true),
+		tfexec.BackendConfig(backendPath),
+	); err != nil {
 		return errors.Wrap(err, "initialising tf")
 	}
 
@@ -121,13 +131,20 @@ type PlanOutput struct {
 // will take to reach the desired state defined in the definition.
 //
 // Must be called after Init().
-func (t *Terraform) Plan(ctx context.Context, env env.Environment, def *appdef.Definition) (PlanOutput, error) {
-	if err := t.prepareVars(env, def); err != nil {
+func (t *Terraform) Plan(ctx context.Context, env env.Environment) (PlanOutput, error) {
+	if err := t.prepareVars(env); err != nil {
 		return PlanOutput{}, err
 	}
 
 	planFilePath := filepath.Join(t.tmpDir, "base", "plan.tfplan")
-	_, err := t.tf.Plan(ctx, tfexec.Out(planFilePath))
+
+	var vars []tfexec.PlanOption
+	vars = append(vars, tfexec.Out(planFilePath))
+	for _, v := range t.env.varStrings() {
+		vars = append(vars, tfexec.Var(v))
+	}
+
+	_, err := t.tf.Plan(ctx, vars...)
 	if err != nil {
 		return PlanOutput{}, fmt.Errorf("terraform plan failed: %w", err)
 	}
@@ -150,20 +167,40 @@ func (t *Terraform) Plan(ctx context.Context, env env.Environment, def *appdef.D
 	}, nil
 }
 
+// ApplyOutput is the result of calling Apply.
+type ApplyOutput struct {
+	// Human-readable output (the output that's usually
+	// in the terminal when running terraform apply).
+	Output string
+}
+
 // Apply executes terraform apply to provision infrastructure based on
 // the app definition provided.
 //
 // Must be called after Init().
-func (t *Terraform) Apply(ctx context.Context, env env.Environment, def *appdef.Definition) error {
-	if err := t.prepareVars(env, def); err != nil {
-		return err
+func (t *Terraform) Apply(ctx context.Context, env env.Environment) (ApplyOutput, error) {
+	if err := t.prepareVars(env); err != nil {
+		return ApplyOutput{}, err
 	}
 
-	if err := t.tf.Apply(ctx); err != nil {
-		return fmt.Errorf("terraform apply failed: %w", err)
+	var outputBuf strings.Builder
+	t.tf.SetStdout(&outputBuf)
+	t.tf.SetStderr(&outputBuf)
+
+	var vars []tfexec.ApplyOption
+	for _, v := range t.env.varStrings() {
+		vars = append(vars, tfexec.Var(v))
 	}
 
-	return nil
+	if err := t.tf.Apply(ctx, vars...); err != nil {
+		return ApplyOutput{
+			Output: outputBuf.String(),
+		}, fmt.Errorf("terraform apply failed: %w", err)
+	}
+
+	return ApplyOutput{
+		Output: outputBuf.String(),
+	}, nil
 }
 
 // Cleanup removes all the temporary directories that we're
@@ -183,12 +220,12 @@ func (t *Terraform) hasInitialised() error {
 	return nil
 }
 
-func (t *Terraform) prepareVars(env env.Environment, def *appdef.Definition) error {
+func (t *Terraform) prepareVars(env env.Environment) error {
 	if err := t.hasInitialised(); err != nil {
 		return err
 	}
 
-	vars, err := tfVarsFromDefinition(env, def)
+	vars, err := tfVarsFromDefinition(env, t.appDef)
 	if err != nil {
 		return errors.Wrap(err, "generating terraform variables")
 	}

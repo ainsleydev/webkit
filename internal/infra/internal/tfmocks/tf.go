@@ -11,6 +11,7 @@ package tfmocks
 
 import (
 	context "context"
+	io "io"
 	reflect "reflect"
 
 	tfexec "github.com/hashicorp/terraform-exec/tfexec"
@@ -61,6 +62,25 @@ func (mr *MockterraformExecutorMockRecorder) Apply(ctx any, opts ...any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockterraformExecutor)(nil).Apply), varargs...)
 }
 
+// ApplyJSON mocks base method.
+func (m *MockterraformExecutor) ApplyJSON(ctx context.Context, w io.Writer, opts ...tfexec.ApplyOption) error {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, w}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ApplyJSON", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ApplyJSON indicates an expected call of ApplyJSON.
+func (mr *MockterraformExecutorMockRecorder) ApplyJSON(ctx, w any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, w}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyJSON", reflect.TypeOf((*MockterraformExecutor)(nil).ApplyJSON), varargs...)
+}
+
 // Init mocks base method.
 func (m *MockterraformExecutor) Init(ctx context.Context, opts ...tfexec.InitOption) error {
 	m.ctrl.T.Helper()
@@ -98,6 +118,30 @@ func (mr *MockterraformExecutorMockRecorder) Plan(ctx any, opts ...any) *gomock.
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Plan", reflect.TypeOf((*MockterraformExecutor)(nil).Plan), varargs...)
+}
+
+// SetStderr mocks base method.
+func (m *MockterraformExecutor) SetStderr(w io.Writer) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetStderr", w)
+}
+
+// SetStderr indicates an expected call of SetStderr.
+func (mr *MockterraformExecutorMockRecorder) SetStderr(w any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStderr", reflect.TypeOf((*MockterraformExecutor)(nil).SetStderr), w)
+}
+
+// SetStdout mocks base method.
+func (m *MockterraformExecutor) SetStdout(w io.Writer) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetStdout", w)
+}
+
+// SetStdout indicates an expected call of SetStdout.
+func (mr *MockterraformExecutorMockRecorder) SetStdout(w any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStdout", reflect.TypeOf((*MockterraformExecutor)(nil).SetStdout), w)
 }
 
 // ShowPlanFile mocks base method.

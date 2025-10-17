@@ -31,15 +31,7 @@ module "do_app" {
   github_config      = var.github_config
   health_check_path  = try(var.platform_config.health_check_path, "/")
 
-  /**
-  env_vars = [
-    {
-      key   = "DATABASE_URL"
-      value = "resource:db.connection_url"  # String with special prefix
-      type  = "SECRET"
-    }
-  ]
-   */
+
   envs = [
     for env in var.env_vars : {
       key = env.key

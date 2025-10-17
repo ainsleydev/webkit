@@ -2,6 +2,7 @@ package infra
 
 import (
 	"errors"
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -16,7 +17,7 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-func setup(t *testing.T) *Terraform {
+func setup(t *testing.T, appDef *appdef.Definition) *Terraform {
 	t.Helper()
 
 	if !executil.Exists("terraform") {
@@ -25,8 +26,10 @@ func setup(t *testing.T) *Terraform {
 
 	setupEnv(t)
 
-	tf, err := NewTerraform(t.Context(), afero.NewOsFs())
+	tf, err := NewTerraform(t.Context(), appDef)
 	require.NoError(t, err)
+
+	tf.useLocalBackend = true
 
 	return tf
 }
@@ -37,6 +40,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("DO_API_KEY", "key")
 	t.Setenv("DO_SPACES_ACCESS_KEY", "access")
 	t.Setenv("DO_SPACES_SECRET_KEY", "secret")
+	t.Setenv("BACK_BLAZE_BUCKET", "bucket")
 	t.Setenv("BACK_BLAZE_KEY_ID", "id")
 	t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
 }
@@ -49,12 +53,12 @@ func TestNewTerraform(t *testing.T) {
 	t.Run("TerraformNotInPath", func(t *testing.T) {
 		t.Setenv("PATH", "/nonexistent")
 
-		_, err := NewTerraform(t.Context(), afero.NewMemMapFs())
+		_, err := NewTerraform(t.Context(), &appdef.Definition{})
 		assert.Error(t, err)
 	})
 
 	t.Run("Invalid Environment", func(t *testing.T) {
-		got, err := NewTerraform(t.Context(), afero.NewMemMapFs())
+		got, err := NewTerraform(t.Context(), &appdef.Definition{})
 		assert.Nil(t, got)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "parsing terraform environment")
@@ -63,7 +67,7 @@ func TestNewTerraform(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		setupEnv(t)
 
-		got, err := NewTerraform(t.Context(), afero.NewMemMapFs())
+		got, err := NewTerraform(t.Context(), &appdef.Definition{})
 		require.NoError(t, err)
 		assert.NotNil(t, got)
 		assert.NotEmpty(t, got.env)
@@ -78,7 +82,7 @@ func TestTerraform_Init(t *testing.T) {
 	}
 
 	t.Run("Temp Dir Error", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, &appdef.Definition{})
 		tf.fs = afero.NewReadOnlyFs(tf.fs)
 		defer tf.Cleanup()
 
@@ -88,7 +92,7 @@ func TestTerraform_Init(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, &appdef.Definition{})
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
@@ -114,7 +118,7 @@ func TestTerraform_Init(t *testing.T) {
 	})
 
 	t.Run("Init Twice", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, &appdef.Definition{})
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
@@ -152,28 +156,28 @@ func TestTerraform_Plan(t *testing.T) {
 	}
 
 	t.Run("Plan Without Init", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, appDef)
 		defer tf.Cleanup()
 
-		_, err := tf.Plan(t.Context(), env.Production, &appdef.Definition{})
+		_, err := tf.Plan(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "terraform not initialized")
 	})
 
 	t.Run("Nothing To Provision", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, &appdef.Definition{})
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
 
-		_, err = tf.Plan(t.Context(), env.Production, &appdef.Definition{})
+		_, err = tf.Plan(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "no app or resources are defined")
 	})
 
 	t.Run("Vars FS Error", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, appDef)
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
@@ -181,13 +185,13 @@ func TestTerraform_Plan(t *testing.T) {
 
 		tf.fs = afero.NewReadOnlyFs(tf.fs)
 
-		_, err = tf.Plan(t.Context(), env.Production, appDef)
+		_, err = tf.Plan(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "failed to write tf vars file")
 	})
 
 	t.Run("Plan Error", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, appDef)
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
@@ -201,13 +205,13 @@ func TestTerraform_Plan(t *testing.T) {
 			Plan(gomock.Any(), gomock.Any()).
 			Return(false, errors.New("plan error"))
 
-		_, err = tf.Plan(t.Context(), env.Production, appDef)
+		_, err = tf.Plan(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "plan error")
 	})
 
 	t.Run("ShowPlanFileRaw Error", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, appDef)
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
@@ -224,13 +228,13 @@ func TestTerraform_Plan(t *testing.T) {
 			ShowPlanFileRaw(gomock.Any(), gomock.Any()).
 			Return("", errors.New("show plan file raw error"))
 
-		_, err = tf.Plan(t.Context(), env.Production, appDef)
+		_, err = tf.Plan(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "show plan file raw error")
 	})
 
 	t.Run("ShowPlanFile Error", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, appDef)
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
@@ -250,19 +254,19 @@ func TestTerraform_Plan(t *testing.T) {
 			ShowPlanFile(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("show plan file error"))
 
-		_, err = tf.Plan(t.Context(), env.Production, appDef)
+		_, err = tf.Plan(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "show plan file error")
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, appDef)
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
 
-		got, err := tf.Plan(t.Context(), env.Production, appDef)
+		got, err := tf.Plan(t.Context(), env.Production)
 		assert.NoError(t, err)
 		assert.NotNil(t, got)
 		assert.Contains(t, got.Output, "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_cluster.this will be created")
@@ -276,36 +280,28 @@ func TestTerraform_Apply(t *testing.T) {
 	}
 
 	t.Run("Apply Without Init", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, &appdef.Definition{})
 		defer tf.Cleanup()
 
-		err := tf.Apply(t.Context(), env.Production, &appdef.Definition{})
+		_, err := tf.Apply(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "terraform not initialized")
 	})
 
 	t.Run("Nothing To Provision", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, &appdef.Definition{})
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
 
-		err = tf.Apply(t.Context(), env.Production, &appdef.Definition{})
+		_, err = tf.Apply(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "no app or resources are defined")
 	})
 
 	t.Run("Vars FS Error", func(t *testing.T) {
-		tf := setup(t)
-		defer tf.Cleanup()
-
-		err := tf.Init(t.Context())
-		require.NoError(t, err)
-
-		tf.fs = afero.NewReadOnlyFs(tf.fs)
-
-		err = tf.Apply(t.Context(), env.Production, &appdef.Definition{
+		tf := setup(t, &appdef.Definition{
 			Resources: []appdef.Resource{
 				{
 					Name:     "db",
@@ -314,6 +310,14 @@ func TestTerraform_Apply(t *testing.T) {
 				},
 			},
 		})
+		defer tf.Cleanup()
+
+		err := tf.Init(t.Context())
+		require.NoError(t, err)
+
+		tf.fs = afero.NewReadOnlyFs(tf.fs)
+
+		_, err = tf.Apply(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "writing tfvars file")
 	})
@@ -321,9 +325,25 @@ func TestTerraform_Apply(t *testing.T) {
 	// Note: If we don't stub the following functions, it will actually
 	// provision resources in DigitalOcean which will probably cost
 	// a shitload. Let's mock it instead.
+	appDef := &appdef.Definition{
+		Project: appdef.Project{
+			Name: "project",
+			Repo: appdef.GitHubRepo{
+				Owner: "ainsley-dev",
+				Repo:  "project",
+			},
+		},
+		Resources: []appdef.Resource{
+			{
+				Name:     "db",
+				Type:     appdef.ResourceTypePostgres,
+				Provider: appdef.ResourceProviderDigitalOcean,
+			},
+		},
+	}
 
 	t.Run("Success", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, appDef)
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
@@ -334,30 +354,18 @@ func TestTerraform_Apply(t *testing.T) {
 		tf.tf = mock
 
 		mock.EXPECT().
-			Apply(gomock.Any()).
+			Apply(gomock.Any(), gomock.Any()).
 			Return(nil).Times(1)
+		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
+		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
 
-		err = tf.Apply(t.Context(), env.Production, &appdef.Definition{
-			Project: appdef.Project{
-				Name: "project",
-				Repo: appdef.GitHubRepo{
-					Owner: "ainsley-dev",
-					Repo:  "project",
-				},
-			},
-			Resources: []appdef.Resource{
-				{
-					Name:     "db",
-					Type:     appdef.ResourceTypePostgres,
-					Provider: appdef.ResourceProviderDigitalOcean,
-				},
-			},
-		})
+		got, err := tf.Apply(t.Context(), env.Production)
 		assert.NoError(t, err)
+		fmt.Print(got.Output)
 	})
 
 	t.Run("Apply Failure", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, appDef)
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())
@@ -367,25 +375,12 @@ func TestTerraform_Apply(t *testing.T) {
 		mock := tfmocks.NewMockterraformExecutor(ctrl)
 		mock.EXPECT().Apply(gomock.Any()).
 			Return(errors.New("authentication failed")).Times(1)
+		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
+		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
 
 		tf.tf = mock
 
-		err = tf.Apply(t.Context(), env.Production, &appdef.Definition{
-			Project: appdef.Project{
-				Name: "project",
-				Repo: appdef.GitHubRepo{
-					Owner: "ainsley-dev",
-					Repo:  "project",
-				},
-			},
-			Resources: []appdef.Resource{
-				{
-					Name:     "db",
-					Type:     appdef.ResourceTypePostgres,
-					Provider: appdef.ResourceProviderDigitalOcean,
-				},
-			},
-		})
+		_, err = tf.Apply(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "terraform apply failed")
 	})
@@ -397,7 +392,7 @@ func TestTerraform_Cleanup(t *testing.T) {
 	}
 
 	t.Run("Removes Dir", func(t *testing.T) {
-		tf := setup(t)
+		tf := setup(t, &appdef.Definition{})
 		defer tf.Cleanup()
 
 		err := tf.Init(t.Context())

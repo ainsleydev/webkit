@@ -23,7 +23,7 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	printer.Info("Generating executive plan from app definition")
 	spinner := input.Spinner()
 
-	terraform, err := infra.NewTerraform(ctx)
+	terraform, err := infra.NewTerraform(ctx, appDef)
 	if err != nil {
 		return err
 	}
@@ -37,29 +37,18 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 
 	spinner.Stop()
-	printer.Println("Making Plan...")
+	printer.Print("Making Plan...")
 	spinner.Start()
 
-	plan, err := terraform.Plan(ctx, env.Production, appDef)
+	plan, err := terraform.Plan(ctx, env.Production)
 	if err != nil {
 		return err
 	}
 
 	spinner.Stop()
 
-	if plan.ResourceChanges != nil {
-		printer.Printf("\nResource Changes:\n")
-		for _, rc := range plan.ResourceChanges {
-			printer.Printf("  - %s (%s): %v\n", rc.Address, rc.Type, rc.Change.Actions)
-		}
-	}
-
-	if plan.OutputChanges != nil {
-		printer.Printf("\nOutput Changes:\n")
-		for name, change := range plan.OutputChanges {
-			printer.Printf("  - %s: %v -> %v\n", name, change.Before, change.After)
-		}
-	}
+	printer.Print(plan.Output)
+	printer.Success("Plan generated, see console output")
 
 	return nil
 }
