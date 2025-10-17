@@ -24,8 +24,9 @@ type (
 	}
 	Infra struct {
 		Provider ResourceProvider `json:"provider"`
-		Type     string           `json:"type"`
-		Config   map[string]any   `json:"config"`
+		// TODO, we need to define this as a AppResourceType or something.
+		Type   string         `json:"type"`
+		Config map[string]any `json:"config"`
 	}
 	Domain struct {
 		Name     string `json:"name"`

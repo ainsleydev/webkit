@@ -1,7 +1,7 @@
 package infra
 
 import (
-	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -191,7 +191,7 @@ func TestTerraform_Resources(t *testing.T) {
 
 		t.Log("Plan Summary")
 		{
-			assert.Equal(t, 9, len(got.Plan.ResourceChanges), "Should plan to create 9 resources")
+			require.Len(t, got.Plan.ResourceChanges, 9, "Should plan to create 9 resources")
 		}
 
 		t.Log("Spaces Bucket Configuration")
@@ -306,19 +306,27 @@ func TestTerraform_Apps(t *testing.T) {
 					Repo:  "project",
 				},
 			},
-			Resources: []appdef.Resource{
+			Apps: []appdef.App{
 				{
-					Name:     "db",
-					Type:     appdef.ResourceTypePostgres,
-					Provider: appdef.ResourceProviderDigitalOcean,
-					Outputs:  []string{"database_uri"},
-					Config: map[string]any{
-						"pg_version": "18",
-						"size":       "db-s-1vcpu-2gb",
-						"region":     "nyc3",
-						"node_count": 2,
+					Name: "api",
+					Type: appdef.AppTypeSvelteKit, // or whatever app type
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Type:     "container",
+						Config: map[string]any{
+							"region":            "lon",
+							"size":              "apps-s-1vcpu-1gb",
+							"instance_count":    1,
+							"port":              3000,
+							"health_check_path": "/health",
+						},
 					},
-					Backup: appdef.ResourceBackupConfig{},
+					//EnvVars: []appdef.EnvVar{
+					//	{
+					//		Key:   "DATABASE_URL",
+					//		Value: "{{db.connection_url}}",
+					//	},
+					//},
 				},
 			},
 		}
@@ -332,10 +340,157 @@ func TestTerraform_Apps(t *testing.T) {
 		got, err := tf.Plan(t.Context(), env.Production)
 		require.NoError(t, err)
 		require.NotNil(t, got)
-		require.True(t, got.HasChanges, "Plan should have changes")
+		assert.True(t, got.HasChanges, "Plan should have changes")
 
-		indent, err := json.MarshalIndent(got, "", "\t")
-		assert.NoError(t, err)
-		t.Log(string(indent))
+		t.Log("Plan Summary")
+		{
+			require.Len(t, got.Plan.ResourceChanges, 1, "Should plan to create 1 resources")
+		}
+
+		t.Log("Database Resources")
+		{
+			// Verify database was created (reuse assertions from Postgres test)
+			var dbCluster map[string]any
+			for _, rc := range got.Plan.ResourceChanges {
+				if rc.Type == "digitalocean_database_cluster" && rc.Name == "this" {
+					dbCluster = rc.Change.After.(map[string]any)
+					break
+				}
+			}
+			require.NotNil(t, dbCluster, "Database cluster should be planned")
+			assert.Equal(t, "project-db", dbCluster["name"])
+		}
+
+		t.Log("App Platform Configuration")
+		{
+			var app map[string]any
+			for _, rc := range got.Plan.ResourceChanges {
+				if rc.Type == "digitalocean_app" && rc.Name == "this" {
+					app = rc.Change.After.(map[string]any)
+					break
+				}
+			}
+			require.NotNil(t, app, "App Platform app should be planned")
+
+			// Check spec
+			spec := app["spec"].([]any)[0].(map[string]any)
+			assert.Equal(t, "project-api", spec["name"])
+			assert.Equal(t, "lon", spec["region"])
+
+			// Check alerts
+			alerts := spec["alert"].([]any)
+			assert.Len(t, alerts, 2)
+
+			alertRules := make([]string, len(alerts))
+			for i, alert := range alerts {
+				alertRules[i] = alert.(map[string]any)["rule"].(string)
+			}
+			assert.Contains(t, alertRules, "DEPLOYMENT_FAILED")
+			assert.Contains(t, alertRules, "DEPLOYMENT_LIVE")
+		}
+
+		t.Log("App Service Configuration")
+		{
+			var app map[string]any
+			for _, rc := range got.Plan.ResourceChanges {
+				if rc.Type == "digitalocean_app" && rc.Name == "this" {
+					app = rc.Change.After.(map[string]any)
+					break
+				}
+			}
+
+			spec := app["spec"].([]any)[0].(map[string]any)
+
+			fmt.Print(spec)
+
+			services := spec["service"].([]any)
+			require.Len(t, services, 1)
+
+			service := services[0].(map[string]any)
+			assert.Equal(t, "api", service["name"])
+			assert.Equal(t, float64(3000), service["http_port"])
+			assert.Equal(t, float64(1), service["instance_count"])
+			assert.Equal(t, "apps-s-1vcpu-1gb", service["instance_size_slug"])
+
+			// Check health check
+			healthChecks := service["health_check"].([]any)
+			require.Len(t, healthChecks, 1)
+			healthCheck := healthChecks[0].(map[string]any)
+			assert.Equal(t, "/health", healthCheck["http_path"])
+			assert.Equal(t, float64(10), healthCheck["failure_threshold"])
+			assert.Equal(t, float64(90), healthCheck["initial_delay_seconds"])
+			assert.Equal(t, float64(5), healthCheck["period_seconds"])
+
+			// Check service alerts
+			serviceAlerts := service["alert"].([]any)
+			assert.Len(t, serviceAlerts, 3)
+
+			serviceAlertRules := make(map[string]map[string]any)
+			for _, alert := range serviceAlerts {
+				alertMap := alert.(map[string]any)
+				rule := alertMap["rule"].(string)
+				serviceAlertRules[rule] = alertMap
+			}
+
+			// CPU alert
+			assert.Contains(t, serviceAlertRules, "CPU_UTILIZATION")
+			assert.Equal(t, "GREATER_THAN", serviceAlertRules["CPU_UTILIZATION"]["operator"])
+			assert.Equal(t, float64(80), serviceAlertRules["CPU_UTILIZATION"]["value"])
+			assert.Equal(t, "FIVE_MINUTES", serviceAlertRules["CPU_UTILIZATION"]["window"])
+
+			// Memory alert
+			assert.Contains(t, serviceAlertRules, "MEM_UTILIZATION")
+			assert.Equal(t, float64(80), serviceAlertRules["MEM_UTILIZATION"]["value"])
+
+			// Restart count alert
+			assert.Contains(t, serviceAlertRules, "RESTART_COUNT")
+			assert.Equal(t, float64(3), serviceAlertRules["RESTART_COUNT"]["value"])
+		}
+
+		t.Log("Container Image Configuration")
+		{
+			var app map[string]any
+			for _, rc := range got.Plan.ResourceChanges {
+				if rc.Type == "digitalocean_app" && rc.Name == "this" {
+					app = rc.Change.After.(map[string]any)
+					break
+				}
+			}
+
+			spec := app["spec"].([]any)[0].(map[string]any)
+			service := spec["service"].([]any)[0].(map[string]any)
+			images := service["image"].([]any)
+			require.Len(t, images, 1)
+
+			image := images[0].(map[string]any)
+			assert.Equal(t, "ghcr.io", image["registry"])
+			assert.Equal(t, "GHCR", image["registry_type"])
+			assert.Equal(t, "latest", image["tag"])
+
+			// Check registry credentials reference
+			assert.NotNil(t, image["registry_credentials"])
+		}
+
+		t.Log("GitHub Secrets")
+		{
+			secrets := got.Plan.PlannedValues.Outputs["github_secrets_created"]
+			require.NotNil(t, secrets)
+
+			secretNames := secrets.Value.([]any)
+			// Should have 3 DB secrets (connection_url, id, urn)
+			assert.Len(t, secretNames, 3)
+			assert.Contains(t, secretNames, "TF_PROD_DB_CONNECTION_URL")
+			assert.Contains(t, secretNames, "TF_PROD_DB_ID")
+			assert.Contains(t, secretNames, "TF_PROD_DB_URN")
+		}
+
+		t.Log("Resource Outputs")
+		{
+			resourceNames := got.Plan.PlannedValues.Outputs["resource_names"]
+			require.NotNil(t, resourceNames)
+			names := resourceNames.Value.([]any)
+			assert.Len(t, names, 1)
+			assert.Equal(t, "db", names[0])
+		}
 	})
 }
