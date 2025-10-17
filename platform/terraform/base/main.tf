@@ -2,11 +2,7 @@ terraform {
   required_version = ">= 1.13.0"
 
   # Backend configuration - details provided via backend.hcl
-  backend "s3" {
-    bucket = ""
-    key    = ""
-    region = ""
-  }
+  # Remote backend configuration will be added dynamically via backend.tf
 
   required_providers {
     digitalocean = {

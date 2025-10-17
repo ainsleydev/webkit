@@ -92,23 +92,28 @@ func (t *Terraform) Init(ctx context.Context) error {
 	}
 
 	tfDir := filepath.Join(tmpDir, "base")
+
 	tf, err := tfexec.NewTerraform(tfDir, t.path)
 	if err != nil {
 		return errors.Wrap(err, "creating terraform executor")
 	}
 	t.tf = tf
 
-	backendPath, err := t.writeS3Backend(tfDir, env.Production)
-	if err != nil {
-		return err
-	}
-
-	if err = tf.Init(ctx,
+	initOpts := []tfexec.InitOption{
 		tfexec.Upgrade(true),
 		tfexec.Backend(!t.useLocalBackend), // Only use backend on prod.
 		tfexec.Reconfigure(true),
-		tfexec.BackendConfig(backendPath),
-	); err != nil {
+	}
+
+	if !t.useLocalBackend {
+		backendPath, err := t.writeS3Backend(tfDir, env.Production)
+		if err != nil {
+			return err
+		}
+		initOpts = append(initOpts, tfexec.BackendConfig(backendPath))
+	}
+
+	if err = tf.Init(ctx, initOpts...); err != nil {
 		return errors.Wrap(err, "initialising tf")
 	}
 
