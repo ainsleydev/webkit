@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
@@ -14,6 +15,7 @@ import (
 // definitions environments secrets.
 type ResolveConfig struct {
 	SOPSClient sops.EncrypterDecrypter
+	BaseDir    string
 }
 
 func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) error {
@@ -79,7 +81,7 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 	},
 	// SOPS secret - decrypt now
 	appdef.EnvSourceSOPS: func(_ context.Context, rc resolveContext) error {
-		path := FilePathFromEnv(rc.env)
+		path := filepath.Join(rc.cfg.BaseDir, FilePathFromEnv(rc.env))
 
 		// If it's an internal error and not decrypted, bail early
 		// as we can't resolve much!
