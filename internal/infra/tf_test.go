@@ -3,6 +3,7 @@ package infra
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -17,7 +18,7 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-func setup(t *testing.T, appDef *appdef.Definition) *Terraform {
+func setup(t *testing.T, appDef *appdef.Definition) (*Terraform, func()) {
 	t.Helper()
 
 	if !executil.Exists("terraform") {
@@ -31,7 +32,10 @@ func setup(t *testing.T, appDef *appdef.Definition) *Terraform {
 
 	tf.useLocalBackend = true
 
-	return tf
+	return tf, func() {
+		tf.Cleanup()
+		teardownEnv(t)
+	}
 }
 
 func setupEnv(t *testing.T) {
@@ -45,6 +49,24 @@ func setupEnv(t *testing.T) {
 	t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
 }
 
+func teardownEnv(t *testing.T) {
+	t.Helper()
+
+	envVars := []string{
+		"DO_API_KEY",
+		"DO_SPACES_ACCESS_KEY",
+		"DO_SPACES_SECRET_KEY",
+		"BACK_BLAZE_BUCKET",
+		"BACK_BLAZE_KEY_ID",
+		"BACK_BLAZE_APPLICATION_KEY",
+	}
+
+	for _, key := range envVars {
+		err := os.Unsetenv(key)
+		assert.NoError(t, err, fmt.Sprintf("failed to unset env var %s", key))
+	}
+}
+
 func TestNewTerraform(t *testing.T) {
 	if !executil.Exists("terraform") {
 		t.Skip("terraform not found in PATH")
@@ -52,6 +74,7 @@ func TestNewTerraform(t *testing.T) {
 
 	t.Run("TerraformNotInPath", func(t *testing.T) {
 		t.Setenv("PATH", "/nonexistent")
+		defer teardownEnv(t)
 
 		_, err := NewTerraform(t.Context(), &appdef.Definition{})
 		assert.Error(t, err)
@@ -59,6 +82,8 @@ func TestNewTerraform(t *testing.T) {
 
 	t.Run("Invalid Environment", func(t *testing.T) {
 		got, err := NewTerraform(t.Context(), &appdef.Definition{})
+		defer teardownEnv(t)
+
 		assert.Nil(t, got)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "parsing terraform environment")
@@ -66,6 +91,7 @@ func TestNewTerraform(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		setupEnv(t)
+		defer teardownEnv(t)
 
 		got, err := NewTerraform(t.Context(), &appdef.Definition{})
 		require.NoError(t, err)
@@ -82,9 +108,9 @@ func TestTerraform_Init(t *testing.T) {
 	}
 
 	t.Run("Temp Dir Error", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{})
+		tf, teardown := setup(t, &appdef.Definition{})
 		tf.fs = afero.NewReadOnlyFs(tf.fs)
-		defer tf.Cleanup()
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		assert.Error(t, err)
@@ -92,8 +118,8 @@ func TestTerraform_Init(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{})
-		defer tf.Cleanup()
+		tf, teardown := setup(t, &appdef.Definition{})
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -118,8 +144,8 @@ func TestTerraform_Init(t *testing.T) {
 	})
 
 	t.Run("Init Twice", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{})
-		defer tf.Cleanup()
+		tf, teardown := setup(t, &appdef.Definition{})
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -156,8 +182,8 @@ func TestTerraform_Plan(t *testing.T) {
 	}
 
 	t.Run("Plan Without Init", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		_, err := tf.Plan(t.Context(), env.Production)
 		assert.Error(t, err)
@@ -165,8 +191,8 @@ func TestTerraform_Plan(t *testing.T) {
 	})
 
 	t.Run("Nothing To Provision", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{})
-		defer tf.Cleanup()
+		tf, teardown := setup(t, &appdef.Definition{})
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -177,8 +203,8 @@ func TestTerraform_Plan(t *testing.T) {
 	})
 
 	t.Run("Vars FS Error", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -191,8 +217,8 @@ func TestTerraform_Plan(t *testing.T) {
 	})
 
 	t.Run("Plan Error", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -211,8 +237,8 @@ func TestTerraform_Plan(t *testing.T) {
 	})
 
 	t.Run("ShowPlanFileRaw Error", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -234,8 +260,8 @@ func TestTerraform_Plan(t *testing.T) {
 	})
 
 	t.Run("ShowPlanFile Error", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -260,8 +286,8 @@ func TestTerraform_Plan(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		tf.useLocalBackend = true
 
@@ -282,8 +308,8 @@ func TestTerraform_Apply(t *testing.T) {
 	}
 
 	t.Run("Apply Without Init", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{})
-		defer tf.Cleanup()
+		tf, teardown := setup(t, &appdef.Definition{})
+		defer teardown()
 
 		_, err := tf.Apply(t.Context(), env.Production)
 		assert.Error(t, err)
@@ -291,8 +317,8 @@ func TestTerraform_Apply(t *testing.T) {
 	})
 
 	t.Run("Nothing To Provision", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{})
-		defer tf.Cleanup()
+		tf, teardown := setup(t, &appdef.Definition{})
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -303,7 +329,7 @@ func TestTerraform_Apply(t *testing.T) {
 	})
 
 	t.Run("Vars FS Error", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{
+		tf, teardown := setup(t, &appdef.Definition{
 			Resources: []appdef.Resource{
 				{
 					Name:     "db",
@@ -312,7 +338,7 @@ func TestTerraform_Apply(t *testing.T) {
 				},
 			},
 		})
-		defer tf.Cleanup()
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -345,8 +371,8 @@ func TestTerraform_Apply(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -367,8 +393,8 @@ func TestTerraform_Apply(t *testing.T) {
 	})
 
 	t.Run("Apply Failure", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -412,8 +438,8 @@ func TestTerraform_Destroy(t *testing.T) {
 	}
 
 	t.Run("Destroy Without Init", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		_, err := tf.Destroy(t.Context(), env.Production)
 		assert.Error(t, err)
@@ -421,8 +447,8 @@ func TestTerraform_Destroy(t *testing.T) {
 	})
 
 	t.Run("Vars FS Error", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -435,8 +461,8 @@ func TestTerraform_Destroy(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -455,8 +481,8 @@ func TestTerraform_Destroy(t *testing.T) {
 	})
 
 	t.Run("Destroy Failure", func(t *testing.T) {
-		tf := setup(t, appDef)
-		defer tf.Cleanup()
+		tf, teardown := setup(t, appDef)
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
@@ -481,8 +507,8 @@ func TestTerraform_Cleanup(t *testing.T) {
 	}
 
 	t.Run("Removes Dir", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{})
-		defer tf.Cleanup()
+		tf, teardown := setup(t, &appdef.Definition{})
+		defer teardown()
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)

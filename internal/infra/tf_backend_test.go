@@ -16,8 +16,8 @@ func TestWriteBackendConfig(t *testing.T) {
 	infraDir := "/infra"
 
 	t.Run("Failure", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{})
-		defer tf.Cleanup()
+		tf, teardown := setup(t, &appdef.Definition{})
+		defer teardown()
 
 		tf.fs = afero.NewReadOnlyFs(afero.NewMemMapFs())
 
@@ -26,10 +26,10 @@ func TestWriteBackendConfig(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		tf := setup(t, &appdef.Definition{
+		tf, teardown := setup(t, &appdef.Definition{
 			Project: appdef.Project{Name: "test-project"},
 		})
-		defer tf.Cleanup()
+		defer teardown()
 
 		tf.fs = afero.NewMemMapFs()
 

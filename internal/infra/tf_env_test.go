@@ -8,6 +8,8 @@ import (
 
 func TestParseTFEnvironment(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
+		defer teardownEnv(t)
+
 		t.Setenv("DO_API_KEY", "key")
 		t.Setenv("DO_SPACES_ACCESS_KEY", "access")
 		t.Setenv("DO_SPACES_SECRET_KEY", "secret")
@@ -24,9 +26,8 @@ func TestParseTFEnvironment(t *testing.T) {
 	})
 
 	t.Run("Failure", func(t *testing.T) {
+		teardownEnv(t) // Sanity check
 		_, err := ParseTFEnvironment()
-		if err == nil {
-			t.Fatal("expected error due to missing environment variables, got nil")
-		}
+		assert.Error(t, err)
 	})
 }

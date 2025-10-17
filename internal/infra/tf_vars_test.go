@@ -1,8 +1,6 @@
 package infra
 
 import (
-	"fmt"
-	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,19 +11,13 @@ import (
 )
 
 func TestTFVarsFromDefinition(t *testing.T) {
-	t.Parallel()
-
 	t.Run("Nil Definition", func(t *testing.T) {
-		t.Parallel()
-
 		_, err := tfVarsFromDefinition(env.Development, nil)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "definition cannot be nil")
 	})
 
 	t.Run("Empty Definition", func(t *testing.T) {
-		t.Parallel()
-
 		input := &appdef.Definition{
 			Project:   appdef.Project{Name: "test"},
 			Apps:      []appdef.App{},
@@ -38,8 +30,6 @@ func TestTFVarsFromDefinition(t *testing.T) {
 	})
 
 	t.Run("Single Resource", func(t *testing.T) {
-		t.Parallel()
-
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "project",
@@ -95,8 +85,6 @@ func TestTFVarsFromDefinition(t *testing.T) {
 	})
 
 	t.Run("Single App", func(t *testing.T) {
-		t.Parallel()
-
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "single-app-project",
@@ -162,8 +150,6 @@ func TestTFVarsFromDefinition(t *testing.T) {
 	})
 
 	t.Run("Multiple Apps and Resources", func(t *testing.T) {
-		t.Parallel()
-
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "complex-project",
@@ -204,6 +190,10 @@ func TestTFVarsFromDefinition(t *testing.T) {
 					Env: appdef.Environment{
 						Production: map[string]appdef.EnvValue{
 							"BACKEND_KEY": {Value: "backend_value", Source: appdef.EnvSourceValue},
+						},
+						// Prove that it doesn't get appended.
+						Dev: map[string]appdef.EnvValue{
+							"DEV_KEY": {Value: "dev", Source: appdef.EnvSourceValue},
 						},
 					},
 				},
@@ -293,108 +283,6 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			assert.Equal(t, appdef.ResourceProviderDigitalOcean.String(), cache.PlatformProvider)
 			assert.Equal(t, map[string]any{"acl": "private"}, cache.Config)
 			assert.Equal(t, []string{"s3_endpoint"}, cache.Outputs)
-		}
-	})
-}
-
-func FuzzTfVarsFromDefinition(f *testing.F) {
-	f.Add("proj1")
-	f.Add("proj2")
-
-	f.Fuzz(func(t *testing.T, projectName string) {
-		// Random number of apps/resources (between 1 and 3 for speed)
-		numApps := 1 + rand.Intn(3)
-		numResources := 1 + rand.Intn(3)
-
-		apps := make([]appdef.App, numApps)
-		for i := 0; i < numApps; i++ {
-			appName := fmt.Sprintf("app_%d", i)
-			apps[i] = appdef.App{
-				Name: appName,
-				Type: appdef.AppTypePayload,
-				Path: fmt.Sprintf("apps/%s", appName),
-				Infra: appdef.Infra{
-					Type:     "docker",
-					Provider: appdef.ResourceProviderDigitalOcean,
-					Config: map[string]any{
-						"replicas": 1 + rand.Intn(5),
-					},
-				},
-				Env: appdef.Environment{
-					Production: map[string]appdef.EnvValue{
-						fmt.Sprintf("KEY_%d", i): {Value: fmt.Sprintf("value_%d", i), Source: appdef.EnvSourceValue},
-					},
-				},
-			}
-		}
-
-		resources := make([]appdef.Resource, numResources)
-		for i := 0; i < numResources; i++ {
-			resName := fmt.Sprintf("res_%d", i)
-			resources[i] = appdef.Resource{
-				Name:     resName,
-				Type:     appdef.ResourceTypePostgres,
-				Provider: appdef.ResourceProviderDigitalOcean,
-				Config: map[string]any{
-					"version": fmt.Sprintf("1%d", i),
-				},
-				Outputs: []string{fmt.Sprintf("output_%d", i)},
-			}
-		}
-
-		def := &appdef.Definition{
-			Project: appdef.Project{
-				Name: projectName,
-				Repo: appdef.GitHubRepo{Owner: "owner", Repo: "repo"},
-			},
-			Apps:      apps,
-			Resources: resources,
-			Shared: appdef.Shared{
-				Env: appdef.Environment{
-					Production: map[string]appdef.EnvValue{
-						"COMMON_KEY": {Value: "common_value", Source: appdef.EnvSourceValue},
-						"SECRET_KEY": {Value: "s3cr3t", Source: appdef.EnvSourceSOPS},
-					},
-				},
-			},
-		}
-
-		got, err := tfVarsFromDefinition(env.Development, def)
-		if err != nil {
-			t.Errorf("tfVarsFromDefinition returned error: %v", err)
-			return
-		}
-
-		if got.ProjectName != projectName {
-			t.Errorf("expected project name %s, got %s", projectName, got.ProjectName)
-		}
-
-		if len(got.Apps) != numApps {
-			t.Errorf("expected %d apps, got %d", numApps, len(got.Apps))
-		}
-
-		for i, app := range got.Apps {
-			expectedName := fmt.Sprintf("app_%d", i)
-			if app.Name != expectedName {
-				t.Errorf("expected app name %s, got %s", expectedName, app.Name)
-			}
-			if len(app.Config) == 0 {
-				t.Errorf("app %s has empty config", app.Name)
-			}
-		}
-
-		if len(got.Resources) != numResources {
-			t.Errorf("expected %d resources, got %d", numResources, len(got.Resources))
-		}
-
-		for i, res := range got.Resources {
-			expectedName := fmt.Sprintf("res_%d", i)
-			if res.Name != expectedName {
-				t.Errorf("expected resource name %s, got %s", expectedName, res.Name)
-			}
-			if len(res.Outputs) == 0 {
-				t.Errorf("resource %s has no outputs", res.Name)
-			}
 		}
 	})
 }

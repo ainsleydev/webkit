@@ -12,6 +12,12 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
+// Add at top of file:
+const (
+	envScopeSecret  = "SECRET"
+	envScopeGeneral = "GENERAL"
+)
+
 type (
 	// tfVars represents the root structure of Terraform variables
 	// that will be written to webkit.auto.tfvars.json
@@ -104,9 +110,9 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 				if entry.Environment != env {
 					return
 				}
-				scope := "SECRET"
+				scope := envScopeSecret
 				if entry.Source == appdef.EnvSourceValue {
-					scope = "GENERAL"
+					scope = envScopeGeneral
 				}
 				tfA.Environment = append(tfA.Environment, tfEnvVar{
 					Key:    entry.Key,
