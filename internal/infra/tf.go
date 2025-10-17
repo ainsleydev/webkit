@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,6 +22,7 @@ import (
 type Terraform struct {
 	path   string
 	tmpDir string
+	env    TFEnvironment
 	tf     *tfexec.Terraform
 	fs     afero.Fs
 }
@@ -29,19 +31,25 @@ type Terraform struct {
 // the terraform binary on the system.
 //
 // Returns an error if terraform cannot be found in PATH.
-func NewTerraform(ctx context.Context) (*Terraform, error) {
+func NewTerraform(ctx context.Context, fs afero.Fs) (*Terraform, error) {
 	path, err := getTerraformPath(ctx)
+	if err != nil {
+		return nil, err
+	}
+	tfEnv, err := ParseTFEnvironment()
 	if err != nil {
 		return nil, err
 	}
 	return &Terraform{
 		path: path,
-		fs:   afero.NewOsFs(),
+		fs:   fs,
+		env:  tfEnv,
 	}, nil
 }
 
 const tmpFolderPattern = "webkit-tf"
 
+// Init - TODO
 func (t *Terraform) Init(ctx context.Context) error {
 	tmpDir, err := os.MkdirTemp("", tmpFolderPattern)
 	if err != nil {
@@ -82,41 +90,76 @@ func (t *Terraform) Init(ctx context.Context) error {
 	return nil
 }
 
-func (t *Terraform) Plan(ctx context.Context, env env.Environment, def *appdef.Definition) (*tfjson.Plan, error) {
-	if t.tf == nil {
-		return nil, fmt.Errorf("terraform not initialized: call Init() first")
+// PlanOutput is the result of calling Plan.
+type PlanOutput struct {
+	// Human-readable output (the output that's usually
+	// in the terminal when running terraform plan).
+	Output string
+
+	// The JSON contents of the plan for more of a
+	// detailed look.
+	Plan *tfjson.Plan
+}
+
+// Plan - TODO
+func (t *Terraform) Plan(ctx context.Context, env env.Environment, def *appdef.Definition) (PlanOutput, error) {
+	if err := t.hasInitialised(); err != nil {
+		return PlanOutput{}, err
 	}
 
 	vars, err := tfVarsFromDefinition(env, def)
 	if err != nil {
-		return nil, fmt.Errorf("generating terraform variables: %w", err)
+		return PlanOutput{}, fmt.Errorf("generating terraform variables: %w", err)
 	}
 
 	if err = t.writeTFVarsFile(vars); err != nil {
-		return nil, fmt.Errorf("writing tfvars file: %w", err)
+		return PlanOutput{}, fmt.Errorf("writing tfvars file: %w", err)
 	}
 
 	planFilePath := filepath.Join(t.tmpDir, "base", "plan.tfplan")
 	_, err = t.tf.Plan(ctx, tfexec.Out(planFilePath))
 	if err != nil {
-		return nil, fmt.Errorf("terraform plan failed: %w", err)
+		return PlanOutput{}, fmt.Errorf("terraform plan failed: %w", err)
 	}
 
-	// Get the human-readable plan output
-	planOutput, err := t.tf.ShowPlanFileRaw(ctx, planFilePath)
+	// Human-readable output.
+	output, err := t.tf.ShowPlanFileRaw(ctx, planFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("showing plan file: %w", err)
+		return PlanOutput{}, fmt.Errorf("showing plan file: %w", err)
 	}
 
-	fmt.Println(string(planOutput))
+	// Fully typed output.
+	file, err := t.tf.ShowPlanFile(ctx, planFilePath)
+	if err != nil {
+		return PlanOutput{}, fmt.Errorf("showing plan file: %w", err)
+	}
 
-	return t.tf.ShowPlanFile(ctx, planFilePath)
+	return PlanOutput{
+		Output: output,
+		Plan:   file,
+	}, nil
+}
+
+// Apply - TODO
+func (t *Terraform) Apply(ctx context.Context, env env.Environment, def *appdef.Definition) error {
+	if err := t.hasInitialised(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (t *Terraform) Cleanup() {
 	if t.tmpDir != "" {
 		_ = os.RemoveAll(t.tmpDir) //nolint
 	}
+}
+
+func (t *Terraform) hasInitialised() error {
+	if t.tf == nil {
+		return errors.New("terraform not initialized: call Init() first")
+	}
+	return nil
 }
 
 func getTerraformPath(ctx context.Context) (string, error) {
