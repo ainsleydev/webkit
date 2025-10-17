@@ -18,13 +18,16 @@ terraform {
 #
 # Providers
 #
-# Config will be set via environment variables:
-# - DIGITALOCEAN_TOKEN
-# - B2_APPLICATION_KEY_ID
-# - B2_APPLICATION_KEY
-#
-provider "digitalocean" {}
-provider "b2" {}
+provider "digitalocean" {
+  token             = var.do_token
+  spaces_access_id  = var.do_spaces_access_id
+  spaces_secret_key = var.do_spaces_secret_key
+}
+
+provider "b2" {
+  application_key    = var.b2_application_key
+  application_key_id = var.b2_application_key_id
+}
 
 #
 # Locals
@@ -81,5 +84,5 @@ module "apps" {
 
   # Apps may depend on resources being created first.
   resource_outputs = module.resources
-  depends_on = [module.resources]
+  depends_on       = [module.resources]
 }
