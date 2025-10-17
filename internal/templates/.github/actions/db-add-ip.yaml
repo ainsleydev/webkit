@@ -1,0 +1,30 @@
+name: 'Add IP to Database Firewall'
+description: 'Adds current runner IP to DigitalOcean database firewall'
+
+inputs:
+  database-id:
+    description: 'DigitalOcean database ID'
+    required: true
+  doctl-token:
+    description: 'DigitalOcean API token'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get Runner IP
+      id: ip
+      run: echo "RUNNER_IP=$(curl -s https://api.ipify.org)" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Set up doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: {{ ghInput "doctl-token" }}
+
+    - name: Add Runner IP to Database Firewall
+      run: |
+        echo "Adding runner IP to DB firewall..."
+        doctl databases firewalls append {{ ghInput "database-id" }} \
+          --rule "ip_addr:${RUNNER_IP}/32"
+      shell: bash
