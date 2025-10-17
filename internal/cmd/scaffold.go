@@ -46,6 +46,11 @@ var scaffoldCmd = &cli.Command{
 			Action: cmdtools.Wrap(files.CreateTurboJson),
 		},
 		{
+			Name:   "docker-ignore",
+			Usage:  "Generate .dockerignore files for every app defined in the definition.",
+			Action: cmdtools.Wrap(files.DockerIgnore),
+		},
+		{
 			Name:   "secrets",
 			Usage:  "Generate empty SOPS secret files and configuration",
 			Action: cmdtools.Wrap(secrets.Scaffold),
