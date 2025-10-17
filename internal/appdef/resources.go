@@ -37,7 +37,7 @@ type ResourceProvider string
 
 // ResourceProvider constants.
 const (
-	ResourceProviderDigitalOcean ResourceProvider = "digital-ocean"
+	ResourceProviderDigitalOcean ResourceProvider = "digitalocean"
 	ResourceProviderBackBlaze    ResourceProvider = "backblaze"
 )
 

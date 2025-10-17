@@ -1,6 +1,8 @@
 package infra
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -300,26 +302,57 @@ func FuzzTfVarsFromDefinition(f *testing.F) {
 	f.Add("proj2")
 
 	f.Fuzz(func(t *testing.T, projectName string) {
+		// Random number of apps/resources (between 1 and 3 for speed)
+		numApps := 1 + rand.Intn(3)
+		numResources := 1 + rand.Intn(3)
+
+		apps := make([]appdef.App, numApps)
+		for i := 0; i < numApps; i++ {
+			appName := fmt.Sprintf("app_%d", i)
+			apps[i] = appdef.App{
+				Name: appName,
+				Type: appdef.AppTypePayload,
+				Path: fmt.Sprintf("apps/%s", appName),
+				Infra: appdef.Infra{
+					Type:     "docker",
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Config: map[string]any{
+						"replicas": 1 + rand.Intn(5),
+					},
+				},
+				Env: appdef.Environment{
+					Production: map[string]appdef.EnvValue{
+						fmt.Sprintf("KEY_%d", i): {Value: fmt.Sprintf("value_%d", i), Source: appdef.EnvSourceValue},
+					},
+				},
+			}
+		}
+
+		resources := make([]appdef.Resource, numResources)
+		for i := 0; i < numResources; i++ {
+			resName := fmt.Sprintf("res_%d", i)
+			resources[i] = appdef.Resource{
+				Name:     resName,
+				Type:     appdef.ResourceTypePostgres,
+				Provider: appdef.ResourceProviderDigitalOcean,
+				Config: map[string]any{
+					"version": fmt.Sprintf("1%d", i),
+				},
+				Outputs: []string{fmt.Sprintf("output_%d", i)},
+			}
+		}
+
 		def := &appdef.Definition{
 			Project: appdef.Project{
 				Name: projectName,
 				Repo: appdef.GitHubRepo{Owner: "owner", Repo: "repo"},
 			},
-			Apps: []appdef.App{
-				{
-					Name: "web",
-					Type: appdef.AppTypePayload,
-					Infra: appdef.Infra{
-						Type:     "docker",
-						Provider: appdef.ResourceProviderDigitalOcean,
-						Config:   map[string]interface{}{"replicas": 2},
-					},
-				},
-			},
+			Apps:      apps,
+			Resources: resources,
 			Shared: appdef.Shared{
 				Env: appdef.Environment{
 					Production: map[string]appdef.EnvValue{
-						"VALUE_KEY":  {Value: "parent", Source: appdef.EnvSourceValue},
+						"COMMON_KEY": {Value: "common_value", Source: appdef.EnvSourceValue},
 						"SECRET_KEY": {Value: "s3cr3t", Source: appdef.EnvSourceSOPS},
 					},
 				},
@@ -327,10 +360,41 @@ func FuzzTfVarsFromDefinition(f *testing.F) {
 		}
 
 		got, err := tfVarsFromDefinition(env.Development, def)
-		assert.NoError(t, err)
+		if err != nil {
+			t.Errorf("tfVarsFromDefinition returned error: %v", err)
+			return
+		}
 
 		if got.ProjectName != projectName {
 			t.Errorf("expected project name %s, got %s", projectName, got.ProjectName)
+		}
+
+		if len(got.Apps) != numApps {
+			t.Errorf("expected %d apps, got %d", numApps, len(got.Apps))
+		}
+
+		for i, app := range got.Apps {
+			expectedName := fmt.Sprintf("app_%d", i)
+			if app.Name != expectedName {
+				t.Errorf("expected app name %s, got %s", expectedName, app.Name)
+			}
+			if len(app.Config) == 0 {
+				t.Errorf("app %s has empty config", app.Name)
+			}
+		}
+
+		if len(got.Resources) != numResources {
+			t.Errorf("expected %d resources, got %d", numResources, len(got.Resources))
+		}
+
+		for i, res := range got.Resources {
+			expectedName := fmt.Sprintf("res_%d", i)
+			if res.Name != expectedName {
+				t.Errorf("expected resource name %s, got %s", expectedName, res.Name)
+			}
+			if len(res.Outputs) == 0 {
+				t.Errorf("resource %s has no outputs", res.Name)
+			}
 		}
 	})
 }

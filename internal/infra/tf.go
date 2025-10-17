@@ -2,7 +2,6 @@ package infra
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-exec/tfexec"
 	"github.com/hashicorp/terraform-json"
+	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
@@ -19,12 +19,26 @@ import (
 	"github.com/ainsleydev/webkit/platform/terraform"
 )
 
+// Terraform represents the type for interacting with the
+// terraform exec CLI.
 type Terraform struct {
 	path   string
 	tmpDir string
 	env    TFEnvironment
-	tf     *tfexec.Terraform
+	tf     terraformExecutor
 	fs     afero.Fs
+}
+
+//go:generate go tool go.uber.org/mock/mockgen -source=tf.go -destination ./internal/tfmocks/tf.go -package=tfmocks
+
+// terraformExecutor defines the interface for terraform operations
+// using tf exec.
+type terraformExecutor interface {
+	Init(ctx context.Context, opts ...tfexec.InitOption) error
+	Plan(ctx context.Context, opts ...tfexec.PlanOption) (bool, error)
+	Apply(ctx context.Context, opts ...tfexec.ApplyOption) error
+	ShowPlanFileRaw(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (string, error)
+	ShowPlanFile(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (*tfjson.Plan, error)
 }
 
 // NewTerraform creates a new Terraform manager by locating
@@ -49,11 +63,18 @@ func NewTerraform(ctx context.Context, fs afero.Fs) (*Terraform, error) {
 
 const tmpFolderPattern = "webkit-tf"
 
-// Init - TODO
+// Init initialises the WebKit terraform provider by copying all the
+// terraform embedded templates to a temporary directory on the
+// filesystem.
+//
+// Backend configuration and provider config are also written as
+// part of this process.
+//
+// Must be called before Plan() or Apply()
 func (t *Terraform) Init(ctx context.Context) error {
-	tmpDir, err := os.MkdirTemp("", tmpFolderPattern)
+	tmpDir, err := afero.TempDir(t.fs, "", tmpFolderPattern)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "creating tf tmp dir")
 	}
 	t.tmpDir = tmpDir
 
@@ -65,26 +86,21 @@ func (t *Terraform) Init(ctx context.Context) error {
 	tfDir := filepath.Join(tmpDir, "base")
 	tf, err := tfexec.NewTerraform(tfDir, t.path)
 	if err != nil {
-		return fmt.Errorf("creating terraform executor: %w", err)
+		return errors.Wrap(err, "creating terraform executor")
 	}
 	t.tf = tf
 
-	tfEnv, err := ParseTFEnvironment()
-	if err != nil {
-		return fmt.Errorf("parsing terraform environment: %w", err)
-	}
-
 	baseDir := filepath.Join(tmpDir, "base")
-	if err = writeBackendConfig(t.fs, baseDir, tfEnv); err != nil {
-		return fmt.Errorf("writing backend config: %w", err)
+	if err = writeBackendConfig(t.fs, baseDir, t.env); err != nil {
+		return err
 	}
 
-	if err = writeProviderConfig(t.fs, baseDir, tfEnv); err != nil {
-		return fmt.Errorf("writing provider config: %w", err)
+	if err = writeProviderConfig(t.fs, baseDir, t.env); err != nil {
+		return err
 	}
 
 	if err = tf.Init(ctx, tfexec.Upgrade(true)); err != nil {
-		return fmt.Errorf("terraform init: %w", err)
+		return errors.Wrap(err, "initialising tf")
 	}
 
 	return nil
@@ -101,23 +117,17 @@ type PlanOutput struct {
 	Plan *tfjson.Plan
 }
 
-// Plan - TODO
+// Plan generates a Terraform execution plan showing what actions Terraform
+// will take to reach the desired state defined in the definition.
+//
+// Must be called after Init().
 func (t *Terraform) Plan(ctx context.Context, env env.Environment, def *appdef.Definition) (PlanOutput, error) {
-	if err := t.hasInitialised(); err != nil {
+	if err := t.prepareVars(env, def); err != nil {
 		return PlanOutput{}, err
 	}
 
-	vars, err := tfVarsFromDefinition(env, def)
-	if err != nil {
-		return PlanOutput{}, fmt.Errorf("generating terraform variables: %w", err)
-	}
-
-	if err = t.writeTFVarsFile(vars); err != nil {
-		return PlanOutput{}, fmt.Errorf("writing tfvars file: %w", err)
-	}
-
 	planFilePath := filepath.Join(t.tmpDir, "base", "plan.tfplan")
-	_, err = t.tf.Plan(ctx, tfexec.Out(planFilePath))
+	_, err := t.tf.Plan(ctx, tfexec.Out(planFilePath))
 	if err != nil {
 		return PlanOutput{}, fmt.Errorf("terraform plan failed: %w", err)
 	}
@@ -140,15 +150,26 @@ func (t *Terraform) Plan(ctx context.Context, env env.Environment, def *appdef.D
 	}, nil
 }
 
-// Apply - TODO
+// Apply executes terraform apply to provision infrastructure based on
+// the app definition provided.
+//
+// Must be called after Init().
 func (t *Terraform) Apply(ctx context.Context, env env.Environment, def *appdef.Definition) error {
-	if err := t.hasInitialised(); err != nil {
+	if err := t.prepareVars(env, def); err != nil {
 		return err
+	}
+
+	if err := t.tf.Apply(ctx); err != nil {
+		return fmt.Errorf("terraform apply failed: %w", err)
 	}
 
 	return nil
 }
 
+// Cleanup removes all the temporary directories that we're
+// created during the terraform init process.
+//
+// Ideally should be called after Init().
 func (t *Terraform) Cleanup() {
 	if t.tmpDir != "" {
 		_ = os.RemoveAll(t.tmpDir) //nolint
@@ -159,6 +180,23 @@ func (t *Terraform) hasInitialised() error {
 	if t.tf == nil {
 		return errors.New("terraform not initialized: call Init() first")
 	}
+	return nil
+}
+
+func (t *Terraform) prepareVars(env env.Environment, def *appdef.Definition) error {
+	if err := t.hasInitialised(); err != nil {
+		return err
+	}
+
+	vars, err := tfVarsFromDefinition(env, def)
+	if err != nil {
+		return errors.Wrap(err, "generating terraform variables")
+	}
+
+	if err = t.writeTFVarsFile(vars); err != nil {
+		return errors.Wrap(err, "writing tfvars file")
+	}
+
 	return nil
 }
 
