@@ -29,7 +29,7 @@ func TestScaffold(t *testing.T) {
 		},
 	}
 
-	t.Run("Write Error", func(t *testing.T) {
+	t.Run("FS Failure", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
 		fsMock := mocks.NewMockFS(ctrl)
@@ -78,5 +78,4 @@ func TestScaffold(t *testing.T) {
 			}
 		}
 	})
-
 }

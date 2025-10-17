@@ -18,21 +18,14 @@ import (
 func TestScaffold(t *testing.T) {
 	t.Parallel()
 
-	t.Run("SOPS Config Error", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-
-		fsMock := mocks.NewMockFS(ctrl)
-		fsMock.EXPECT().
-			MkdirAll(gomock.Any(), gomock.Any()).
-			Return(fmt.Errorf("mkdir error")).
-			Times(1)
+	t.Run("FS Failure", func(t *testing.T) {
+		t.Parallel()
 
 		input, _ := setup(t, &appdef.Definition{})
-		input.FS = fsMock
+		input.FS = afero.NewReadOnlyFs(afero.NewMemMapFs())
 
 		err := Scaffold(t.Context(), input)
 		assert.Error(t, err)
-		assert.ErrorContains(t, err, "mkdir error")
 	})
 
 	t.Run("Scaffold Error", func(t *testing.T) {
@@ -115,5 +108,4 @@ func TestScaffold(t *testing.T) {
 			}
 		}
 	})
-
 }

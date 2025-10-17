@@ -3,9 +3,10 @@ package cmd
 import (
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/cmd/cicd"
 	"github.com/ainsleydev/webkit/internal/cmd/env"
+	"github.com/ainsleydev/webkit/internal/cmd/files"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/operations"
 	"github.com/ainsleydev/webkit/internal/cmd/secrets"
 )
 
@@ -17,32 +18,32 @@ var scaffoldCmd = &cli.Command{
 		{
 			Name:   "code-style",
 			Usage:  "Generate code style configuration files",
-			Action: cmdtools.Wrap(operations.CreateCodeStyleFiles),
+			Action: cmdtools.Wrap(files.CreateCodeStyleFiles),
 		},
 		{
 			Name:   "git",
 			Usage:  "Generate Git and GitHub configuration files",
-			Action: cmdtools.Wrap(operations.CreateGitSettings),
+			Action: cmdtools.Wrap(files.CreateGitSettings),
 		},
 		{
 			Name:   "package-json",
 			Usage:  "Generate root package.json file",
-			Action: cmdtools.Wrap(operations.CreatePackageJson),
+			Action: cmdtools.Wrap(files.CreatePackageJson),
 		},
 		{
 			Name:   "cicd",
 			Usage:  "Generate GitHub Actions workflow files",
-			Action: cmdtools.Wrap(operations.CreateCICD),
+			Action: cmdtools.Wrap(cicd.CreatePRWorkflow),
 		},
 		{
 			Name:   "pnpm-workspace",
 			Usage:  "Generate pnpm-workspace file if there are any compatible apps.",
-			Action: cmdtools.Wrap(operations.CreatePNPMWorkspace),
+			Action: cmdtools.Wrap(files.CreatePNPMWorkspace),
 		},
 		{
 			Name:   "turbo",
 			Usage:  "Generate turbo.json file if there are any compatible apps.",
-			Action: cmdtools.Wrap(operations.CreateTurboJson),
+			Action: cmdtools.Wrap(files.CreateTurboJson),
 		},
 		{
 			Name:   "secrets",

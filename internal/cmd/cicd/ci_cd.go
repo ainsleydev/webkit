@@ -1,4 +1,4 @@
-package operations
+package cicd
 
 import (
 	"context"
@@ -13,9 +13,9 @@ import (
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
-// CreateCICD bootstraps all of the GitHub workflows for a
+// CreatePRWorkflow bootstraps all of the GitHub workflows for a
 // WebKit application.
-func CreateCICD(_ context.Context, input cmdtools.CommandInput) error {
+func CreatePRWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(afero.NewBasePathFs(input.FS, "./.github"))
 	appDef := input.AppDef()
 
