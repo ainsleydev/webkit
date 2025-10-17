@@ -31,3 +31,13 @@ output "project_name" {
   description = "Project name used for tagging"
   value       = var.project_name
 }
+
+output "github_secrets_created" {
+  description = "List of GitHub secrets that were created"
+  value       = keys(local.github_secrets)
+}
+
+output "github_secrets_count" {
+  description = "Number of GitHub secrets created"
+  value       = length(local.github_secrets)
+}

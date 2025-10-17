@@ -23,7 +23,7 @@ func setupTerraform(t *testing.T, varsFixtureFile string) (*terraform.Options, f
 	}
 
 	opts := &terraform.Options{
-		TerraformDir: "../",
+		TerraformDir: "../base",
 		VarFiles:     []string{"./fixtures/" + varsFixtureFile},
 		PlanFilePath: tempDir + "/tfplan.out",
 	}

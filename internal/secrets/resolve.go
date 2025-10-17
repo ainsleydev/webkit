@@ -34,45 +34,27 @@ func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) err
 
 // resolveAllEnvs resolves all variables in an Environment (dev, staging, production)
 func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Environment) error {
-	if enviro.Dev != nil {
-		if err := resolveEnvironment(ctx, cfg, env.Development, enviro.Dev); err != nil {
-			return err
-		}
-	}
-	if enviro.Staging != nil {
-		if err := resolveEnvironment(ctx, cfg, env.Staging, enviro.Staging); err != nil {
-			return err
-		}
-	}
-	if enviro.Production != nil {
-		if err := resolveEnvironment(ctx, cfg, env.Production, enviro.Production); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+	return enviro.WalkE(func(entry appdef.EnvWalkEntry) error {
+		for key, config := range entry.Map {
+			resolveFn, ok := resolver[config.Source]
+			if !ok {
+				return fmt.Errorf("unknown env source type: %s", config.Source)
+			}
 
-func resolveEnvironment(ctx context.Context, cfg ResolveConfig, env env.Environment, vars appdef.EnvVar) error {
-	for key, config := range vars {
-		resolveFn, ok := resolver[config.Source]
-		if !ok {
-			return fmt.Errorf("unknown env source type: %s", config.Source)
-		}
+			rc := resolveContext{
+				cfg:    cfg,
+				env:    entry.Environment,
+				key:    key,
+				config: config,
+				vars:   entry.Map,
+			}
 
-		rc := resolveContext{
-			cfg:    cfg,
-			env:    env,
-			key:    key,
-			config: config,
-			vars:   vars,
+			if err := resolveFn(ctx, rc); err != nil {
+				return err
+			}
 		}
-
-		if err := resolveFn(ctx, rc); err != nil {
-			return err
-		}
-	}
-
-	return nil
+		return nil
+	})
 }
 
 type resolveContext struct {

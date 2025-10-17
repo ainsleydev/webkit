@@ -13,6 +13,10 @@ terraform {
       source  = "Backblaze/b2"
       version = "~> 0.10.0"
     }
+    github = {
+      source  = "integrations/github"
+      version = "~> 5.0"
+    }
   }
 }
 
@@ -28,6 +32,11 @@ provider "digitalocean" {
 provider "b2" {
   application_key    = var.b2_application_key
   application_key_id = var.b2_application_key_id
+}
+
+provider "github" {
+  owner = var.github_config.owner
+  token = var.github_token
 }
 
 #
@@ -46,6 +55,16 @@ locals {
     local.default_tags,
     [for tag in var.tags : lower(tag)]
   )
+
+
+  # Shortened environment names.
+  environment_short_map = {
+    PRODUCTION  = "prod"
+    STAGING     = "stag"
+    DEVELOPMENT = "dev"
+    TEST        = "test"
+  }
+  environment_short = lookup(local.environment_short_map, upper(var.environment), lower(var.environment))
 }
 
 #
@@ -77,7 +96,11 @@ module "apps" {
   platform_provider = each.value.platform_provider
   platform_config   = each.value.config
   image_tag = try(each.value.image_tag, "latest")
-  github_config     = var.github_config
+  github_config = {
+    owner = var.github_config.owner
+    repo  = var.github_config.repo
+    token = var.github_token
+  }
   ssh_keys = try(var.ssh_keys, [])
   domains = try(each.value.domains, [])
   env_vars = try(each.value.env_vars, [])
@@ -86,4 +109,38 @@ module "apps" {
   # Apps may depend on resources being created first.
   resource_outputs = module.resources
   depends_on = [module.resources]
+}
+
+#
+# Secrets (GitHub)
+#
+locals {
+  # Define which outputs each resource type has (known at plan time)
+  resource_output_map = {
+    postgres = ["id", "urn", "connection_url"]
+    s3 = ["id", "urn", "bucket_name", "bucket_url", "region", "endpoint"]
+  }
+
+  # Build ALL secret keys from var.resources (fully known at plan time)
+  github_secrets = merge([
+    for resource in var.resources : {
+      for output_name in lookup(local.resource_output_map, resource.platform_type, []) :
+      upper("TF_${local.environment_short}_${resource.name}_${output_name}") => tomap({
+        resource_name = resource.name
+        output_name   = output_name
+      })
+    }
+  ]...)
+}
+
+resource "github_actions_secret" "resource_outputs" {
+  for_each = local.github_secrets
+
+  repository      = var.github_config.repo
+  secret_name     = each.key
+  plaintext_value = try(
+    tostring(module.resources[each.value["resource_name"]][each.value["output_name"]]),
+    "NOT_SET"
+  )
+  depends_on = [module.resources, module.apps]
 }

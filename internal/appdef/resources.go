@@ -1,5 +1,12 @@
 package appdef
 
+import (
+	"fmt"
+	"strings"
+
+	"github.com/ainsleydev/webkit/pkg/env"
+)
+
 type (
 	// Resource represents an infrastructure component that an application
 	// depends on, such as databases, storage buckets or caches.
@@ -44,6 +51,51 @@ const (
 // String implements fmt.Stringer on the ResourceProvider.
 func (r ResourceProvider) String() string {
 	return string(r)
+}
+
+// requiredOutputs is a global lookup of all required outputs
+// from a resource type.
+var requiredOutputs = map[ResourceType][]string{
+	ResourceTypePostgres: {
+		"id",
+		"connection_url",
+		"host",
+		"port",
+		"database",
+		"user",
+		"password",
+	},
+	ResourceTypeS3: {
+		"id",
+		"bucket_name",
+		"bucket_url",
+		"region",
+	},
+}
+
+// RequiredOutputs returns the required outputs for a resource type
+// These should always be exported to GitHub secrets regardless of
+// user config defined in the app definition.
+func (r ResourceType) RequiredOutputs() []string {
+	if outputs, ok := requiredOutputs[r]; ok {
+		return outputs
+	}
+	return nil
+}
+
+// GitHubSecretName returns the GitHub secret name for a resource output.
+// Format: TF_{ENVIRONMENT}_{RESOURCE_NAME}_{OUTPUT_NAME} (uppercase)
+//
+// Example:
+//
+//	resource.GitHubSecretName("prod", "connection_url")
+//	↓
+//	"TF_PROD_DB_CONNECTION_URL"
+func (r *Resource) GitHubSecretName(environment env.Environment, output string) string {
+	return fmt.Sprintf("TF_%s_%s_%s",
+		strings.ToUpper(environment.Short()),
+		strings.ToUpper(strings.ReplaceAll(r.Name, "-", "_")),
+		strings.ToUpper(output))
 }
 
 // applyDefaults applies default values to a Resource.

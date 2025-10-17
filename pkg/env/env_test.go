@@ -45,6 +45,28 @@ func TestParseConfig(t *testing.T) {
 	})
 }
 
+func TestEnvironment_Short(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		env  Environment
+		want string
+	}{
+		"Development": {env: Development, want: "dev"},
+		"Staging":     {env: Staging, want: "staging"},
+		"Production":  {env: Production, want: "prod"},
+		"Unknown":     {env: Environment("random"), want: "unknown"},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.env.Short()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestGet_WithExistingKey(t *testing.T) {
 	tt := map[string]struct {
 		input string

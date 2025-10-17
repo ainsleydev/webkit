@@ -8,6 +8,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/infra"
+	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -23,6 +24,15 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 
 	printer.Info("Generating executive plan from app definition")
 	spinner := input.Spinner()
+
+	// Resolve all secrets from SOPS so we can pass them
+	// to Terraform unmasked.
+	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
+		SOPSClient: input.SOPSClient(),
+	})
+	if err != nil {
+		return err
+	}
 
 	terraform, err := infra.NewTerraform(ctx, appDef)
 	if err != nil {

@@ -11,16 +11,19 @@ import (
 func TestTerraform_Resources_Postgres(t *testing.T) {
 	t.Parallel()
 
-	t.Skip("Skipping, needs more work")
+	//t.Skip("Skipping, needs more work")
 
 	options, teardown := setupTerraform(t, "postgres.tfvars")
 	defer teardown()
 
 	plan, err := terraform.InitAndPlanAndShowWithStructE(t, options)
+	require.NoError(t, err)
+	require.NotNil(t, plan)
 
 	t.Log("Plan Succeeded")
 	{
 		assert.NoError(t, err, "Terraform plan should be successful")
+
 		assert.Equal(t, 6, len(plan.ResourcePlannedValuesMap))
 	}
 

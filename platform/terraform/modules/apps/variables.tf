@@ -79,7 +79,7 @@ variable "image_tag" {
 variable "github_config" {
   description = "GitHub Container Registry configuration"
   type = object({
-    user  = string
+    owner  = string
     repo  = string
     token = string
   })

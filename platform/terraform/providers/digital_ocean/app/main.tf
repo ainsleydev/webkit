@@ -28,9 +28,9 @@ resource "digitalocean_app" "this" {
       image {
         registry_type        = "GHCR"
         registry             = "ghcr.io"
-        repository           = "${var.github_config.user}/${var.github_config.repo}-web"
+        repository           = "${var.github_config.owner}/${var.github_config.repo}-web"
         tag                  = var.image_tag
-        registry_credentials = "${var.github_config.user}:${var.github_config.token}"
+        registry_credentials = "${var.github_config.owner}:${var.github_config.token}"
       }
 
       health_check {

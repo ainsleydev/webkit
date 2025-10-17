@@ -43,6 +43,11 @@ variable "b2_application_key_id" {
   sensitive = true
 }
 
+variable "github_token" {
+  type = string
+  sensitive = true
+}
+
 variable "resources" {
   type = list(object({
     name              = string
@@ -102,34 +107,14 @@ variable "ssh_keys" {
   default     = []
 }
 
-# variable "digital_ocean_config" {
-#   type = object({
-#     api_key           = string
-#     spaces_access_key = string
-#     spaces_secret_key = string
-#   })
-#   description = "Configuration for the Digital Ocean provider"
-#   sensitive = true
-# }
-
 variable "github_config" {
   type = object({
-    user  = string
+    owner = string
     repo  = string
-    token = string
   })
   description = "Configuration for the Github repo"
   sensitive   = true
 }
-
-# variable "back_blaze_config" {
-#   type = object({
-#     application_key_id = string
-#     application_key    = string
-#   })
-#   description = "Configuration for BackBlaze B2"
-#   sensitive =  true
-# }
 
 # --------------------------------------- TODO --------------------------------------- #
 

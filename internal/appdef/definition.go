@@ -91,7 +91,7 @@ func (d *Definition) ApplyDefaults() error {
 	Env
 ************************************/
 
-// MergeAllEnvironments merges shared environment variables with all apps' environments.
+// MergeAllEnvironments merges shared env variables with all apps' environments.
 // App-specific values take precedence over shared ones. If multiple apps define the same variable,
 // the last app in the list wins.
 func (d *Definition) MergeAllEnvironments() Environment {

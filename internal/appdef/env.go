@@ -5,7 +5,7 @@ import (
 )
 
 type (
-	// Environment contains environment-specific variable configurations.
+	// Environment contains env-specific variable configurations.
 	Environment struct {
 		Dev        EnvVar `json:"dev,omitempty"`
 		Staging    EnvVar `json:"staging,omitempty"`
@@ -13,7 +13,7 @@ type (
 	}
 	// EnvVar is a map of variable names to their configurations.
 	EnvVar map[string]EnvValue
-	// EnvValue represents a single environment variable configuration
+	// EnvValue represents a single env variable configuration
 	EnvValue struct {
 		Source EnvSource `json:"source"`          // See below
 		Value  any       `json:"value,omitempty"` // Used for "value" and "resource" sources
@@ -43,7 +43,7 @@ func (e EnvSource) String() string {
 	return string(e)
 }
 
-// EnvWalkEntry holds the details of a single environment variable during iteration.
+// EnvWalkEntry holds the details of a single env variable during iteration.
 type EnvWalkEntry struct {
 	Environment env.Environment
 	Key         string
@@ -53,13 +53,13 @@ type EnvWalkEntry struct {
 	Map         EnvVar
 }
 
-// EnvironmentWalker defines a function that processes one environment entry.
+// EnvironmentWalker defines a function that processes one env entry.
 type EnvironmentWalker func(entry EnvWalkEntry)
 
-// EnvironmentWalkerE defines a function that processes one environment entry and may return an error.
+// EnvironmentWalkerE defines a function that processes one env entry and may return an error.
 type EnvironmentWalkerE func(entry EnvWalkEntry) error
 
-// Walk iterates over all environments and calls fn for each environment variable.
+// Walk iterates over all environments and calls fn for each env variable.
 func (e Environment) Walk(fn EnvironmentWalker) {
 	_ = e.walkEnvs(func(envName env.Environment, vars EnvVar) error {
 		for key, val := range vars {
@@ -76,7 +76,7 @@ func (e Environment) Walk(fn EnvironmentWalker) {
 	})
 }
 
-// WalkE iterates over all environments and calls fn for each environment variable.
+// WalkE iterates over all environments and calls fn for each env variable.
 // If fn returns an error, iteration stops and the error is returned.
 func (e Environment) WalkE(fn EnvironmentWalkerE) error {
 	return e.walkEnvs(func(envName env.Environment, vars EnvVar) error {

@@ -56,9 +56,8 @@ type (
 	// tfGithubConfig is used to pull image containers from GH
 	// container registry.
 	tfGithubConfig struct {
-		User  string `json:"user"`
+		Owner string `json:"owner"`
 		Repo  string `json:"repo"`
-		Token string `json:"token"`
 	}
 )
 
@@ -80,8 +79,8 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 		Apps:        make([]tfApp, 0, len(def.Apps)),
 		Resources:   make([]tfResource, 0, len(def.Resources)),
 		GithubConfig: tfGithubConfig{
-			User: def.Project.Repo.Owner,
-			Repo: def.Project.Repo.Repo,
+			Owner: def.Project.Repo.Owner,
+			Repo:  def.Project.Repo.Repo,
 		},
 	}
 

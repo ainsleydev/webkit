@@ -15,6 +15,7 @@ type TFEnvironment struct {
 	BackBlazeBucket             string `env:"BACK_BLAZE_BUCKET,required"`
 	BackBlazeKeyID              string `env:"BACK_BLAZE_KEY_ID,required"`
 	BackBlazeApplicationKey     string `env:"BACK_BLAZE_APPLICATION_KEY,required"`
+	GithubToken                 string `env:"GITHUB_TOKEN,required"`
 }
 
 // ParseTFEnvironment reads and validates Terraform-related
@@ -36,5 +37,6 @@ func (t *TFEnvironment) varStrings() []string {
 		"do_spaces_secret_key=" + t.DigitalOceanSpacesSecretKey,
 		"b2_application_key=" + t.BackBlazeApplicationKey,
 		"b2_application_key_id=" + t.BackBlazeKeyID,
+		"github_token=" + t.GithubToken,
 	}
 }

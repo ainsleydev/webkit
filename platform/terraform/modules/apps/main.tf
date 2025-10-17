@@ -31,7 +31,6 @@ module "do_app" {
   github_config      = var.github_config
   health_check_path  = try(var.platform_config.health_check_path, "/")
 
-
   envs = [
     for env in var.env_vars : {
       key = env.key

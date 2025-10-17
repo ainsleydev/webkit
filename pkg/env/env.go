@@ -27,6 +27,20 @@ func (e Environment) String() string {
 	return string(e)
 }
 
+// Short returns a short name for the environment.
+func (e Environment) Short() string {
+	switch e {
+	case Development:
+		return "dev"
+	case Staging:
+		return "staging"
+	case Production:
+		return "prod"
+	default:
+		return "unknown"
+	}
+}
+
 // Common keys
 const (
 	// AppEnvironmentKey is the key for the app environment, i.e. prod/dev

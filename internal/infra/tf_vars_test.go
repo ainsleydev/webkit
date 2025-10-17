@@ -67,7 +67,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		{
 			assert.Equal(t, "project", got.ProjectName)
 			assert.Equal(t, "production", got.Environment)
-			assert.Equal(t, "ainsley-dev", got.GithubConfig.User)
+			assert.Equal(t, "ainsley-dev", got.GithubConfig.Owner)
 			assert.Equal(t, "project", got.GithubConfig.Repo)
 		}
 
@@ -129,7 +129,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		{
 			assert.Equal(t, "single-app-project", got.ProjectName)
 			assert.Equal(t, "production", got.Environment)
-			assert.Equal(t, "owner", got.GithubConfig.User)
+			assert.Equal(t, "owner", got.GithubConfig.Owner)
 			assert.Equal(t, "single-app-project", got.GithubConfig.Repo)
 		}
 
@@ -235,7 +235,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		{
 			assert.Equal(t, "complex-project", got.ProjectName)
 			assert.Equal(t, "production", got.Environment)
-			assert.Equal(t, "owner", got.GithubConfig.User)
+			assert.Equal(t, "owner", got.GithubConfig.Owner)
 			assert.Equal(t, "complex-project", got.GithubConfig.Repo)
 		}
 

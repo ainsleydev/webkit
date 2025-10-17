@@ -47,6 +47,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("BACK_BLAZE_BUCKET", "bucket")
 	t.Setenv("BACK_BLAZE_KEY_ID", "id")
 	t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
+	t.Setenv("GITHUB_TOKEN", "token")
 }
 
 func teardownEnv(t *testing.T) {
@@ -59,6 +60,7 @@ func teardownEnv(t *testing.T) {
 		"BACK_BLAZE_BUCKET",
 		"BACK_BLAZE_KEY_ID",
 		"BACK_BLAZE_APPLICATION_KEY",
+		"GITHUB_TOKEN",
 	}
 
 	for _, key := range envVars {
@@ -288,8 +290,6 @@ func TestTerraform_Plan(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		tf, teardown := setup(t, appDef)
 		defer teardown()
-
-		tf.useLocalBackend = true
 
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
