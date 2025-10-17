@@ -18,6 +18,7 @@ var Command = &cli.Command{
 	Commands: []*cli.Command{
 		PlanCmd,
 		ApplyCmd,
+		DestroyCmd,
 	},
 	Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
 		_, err := infra.ParseTFEnvironment()

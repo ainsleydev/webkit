@@ -386,6 +386,92 @@ func TestTerraform_Apply(t *testing.T) {
 	})
 }
 
+func TestTerraform_Destroy(t *testing.T) {
+	if !executil.Exists("terraform") {
+		t.Skip("terraform not found in PATH")
+	}
+
+	appDef := &appdef.Definition{
+		Project: appdef.Project{
+			Name: "project",
+			Repo: appdef.GitHubRepo{
+				Owner: "ainsley-dev",
+				Repo:  "project",
+			},
+		},
+		Resources: []appdef.Resource{
+			{
+				Name:     "db",
+				Type:     appdef.ResourceTypePostgres,
+				Provider: appdef.ResourceProviderDigitalOcean,
+			},
+		},
+	}
+
+	t.Run("Destroy Without Init", func(t *testing.T) {
+		tf := setup(t, appDef)
+		defer tf.Cleanup()
+
+		_, err := tf.Destroy(t.Context(), env.Production)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "terraform not initialized")
+	})
+
+	t.Run("Vars FS Error", func(t *testing.T) {
+		tf := setup(t, appDef)
+		defer tf.Cleanup()
+
+		err := tf.Init(t.Context())
+		require.NoError(t, err)
+
+		tf.fs = afero.NewReadOnlyFs(tf.fs)
+
+		_, err = tf.Destroy(t.Context(), env.Production)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "writing tfvars file")
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		tf := setup(t, appDef)
+		defer tf.Cleanup()
+
+		err := tf.Init(t.Context())
+		require.NoError(t, err)
+
+		ctrl := gomock.NewController(t)
+		mock := tfmocks.NewMockterraformExecutor(ctrl)
+		tf.tf = mock
+
+		mock.EXPECT().Destroy(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
+		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
+
+		got, err := tf.Destroy(t.Context(), env.Production)
+		assert.NoError(t, err)
+		fmt.Print(got.Output)
+	})
+
+	t.Run("Destroy Failure", func(t *testing.T) {
+		tf := setup(t, appDef)
+		defer tf.Cleanup()
+
+		err := tf.Init(t.Context())
+		require.NoError(t, err)
+
+		ctrl := gomock.NewController(t)
+		mock := tfmocks.NewMockterraformExecutor(ctrl)
+		mock.EXPECT().Destroy(gomock.Any(), gomock.Any()).Return(errors.New("destroy failed")).Times(1)
+		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
+		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
+
+		tf.tf = mock
+
+		_, err = tf.Destroy(t.Context(), env.Production)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "terraform destroy failed")
+	})
+}
+
 func TestTerraform_Cleanup(t *testing.T) {
 	if !executil.Exists("terraform") {
 		t.Skip("terraform not found in PATH")

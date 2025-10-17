@@ -62,23 +62,23 @@ func (mr *MockterraformExecutorMockRecorder) Apply(ctx any, opts ...any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockterraformExecutor)(nil).Apply), varargs...)
 }
 
-// ApplyJSON mocks base method.
-func (m *MockterraformExecutor) ApplyJSON(ctx context.Context, w io.Writer, opts ...tfexec.ApplyOption) error {
+// Destroy mocks base method.
+func (m *MockterraformExecutor) Destroy(ctx context.Context, opts ...tfexec.DestroyOption) error {
 	m.ctrl.T.Helper()
-	varargs := []any{ctx, w}
+	varargs := []any{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ApplyJSON", varargs...)
+	ret := m.ctrl.Call(m, "Destroy", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ApplyJSON indicates an expected call of ApplyJSON.
-func (mr *MockterraformExecutorMockRecorder) ApplyJSON(ctx, w any, opts ...any) *gomock.Call {
+// Destroy indicates an expected call of Destroy.
+func (mr *MockterraformExecutorMockRecorder) Destroy(ctx any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, w}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyJSON", reflect.TypeOf((*MockterraformExecutor)(nil).ApplyJSON), varargs...)
+	varargs := append([]any{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destroy", reflect.TypeOf((*MockterraformExecutor)(nil).Destroy), varargs...)
 }
 
 // Init mocks base method.

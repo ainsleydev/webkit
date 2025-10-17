@@ -28,7 +28,6 @@ type Terraform struct {
 	tmpDir          string
 	env             TFEnvironment
 	tf              terraformExecutor
-	tmp             tfexec.Terraform
 	fs              afero.Fs
 	useLocalBackend bool
 }
@@ -43,7 +42,7 @@ type terraformExecutor interface {
 	Init(ctx context.Context, opts ...tfexec.InitOption) error
 	Plan(ctx context.Context, opts ...tfexec.PlanOption) (bool, error)
 	Apply(ctx context.Context, opts ...tfexec.ApplyOption) error
-	ApplyJSON(ctx context.Context, w io.Writer, opts ...tfexec.ApplyOption) error
+	Destroy(ctx context.Context, opts ...tfexec.DestroyOption) error
 	ShowPlanFileRaw(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (string, error)
 	ShowPlanFile(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (*tfjson.Plan, error)
 }
@@ -118,6 +117,10 @@ func (t *Terraform) Init(ctx context.Context) error {
 
 // PlanOutput is the result of calling Plan.
 type PlanOutput struct {
+	// Determines if there has been any changes to
+	// the plan since running last.
+	HasChanges bool
+
 	// Human-readable output (the output that's usually
 	// in the terminal when running terraform plan).
 	Output string
@@ -144,7 +147,7 @@ func (t *Terraform) Plan(ctx context.Context, env env.Environment) (PlanOutput, 
 		vars = append(vars, tfexec.Var(v))
 	}
 
-	_, err := t.tf.Plan(ctx, vars...)
+	changes, err := t.tf.Plan(ctx, vars...)
 	if err != nil {
 		return PlanOutput{}, fmt.Errorf("terraform plan failed: %w", err)
 	}
@@ -162,8 +165,9 @@ func (t *Terraform) Plan(ctx context.Context, env env.Environment) (PlanOutput, 
 	}
 
 	return PlanOutput{
-		Output: output,
-		Plan:   file,
+		HasChanges: changes,
+		Output:     output,
+		Plan:       file,
 	}, nil
 }
 
@@ -199,6 +203,42 @@ func (t *Terraform) Apply(ctx context.Context, env env.Environment) (ApplyOutput
 	}
 
 	return ApplyOutput{
+		Output: outputBuf.String(),
+	}, nil
+}
+
+// DestroyOutput is the result of calling Destroy.
+type DestroyOutput struct {
+	// Human-readable output (the output that's usually
+	// in the terminal when running terraform destroy).
+	Output string
+}
+
+// Destroy executes terraform destroy to tear down infrastructure
+// based on the app definition provided.
+//
+// Must be called after Init().
+func (t *Terraform) Destroy(ctx context.Context, env env.Environment) (DestroyOutput, error) {
+	if err := t.prepareVars(env); err != nil {
+		return DestroyOutput{}, err
+	}
+
+	var outputBuf strings.Builder
+	t.tf.SetStdout(&outputBuf)
+	t.tf.SetStderr(&outputBuf)
+
+	var vars []tfexec.DestroyOption
+	for _, v := range t.env.varStrings() {
+		vars = append(vars, tfexec.Var(v))
+	}
+
+	if err := t.tf.Destroy(ctx, vars...); err != nil {
+		return DestroyOutput{
+			Output: outputBuf.String(),
+		}, fmt.Errorf("terraform destroy failed: %w", err)
+	}
+
+	return DestroyOutput{
 		Output: outputBuf.String(),
 	}, nil
 }

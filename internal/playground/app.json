@@ -41,7 +41,7 @@
 	},
 	"resources": [
 		{
-			"name": "store-temp",
+			"name": "store-temp2",
 			"type": "s3",
 			"provider": "digitalocean",
 			"config": {
