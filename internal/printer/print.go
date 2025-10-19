@@ -46,22 +46,22 @@ func (c *Console) Printf(msg string, args ...any) {
 
 // Success prints a success message with a checkmark icon and success color.
 func (c *Console) Success(msg string) {
-	c.write(styles.Success.Render(fmt.Sprintf("%s %s", styles.IconSuccess, msg)))
+	c.Println(styles.Success.Render(fmt.Sprintf("%s %s", styles.IconSuccess, msg)))
 }
 
 // Error prints an error message with a cross icon and error color.
 func (c *Console) Error(msg string) {
-	c.write(styles.Error.Render(fmt.Sprintf("%s %s", styles.IconError, msg)))
+	c.Println(styles.Error.Render(fmt.Sprintf("%s %s", styles.IconError, msg)))
 }
 
 // Info prints an informational message with an info icon and color.
 func (c *Console) Info(msg string) {
-	c.write(styles.Info.Render(fmt.Sprintf("%s %s", styles.IconInfo, msg)))
+	c.Println(styles.Info.Render(fmt.Sprintf("%s %s", styles.IconInfo, msg)))
 }
 
 // Warn prints a warning message with a warning icon and color.
 func (c *Console) Warn(msg string) {
-	c.write(styles.Warn.Render(fmt.Sprintf("%s %s", styles.IconWarn, msg)))
+	c.Println(styles.Warn.Render(fmt.Sprintf("%s %s", styles.IconWarn, msg)))
 }
 
 // LineBreak prints \n to the writer.
@@ -73,5 +73,5 @@ func (c *Console) write(s string) {
 	if c.writer == nil { // Guard check
 		return
 	}
-	_, _ = io.WriteString(c.writer, s+"\n")
+	_, _ = io.WriteString(c.writer, s)
 }

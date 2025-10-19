@@ -78,13 +78,13 @@ func TestFileGenerator_Bytes(t *testing.T) {
 		err := afero.WriteFile(fs, path, initialData, os.ModePerm)
 		require.NoError(t, err)
 
-		err = gen.Bytes(path, newData)
+		err = gen.Bytes(path, newData, WithoutNotice())
 		assert.NoError(t, err)
 
 		// Check the file content was updated.
 		got, readErr := afero.ReadFile(fs, path)
 		assert.NoError(t, readErr)
-		assert.Equal(t, newData, got)
+		assert.Equal(t, string(newData), string(got))
 
 		// TODO: Check printer output
 	})
@@ -119,7 +119,7 @@ func TestFileGenerator_Bytes(t *testing.T) {
 		gen.fs = afero.NewMemMapFs()
 
 		data := []byte("hello")
-		err := gen.Bytes("dir/file.txt", data)
+		err := gen.Bytes("dir/file.txt", data, WithoutNotice())
 		assert.NoError(t, err, "Expected successful write")
 
 		got, readErr := afero.ReadFile(gen.fs, "dir/file.txt")
@@ -134,7 +134,7 @@ func TestFileGenerator_Bytes(t *testing.T) {
 		gen.fs = afero.NewMemMapFs()
 
 		data := []byte("MY_KEY=1234")
-		err := gen.Bytes("dir/.env", data, WithNotice(true))
+		err := gen.Bytes("dir/.env", data)
 		assert.NoError(t, err, "Expected successful write")
 
 		got, readErr := afero.ReadFile(gen.fs, "dir/.env")

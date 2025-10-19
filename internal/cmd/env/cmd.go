@@ -72,7 +72,7 @@ func writeMapToFile(args writeArgs) error {
 
 	envPath := filepath.Join(args.App.Path, file)
 
-	opts := []scaffold.Option{scaffold.WithNotice(true)}
+	var opts []scaffold.Option
 	if args.IsScaffold {
 		opts = append(opts, scaffold.WithScaffoldMode())
 	}

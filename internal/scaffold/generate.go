@@ -83,7 +83,7 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 		return nil
 	}
 
-	if options.notice {
+	if !options.suppressNotice {
 		notice := []byte(noticeForFile(path))
 		data = append(notice, data...)
 	}
@@ -94,7 +94,7 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 
 	exists, _ := afero.Exists(f.fs, path)
 	if exists {
-		f.Printer.Print("Updated: " + path)
+		//f.Printer.Println("Updated: " + path)
 	}
 
 	if err := afero.WriteFile(f.fs, path, data, os.ModePerm); err != nil {
@@ -102,7 +102,7 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 	}
 
 	if !exists {
-		f.Printer.Print("Created: " + path)
+		//f.Printer.Println("Created: " + path)
 	}
 
 	return nil
@@ -117,7 +117,7 @@ func (f FileGenerator) Template(path string, tpl *template.Template, data any, o
 		return fmt.Errorf("executing template %s: %w", tpl.Name(), err)
 	}
 
-	opts = append(opts, WithNotice(false))
+	opts = append(opts, WithoutNotice())
 
 	return f.Bytes(path, buf.Bytes(), opts...)
 }
@@ -132,7 +132,7 @@ func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
 		return fmt.Errorf("encoding %s: %w", path, err)
 	}
 
-	opts = append(opts, WithNotice(false))
+	opts = append(opts, WithoutNotice())
 
 	return f.Bytes(path, buf.Bytes(), opts...)
 }
@@ -148,7 +148,7 @@ func (f FileGenerator) YAML(path string, content any, opts ...Option) error {
 		return fmt.Errorf("encoding %s: %w", path, err)
 	}
 
-	opts = append(opts, WithNotice(false))
+	opts = append(opts, WithoutNotice())
 
 	return f.Bytes(path, buf.Bytes(), opts...)
 }
@@ -163,6 +163,6 @@ func (f FileGenerator) shouldSkipScaffold(path string, mode WriteMode) bool {
 		return false
 	}
 
-	f.Printer.Print("• skipped scaffolding " + path + " - already exists")
+	f.Printer.Println("• skipped scaffolding " + path + " - already exists")
 	return true
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/cicd"
@@ -23,18 +24,39 @@ var updateCmd = &cli.Command{
 	Action:      cmdtools.Wrap(update),
 }
 
-var updateOps = []cmdtools.RunCommand{
-	files.CodeStyle,
-	files.GitSettings,
-	files.PackageJSON,
-	cicd.CreatePRWorkflow,
-	cicd.BackupResourcesWorkflow,
-	secrets.Scaffold,
-	env.Sync,
+type runner struct {
+	command cmdtools.RunCommand
+	name    string
+}
+
+var updateOps = []runner{
+	// Must be first
+	// TODO:
+	// - Create app.json file.
+	// - Create repo?
+	// - Validate definition
+	{env.Scaffold, "Env: Scaffold .env files"},
+	{secrets.Scaffold, "Secrets: Scaffold secret files"},
+
+	// Alphabetically
+	{files.CodeStyle, "Files: Create code style files"},
+	{files.GitSettings, "Files: Create git settings"},
+	{files.PackageJSON, "Files: Create package.json"},
+	{files.CreateTurboJson, "Files: Create turbo.json"},
+	{cicd.CreatePRWorkflow, "CICD: Create PR workflows"},
+	{cicd.BackupResourcesWorkflow, "CICD: Create backup workflows"},
+
+	// Lastly
+	{env.Scaffold, "Env: Sync .env files"},
+	{secrets.Sync, "Secrets: Sync secret files"},
 }
 
 func update(ctx context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(input.FS, input.Manifest)
+	printer := input.Printer()
+
+	printer.Info("Updating project dependencies...")
+	printer.LineBreak()
 
 	// 1. Load previous manifest
 	oldManifest, err := manifest.Load(input.FS)
@@ -44,23 +66,30 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// 2. Generate all files (they auto-track to new manifest)
 	for _, op := range updateOps {
-		if err := op(ctx, input); err != nil {
+		printer.Printf("🏃 %v\n", op.name)
+		if err = op.command(ctx, input); err != nil {
 			return err
 		}
 	}
 
 	// 3. Save new manifest
-	if err := input.Manifest.Save(input.FS); err != nil {
+	if err = input.Manifest.Save(input.FS); err != nil {
 		return fmt.Errorf("saving manifest: %w", err)
 	}
 
 	// 4. Cleanup orphaned files
 	if oldManifest != nil {
-		newManifest, _ := manifest.Load(input.FS)
-		if err := manifest.Cleanup(input.FS, oldManifest, newManifest, gen.Printer); err != nil {
-			return fmt.Errorf("cleaning up: %w", err)
+		newManifest, err := manifest.Load(input.FS)
+		if err != nil {
+			return errors.Wrap(err, "loading manifest")
+		}
+		if err = manifest.Cleanup(input.FS, oldManifest, newManifest, gen.Printer); err != nil {
+			return errors.Wrap(err, "cleaning up manifest")
 		}
 	}
+
+	printer.LineBreak()
+	printer.Success("Successfully updated project dependencies!")
 
 	return nil
 }

@@ -11,11 +11,12 @@ import (
 
 // List prints a simple bullet list with brand colors.
 func (c *Console) List(items ...any) {
-	enumeratorStyle := lipgloss.NewStyle().Foreground(styles.ColorAccent).MarginRight(1)
-	itemStyle := lipgloss.NewStyle().Foreground(styles.ColorInfo)
+	baseColor := styles.Base.GetForeground()
+	itemStyle := lipgloss.NewStyle().Foreground(baseColor).Bold(true)
+	enumeratorStyle := lipgloss.NewStyle().Foreground(baseColor).MarginRight(1).Bold(true)
 
 	l := list.New(items...).
-		Enumerator(list.Bullet).
+		Enumerator(list.Dash).
 		EnumeratorStyle(enumeratorStyle).
 		ItemStyle(itemStyle)
 

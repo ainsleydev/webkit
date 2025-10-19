@@ -35,7 +35,7 @@ func Scaffold(_ context.Context, input cmdtools.CommandInput) error {
 		// If we generate a file that has YAML commentary in the file,
 		// SOPS will encrypt the comments when Encrypt() is called,
 		// malforming the file.
-		err := gen.Bytes(filePath, make([]byte, 0), scaffold.WithScaffoldMode())
+		err := gen.Bytes(filePath, make([]byte, 0), scaffold.WithScaffoldMode(), scaffold.WithoutNotice())
 		if err != nil {
 			return fmt.Errorf("generating %s: %w", filePath, err)
 		}
