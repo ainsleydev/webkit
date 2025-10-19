@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/hashicorp/terraform-exec/tfexec"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -498,6 +499,164 @@ func TestTerraform_Destroy(t *testing.T) {
 		_, err = tf.Destroy(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "terraform destroy failed")
+	})
+}
+func TestTerraform_Output(t *testing.T) {
+	appDef := &appdef.Definition{
+		Project: appdef.Project{
+			Name: "project",
+			Repo: appdef.GitHubRepo{
+				Owner: "ainsley-dev",
+				Repo:  "project",
+			},
+		},
+		Resources: []appdef.Resource{
+			{
+				Name:     "db",
+				Type:     appdef.ResourceTypePostgres,
+				Provider: appdef.ResourceProviderDigitalOcean,
+			},
+		},
+		Apps: []appdef.App{
+			{
+				Name: "cms",
+				Type: appdef.AppTypePayload,
+			},
+		},
+	}
+
+	t.Run("Output Without Init", func(t *testing.T) {
+		tf := &Terraform{}
+		_, err := tf.Output(t.Context(), env.Production)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "terraform not initialized")
+	})
+
+	t.Run("Output Error", func(t *testing.T) {
+		tf, teardown := setup(t, appDef)
+		defer teardown()
+		require.NoError(t, tf.Init(t.Context()))
+
+		ctrl := gomock.NewController(t)
+		mock := tfmocks.NewMockterraformExecutor(ctrl)
+		tf.tf = mock
+
+		mock.EXPECT().
+			Output(gomock.Any()).
+			Return(nil, errors.New("output failed"))
+
+		_, err := tf.Output(t.Context(), env.Production)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "output failed")
+	})
+
+	t.Run("Malformed Resources JSON", func(t *testing.T) {
+		tf, teardown := setup(t, appDef)
+		defer teardown()
+		require.NoError(t, tf.Init(t.Context()))
+
+		ctrl := gomock.NewController(t)
+		mock := tfmocks.NewMockterraformExecutor(ctrl)
+		tf.tf = mock
+
+		mockOutputs := map[string]tfexec.OutputMeta{
+			"resources": {
+				Value: []byte(`{malformed-json}`),
+			},
+		}
+
+		mock.EXPECT().Output(gomock.Any()).Return(mockOutputs, nil)
+
+		_, err := tf.Output(t.Context(), env.Production)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "unmarshalling resources")
+	})
+
+	t.Run("Malformed Apps JSON", func(t *testing.T) {
+		tf, teardown := setup(t, appDef)
+		defer teardown()
+		require.NoError(t, tf.Init(t.Context()))
+
+		ctrl := gomock.NewController(t)
+		mock := tfmocks.NewMockterraformExecutor(ctrl)
+		tf.tf = mock
+
+		mockOutputs := map[string]tfexec.OutputMeta{
+			"apps": {
+				Value: []byte(`{malformed-json}`),
+			},
+		}
+
+		mock.EXPECT().Output(gomock.Any()).Return(mockOutputs, nil)
+
+		_, err := tf.Output(t.Context(), env.Production)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "unmarshalling apps")
+	})
+
+	t.Run("Extra Value Unmarshal Fails", func(t *testing.T) {
+		tf, teardown := setup(t, appDef)
+		defer teardown()
+		require.NoError(t, tf.Init(t.Context()))
+
+		ctrl := gomock.NewController(t)
+		mock := tfmocks.NewMockterraformExecutor(ctrl)
+		tf.tf = mock
+
+		// Invalid JSON string to trigger fallback to string
+		mockOutputs := map[string]tfexec.OutputMeta{
+			"extra_key": {Value: []byte("{invalid-json}")},
+		}
+
+		mock.EXPECT().Output(gomock.Any()).Return(mockOutputs, nil)
+
+		result, err := tf.Output(t.Context(), env.Production)
+		require.NoError(t, err)
+		assert.Equal(t, "{invalid-json}", result.Extra["extra_key"])
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		tf, teardown := setup(t, appDef)
+		defer teardown()
+		require.NoError(t, tf.Init(t.Context()))
+
+		ctrl := gomock.NewController(t)
+		mock := tfmocks.NewMockterraformExecutor(ctrl)
+		tf.tf = mock
+
+		mockOutputs := map[string]tfexec.OutputMeta{
+			"resources": {
+				Value: []byte(`{"store":{"bucket_name":"my-store"}}`),
+			},
+			"apps": {
+				Value: []byte(`{"web-app":{"app_url":"https://web.example.com"}}`),
+			},
+			"project_name": {
+				Value: []byte(`"my-project"`),
+			},
+		}
+
+		mock.EXPECT().Output(gomock.Any()).Return(mockOutputs, nil)
+
+		result, err := tf.Output(t.Context(), env.Production)
+		require.NoError(t, err)
+
+		t.Log("Resources")
+		{
+			assert.NotNil(t, result.Resources["store"])
+			assert.Equal(t, "my-store", result.Resources["store"]["bucket_name"])
+		}
+
+		t.Log("Apps")
+		{
+			assert.NotNil(t, result.Apps["web-app"])
+			assert.Equal(t, "https://web.example.com", result.Apps["web-app"]["app_url"])
+		}
+
+		t.Log("Extra")
+		{
+			assert.Equal(t, "my-project", result.Extra["project_name"])
+		}
 	})
 }
 

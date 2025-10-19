@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -28,6 +29,7 @@ type Terraform struct {
 	tmpDir          string
 	env             TFEnvironment
 	tf              terraformExecutor
+	tmp             *tfexec.Terraform
 	fs              afero.Fs
 	useLocalBackend bool
 }
@@ -43,6 +45,7 @@ type terraformExecutor interface {
 	Plan(ctx context.Context, opts ...tfexec.PlanOption) (bool, error)
 	Apply(ctx context.Context, opts ...tfexec.ApplyOption) error
 	Destroy(ctx context.Context, opts ...tfexec.DestroyOption) error
+	Output(ctx context.Context, opts ...tfexec.OutputOption) (map[string]tfexec.OutputMeta, error)
 	ShowPlanFileRaw(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (string, error)
 	ShowPlanFile(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (*tfjson.Plan, error)
 }
@@ -246,6 +249,80 @@ func (t *Terraform) Destroy(ctx context.Context, env env.Environment) (DestroyOu
 	return DestroyOutput{
 		Output: outputBuf.String(),
 	}, nil
+}
+
+// OutputResult is the result of calling Output.
+// It contains a structured map of all Terraform outputs.
+// See platform/terraform/base/outputs.tf for spercifics.
+//
+//   - Resources: Maps resource names to their fields and values.
+//     Example:
+//     "store": {
+//     "bucket_name": "my-website-store-temp",
+//     "bucket_url": "my-website-store-temp.nyc3.digitaloceanspaces.com",
+//     }
+//
+//   - Apps: Maps app names to their fields and values.
+//     Example (empty if no apps provisioned):
+//     "web-app": {
+//     "app_url": "https://web-app.example.com",
+//     "platform_provider": "digitalocean"
+//     }
+//
+//   - Extra: Contains all other outputs that don’t fit into Resources or Apps.
+type OutputResult struct {
+	Resources map[string]map[string]any `json:"resources"`
+	Apps      map[string]map[string]any `json:"apps"`
+	Extra     map[string]any            `json:"extra"`
+}
+
+// Output retrieves all Terraform outputs for the specified environment.
+// This reads the current terraform state and returns all output values.
+//
+// Must be called after Init().
+func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResult, error) {
+	if err := t.prepareVars(env); err != nil {
+		return OutputResult{}, err
+	}
+
+	rawOutputs, err := t.tf.Output(ctx)
+	if err != nil {
+		return OutputResult{}, errors.Wrap(err, "terraform output failed")
+	}
+
+	result := OutputResult{
+		Resources: make(map[string]map[string]any),
+		Apps:      make(map[string]map[string]any),
+		Extra:     make(map[string]any),
+	}
+
+	// --- Resources ---
+	if r, ok := rawOutputs["resources"]; ok {
+		if err = json.Unmarshal(r.Value, &result.Resources); err != nil {
+			return OutputResult{}, errors.Wrap(err, "unmarshalling resources")
+		}
+	}
+
+	// --- Apps ---
+	if r, ok := rawOutputs["apps"]; ok {
+		if err = json.Unmarshal(r.Value, &result.Apps); err != nil {
+			return OutputResult{}, errors.Wrap(err, "unmarshalling apps")
+		}
+	}
+
+	// --- Extra (everything else) ---
+	for key, meta := range rawOutputs {
+		if key == "resources" || key == "apps" {
+			continue
+		}
+		var val any
+		if err = json.Unmarshal(meta.Value, &val); err != nil {
+			val = string(meta.Value)
+		}
+		result.Extra[key] = val
+	}
+
+	return result, nil
 }
 
 // Cleanup removes all the temporary directories that we're

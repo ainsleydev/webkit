@@ -100,6 +100,26 @@ func (mr *MockterraformExecutorMockRecorder) Init(ctx any, opts ...any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*MockterraformExecutor)(nil).Init), varargs...)
 }
 
+// Output mocks base method.
+func (m *MockterraformExecutor) Output(ctx context.Context, opts ...tfexec.OutputOption) (map[string]tfexec.OutputMeta, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Output", varargs...)
+	ret0, _ := ret[0].(map[string]tfexec.OutputMeta)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Output indicates an expected call of Output.
+func (mr *MockterraformExecutorMockRecorder) Output(ctx any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Output", reflect.TypeOf((*MockterraformExecutor)(nil).Output), varargs...)
+}
+
 // Plan mocks base method.
 func (m *MockterraformExecutor) Plan(ctx context.Context, opts ...tfexec.PlanOption) (bool, error) {
 	m.ctrl.T.Helper()
