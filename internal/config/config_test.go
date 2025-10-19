@@ -48,7 +48,7 @@ func TestReadWrite(t *testing.T) {
 	t.Run("Write And Read", func(t *testing.T) {
 		content := []byte("test content")
 
-		err := Write("test.txt", content, 0600)
+		err := Write("test.txt", content, 0o600)
 		require.NoError(t, err)
 
 		read, err := Read("test.txt")
@@ -61,7 +61,7 @@ func TestReadWrite(t *testing.T) {
 		newHome := t.TempDir()
 		t.Setenv("HOME", newHome)
 
-		err := Write("auto-create.txt", []byte("test"), 0600)
+		err := Write("auto-create.txt", []byte("test"), 0o600)
 		require.NoError(t, err)
 
 		// Dir should exist now
@@ -74,10 +74,10 @@ func TestReadWrite(t *testing.T) {
 	})
 
 	t.Run("Overwrites Existing File", func(t *testing.T) {
-		err := Write("overwrite.txt", []byte("first"), 0600)
+		err := Write("overwrite.txt", []byte("first"), 0o600)
 		require.NoError(t, err)
 
-		err = Write("overwrite.txt", []byte("second"), 0600)
+		err = Write("overwrite.txt", []byte("second"), 0o600)
 		require.NoError(t, err)
 
 		read, err := Read("overwrite.txt")
@@ -91,7 +91,7 @@ func TestReadWrite(t *testing.T) {
 	})
 
 	t.Run("File Permissions", func(t *testing.T) {
-		err := Write("perms.txt", []byte("test"), 0600)
+		err := Write("perms.txt", []byte("test"), 0o600)
 		require.NoError(t, err)
 
 		path, err := Path("perms.txt")
@@ -99,7 +99,7 @@ func TestReadWrite(t *testing.T) {
 
 		info, err := os.Stat(path)
 		require.NoError(t, err)
-		assert.Equal(t, os.FileMode(0600), info.Mode().Perm())
+		assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
 	})
 }
 

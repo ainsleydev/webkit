@@ -20,8 +20,8 @@ func writeTempSecret(t *testing.T, content string) (tmpDir, secretPath string) {
 	tmpDir = t.TempDir()
 	secretPath = filepath.Join(tmpDir, FilePathFromEnv(env.Development))
 
-	require.NoError(t, os.MkdirAll(filepath.Dir(secretPath), 0700))
-	require.NoError(t, os.WriteFile(secretPath, []byte(content), 0600))
+	require.NoError(t, os.MkdirAll(filepath.Dir(secretPath), 0o700))
+	require.NoError(t, os.WriteFile(secretPath, []byte(content), 0o600))
 
 	return tmpDir, secretPath
 }
@@ -175,5 +175,4 @@ DB_PASS: dbpass123
 		assert.Equal(t, def.Shared.Env.Dev["API_KEY"].Value, "supersecret")
 		assert.Equal(t, def.Apps[0].Env.Dev["DB_PASS"].Value, "dbpass123")
 	})
-
 }

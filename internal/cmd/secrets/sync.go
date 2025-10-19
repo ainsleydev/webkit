@@ -146,7 +146,7 @@ func processSyncFile(fs afero.Fs, path string, keys []string) syncFile {
 	// need scaffolding to the file.
 	if result.Added > 0 {
 		content = append(content, []byte(sb.String())...)
-		err = afero.WriteFile(fs, path, content, 0644)
+		err = afero.WriteFile(fs, path, content, 0o644)
 		if err != nil {
 			result.Error = err
 		}

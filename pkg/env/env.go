@@ -47,14 +47,12 @@ const (
 	AppEnvironmentKey = "APP_ENV"
 )
 
-var (
-	// All defines all environments combined.
-	All = []Environment{
-		Development,
-		Staging,
-		Production,
-	}
-)
+// All defines all environments combined.
+var All = []Environment{
+	Development,
+	Staging,
+	Production,
+}
 
 // ParseConfig loads the environment variables from the .env file and parses the
 // environment variables into the provided struct. It returns an error if the

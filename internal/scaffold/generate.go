@@ -94,7 +94,7 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 
 	exists, _ := afero.Exists(f.fs, path)
 	if exists {
-		//f.Printer.Println("Updated: " + path)
+		// f.Printer.Println("Updated: " + path)
 	}
 
 	if err := afero.WriteFile(f.fs, path, data, os.ModePerm); err != nil {
@@ -102,7 +102,7 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 	}
 
 	if !exists {
-		//f.Printer.Println("Created: " + path)
+		// f.Printer.Println("Created: " + path)
 	}
 
 	return nil

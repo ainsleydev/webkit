@@ -7,17 +7,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
-func setupClient(t *testing.T) (*Client, *executil.MemRunner) {
-	t.Helper()
-	mock := executil.NewMemRunner()
-	client, err := New(mock)
-	require.NoError(t, err)
-	return client, mock
-}
+//func setupClient(t *testing.T) (*Client, *executil.MemRunner) {
+//	t.Helper()
+//	mock := executil.NewMemRunner()
+//	client, err := New(mock)
+//	require.NoError(t, err)
+//	return client, mock
+//}
 
 //func TestNewGitCommandMissing(t *testing.T) {
 //	t.Parallel()

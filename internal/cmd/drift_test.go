@@ -69,7 +69,7 @@ func TestDrift(t *testing.T) {
 		err := tracker.Save(input.FS)
 		require.NoError(t, err)
 
-		err = afero.WriteFile(input.FS, ".github/workflows/deploy.yml", []byte("content"), 0644)
+		err = afero.WriteFile(input.FS, ".github/workflows/deploy.yml", []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		err = drift(t.Context(), input)
@@ -91,7 +91,7 @@ func TestDrift(t *testing.T) {
 		err := tracker.Save(input.FS)
 		require.NoError(t, err)
 
-		err = afero.WriteFile(input.FS, ".github/workflows/deploy.yml", []byte("modified content"), 0644)
+		err = afero.WriteFile(input.FS, ".github/workflows/deploy.yml", []byte("modified content"), 0o644)
 		require.NoError(t, err)
 
 		err = drift(t.Context(), input)

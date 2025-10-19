@@ -21,7 +21,7 @@ func TestCleanup(t *testing.T) {
 		var buf bytes.Buffer
 		console := printer.New(&buf)
 
-		err := afero.WriteFile(fs, "user.env", []byte("content"), 0644)
+		err := afero.WriteFile(fs, "user.env", []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		old := &Manifest{
@@ -49,7 +49,7 @@ func TestCleanup(t *testing.T) {
 		var buf bytes.Buffer
 		console := printer.New(&buf)
 
-		err := afero.WriteFile(fs, "keep.txt", []byte("content"), 0644)
+		err := afero.WriteFile(fs, "keep.txt", []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		old := &Manifest{
@@ -78,7 +78,7 @@ func TestCleanup(t *testing.T) {
 		fs := afero.NewMemMapFs()
 		var buf bytes.Buffer
 		console := printer.New(&buf)
-		err := afero.WriteFile(fs, "orphaned.txt", []byte("old"), 0644)
+		err := afero.WriteFile(fs, "orphaned.txt", []byte("old"), 0o644)
 		require.NoError(t, err)
 		old := &Manifest{
 			Files: map[string]FileEntry{
@@ -101,7 +101,7 @@ func TestCleanup(t *testing.T) {
 		var buf bytes.Buffer
 		console := printer.New(&buf)
 
-		err := afero.WriteFile(fs, "orphaned.txt", []byte("old"), 0644)
+		err := afero.WriteFile(fs, "orphaned.txt", []byte("old"), 0o644)
 		require.NoError(t, err)
 
 		old := &Manifest{

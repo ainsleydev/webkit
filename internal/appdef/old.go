@@ -2,7 +2,7 @@ package appdef
 
 import schemaorg "github.com/ainsleydev/webkit/pkg/markup/schema"
 
-type definitionOld struct {
+type definitionOld struct { //nolint
 	Name          string
 	Slug          string
 	URL           string

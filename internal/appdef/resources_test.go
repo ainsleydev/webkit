@@ -14,7 +14,6 @@ func TestResourceType_String(t *testing.T) {
 	got := ResourceTypePostgres.String()
 	assert.Equal(t, "postgres", got)
 	assert.IsType(t, "", got)
-
 }
 
 func TestResourceProvider_String(t *testing.T) {

@@ -44,6 +44,6 @@ func Run() {
 			os.Exit(silentErr.Code)
 			return
 		}
-		fmt.Println(err.Error())
+		fmt.Println(err.Error()) //nolint
 	}
 }

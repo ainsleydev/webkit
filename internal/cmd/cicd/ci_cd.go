@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/goccy/go-json"
 	"github.com/spf13/afero"
 
-	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
@@ -53,15 +51,4 @@ func CreatePRWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	//}
 
 	return nil
-}
-
-func temp(definition appdef.Definition) (string, error) {
-	apps := definition.Apps
-
-	str, err := json.Marshal(apps)
-	if err != nil {
-		return "", err
-	}
-
-	return string(str), nil
 }

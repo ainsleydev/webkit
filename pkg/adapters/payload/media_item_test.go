@@ -115,8 +115,7 @@ var media = `
 }`
 
 func TestMedia_UnmarshalJSON(t *testing.T) {
-	var (
-		in = `{
+	in := `{
 			"id": 15,
 				"alt": "Alt Text",
 				"caption": null,
@@ -134,7 +133,6 @@ func TestMedia_UnmarshalJSON(t *testing.T) {
 				}
 			}
 		}`
-	)
 
 	tt := map[string]struct {
 		input   string

@@ -502,6 +502,7 @@ func TestTerraform_Destroy(t *testing.T) {
 		assert.ErrorContains(t, err, "terraform destroy failed")
 	})
 }
+
 func TestTerraform_Output(t *testing.T) {
 	appDef := &appdef.Definition{
 		Project: appdef.Project{

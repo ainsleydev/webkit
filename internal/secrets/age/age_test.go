@@ -87,7 +87,7 @@ func TestReadIdentity(t *testing.T) {
 		require.NoError(t, os.Unsetenv(KeyEnvVar))
 
 		// Write invalid key directly to bypass validation
-		err = config.Write(KeyFileName, []byte("not-a-valid-age-key"), 0600)
+		err = config.Write(KeyFileName, []byte("not-a-valid-age-key"), 0o600)
 		require.NoError(t, err)
 
 		_, err = ReadIdentity()
@@ -153,11 +153,11 @@ func TestWritePrivateKey(t *testing.T) {
 
 		dir, err := config.Dir()
 		require.NoError(t, err)
-		require.NoError(t, os.MkdirAll(dir, 0755))
+		require.NoError(t, os.MkdirAll(dir, 0o755))
 
 		// Create a directory where the file should go
 		filePath := filepath.Join(dir, KeyFileName)
-		require.NoError(t, os.Mkdir(filePath, 0755)) // <-- Dir instead of a file
+		require.NoError(t, os.Mkdir(filePath, 0o755)) // <-- Dir instead of a file
 
 		err = WritePrivateKey(identity.String())
 		require.Error(t, err)

@@ -118,7 +118,7 @@ func TestNoError(t *testing.T) {
 func TestNotNil(t *testing.T) {
 	t.Run("Passing", func(t *testing.T) {
 		out := runSuccess(func() {
-			var x = 123
+			x := 123
 			NotNil(&x, "should not fail")
 		})
 		assert.Empty(t, out)

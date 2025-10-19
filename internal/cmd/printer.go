@@ -11,6 +11,8 @@ import (
 	"github.com/ainsleydev/webkit/internal/printer"
 )
 
+// printCmd just prints all the lovely stuff out that
+// .Printer() does for fancy stuff.
 var printCmd = &cli.Command{
 	Name:        "printer",
 	Description: "Utility to function to display the output of the printer",

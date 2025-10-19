@@ -5,5 +5,4 @@ import (
 )
 
 func TestApply(t *testing.T) {
-
 }

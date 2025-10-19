@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMemRunner_Run(t *testing.T) {
@@ -75,8 +76,10 @@ func TestMemRunner_Calls(t *testing.T) {
 	cmd1 := NewCommand("echo", "hello")
 	cmd2 := NewCommand("echo", "world")
 
-	runner.Run(t.Context(), cmd1)
-	runner.Run(t.Context(), cmd2)
+	_, err := runner.Run(t.Context(), cmd1)
+	require.NoError(t, err)
+	_, err = runner.Run(t.Context(), cmd2)
+	require.NoError(t, err)
 
 	calls := runner.Calls()
 

@@ -55,7 +55,7 @@ func (t *Tracker) Save(fs afero.Fs) error {
 		return err
 	}
 
-	return afero.WriteFile(fs, Path, data, 0644)
+	return afero.WriteFile(fs, Path, data, 0o644)
 }
 
 // ErrNoManifest is returned by Load() when there hasen't been

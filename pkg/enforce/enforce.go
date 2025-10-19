@@ -8,8 +8,10 @@ import (
 	"github.com/ainsleydev/webkit/internal/printer"
 )
 
-var console = printer.New(os.Stderr)
-var exit = os.Exit
+var (
+	console = printer.New(os.Stderr)
+	exit    = os.Exit
+)
 
 // Equal asserts that two values are equal. If they are not equal,
 // it prints an error message and exits the program with status 1.

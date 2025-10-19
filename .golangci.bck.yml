@@ -1,0 +1,21 @@
+run:
+    go: "1.24"
+linters:
+    enable:
+        - thelper
+        - gofumpt
+        - tparallel
+        - unconvert
+        - unparam
+        - wastedassign
+        - revive
+        - forbidigo
+        - misspell
+linters-settings:
+    revive:
+        rules:
+            - name: context-keys-type
+              disabled: true
+    staticcheck:
+        checks:
+            - "-SA1029"

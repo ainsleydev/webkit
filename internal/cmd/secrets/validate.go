@@ -21,7 +21,7 @@ var ValidateCmd = &cli.Command{
 			Aliases: []string{"e"},
 		},
 	},
-	//Action: cmdtools.Wrap(Validate),
+	// Action: cmdtools.Wrap(Validate),
 }
 
 // Validate validates that all secrets referenced in app.json exist in SOPS files

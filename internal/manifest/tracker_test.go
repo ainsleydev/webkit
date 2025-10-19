@@ -200,7 +200,7 @@ func TestLoad(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 
-		err := afero.WriteFile(fs, Path, []byte("{invalid json"), 0644)
+		err := afero.WriteFile(fs, Path, []byte("{invalid json"), 0o644)
 		require.NoError(t, err)
 
 		_, err = Load(fs)

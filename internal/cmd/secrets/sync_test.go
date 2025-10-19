@@ -110,7 +110,7 @@ func TestSync(t *testing.T) {
 
 		// Write a file that already contains the secret
 		initialContent := `SECRET_KEY: "EXISTING_VALUE"`
-		err := afero.WriteFile(input.FS, path, []byte(initialContent), 0644)
+		err := afero.WriteFile(input.FS, path, []byte(initialContent), 0o644)
 		require.NoError(t, err)
 
 		got := Sync(t.Context(), input)

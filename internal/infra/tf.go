@@ -31,7 +31,6 @@ type Terraform struct {
 	tmpDir          string
 	env             TFEnvironment
 	tf              terraformExecutor
-	tmp             *tfexec.Terraform
 	manifest        *manifest.Tracker
 	fs              afero.Fs
 	useLocalBackend bool

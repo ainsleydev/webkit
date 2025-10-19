@@ -54,7 +54,7 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 
 func confirm(prompt string) bool {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("%s [y/N]: ", prompt)
+	fmt.Printf("%s [y/N]: ", prompt) //nolint
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(strings.ToLower(input))
 	return input == "y" || input == "yes"

@@ -53,7 +53,7 @@ func TestOS_Upload(t *testing.T) {
 
 		// Create a file with the same name as the directory we want to create
 		filePathConflict := filepath.Join(s.BasePath, "conflict")
-		err := os.WriteFile(filePathConflict, []byte("conflict"), 0644)
+		err := os.WriteFile(filePathConflict, []byte("conflict"), 0o644)
 		require.NoError(t, err)
 
 		content := bytes.NewBufferString("conflict content")
@@ -67,7 +67,7 @@ func TestOS_Upload(t *testing.T) {
 		s := setupOSStorage(t)
 
 		// Make BasePath read-only to cause an error
-		err := os.Chmod(s.BasePath, 0555)
+		err := os.Chmod(s.BasePath, 0o555)
 		require.NoError(t, err)
 
 		content := bytes.NewBufferString("error content")
@@ -81,7 +81,7 @@ func TestOS_Upload(t *testing.T) {
 
 		// Create a read-only parent directory to simulate directory creation failure
 		parentDir := filepath.Join(s.BasePath, "readonly")
-		err := os.Mkdir(parentDir, 0555) // read-only
+		err := os.Mkdir(parentDir, 0o555) // read-only
 		require.NoError(t, err)
 
 		content := bytes.NewBufferString("error on directory creation")
@@ -90,7 +90,7 @@ func TestOS_Upload(t *testing.T) {
 		assert.Contains(t, err.Error(), "permission denied")
 
 		// Cleanup by setting the permissions back to writable
-		err = os.Chmod(parentDir, 0755)
+		err = os.Chmod(parentDir, 0o755)
 		require.NoError(t, err)
 	})
 }
@@ -103,7 +103,7 @@ func TestOS_Delete(t *testing.T) {
 		s := setupOSStorage(t)
 
 		// Create a file to delete
-		err := os.WriteFile(filepath.Join(s.BasePath, "delete_me.txt"), []byte("to be deleted"), 0644)
+		err := os.WriteFile(filepath.Join(s.BasePath, "delete_me.txt"), []byte("to be deleted"), 0o644)
 		require.NoError(t, err)
 
 		err = s.Delete(context.Background(), "delete_me.txt")
@@ -128,9 +128,9 @@ func TestOS_List(t *testing.T) {
 
 	// Create test files and directories
 	write := func(s *OS) {
-		require.NoError(t, os.MkdirAll(filepath.Join(s.BasePath, "dir1"), 0755))
-		require.NoError(t, os.WriteFile(filepath.Join(s.BasePath, "file1.txt"), []byte("file1"), 0644))
-		require.NoError(t, os.WriteFile(filepath.Join(s.BasePath, "dir1/file2.txt"), []byte("file2"), 0644))
+		require.NoError(t, os.MkdirAll(filepath.Join(s.BasePath, "dir1"), 0o755))
+		require.NoError(t, os.WriteFile(filepath.Join(s.BasePath, "file1.txt"), []byte("file1"), 0o644))
+		require.NoError(t, os.WriteFile(filepath.Join(s.BasePath, "dir1/file2.txt"), []byte("file2"), 0o644))
 	}
 
 	t.Run("List", func(t *testing.T) {
@@ -169,7 +169,7 @@ func TestOS_Download(t *testing.T) {
 
 		// Create a file to download
 		content := []byte("test content")
-		require.NoError(t, os.WriteFile(filepath.Join(s.BasePath, "download.txt"), content, 0644))
+		require.NoError(t, os.WriteFile(filepath.Join(s.BasePath, "download.txt"), content, 0o644))
 
 		reader, err := s.Download(context.Background(), "download.txt")
 		require.NoError(t, err)
@@ -194,7 +194,7 @@ func TestOS_Exists(t *testing.T) {
 	t.Run("Exists", func(t *testing.T) {
 		t.Parallel()
 		s := setupOSStorage(t)
-		require.NoError(t, os.WriteFile(filepath.Join(s.BasePath, "exists.txt"), []byte("exists"), 0644))
+		require.NoError(t, os.WriteFile(filepath.Join(s.BasePath, "exists.txt"), []byte("exists"), 0o644))
 
 		exists, err := s.Exists(context.Background(), "exists.txt")
 		require.NoError(t, err)
@@ -216,7 +216,7 @@ func TestOS_Exists(t *testing.T) {
 
 		// Create a directory with no read permissions
 		noReadDir := filepath.Join(s.BasePath, "no_read")
-		require.NoError(t, os.Mkdir(noReadDir, 0000))
+		require.NoError(t, os.Mkdir(noReadDir, 0o000))
 		defer func(path string) {
 			err := os.RemoveAll(path)
 			require.NoError(t, err)
@@ -236,7 +236,7 @@ func TestOS_Stat(t *testing.T) {
 
 		content := []byte("test content")
 		filePath := filepath.Join(s.BasePath, "stat.txt")
-		require.NoError(t, os.WriteFile(filePath, content, 0644))
+		require.NoError(t, os.WriteFile(filePath, content, 0o644))
 
 		info, err := s.Stat(context.Background(), "stat.txt")
 		require.NoError(t, err)
@@ -251,7 +251,7 @@ func TestOS_Stat(t *testing.T) {
 		s := setupOSStorage(t)
 
 		dirPath := filepath.Join(s.BasePath, "statdir")
-		require.NoError(t, os.Mkdir(dirPath, 0755))
+		require.NoError(t, os.Mkdir(dirPath, 0o755))
 
 		info, err := s.Stat(context.Background(), "statdir")
 		require.NoError(t, err)
