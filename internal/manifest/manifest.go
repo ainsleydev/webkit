@@ -3,7 +3,12 @@ package manifest
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"time"
+
+	"github.com/spf13/afero"
+
+	"github.com/ainsleydev/webkit/internal/printer"
 )
 
 type (
@@ -26,6 +31,63 @@ type (
 		GeneratedAt  time.Time `json:"generated_at"` // When this file entry was created/updated
 	}
 )
+
+// Cleanup removes files that are no longer needed by WebKit by comparing
+// the old and new manifests.
+func Cleanup(fs afero.Fs, old, new *Manifest, console *printer.Console) error {
+	for path, entry := range old.Files {
+		// Don't try and hash stuff that's managed by the
+		// user and not WebKit.
+		if entry.ScaffoldMode {
+			continue
+		}
+
+		// File existed before but doesn't exist now = orphaned.
+		_, exists := new.Files[path]
+		if exists {
+			continue
+		}
+
+		console.Warn(fmt.Sprintf("Removing orphaned: %s", path))
+
+		if err := fs.Remove(path); err != nil {
+			return fmt.Errorf("removing %s: %w", path, err)
+		}
+
+		console.Success(fmt.Sprintf("Removed: %s", path))
+	}
+
+	return nil
+}
+
+// DetectDrift checks if files have been manually modified and returns a list
+// of files that have changed.
+//
+// If the list is empty, no changes have been made.
+func DetectDrift(fs afero.Fs, manifest *Manifest) []string {
+	var drifted []string
+
+	for path, entry := range manifest.Files {
+		// File might be deleted or moved.
+		data, err := afero.ReadFile(fs, path)
+		if err != nil {
+			continue
+		}
+
+		// Don't try and hash stuff that's managed by the
+		// user and not WebKit.
+		if entry.ScaffoldMode {
+			continue
+		}
+
+		currentHash := HashContent(data)
+		if currentHash != entry.Hash {
+			drifted = append(drifted, path)
+		}
+	}
+
+	return drifted
+}
 
 // HashContent generates a SHA256 hash of the provided data.
 // Used to detect if file contents have changed since generation.

@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 
-	"github.com/ainsleydev/webkit/internal/enforce"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
+	"github.com/ainsleydev/webkit/pkg/enforce"
 )
 
 type (
