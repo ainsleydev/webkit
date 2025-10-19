@@ -12,6 +12,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 )
@@ -42,9 +43,10 @@ func TestDecrypt(t *testing.T) {
 		t.Setenv(age.KeyEnvVar, ageIdentity.String())
 
 		input := cmdtools.CommandInput{
-			FS:      afero.NewBasePathFs(afero.NewOsFs(), tmpDir),
-			BaseDir: tmpDir,
-			Command: GetCmd,
+			FS:       afero.NewBasePathFs(afero.NewOsFs(), tmpDir),
+			BaseDir:  tmpDir,
+			Command:  GetCmd,
+			Manifest: manifest.NewTracker(),
 		}
 		input.Printer().SetWriter(io.Discard)
 

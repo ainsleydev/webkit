@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
@@ -16,8 +15,6 @@ func TestCreatePackageJson(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
-
 		appDef := &appdef.Definition{
 			Project: appdef.Project{Name: "my-website"},
 			Apps: []appdef.App{
@@ -29,15 +26,14 @@ func TestCreatePackageJson(t *testing.T) {
 			},
 		}
 
-		err := PackageJSON(t.Context(), cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: appDef,
-		})
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PackageJSON(t.Context(), input)
 		assert.NoError(t, err)
 
 		t.Log("File Exists")
 		{
-			exists, err := afero.Exists(fs, "package.json")
+			exists, err := afero.Exists(input.FS, "package.json")
 			assert.NoError(t, err)
 			assert.True(t, exists)
 		}
@@ -47,7 +43,7 @@ func TestCreatePackageJson(t *testing.T) {
 			schema, err := testutil.SchemaFromURL(t, "https://www.schemastore.org/package.json")
 			require.NoError(t, err)
 
-			file, err := afero.ReadFile(fs, "package.json")
+			file, err := afero.ReadFile(input.FS, "package.json")
 			require.NoError(t, err)
 
 			err = schema.ValidateJSON(file)
@@ -58,10 +54,7 @@ func TestCreatePackageJson(t *testing.T) {
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 
-		input := cmdtools.CommandInput{
-			FS:          afero.NewReadOnlyFs(afero.NewMemMapFs()),
-			AppDefCache: &appdef.Definition{},
-		}
+		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), &appdef.Definition{})
 
 		got := PackageJSON(t.Context(), input)
 		assert.Error(t, got)

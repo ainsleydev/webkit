@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/mocks"
 )
 
@@ -22,7 +23,7 @@ func setup(t *testing.T) *FileGenerator {
 	t.Helper()
 
 	fs := afero.NewMemMapFs()
-	gen := New(fs)
+	gen := New(fs, manifest.NewTracker())
 
 	if !testing.Verbose() {
 		gen.Printer.SetWriter(io.Discard)
@@ -86,6 +87,29 @@ func TestFileGenerator_Bytes(t *testing.T) {
 		assert.Equal(t, newData, got)
 
 		// TODO: Check printer output
+	})
+
+	t.Run("Appends To Manifest", func(t *testing.T) {
+		t.Parallel()
+
+		gen := setup(t)
+		gen.fs = afero.NewMemMapFs()
+
+		data := []byte("hello")
+		err := gen.Bytes("dir/file.txt", data, WithTracking("source"))
+		assert.NoError(t, err)
+		assert.NotEmpty(t, gen.manifest)
+
+		err = gen.manifest.Save(gen.fs)
+		assert.NoError(t, err)
+
+		mani, err := manifest.Load(gen.fs)
+		assert.NoError(t, err)
+
+		entry := mani.Files["dir/file.txt"]
+		assert.Equal(t, "dir/file.txt", entry.Path)
+		assert.Equal(t, "source", entry.Source)
+		assert.False(t, entry.ScaffoldMode)
 	})
 
 	t.Run("Valid Write", func(t *testing.T) {

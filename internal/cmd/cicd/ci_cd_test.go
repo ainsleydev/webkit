@@ -1,7 +1,6 @@
 package cicd
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -11,6 +10,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
@@ -60,6 +60,7 @@ func TestCreatePRWorkflow(t *testing.T) {
 				err := CreatePRWorkflow(t.Context(), cmdtools.CommandInput{
 					FS:          fs,
 					AppDefCache: def,
+					Manifest:    &manifest.Tracker{},
 				})
 				require.NoError(t, err)
 
@@ -71,9 +72,6 @@ func TestCreatePRWorkflow(t *testing.T) {
 					err = testutil.ValidateYAML(t, file)
 					assert.NoError(t, err)
 				}
-
-				content := string(file)
-				fmt.Print(string(content))
 
 				t.Log("Github Action is validated")
 				{

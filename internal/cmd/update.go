@@ -50,7 +50,7 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 
 	// 3. Save new manifest
-	if err := gen.Finalize(); err != nil {
+	if err := input.Manifest.Save(input.FS); err != nil {
 		return fmt.Errorf("saving manifest: %w", err)
 	}
 

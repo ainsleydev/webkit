@@ -74,6 +74,7 @@ func TestEnvIntegration(t *testing.T) {
 		FS:          fs,
 		BaseDir:     tmpDir,
 		AppDefCache: appDef,
+		Manifest:    manifest.NewTracker(),
 	}
 
 	err = Scaffold(ctx, input)

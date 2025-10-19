@@ -26,8 +26,8 @@ func NewTracker() *Tracker {
 	}
 }
 
-// ManifestPath defines the filepath where the manifest resides.
-var ManifestPath = filepath.Join(".webkit", "manifest.json")
+// Path defines the filepath where the manifest resides.
+var Path = filepath.Join(".webkit", "manifest.json")
 
 // Add stores a file entry in the tracker, keyed by its path.
 // If an entry with the same path exists, it will be overwritten.
@@ -49,18 +49,18 @@ func (t *Tracker) Save(fs afero.Fs) error {
 		return err
 	}
 
-	err = fs.MkdirAll(filepath.Dir(ManifestPath), os.ModePerm)
+	err = fs.MkdirAll(filepath.Dir(Path), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	return afero.WriteFile(fs, ManifestPath, data, 0644)
+	return afero.WriteFile(fs, Path, data, 0644)
 }
 
 // Load reads a manifest JSON file and deserializes it.
 // Returns an error if the file doesn't exist or contains invalid JSON.
 func Load(fs afero.Fs) (*Manifest, error) {
-	data, err := afero.ReadFile(fs, ManifestPath)
+	data, err := afero.ReadFile(fs, Path)
 	if err != nil {
 		return nil, err
 	}

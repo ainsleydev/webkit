@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 )
 
 func TestCreateCodeStyleFiles(t *testing.T) {
@@ -16,17 +15,13 @@ func TestCreateCodeStyleFiles(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
-		fs := afero.NewMemMapFs()
-		input := cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: &appdef.Definition{},
-		}
+		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{})
 
 		got := CodeStyle(t.Context(), input)
 		assert.NoError(t, got)
 
 		for path, _ := range codeStyleTemplates {
-			file, err := afero.ReadFile(fs, path)
+			file, err := afero.ReadFile(input.FS, path)
 			assert.NoError(t, err)
 			assert.NotEmpty(t, file)
 		}
@@ -35,10 +30,7 @@ func TestCreateCodeStyleFiles(t *testing.T) {
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 
-		input := cmdtools.CommandInput{
-			FS:          afero.NewReadOnlyFs(afero.NewMemMapFs()),
-			AppDefCache: &appdef.Definition{},
-		}
+		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), &appdef.Definition{})
 
 		got := CodeStyle(t.Context(), input)
 		assert.Error(t, got)

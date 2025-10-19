@@ -10,6 +10,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
@@ -26,6 +27,7 @@ func TestCreatePNPMWorkspace(t *testing.T) {
 		input := cmdtools.CommandInput{
 			FS:          afero.NewMemMapFs(),
 			AppDefCache: appDef,
+			Manifest:    manifest.NewTracker(),
 		}
 
 		got := CreatePNPMWorkspace(t.Context(), input)
@@ -49,6 +51,7 @@ func TestCreatePNPMWorkspace(t *testing.T) {
 		input := cmdtools.CommandInput{
 			FS:          afero.NewMemMapFs(),
 			AppDefCache: appDef,
+			Manifest:    manifest.NewTracker(),
 		}
 
 		got := CreatePNPMWorkspace(t.Context(), input)
@@ -84,6 +87,7 @@ func TestCreatePNPMWorkspace(t *testing.T) {
 		input := cmdtools.CommandInput{
 			FS:          fs,
 			AppDefCache: appDef,
+			Manifest:    manifest.NewTracker(),
 		}
 
 		err := CreatePNPMWorkspace(t.Context(), input)
@@ -124,6 +128,7 @@ func TestCreatePNPMWorkspace(t *testing.T) {
 		input := cmdtools.CommandInput{
 			FS:          afero.NewReadOnlyFs(afero.NewMemMapFs()),
 			AppDefCache: appDef,
+			Manifest:    manifest.NewTracker(),
 		}
 
 		got := CreatePNPMWorkspace(t.Context(), input)

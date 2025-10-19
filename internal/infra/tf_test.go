@@ -15,6 +15,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/infra/internal/tfmocks"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -28,7 +29,7 @@ func setup(t *testing.T, appDef *appdef.Definition) (*Terraform, func()) {
 
 	setupEnv(t)
 
-	tf, err := NewTerraform(t.Context(), appDef)
+	tf, err := NewTerraform(t.Context(), appDef, manifest.NewTracker())
 	require.NoError(t, err)
 
 	tf.useLocalBackend = true
@@ -79,12 +80,12 @@ func TestNewTerraform(t *testing.T) {
 		t.Setenv("PATH", "/nonexistent")
 		defer teardownEnv(t)
 
-		_, err := NewTerraform(t.Context(), &appdef.Definition{})
+		_, err := NewTerraform(t.Context(), &appdef.Definition{}, manifest.NewTracker())
 		assert.Error(t, err)
 	})
 
 	t.Run("Invalid Environment", func(t *testing.T) {
-		got, err := NewTerraform(t.Context(), &appdef.Definition{})
+		got, err := NewTerraform(t.Context(), &appdef.Definition{}, manifest.NewTracker())
 		defer teardownEnv(t)
 
 		assert.Nil(t, got)
@@ -96,7 +97,7 @@ func TestNewTerraform(t *testing.T) {
 		setupEnv(t)
 		defer teardownEnv(t)
 
-		got, err := NewTerraform(t.Context(), &appdef.Definition{})
+		got, err := NewTerraform(t.Context(), &appdef.Definition{}, manifest.NewTracker())
 		require.NoError(t, err)
 		assert.NotNil(t, got)
 		assert.NotEmpty(t, got.env)
@@ -390,7 +391,7 @@ func TestTerraform_Apply(t *testing.T) {
 
 		got, err := tf.Apply(t.Context(), env.Production)
 		assert.NoError(t, err)
-		fmt.Print(got.Output)
+		fmt.Println(got)
 	})
 
 	t.Run("Apply Failure", func(t *testing.T) {
@@ -478,7 +479,7 @@ func TestTerraform_Destroy(t *testing.T) {
 
 		got, err := tf.Destroy(t.Context(), env.Production)
 		assert.NoError(t, err)
-		fmt.Print(got.Output)
+		fmt.Println(got)
 	})
 
 	t.Run("Destroy Failure", func(t *testing.T) {

@@ -10,6 +10,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/pkg/env"
@@ -23,6 +24,7 @@ func setup(t *testing.T, def *appdef.Definition) (cmdtools.CommandInput, *bytes.
 	input := cmdtools.CommandInput{
 		FS:          fs,
 		AppDefCache: def,
+		Manifest:    manifest.NewTracker(),
 	}
 	input.Printer().SetWriter(buf)
 
@@ -41,9 +43,10 @@ func setupEncryptedProdFile(t *testing.T, content string) (cmdtools.CommandInput
 
 	buf := &bytes.Buffer{}
 	input := cmdtools.CommandInput{
-		FS:      fs,
-		BaseDir: tmpDir,
-		Command: GetCmd,
+		FS:       fs,
+		BaseDir:  tmpDir,
+		Command:  GetCmd,
+		Manifest: manifest.NewTracker(),
 	}
 	input.Printer().SetWriter(buf)
 	err = Scaffold(t.Context(), input)

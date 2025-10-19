@@ -15,7 +15,9 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/enforce"
 	"github.com/ainsleydev/webkit/internal/fsext"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/platform/terraform"
@@ -30,6 +32,7 @@ type Terraform struct {
 	env             TFEnvironment
 	tf              terraformExecutor
 	tmp             *tfexec.Terraform
+	manifest        *manifest.Tracker
 	fs              afero.Fs
 	useLocalBackend bool
 }
@@ -54,21 +57,27 @@ type terraformExecutor interface {
 // the terraform binary on the system.
 //
 // Returns an error if terraform cannot be found in PATH.
-func NewTerraform(ctx context.Context, appDef *appdef.Definition) (*Terraform, error) {
+func NewTerraform(ctx context.Context, appDef *appdef.Definition, manifest *manifest.Tracker) (*Terraform, error) {
+	enforce.NotNil(appDef, "app definition is required")
+	enforce.NotNil(manifest, "manifest definition is required")
+
 	path, err := getTerraformPath(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	tfEnv, err := ParseTFEnvironment()
 	if err != nil {
 		return nil, err
 	}
+
 	return &Terraform{
 		appDef:          appDef,
 		path:            path,
 		fs:              afero.NewOsFs(),
 		env:             tfEnv,
 		useLocalBackend: false,
+		manifest:        manifest,
 	}, nil
 }
 

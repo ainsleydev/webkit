@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
@@ -18,14 +17,9 @@ func TestCreateTurboJson(t *testing.T) {
 	t.Run("No Apps", func(t *testing.T) {
 		t.Context()
 
-		appDef := &appdef.Definition{
+		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{
 			Apps: []appdef.App{},
-		}
-
-		input := cmdtools.CommandInput{
-			FS:          afero.NewMemMapFs(),
-			AppDefCache: appDef,
-		}
+		})
 
 		got := CreateTurboJson(t.Context(), input)
 		assert.NoError(t, got)
@@ -45,10 +39,7 @@ func TestCreateTurboJson(t *testing.T) {
 			},
 		}
 
-		input := cmdtools.CommandInput{
-			FS:          afero.NewMemMapFs(),
-			AppDefCache: appDef,
-		}
+		input := setup(t, afero.NewMemMapFs(), appDef)
 
 		got := CreateTurboJson(t.Context(), input)
 		assert.NoError(t, got)
@@ -67,16 +58,12 @@ func TestCreateTurboJson(t *testing.T) {
 			},
 		}
 
-		fs := afero.NewMemMapFs()
-		input := cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: appDef,
-		}
+		input := setup(t, afero.NewMemMapFs(), appDef)
 
 		err := CreateTurboJson(t.Context(), input)
 		require.NoError(t, err)
 
-		file, err := afero.ReadFile(fs, "turbo.json")
+		file, err := afero.ReadFile(input.FS, "turbo.json")
 		require.NoError(t, err)
 		assert.NotEmpty(t, file)
 		assert.Contains(t, string(file), "https://turborepo.com/schema.json")
@@ -91,10 +78,7 @@ func TestCreateTurboJson(t *testing.T) {
 			},
 		}
 
-		input := cmdtools.CommandInput{
-			FS:          afero.NewReadOnlyFs(afero.NewMemMapFs()),
-			AppDefCache: appDef,
-		}
+		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), appDef)
 
 		got := CreateTurboJson(t.Context(), input)
 		assert.Error(t, got)

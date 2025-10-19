@@ -55,7 +55,7 @@ func initTerraform(ctx context.Context, input cmdtools.CommandInput) (*infra.Ter
 	printer.Println("Initializing Terraform...")
 	spinner.Start()
 
-	tf, err := infra.NewTerraform(ctx, appDef)
+	tf, err := infra.NewTerraform(ctx, appDef, input.Manifest)
 	teardown := func() {
 		tf.Cleanup()
 	}

@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
@@ -29,21 +28,18 @@ func TestCreateGitSettings(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
-		fs := afero.NewMemMapFs()
+		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		err := GitSettings(t.Context(), cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: appDef,
-		})
+		err := GitSettings(t.Context(), input)
 		assert.NoError(t, err)
 
 		for path := range gitSettingsTemplates {
-			file, err := afero.ReadFile(fs, path)
+			file, err := afero.ReadFile(input.FS, path)
 			assert.NoError(t, err)
 			assert.NotEmpty(t, file)
 		}
 
-		got, err := afero.ReadFile(fs, ".github/settings.yaml")
+		got, err := afero.ReadFile(input.FS, ".github/settings.yaml")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, got)
 		assert.NoError(t, testutil.ValidateYAML(t, got))
@@ -52,17 +48,15 @@ func TestCreateGitSettings(t *testing.T) {
 	t.Run("Validates dependabot.yaml schema", func(t *testing.T) {
 		t.Parallel()
 
-		fs := afero.NewMemMapFs()
-		err := GitSettings(t.Context(), cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: appDef,
-		})
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := GitSettings(t.Context(), input)
 		assert.NoError(t, err)
 
 		schema, err := testutil.SchemaFromURL(t, "https://www.schemastore.org/dependabot-2.0.json")
 		require.NoError(t, err)
 
-		dep, err := afero.ReadFile(fs, ".github/dependabot.yaml")
+		dep, err := afero.ReadFile(input.FS, ".github/dependabot.yaml")
 		require.NoError(t, err)
 
 		err = schema.ValidateYAML(dep)
@@ -72,10 +66,7 @@ func TestCreateGitSettings(t *testing.T) {
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 
-		input := cmdtools.CommandInput{
-			FS:          afero.NewReadOnlyFs(afero.NewMemMapFs()),
-			AppDefCache: &appdef.Definition{},
-		}
+		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), &appdef.Definition{})
 
 		got := GitSettings(t.Context(), input)
 		assert.Error(t, got)

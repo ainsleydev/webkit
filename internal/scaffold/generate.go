@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 
+	"github.com/ainsleydev/webkit/internal/enforce"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
 )
@@ -36,14 +37,14 @@ type (
 
 // New creates a new FileGenerator with the provided afero.Fs.
 func New(fs afero.Fs, manifest *manifest.Tracker) *FileGenerator {
+	enforce.NotNil(manifest, "manifest definition is required")
+
 	var w io.Writer
 	w = os.Stdout
 	if testing.Testing() {
 		w = io.Discard
 	}
-	if manifest == nil {
-		panic("manifest is required")
-	}
+
 	return &FileGenerator{
 		Printer:  printer.New(w),
 		fs:       fs,
@@ -68,8 +69,6 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 	// Add to the manifest at to begin with, otherwise
 	// scaffolded files won't be appended.
 	if options.tracking.enabled {
-		fmt.Println(path)
-		fmt.Println("-----")
 		f.manifest.Add(manifest.FileEntry{
 			Path:         path,
 			Generator:    options.tracking.generator,
@@ -136,12 +135,6 @@ func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
 	opts = append(opts, WithNotice(false))
 
 	return f.Bytes(path, buf.Bytes(), opts...)
-}
-
-// Finalize writes the manifest to disk.
-// Should be called after all files have been generated and copied.
-func (f FileGenerator) Finalize() error {
-	return f.manifest.Save(f.fs)
 }
 
 // YAML writes YAML content with the given mode.

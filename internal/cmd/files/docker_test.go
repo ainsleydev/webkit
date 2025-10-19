@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 )
 
 func TestDockerIgnore(t *testing.T) {
@@ -17,14 +16,9 @@ func TestDockerIgnore(t *testing.T) {
 	t.Run("No Apps", func(t *testing.T) {
 		t.Parallel()
 
-		appDef := &appdef.Definition{
+		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{
 			Apps: []appdef.App{},
-		}
-
-		input := cmdtools.CommandInput{
-			FS:          afero.NewMemMapFs(),
-			AppDefCache: appDef,
-		}
+		})
 
 		err := DockerIgnore(t.Context(), input)
 		assert.NoError(t, err)
@@ -40,19 +34,14 @@ func TestDockerIgnore(t *testing.T) {
 			},
 		}
 
-		fs := afero.NewMemMapFs()
-
-		input := cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: appDef,
-		}
+		input := setup(t, afero.NewMemMapFs(), appDef)
 
 		err := DockerIgnore(t.Context(), input)
 		require.NoError(t, err)
 
 		for _, app := range appDef.Apps {
 			path := app.Path + "/.dockerignore"
-			exists, err := afero.Exists(fs, path)
+			exists, err := afero.Exists(input.FS, path)
 			require.NoError(t, err)
 			assert.True(t, exists, "expected %s to exist", path)
 		}
@@ -61,16 +50,11 @@ func TestDockerIgnore(t *testing.T) {
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 
-		appDef := &appdef.Definition{
+		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), &appdef.Definition{
 			Apps: []appdef.App{
 				{Name: "api", Path: "./apps/api"},
 			},
-		}
-
-		input := cmdtools.CommandInput{
-			FS:          afero.NewReadOnlyFs(afero.NewMemMapFs()),
-			AppDefCache: appDef,
-		}
+		})
 
 		err := DockerIgnore(t.Context(), input)
 		assert.Error(t, err)
