@@ -37,7 +37,7 @@ func TestScaffold(t *testing.T) {
 			MkdirAll(gomock.Any(), gomock.Any()).
 			Return(fmt.Errorf("mkdir error"))
 
-		input, _ := setup(t, appDef)
+		input := setup(t, appDef)
 		input.FS = fsMock
 		input.SOPSCache = mocks.NewMockEncrypterDecrypter(ctrl)
 
@@ -49,7 +49,7 @@ func TestScaffold(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
-		input, _ := setup(t, appDef)
+		input := setup(t, appDef)
 
 		err := Scaffold(t.Context(), input)
 		assert.NoError(t, err)

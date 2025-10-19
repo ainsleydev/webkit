@@ -79,9 +79,7 @@ func (d *Definition) ApplyDefaults() error {
 	}
 
 	for i := range d.Resources {
-		if err := d.Resources[i].applyDefaults(); err != nil {
-			return fmt.Errorf("applying defaults to resource %q: %w", d.Resources[i].Name, err)
-		}
+		d.Resources[i].applyDefaults()
 	}
 
 	return nil

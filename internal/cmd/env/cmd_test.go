@@ -1,7 +1,6 @@
 package env
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -11,17 +10,15 @@ import (
 	"github.com/ainsleydev/webkit/internal/manifest"
 )
 
-func setup(t *testing.T, def *appdef.Definition) (cmdtools.CommandInput, *bytes.Buffer) {
+func setup(t *testing.T, def *appdef.Definition) cmdtools.CommandInput {
 	t.Helper()
 
 	fs := afero.NewMemMapFs()
-	buf := &bytes.Buffer{}
 	input := cmdtools.CommandInput{
 		FS:          fs,
 		AppDefCache: def,
 		Manifest:    manifest.NewTracker(),
 	}
-	input.Printer().SetWriter(buf)
 
-	return input, buf
+	return input
 }

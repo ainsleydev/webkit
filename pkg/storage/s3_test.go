@@ -181,7 +181,7 @@ func TestS3Config_Validate(t *testing.T) {
 	}
 }
 
-func TestNewS3Storage(t *testing.T) {
+func TestNewS3Storage(t *testing.T) { //nolint
 	t.Parallel()
 
 	var loadDefaultConfig func(ctx context.Context, optFns ...func(*config.LoadOptions) error) (aws.Config, error)

@@ -259,22 +259,27 @@ func TestUpdateOps_Ordering(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Env Scaffold Is First", func(t *testing.T) {
+		t.Parallel()
 		assert.Equal(t, "Env: Scaffold .env files", updateOps[0].name)
 	})
 
 	t.Run("Secrets Scaffold Is Second", func(t *testing.T) {
+		t.Parallel()
 		assert.Equal(t, "Secrets: Scaffold secret files", updateOps[1].name)
 	})
 
 	t.Run("Env Sync Is Second To Last", func(t *testing.T) {
+		t.Parallel()
 		assert.Equal(t, "Env: Sync .env files", updateOps[len(updateOps)-2].name)
 	})
 
 	t.Run("Secrets Sync Is Last", func(t *testing.T) {
+		t.Parallel()
 		assert.Equal(t, "Secrets: Sync secret files", updateOps[len(updateOps)-1].name)
 	})
 
 	t.Run("All Operations Have Names", func(t *testing.T) {
+		t.Parallel()
 		for i, op := range updateOps {
 			assert.NotEmpty(t, op.name, "operation at index %d should have a name", i)
 			assert.NotNil(t, op.command, "operation at index %d should have a command", i)

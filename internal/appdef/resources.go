@@ -99,7 +99,7 @@ func (r *Resource) GitHubSecretName(environment env.Environment, output string) 
 }
 
 // applyDefaults applies default values to a Resource.
-func (r *Resource) applyDefaults() error {
+func (r *Resource) applyDefaults() {
 	if r.Config == nil {
 		r.Config = make(map[string]any)
 	}
@@ -120,6 +120,4 @@ func (r *Resource) applyDefaults() error {
 			r.Config["acl"] = "private"
 		}
 	}
-
-	return nil
 }

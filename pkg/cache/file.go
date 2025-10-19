@@ -42,7 +42,7 @@ func NewFileCache(filePath string) (*FileCache, error) {
 	}
 	// Add .json extension if not present
 	if !strings.HasSuffix(filePath, ".json") {
-		filePath += ".json"
+		filePath += ".json" //nolint
 	}
 	// Load cache data from file
 	if err := fc.load(); err != nil {

@@ -14,6 +14,8 @@ import (
 )
 
 func TestSync(t *testing.T) {
+	t.Parallel()
+
 	envFixture := appdef.Environment{
 		Production: map[string]appdef.EnvValue{
 			"SECRET_KEY": {

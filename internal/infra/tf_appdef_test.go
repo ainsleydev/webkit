@@ -1,7 +1,6 @@
 package infra
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -400,8 +399,6 @@ func TestTerraform_Apps(t *testing.T) {
 			}
 
 			spec := app["spec"].([]any)[0].(map[string]any)
-
-			fmt.Print(spec)
 
 			services := spec["service"].([]any)
 			require.Len(t, services, 1)

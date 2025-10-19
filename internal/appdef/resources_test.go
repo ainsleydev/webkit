@@ -109,8 +109,7 @@ func TestResourceApplyDefaults(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			err := test.input.applyDefaults()
-			assert.NoError(t, err)
+			test.input.applyDefaults()
 			assert.Equal(t, test.want, test.input)
 		})
 	}

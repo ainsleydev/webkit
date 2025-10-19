@@ -68,7 +68,7 @@ func TestSync(t *testing.T) {
 			},
 		}
 
-		input, _ := setup(t, appDefSops)
+		input := setup(t, appDefSops)
 		input.SOPSCache = mock
 
 		err = Sync(ctx, input)
@@ -84,7 +84,7 @@ func TestSync(t *testing.T) {
 			MkdirAll(gomock.Any(), gomock.Any()).
 			Return(fmt.Errorf("mkdir error"))
 
-		input, _ := setup(t, appDef)
+		input := setup(t, appDef)
 		input.FS = fsMock
 		input.SOPSCache = mocks.NewMockEncrypterDecrypter(ctrl)
 
@@ -96,7 +96,7 @@ func TestSync(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Setenv(age.KeyEnvVar, ageIdentity.String())
 
-		input, _ := setup(t, appDef)
+		input := setup(t, appDef)
 
 		err = Sync(ctx, input)
 		assert.NoError(t, err)
@@ -137,7 +137,7 @@ func TestSync(t *testing.T) {
 			return "", fmt.Errorf("marshal error")
 		}
 
-		input, _ := setup(t, appDef)
+		input := setup(t, appDef)
 		input.SOPSCache = mocks.NewMockEncrypterDecrypter(ctrl)
 
 		err = Sync(t.Context(), input)

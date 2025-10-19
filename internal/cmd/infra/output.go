@@ -95,7 +95,7 @@ func Output(ctx context.Context, input cmdtools.CommandInput) error {
 	if err != nil {
 		return errors.Wrap(err, "serializing terraform outputs")
 	}
-	fmt.Println(string(indent))
+	fmt.Println(string(indent)) //nolint:forbidigo
 
 	return nil
 }

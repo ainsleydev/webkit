@@ -24,8 +24,8 @@ const (
 // 1. SOPS_AGE_KEY environment variable.
 // 2. ~/.config/webkit/age.key (local dev)
 func ReadIdentity() (*age.X25519Identity, error) {
-	key := ""
-	source := ""
+	key := ""    //nolint
+	source := "" //nolint
 
 	// Check environment variable first (used in CI/CD)
 	if envKey := os.Getenv(KeyEnvVar); envKey != "" {

@@ -95,7 +95,8 @@ func TestMemRunner_Reset(t *testing.T) {
 	runner.AddStub("test", Result{Output: "output"}, nil)
 
 	cmd := NewCommand("test", "arg")
-	runner.Run(t.Context(), cmd)
+	_, err := runner.Run(t.Context(), cmd)
+	assert.NoError(t, err)
 
 	assert.Len(t, runner.Calls(), 1)
 
@@ -104,6 +105,6 @@ func TestMemRunner_Reset(t *testing.T) {
 	assert.Len(t, runner.Calls(), 0)
 
 	// Stubs should be cleared too
-	_, err := runner.Run(t.Context(), cmd)
+	_, err = runner.Run(t.Context(), cmd)
 	assert.Error(t, err)
 }

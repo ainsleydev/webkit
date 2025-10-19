@@ -389,9 +389,8 @@ func TestTerraform_Apply(t *testing.T) {
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
 
-		got, err := tf.Apply(t.Context(), env.Production)
+		_, err = tf.Apply(t.Context(), env.Production)
 		assert.NoError(t, err)
-		fmt.Println(got)
 	})
 
 	t.Run("Apply Failure", func(t *testing.T) {
@@ -477,9 +476,8 @@ func TestTerraform_Destroy(t *testing.T) {
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
 
-		got, err := tf.Destroy(t.Context(), env.Production)
+		_, err = tf.Destroy(t.Context(), env.Production)
 		assert.NoError(t, err)
-		fmt.Println(got)
 	})
 
 	t.Run("Destroy Failure", func(t *testing.T) {
