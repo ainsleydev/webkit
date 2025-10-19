@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmd/cicd"
 	"github.com/ainsleydev/webkit/internal/cmd/env"
 	"github.com/ainsleydev/webkit/internal/cmd/infra"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/secrets"
 	"github.com/ainsleydev/webkit/pkg/log"
 )
@@ -37,6 +39,11 @@ func Run() {
 	}
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		var silentErr *cmdtools.ExitError
+		if errors.As(err, &silentErr) {
+			os.Exit(silentErr.Code)
+			return
+		}
 		fmt.Println(err.Error())
 	}
 }

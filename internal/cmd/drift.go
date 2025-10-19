@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	"github.com/urfave/cli/v3"
 
@@ -34,15 +32,9 @@ func drift(ctx context.Context, input cmdtools.CommandInput) error {
 	printer.Error("Drift found")
 	printer.Println("Be sure to run webkit update to update the projects dependencies.")
 
-	list := make([]string, len(files))
-	for idx, file := range files {
-		list[idx] = fmt.Sprintf("%s\n", file)
-	}
 	printer.LineBreak()
-	printer.List(list)
-	printer.LineBreak()
+	printer.List(files)
+	printer.Printf("\n\n")
 
-	os.Exit(1)
-
-	return nil
+	return cmdtools.ExitWithCode(1)
 }
