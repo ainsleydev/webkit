@@ -5,8 +5,17 @@ type Option func(*writeOptions)
 
 // writeOptions holds configuration for write operations
 type writeOptions struct {
-	mode   WriteMode
-	notice bool
+	mode     WriteMode
+	notice   bool
+	tracking trackingData
+}
+
+// trackingData defines the data when WithTracking is called.
+type trackingData struct {
+	enabled   bool
+	generator string // Which function generated this.
+	source    string // What app.json element caused this.
+	managed   bool   // If it's webkit managed (false would be user).
 }
 
 // WithScaffoldMode sets the write mode for the operation
@@ -21,6 +30,19 @@ func WithScaffoldMode() Option {
 func WithNotice(enabled bool) Option {
 	return func(opts *writeOptions) {
 		opts.notice = enabled
+	}
+}
+
+// WithTracking adds generators and sources to each file
+// so it can be tracked in the manifest.
+func WithTracking(generator, source string, managed bool) Option {
+	return func(opts *writeOptions) {
+		opts.tracking = trackingData{
+			enabled:   true,
+			generator: generator,
+			source:    source,
+			managed:   managed,
+		}
 	}
 }
 

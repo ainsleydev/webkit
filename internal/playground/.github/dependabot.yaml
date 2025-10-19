@@ -13,9 +13,21 @@ updates:
     - dependency-name: "*"
       update-types: ["version-update:semver-patch"]
   groups:
+    payload:
+      patterns:
+        - "@payloadcms/*"
+        - "payload"
+        - "@ainsleydev/payload-helper"
+      update-types:
+        - "minor"
+        - "patch"
     dependencies:
       patterns:
         - "*"
+      exclude-patterns:
+        - "@payloadcms/*"
+        - "payload"
+        - "@ainsleydev/payload-helper"
 - package-ecosystem: "npm"
   directory: "/web"
   schedule:
@@ -30,3 +42,4 @@ updates:
     dependencies:
       patterns:
         - "*"
+      exclude-patterns:

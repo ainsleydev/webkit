@@ -24,7 +24,7 @@ var BackupCmd = &cli.Command{
 
 func BackupResourcesWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	base := filepath.Join(".github", "workflows")
-	gen := scaffold.New(afero.NewBasePathFs(input.FS, base))
+	gen := scaffold.New(afero.NewBasePathFs(input.FS, base), input.Manifest)
 	appDef := input.AppDef()
 	enviro := env.Production
 

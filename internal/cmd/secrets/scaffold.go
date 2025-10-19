@@ -23,7 +23,7 @@ var ScaffoldCmd = &cli.Command{
 // This creates empty secret files and SOPS configuration without
 // parsing app.json.
 func Scaffold(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(afero.NewBasePathFs(input.FS, "resources"))
+	gen := scaffold.New(afero.NewBasePathFs(input.FS, "resources"), input.Manifest)
 
 	if err := generateSOPSConfig(gen); err != nil {
 		return fmt.Errorf("generating .sops.yaml: %w", err)

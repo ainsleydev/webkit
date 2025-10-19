@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BACKUP_PATH: '/backups/db/'
+      DO_ACCESS_TOKEN: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
 
     steps:
       - name: Checkout Repository
@@ -22,7 +23,7 @@ jobs:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
-          token: ${{ secrets.ORG_DO_ACCESS_TOKEN }}
+          token: ${{ env.DO_ACCESS_TOKEN }}
 
       - name: Add Runner IP to Database
         uses: ./.github/actions/db-add-ip
@@ -63,6 +64,7 @@ jobs:
           # List backups, skip newest 30, delete the rest
           s3cmd ls s3://${{ secrets.ORG_BACK_BLAZE_BUCKET }}${BACKUP_PATH} \
           | sort -k1,2 \
+          | sort -k1,2 \
           | head -n -30 \
           | awk '{print $4}' \
           | xargs -r s3cmd del
@@ -72,7 +74,7 @@ jobs:
         uses: ./.github/actions/db-remove-ip
         with:
           database-id: ${{ secrets.TF_PROD_DB_ID }}
-          doctl-token: ${{ secrets.ORG_DO_ACCESS_TOKEN }}
+          doctl-token: ${{ env.DO_ACCESS_TOKEN }}
 
       - name: Notify Slack of Backup Failure
         if: failure()

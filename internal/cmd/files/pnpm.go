@@ -11,7 +11,7 @@ import (
 // all apps that use NPM/pnpm.
 func CreatePNPMWorkspace(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
-	gen := scaffold.New(input.FS)
+	gen := scaffold.New(input.FS, input.Manifest)
 
 	if len(appDef.Apps) == 0 {
 		return nil

@@ -10,7 +10,7 @@ import (
 // CreatePackageJson scaffolds a root JSON file to act as a
 // starting point for repos.
 func CreatePackageJson(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(input.FS)
+	gen := scaffold.New(input.FS, input.Manifest)
 	app := input.AppDef()
 
 	p := packageJSON{

@@ -2,6 +2,8 @@ package scaffold
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,10 +11,12 @@ import (
 	"path/filepath"
 	"testing"
 	"text/template"
+	"time"
 
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
 )
 
@@ -26,21 +30,23 @@ type (
 	}
 	// FileGenerator handles file generation on a given filesystem.
 	FileGenerator struct {
-		Printer *printer.Console
-		fs      afero.Fs
+		Printer  *printer.Console
+		fs       afero.Fs
+		manifest *manifest.Tracker
 	}
 )
 
 // New creates a new FileGenerator with the provided afero.Fs.
-func New(fs afero.Fs) *FileGenerator {
+func New(fs afero.Fs, manifest *manifest.Tracker) *FileGenerator {
 	var w io.Writer
 	w = os.Stdout
 	if testing.Testing() {
 		w = io.Discard
 	}
 	return &FileGenerator{
-		Printer: printer.New(w),
-		fs:      fs,
+		Printer:  printer.New(w),
+		fs:       fs,
+		manifest: manifest,
 	}
 }
 
@@ -74,6 +80,16 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 	exists, _ := afero.Exists(f.fs, path)
 	if exists {
 		f.Printer.Print("Updated: " + path)
+	}
+
+	if options.tracking.enabled {
+		f.manifest.Add(manifest.FileEntry{
+			Path:        path,
+			Generator:   options.tracking.generator,
+			Source:      options.tracking.source,
+			Hash:        hashContent(data),
+			GeneratedAt: time.Now(),
+		})
 	}
 
 	if err := afero.WriteFile(f.fs, path, data, os.ModePerm); err != nil {
@@ -116,6 +132,12 @@ func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
 	return f.Bytes(path, buf.Bytes(), opts...)
 }
 
+// Finalize writes the manifest to disk.
+// Should be called after all files have been generated and copied.
+func (f FileGenerator) Finalize() error {
+	return f.manifest.Save(f.fs, ".webkit/generated.json")
+}
+
 // YAML writes YAML content with the given mode.
 func (f FileGenerator) YAML(path string, content any, opts ...Option) error {
 	buf := &bytes.Buffer{}
@@ -144,4 +166,9 @@ func (f FileGenerator) shouldSkipScaffold(path string, mode WriteMode) bool {
 
 	f.Printer.Print("• skipped scaffolding " + path + " - already exists")
 	return true
+}
+
+func hashContent(data []byte) string {
+	hash := sha256.Sum256(data)
+	return hex.EncodeToString(hash[:])
 }

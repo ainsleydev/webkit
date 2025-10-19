@@ -22,7 +22,7 @@ func TestCreateCodeStyleFiles(t *testing.T) {
 			AppDefCache: &appdef.Definition{},
 		}
 
-		got := CreateCodeStyleFiles(t.Context(), input)
+		got := CodeStyle(t.Context(), input)
 		assert.NoError(t, got)
 
 		for path, _ := range codeStyleTemplates {
@@ -40,7 +40,7 @@ func TestCreateCodeStyleFiles(t *testing.T) {
 			AppDefCache: &appdef.Definition{},
 		}
 
-		got := CreateCodeStyleFiles(t.Context(), input)
+		got := CodeStyle(t.Context(), input)
 		assert.Error(t, got)
 	})
 }

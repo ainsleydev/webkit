@@ -18,7 +18,7 @@ var gitSettingsTemplates = map[string]string{
 //
 // TODO: Stale, Pull Request Template.
 func CreateGitSettings(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(input.FS)
+	gen := scaffold.New(input.FS, input.Manifest)
 	app := input.AppDef()
 
 	for file, template := range gitSettingsTemplates {

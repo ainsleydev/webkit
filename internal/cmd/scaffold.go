@@ -18,7 +18,7 @@ var scaffoldCmd = &cli.Command{
 		{
 			Name:   "code-style",
 			Usage:  "Generate code style configuration files",
-			Action: cmdtools.Wrap(files.CreateCodeStyleFiles),
+			Action: cmdtools.Wrap(files.CodeStyle),
 		},
 		{
 			Name:   "git",

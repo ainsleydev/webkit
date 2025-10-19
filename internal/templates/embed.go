@@ -20,6 +20,7 @@ func LoadTemplate(name string) (*template.Template, error) {
 	funcs := sprig.FuncMap()
 	funcs["ghSecret"] = githubSecret
 	funcs["ghInput"] = githubInput
+	funcs["ghEnv"] = githubEnv
 
 	return template.New(name).Funcs(funcs).Parse(string(content))
 }

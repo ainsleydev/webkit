@@ -16,7 +16,7 @@ import (
 // CreatePRWorkflow bootstraps all of the GitHub workflows for a
 // WebKit application.
 func CreatePRWorkflow(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(afero.NewBasePathFs(input.FS, "./.github"))
+	gen := scaffold.New(afero.NewBasePathFs(input.FS, "./.github"), input.Manifest)
 	appDef := input.AppDef()
 
 	for _, app := range appDef.Apps {

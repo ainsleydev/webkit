@@ -2,7 +2,6 @@ package cmdtools
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
@@ -28,6 +28,7 @@ type CommandInput struct {
 	AppDefCache *appdef.Definition
 	BaseDir     string
 	SOPSCache   sops.EncrypterDecrypter
+	Manifest    *manifest.Tracker
 	printer     *printer.Console
 }
 
@@ -37,7 +38,6 @@ func Wrap(command RunCommand) cli.ActionFunc {
 		fs := afero.NewOsFs()
 		dir := "./"
 
-		fmt.Println(env.AppEnvironment())
 		if env.AppEnvironment() == env.Development {
 			// Let's temporarily use playground so we don't override any shit.
 			path := "./internal/playground"
@@ -46,9 +46,10 @@ func Wrap(command RunCommand) cli.ActionFunc {
 		}
 
 		input := CommandInput{
-			Command: c,
-			FS:      fs,
-			BaseDir: dir,
+			Command:  c,
+			FS:       fs,
+			BaseDir:  dir,
+			Manifest: manifest.NewTracker(),
 		}
 
 		return command(ctx, input)

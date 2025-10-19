@@ -46,7 +46,7 @@ var dotEnvMarshaller = godotenv.Marshal
 
 // writeMapToFile writes environment variables to dotenv file.
 func writeMapToFile(args writeArgs) error {
-	gen := scaffold.New(args.FS)
+	gen := scaffold.New(args.FS, nil)
 
 	envMap := make(map[string]string)
 	for k, v := range args.Vars {

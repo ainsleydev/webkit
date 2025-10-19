@@ -16,18 +16,22 @@ var codeStyleTemplates = map[string]string{
 	// TODO: .stylelintrc
 }
 
-// CreateCodeStyleFiles scaffolds' developer and formatting files for
+// CodeStyle scaffolds' developer and formatting files for
 // the project, mainly dotfiles.
 //
 // IDEA: Might be good in the AppDef if we could specify what files
 // we want to generate or exclude from this.
-func CreateCodeStyleFiles(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(input.FS)
+func CodeStyle(_ context.Context, input cmdtools.CommandInput) error {
+	gen := scaffold.New(input.FS, input.Manifest)
 	app := input.AppDef()
 
 	for file, template := range codeStyleTemplates {
 		tpl := templates.MustLoadTemplate(template)
-		err := gen.Template(file, tpl, app)
+		err := gen.Template(file, tpl, app, scaffold.WithTracking(
+			"files.CodeStyle",
+			"project:root",
+			true,
+		))
 		if err != nil {
 			return err
 		}

@@ -12,13 +12,17 @@ import (
 // DockerIgnore scaffolds .dockerignore files for every app that's defined
 // in the app manifest.
 func DockerIgnore(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(input.FS)
+	gen := scaffold.New(input.FS, input.Manifest)
 
 	for _, app := range input.AppDef().Apps {
 		path := filepath.Join(app.Path, ".dockerignore")
 		tpl := templates.MustLoadTemplate(".dockerignore")
 
-		err := gen.Template(path, tpl, nil)
+		err := gen.Template(path, tpl, nil, scaffold.WithTracking(
+			"files.CodeStyle",
+			"project:root",
+			true,
+		))
 		if err != nil {
 			return err
 		}

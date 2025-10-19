@@ -24,7 +24,7 @@ var actionTemplates = map[string]string{
 
 func ActionTemplates(_ context.Context, input cmdtools.CommandInput) error {
 	base := filepath.Join(".github", "actions")
-	gen := scaffold.New(afero.NewBasePathFs(input.FS, base))
+	gen := scaffold.New(afero.NewBasePathFs(input.FS, base), input.Manifest)
 	app := input.AppDef()
 
 	for file, template := range actionTemplates {

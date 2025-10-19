@@ -18,7 +18,7 @@ const (
 // writeS3Backend writes the complete Terraform backend configuration
 // with a dynamic key based on project name and environment
 func (t *Terraform) writeS3Backend(infraDir string, environment env.Environment) (string, error) {
-	gen := scaffold.New(t.fs)
+	gen := scaffold.New(t.fs, nil)
 	gen.Printer.SetWriter(io.Discard)
 
 	// For example, project-name/environment/terraform.tfstate
