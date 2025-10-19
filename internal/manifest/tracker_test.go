@@ -8,6 +8,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
+
+	"github.com/ainsleydev/webkit/internal/mocks"
 )
 
 func TestNewTracker(t *testing.T) {
@@ -178,6 +181,18 @@ func TestLoad(t *testing.T) {
 
 		_, err := Load(fs)
 		assert.Error(t, err)
+		assert.Equal(t, ErrNoManifest, err)
+	})
+
+	t.Run("FS Error", func(t *testing.T) {
+		t.Parallel()
+
+		fs := mocks.NewMockFS(gomock.NewController(t))
+		fs.EXPECT().Open(gomock.Any()).Return(nil, errors.New("open error"))
+
+		_, err := Load(fs)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "open error")
 	})
 
 	t.Run("Invalid JSON", func(t *testing.T) {

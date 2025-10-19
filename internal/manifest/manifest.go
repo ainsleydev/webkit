@@ -60,35 +60,6 @@ func Cleanup(fs afero.Fs, old, new *Manifest, console *printer.Console) error {
 	return nil
 }
 
-// DetectDrift checks if files have been manually modified and returns a list
-// of files that have changed.
-//
-// If the list is empty, no changes have been made.
-func DetectDrift(fs afero.Fs, manifest *Manifest) []string {
-	var drifted []string
-
-	for path, entry := range manifest.Files {
-		// File might be deleted or moved.
-		data, err := afero.ReadFile(fs, path)
-		if err != nil {
-			continue
-		}
-
-		// Don't try and hash stuff that's managed by the
-		// user and not WebKit.
-		if entry.ScaffoldMode {
-			continue
-		}
-
-		currentHash := HashContent(data)
-		if currentHash != entry.Hash {
-			drifted = append(drifted, path)
-		}
-	}
-
-	return drifted
-}
-
 // HashContent generates a SHA256 hash of the provided data.
 // Used to detect if file contents have changed since generation.
 func HashContent(data []byte) string {

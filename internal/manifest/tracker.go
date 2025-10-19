@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -57,16 +58,23 @@ func (t *Tracker) Save(fs afero.Fs) error {
 	return afero.WriteFile(fs, Path, data, 0644)
 }
 
+// ErrNoManifest is returned by Load() when there hasen't been
+// a manifest generated yet.
+var ErrNoManifest = fmt.Errorf("no manifest found")
+
 // Load reads a manifest JSON file and deserializes it.
 // Returns an error if the file doesn't exist or contains invalid JSON.
 func Load(fs afero.Fs) (*Manifest, error) {
 	data, err := afero.ReadFile(fs, Path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, ErrNoManifest
+		}
 		return nil, err
 	}
 
 	var m Manifest
-	if err := json.Unmarshal(data, &m); err != nil {
+	if err = json.Unmarshal(data, &m); err != nil {
 		return nil, err
 	}
 
