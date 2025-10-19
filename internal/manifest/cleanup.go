@@ -36,7 +36,7 @@ func DetectDrift(fs afero.Fs, manifest *Manifest) ([]string, error) {
 			continue // File deleted or moved
 		}
 
-		currentHash := hashContent(data)
+		currentHash := HashContent(data)
 		if currentHash != entry.Hash {
 			drifted = append(drifted, path)
 		}

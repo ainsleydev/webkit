@@ -14,16 +14,19 @@ var gitSettingsTemplates = map[string]string{
 	".github/dependabot.yaml": ".github/dependabot.yaml.tmpl",
 }
 
-// CreateGitSettings scaffolds the repo settings and ignore files.
+// GitSettings scaffolds the repo settings and ignore files.
 //
 // TODO: Stale, Pull Request Template.
-func CreateGitSettings(_ context.Context, input cmdtools.CommandInput) error {
+func GitSettings(_ context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(input.FS, input.Manifest)
 	app := input.AppDef()
 
 	for file, template := range gitSettingsTemplates {
-		tpl := templates.MustLoadTemplate(template)
-		err := gen.Template(file, tpl, app)
+		err := gen.Template(file,
+			templates.MustLoadTemplate(template),
+			app,
+			scaffold.WithTracking("files.GitSettings", "project:root", true),
+		)
 		if err != nil {
 			return err
 		}

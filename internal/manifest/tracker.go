@@ -61,7 +61,7 @@ func Load(fs afero.Fs, path string) (*Manifest, error) {
 	return &m, nil
 }
 
-func hashContent(data []byte) string {
+func HashContent(data []byte) string {
 	hash := sha256.Sum256(data)
 	return hex.EncodeToString(hash[:])
 }

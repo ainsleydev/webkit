@@ -23,8 +23,8 @@ var updateCmd = &cli.Command{
 
 var updateOps = []cmdtools.RunCommand{
 	files.CodeStyle,
-	files.CreateGitSettings,
-	files.CreatePackageJson,
+	files.GitSettings,
+	files.PackageJSON,
 	cicd.CreatePRWorkflow,
 	cicd.BackupResourcesWorkflow,
 }

@@ -2,8 +2,6 @@ package scaffold
 
 import (
 	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -84,11 +82,12 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 
 	if options.tracking.enabled {
 		f.manifest.Add(manifest.FileEntry{
-			Path:        path,
-			Generator:   options.tracking.generator,
-			Source:      options.tracking.source,
-			Hash:        hashContent(data),
-			GeneratedAt: time.Now(),
+			Path:          path,
+			Generator:     options.tracking.generator,
+			Source:        options.tracking.source,
+			WebKitManaged: options.tracking.managed,
+			Hash:          manifest.HashContent(data),
+			GeneratedAt:   time.Now(),
 		})
 	}
 
@@ -166,9 +165,4 @@ func (f FileGenerator) shouldSkipScaffold(path string, mode WriteMode) bool {
 
 	f.Printer.Print("• skipped scaffolding " + path + " - already exists")
 	return true
-}
-
-func hashContent(data []byte) string {
-	hash := sha256.Sum256(data)
-	return hex.EncodeToString(hash[:])
 }

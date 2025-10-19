@@ -1,34 +1,55 @@
 {
 	"version": "0.0.0",
-	"generated_at": "2025-10-19T09:41:14.279598+01:00",
+	"generated_at": "2025-10-19T09:47:06.939379+01:00",
 	"files": {
 		".editorconfig": {
 			"path": ".editorconfig",
 			"generator": "files.CodeStyle",
 			"source": "project:root",
 			"hash": "3ef257d024d2cb37d22672dea599b129d79ef2e25158189db3ed6f25deb4939e",
-			"generated_at": "2025-10-19T09:41:14.276591+01:00"
+			"generated_at": "2025-10-19T09:47:06.93566+01:00"
+		},
+		".github/dependabot.yaml": {
+			"path": ".github/dependabot.yaml",
+			"generator": "files.GitSettings",
+			"source": "project:root",
+			"hash": "abf807506911d645d71f399fc8bb4ed847465cdeb0d837f6dcc27412e33ca981",
+			"generated_at": "2025-10-19T09:47:06.937239+01:00"
+		},
+		".gitignore": {
+			"path": ".gitignore",
+			"generator": "files.GitSettings",
+			"source": "project:root",
+			"hash": "cca6256f74cc8d04228053e97330cc6fc0ffba142d7f76e125c3b59439ee761e",
+			"generated_at": "2025-10-19T09:47:06.936858+01:00"
 		},
 		".prettierignore": {
 			"path": ".prettierignore",
 			"generator": "files.CodeStyle",
 			"source": "project:root",
 			"hash": "be358b5050cc5cb844b5c8c8de8ef8fd524e1ae32844c352d80c3a3b5851b136",
-			"generated_at": "2025-10-19T09:41:14.277192+01:00"
+			"generated_at": "2025-10-19T09:47:06.936287+01:00"
 		},
 		".prettierrc": {
 			"path": ".prettierrc",
 			"generator": "files.CodeStyle",
 			"source": "project:root",
 			"hash": "f5442b14b45eda3a7066fa9dd386fcaf7df32903014ae746047a4264805aaa2b",
-			"generated_at": "2025-10-19T09:41:14.276946+01:00"
+			"generated_at": "2025-10-19T09:47:06.936033+01:00"
 		},
 		"eslint.config.js": {
 			"path": "eslint.config.js",
 			"generator": "files.CodeStyle",
 			"source": "project:root",
 			"hash": "95ca512c342a7a92d220f6172c666320c193e0fd7d710521d49bf98cd5a9240e",
-			"generated_at": "2025-10-19T09:41:14.277412+01:00"
+			"generated_at": "2025-10-19T09:47:06.936538+01:00"
+		},
+		"package.json": {
+			"path": "package.json",
+			"generator": "files.PackageJSON",
+			"source": "project:root",
+			"hash": "a18deb7d9169ec349885247247e018caad241f3c91df62ec1e295b54a1b3bbf8",
+			"generated_at": "2025-10-19T09:47:06.937862+01:00"
 		}
 	}
 }

@@ -29,7 +29,7 @@ func TestCreatePackageJson(t *testing.T) {
 			},
 		}
 
-		err := CreatePackageJson(t.Context(), cmdtools.CommandInput{
+		err := PackageJSON(t.Context(), cmdtools.CommandInput{
 			FS:          fs,
 			AppDefCache: appDef,
 		})
@@ -63,7 +63,7 @@ func TestCreatePackageJson(t *testing.T) {
 			AppDefCache: &appdef.Definition{},
 		}
 
-		got := CreatePackageJson(t.Context(), input)
+		got := PackageJSON(t.Context(), input)
 		assert.Error(t, got)
 	})
 }

@@ -26,12 +26,10 @@ func CodeStyle(_ context.Context, input cmdtools.CommandInput) error {
 	app := input.AppDef()
 
 	for file, template := range codeStyleTemplates {
-		tpl := templates.MustLoadTemplate(template)
-		err := gen.Template(file, tpl, app, scaffold.WithTracking(
-			"files.CodeStyle",
-			"project:root",
-			true,
-		))
+		err := gen.Template(file,
+			templates.MustLoadTemplate(template),
+			app,
+			scaffold.WithTracking("files.CodeStyle", "project:root", true))
 		if err != nil {
 			return err
 		}

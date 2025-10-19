@@ -31,7 +31,7 @@ func TestCreateGitSettings(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 
-		err := CreateGitSettings(t.Context(), cmdtools.CommandInput{
+		err := GitSettings(t.Context(), cmdtools.CommandInput{
 			FS:          fs,
 			AppDefCache: appDef,
 		})
@@ -53,7 +53,7 @@ func TestCreateGitSettings(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := CreateGitSettings(t.Context(), cmdtools.CommandInput{
+		err := GitSettings(t.Context(), cmdtools.CommandInput{
 			FS:          fs,
 			AppDefCache: appDef,
 		})
@@ -77,7 +77,7 @@ func TestCreateGitSettings(t *testing.T) {
 			AppDefCache: &appdef.Definition{},
 		}
 
-		got := CreateGitSettings(t.Context(), input)
+		got := GitSettings(t.Context(), input)
 		assert.Error(t, got)
 	})
 }

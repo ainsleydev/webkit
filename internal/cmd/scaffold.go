@@ -23,12 +23,12 @@ var scaffoldCmd = &cli.Command{
 		{
 			Name:   "git",
 			Usage:  "Generate Git and GitHub configuration files",
-			Action: cmdtools.Wrap(files.CreateGitSettings),
+			Action: cmdtools.Wrap(files.GitSettings),
 		},
 		{
 			Name:   "package-json",
 			Usage:  "Generate root package.json file",
-			Action: cmdtools.Wrap(files.CreatePackageJson),
+			Action: cmdtools.Wrap(files.PackageJSON),
 		},
 		{
 			Name:   "cicd",
