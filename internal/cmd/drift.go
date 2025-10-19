@@ -56,10 +56,13 @@ func drift(_ context.Context, input cmdtools.CommandInput) error {
 	}
 
 	if len(deleted) > 0 {
+		printer.LineBreak()
 		printer.Println("Deleted files:")
 		printer.List(deleted)
 		printer.LineBreak()
 	}
+
+	printer.LineBreak()
 
 	return cmdtools.ExitWithCode(1)
 }
