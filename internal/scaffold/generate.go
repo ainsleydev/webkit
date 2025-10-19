@@ -41,6 +41,9 @@ func New(fs afero.Fs, manifest *manifest.Tracker) *FileGenerator {
 	if testing.Testing() {
 		w = io.Discard
 	}
+	if manifest == nil {
+		panic("manifest is required")
+	}
 	return &FileGenerator{
 		Printer:  printer.New(w),
 		fs:       fs,

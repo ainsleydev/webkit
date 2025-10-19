@@ -26,6 +26,7 @@ func Scaffold(_ context.Context, input cmdtools.CommandInput) error {
 				Vars:        nil, // Just generate the notice.
 				App:         app,
 				Environment: env,
+				Manifest:    input.Manifest,
 				IsScaffold:  true,
 			})
 			if err != nil {

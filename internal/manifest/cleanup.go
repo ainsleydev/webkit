@@ -31,9 +31,16 @@ func DetectDrift(fs afero.Fs, manifest *Manifest) ([]string, error) {
 	var drifted []string
 
 	for path, entry := range manifest.Files {
+		// File might be deleted or moved.
 		data, err := afero.ReadFile(fs, path)
 		if err != nil {
-			continue // File deleted or moved
+			continue
+		}
+
+		// Don't try and hash stuff that's managed by the
+		// user and not WebKit.
+		if !entry.WebKitManaged {
+			continue
 		}
 
 		currentHash := HashContent(data)

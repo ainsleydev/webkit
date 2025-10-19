@@ -11,6 +11,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -39,6 +40,7 @@ type writeArgs struct {
 	Vars        appdef.EnvVar
 	App         appdef.App
 	Environment env.Environment
+	Manifest    *manifest.Tracker
 	IsScaffold  bool
 }
 
@@ -46,7 +48,7 @@ var dotEnvMarshaller = godotenv.Marshal
 
 // writeMapToFile writes environment variables to dotenv file.
 func writeMapToFile(args writeArgs) error {
-	gen := scaffold.New(args.FS, nil)
+	gen := scaffold.New(args.FS, args.Manifest)
 
 	envMap := make(map[string]string)
 	for k, v := range args.Vars {
@@ -70,11 +72,13 @@ func writeMapToFile(args writeArgs) error {
 
 	envPath := filepath.Join(args.App.Path, file)
 
-	var opts []scaffold.Option
-	opts = append(opts, scaffold.WithNotice(true))
+	opts := []scaffold.Option{scaffold.WithNotice(true)}
+	path := "env.Sync"
 	if args.IsScaffold {
+		path = "env.Scaffold"
 		opts = append(opts, scaffold.WithScaffoldMode())
 	}
+	opts = append(opts, scaffold.WithTracking(path, "env", true))
 
 	return gen.Bytes(envPath, []byte(buf), opts...)
 }

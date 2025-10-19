@@ -36,6 +36,7 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 				Vars:        mergedApp.Production,
 				App:         app,
 				Environment: enviro,
+				Manifest:    input.Manifest,
 				IsScaffold:  false,
 			})
 			if err != nil {
