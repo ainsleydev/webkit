@@ -22,6 +22,7 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 
 	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
 		SOPSClient: input.SOPSClient(),
+		BaseDir:    input.BaseDir,
 	})
 	if err != nil {
 		return err

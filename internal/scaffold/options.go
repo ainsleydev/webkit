@@ -1,5 +1,11 @@
 package scaffold
 
+import (
+	"fmt"
+
+	"github.com/ainsleydev/webkit/internal/manifest"
+)
+
 // Option is a function that configures write options
 type Option func(*writeOptions)
 
@@ -35,18 +41,19 @@ func WithNotice(enabled bool) Option {
 
 // WithTracking adds generators and sources to each file
 // so it can be tracked in the manifest.
-func WithTracking(generator, source string, managed bool) Option {
+func WithTracking(generator string, managed bool) Option {
+	caller := manifest.Caller()
 	return func(opts *writeOptions) {
 		opts.tracking = trackingData{
 			enabled:   true,
 			generator: generator,
-			source:    source,
+			source:    fmt.Sprintf("%s:%s", caller.Package, caller.Function),
 			managed:   managed,
 		}
 	}
 }
 
-// defaultOptions returns the default write options
+// defaultOptions returns the default write options.
 func defaultOptions() *writeOptions {
 	return &writeOptions{
 		mode:   ModeGenerate,
@@ -54,7 +61,7 @@ func defaultOptions() *writeOptions {
 	}
 }
 
-// applyOptions applies the given options to writeOptions
+// applyOptions applies the given options to writeOptions.
 func applyOptions(opts ...Option) *writeOptions {
 	o := defaultOptions()
 	for _, opt := range opts {

@@ -1,8 +1,6 @@
 package manifest
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -13,20 +11,29 @@ import (
 	"github.com/ainsleydev/webkit/internal/version"
 )
 
+// Tracker maintains a collection of generated files and their metadata.
+// Used to track which files were created by webkit and from which source.
 type Tracker struct {
-	files map[string]FileEntry
+	files      map[string]FileEntry
+	marshaller func(v any, prefix, indent string) ([]byte, error)
 }
 
+// NewTracker creates a tracker with an initialized file map.
 func NewTracker() *Tracker {
 	return &Tracker{
-		files: make(map[string]FileEntry),
+		files:      make(map[string]FileEntry),
+		marshaller: json.MarshalIndent,
 	}
 }
 
+// Add stores a file entry in the tracker, keyed by its path.
+// If an entry with the same path exists, it will be overwritten.
 func (t *Tracker) Add(entry FileEntry) {
 	t.files[entry.Path] = entry
 }
 
+// Save writes the tracker's files to a manifest JSON file.
+// Creates parent directories if they don't exist.
 func (t *Tracker) Save(fs afero.Fs, path string) error {
 	manifest := Manifest{
 		Version:     version.Version,
@@ -34,7 +41,7 @@ func (t *Tracker) Save(fs afero.Fs, path string) error {
 		Files:       t.files,
 	}
 
-	data, err := json.MarshalIndent(manifest, "", "\t")
+	data, err := t.marshaller(manifest, "", "\t")
 	if err != nil {
 		return err
 	}
@@ -47,6 +54,8 @@ func (t *Tracker) Save(fs afero.Fs, path string) error {
 	return afero.WriteFile(fs, path, data, 0644)
 }
 
+// Load reads a manifest JSON file and deserializes it.
+// Returns an error if the file doesn't exist or contains invalid JSON.
 func Load(fs afero.Fs, path string) (*Manifest, error) {
 	data, err := afero.ReadFile(fs, path)
 	if err != nil {
@@ -59,9 +68,4 @@ func Load(fs afero.Fs, path string) (*Manifest, error) {
 	}
 
 	return &m, nil
-}
-
-func HashContent(data []byte) string {
-	hash := sha256.Sum256(data)
-	return hex.EncodeToString(hash[:])
 }

@@ -59,7 +59,7 @@ func PackageJSON(_ context.Context, input cmdtools.CommandInput) error {
 	}
 
 	return gen.JSON("package.json", p,
-		scaffold.WithTracking("files.PackageJSON", "project:root", false),
+		scaffold.WithTracking("project:root", false),
 	)
 }
 

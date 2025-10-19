@@ -30,5 +30,5 @@ func CreatePNPMWorkspace(_ context.Context, input cmdtools.CommandInput) error {
 
 	return gen.YAML("pnpm-workspace.yaml", map[string]any{
 		"packages": packages,
-	}, scaffold.WithTracking("files.GitSettings", "project:root", true))
+	}, scaffold.WithTracking("project:root", true))
 }

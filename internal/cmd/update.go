@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/cicd"
+	"github.com/ainsleydev/webkit/internal/cmd/env"
 	"github.com/ainsleydev/webkit/internal/cmd/files"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/cmd/secrets"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
@@ -27,13 +30,17 @@ var updateOps = []cmdtools.RunCommand{
 	files.PackageJSON,
 	cicd.CreatePRWorkflow,
 	cicd.BackupResourcesWorkflow,
+	secrets.Scaffold,
+	env.Sync,
 }
+
+var manifestFilePath = filepath.Join(".webkit", "manifest.json")
 
 func update(ctx context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(input.FS, input.Manifest)
 
 	// 1. Load previous manifest
-	oldManifest, err := manifest.Load(input.FS, ".webkit/generated.json")
+	oldManifest, err := manifest.Load(input.FS, manifestFilePath)
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("loading manifest: %w", err)
 	}
@@ -52,7 +59,7 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// 4. Cleanup orphaned files
 	if oldManifest != nil {
-		newManifest, _ := manifest.Load(input.FS, ".webkit/generated.json")
+		newManifest, _ := manifest.Load(input.FS, manifestFilePath)
 		if err := manifest.Cleanup(input.FS, oldManifest, newManifest, gen.Printer); err != nil {
 			return fmt.Errorf("cleaning up: %w", err)
 		}

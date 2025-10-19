@@ -17,7 +17,7 @@ func DockerIgnore(_ context.Context, input cmdtools.CommandInput) error {
 	for _, app := range input.AppDef().Apps {
 		err := gen.Template(filepath.Join(app.Path, ".dockerignore"),
 			templates.MustLoadTemplate(".dockerignore"),
-			scaffold.WithTracking("files.CodeStyle", "project:root", true),
+			scaffold.WithTracking("project:root", true),
 		)
 		if err != nil {
 			return err

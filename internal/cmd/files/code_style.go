@@ -29,7 +29,7 @@ func CodeStyle(_ context.Context, input cmdtools.CommandInput) error {
 		err := gen.Template(file,
 			templates.MustLoadTemplate(template),
 			app,
-			scaffold.WithTracking("files.CodeStyle", "project:root", true))
+			scaffold.WithTracking("project:root", true))
 		if err != nil {
 			return err
 		}

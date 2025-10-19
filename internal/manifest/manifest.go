@@ -1,6 +1,8 @@
 package manifest
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"time"
 )
 
@@ -19,3 +21,10 @@ type (
 		GeneratedAt   time.Time `json:"generated_at"`
 	}
 )
+
+// HashContent generates a SHA256 hash of the provided data.
+// Used to detect if file contents have changed since generation.
+func HashContent(data []byte) string {
+	hash := sha256.Sum256(data)
+	return hex.EncodeToString(hash[:])
+}

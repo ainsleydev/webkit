@@ -1,62 +1,94 @@
 {
 	"version": "0.0.0",
-	"generated_at": "2025-10-19T09:57:06.720919+01:00",
+	"generated_at": "2025-10-19T13:40:07.432427+01:00",
 	"files": {
 		".editorconfig": {
 			"path": ".editorconfig",
-			"generator": "files.CodeStyle",
-			"source": "project:root",
+			"generator": "project:root",
+			"source": "files:CodeStyle",
 			"hash": "3ef257d024d2cb37d22672dea599b129d79ef2e25158189db3ed6f25deb4939e",
 			"webkit_managed": true,
-			"generated_at": "2025-10-19T09:57:06.717879+01:00"
+			"generated_at": "2025-10-19T13:40:07.26794+01:00"
 		},
 		".github/dependabot.yaml": {
 			"path": ".github/dependabot.yaml",
-			"generator": "files.GitSettings",
-			"source": "project:root",
+			"generator": "project:root",
+			"source": "files:GitSettings",
 			"hash": "abf807506911d645d71f399fc8bb4ed847465cdeb0d837f6dcc27412e33ca981",
 			"webkit_managed": true,
-			"generated_at": "2025-10-19T09:57:06.719392+01:00"
+			"generated_at": "2025-10-19T13:40:07.269203+01:00"
 		},
 		".gitignore": {
 			"path": ".gitignore",
-			"generator": "files.GitSettings",
-			"source": "project:root",
+			"generator": "project:root",
+			"source": "files:GitSettings",
 			"hash": "cca6256f74cc8d04228053e97330cc6fc0ffba142d7f76e125c3b59439ee761e",
 			"webkit_managed": true,
-			"generated_at": "2025-10-19T09:57:06.718977+01:00"
+			"generated_at": "2025-10-19T13:40:07.268844+01:00"
 		},
 		".prettierignore": {
 			"path": ".prettierignore",
-			"generator": "files.CodeStyle",
-			"source": "project:root",
+			"generator": "project:root",
+			"source": "files:CodeStyle",
 			"hash": "be358b5050cc5cb844b5c8c8de8ef8fd524e1ae32844c352d80c3a3b5851b136",
 			"webkit_managed": true,
-			"generated_at": "2025-10-19T09:57:06.718466+01:00"
+			"generated_at": "2025-10-19T13:40:07.268432+01:00"
 		},
 		".prettierrc": {
 			"path": ".prettierrc",
-			"generator": "files.CodeStyle",
-			"source": "project:root",
+			"generator": "project:root",
+			"source": "files:CodeStyle",
 			"hash": "f5442b14b45eda3a7066fa9dd386fcaf7df32903014ae746047a4264805aaa2b",
 			"webkit_managed": true,
-			"generated_at": "2025-10-19T09:57:06.718237+01:00"
+			"generated_at": "2025-10-19T13:40:07.268245+01:00"
+		},
+		"cms/.env": {
+			"path": "cms/.env",
+			"generator": "env",
+			"source": "env:Sync",
+			"hash": "83108c178c3ac69b857d00684e712fd0e0957f107791cc80c67d28e33856e834",
+			"webkit_managed": true,
+			"generated_at": "2025-10-19T13:40:07.431312+01:00"
+		},
+		"cms/.env.production": {
+			"path": "cms/.env.production",
+			"generator": "env",
+			"source": "env:Sync",
+			"hash": "83108c178c3ac69b857d00684e712fd0e0957f107791cc80c67d28e33856e834",
+			"webkit_managed": true,
+			"generated_at": "2025-10-19T13:40:07.431654+01:00"
 		},
 		"eslint.config.js": {
 			"path": "eslint.config.js",
-			"generator": "files.CodeStyle",
-			"source": "project:root",
+			"generator": "project:root",
+			"source": "files:CodeStyle",
 			"hash": "95ca512c342a7a92d220f6172c666320c193e0fd7d710521d49bf98cd5a9240e",
 			"webkit_managed": true,
-			"generated_at": "2025-10-19T09:57:06.718691+01:00"
+			"generated_at": "2025-10-19T13:40:07.268605+01:00"
 		},
 		"package.json": {
 			"path": "package.json",
-			"generator": "files.PackageJSON",
-			"source": "project:root",
+			"generator": "project:root",
+			"source": "files:PackageJSON",
 			"hash": "a18deb7d9169ec349885247247e018caad241f3c91df62ec1e295b54a1b3bbf8",
 			"webkit_managed": false,
-			"generated_at": "2025-10-19T09:57:06.719919+01:00"
+			"generated_at": "2025-10-19T13:40:07.269753+01:00"
+		},
+		"web/.env": {
+			"path": "web/.env",
+			"generator": "env",
+			"source": "env:Sync",
+			"hash": "96f0aa615a4523077336bdfefb2b65ffb39872a73701af754d035ccb78e64c9d",
+			"webkit_managed": true,
+			"generated_at": "2025-10-19T13:40:07.431977+01:00"
+		},
+		"web/.env.production": {
+			"path": "web/.env.production",
+			"generator": "env",
+			"source": "env:Sync",
+			"hash": "96f0aa615a4523077336bdfefb2b65ffb39872a73701af754d035ccb78e64c9d",
+			"webkit_managed": true,
+			"generated_at": "2025-10-19T13:40:07.432222+01:00"
 		}
 	}
 }

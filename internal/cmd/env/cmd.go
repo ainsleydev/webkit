@@ -73,12 +73,10 @@ func writeMapToFile(args writeArgs) error {
 	envPath := filepath.Join(args.App.Path, file)
 
 	opts := []scaffold.Option{scaffold.WithNotice(true)}
-	path := "env.Sync"
 	if args.IsScaffold {
-		path = "env.Scaffold"
 		opts = append(opts, scaffold.WithScaffoldMode())
 	}
-	opts = append(opts, scaffold.WithTracking(path, "env", true))
+	opts = append(opts, scaffold.WithTracking("env", true))
 
 	return gen.Bytes(envPath, []byte(buf), opts...)
 }

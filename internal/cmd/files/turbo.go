@@ -30,6 +30,6 @@ func CreateTurboJson(_ context.Context, input cmdtools.CommandInput) error {
 	return gen.Template("./turbo.json",
 		templates.MustLoadTemplate("turbo.json"),
 		nil,
-		scaffold.WithTracking("files.GitSettings", "project:root", true),
+		scaffold.WithTracking("project:root", true),
 	)
 }
