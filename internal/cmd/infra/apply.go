@@ -29,6 +29,7 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 	// to Terraform unmasked.
 	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
 		SOPSClient: input.SOPSClient(),
+		BaseDir:    input.BaseDir,
 	})
 	if err != nil {
 		return err

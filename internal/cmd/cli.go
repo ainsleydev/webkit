@@ -32,6 +32,7 @@ func Run() {
 			driftCmd,
 			printCmd,
 			scratchCmd,
+			versionCmd,
 		},
 	}
 

@@ -15,7 +15,6 @@ type (
 		Type     ResourceType         `json:"type"`
 		Provider ResourceProvider     `json:"provider"`
 		Config   map[string]any       `json:"config"` // Conforms to Terraform
-		Outputs  []string             `json:"outputs"`
 		Backup   ResourceBackupConfig `json:"backup,omitempty"`
 	}
 	// ResourceBackupConfig defines optional backup behavior for a resource.
@@ -73,10 +72,11 @@ var requiredOutputs = map[ResourceType][]string{
 	},
 }
 
-// RequiredOutputs returns the required outputs for a resource type
-// These should always be exported to GitHub secrets regardless of
-// user config defined in the app definition.
-func (r ResourceType) RequiredOutputs() []string {
+// Outputs returns the required outputs for a resource type for Terraform.
+//
+// These should always be exported to GitHub secrets regardless
+// of user config defined in the app definition.
+func (r ResourceType) Outputs() []string {
 	if outputs, ok := requiredOutputs[r]; ok {
 		return outputs
 	}
@@ -88,7 +88,7 @@ func (r ResourceType) RequiredOutputs() []string {
 //
 // Example:
 //
-//	resource.GitHubSecretName("prod", "connection_url")
+//	resource.GitHubSecretName(env.Production, "connection_url")
 //	↓
 //	"TF_PROD_DB_CONNECTION_URL"
 func (r *Resource) GitHubSecretName(environment env.Environment, output string) string {
@@ -102,10 +102,6 @@ func (r *Resource) GitHubSecretName(environment env.Environment, output string) 
 func (r *Resource) applyDefaults() error {
 	if r.Config == nil {
 		r.Config = make(map[string]any)
-	}
-
-	if r.Outputs == nil {
-		r.Outputs = []string{}
 	}
 
 	r.Backup = ResourceBackupConfig{

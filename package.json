@@ -32,7 +32,7 @@
 		"lint:go": "golangci-lint run --fix ./...",
 		"lint:js": "biome lint --write .",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"repopack": "repomix --include \"internal/**/*.go\" --style markdown --output repopack.txt",
+		"repopack": "repomix --include \"internal/**/*.go,platform/**/*.tf,.go\" --style markdown --output repopack.txt",
 		"todo": "rg --no-heading --color always -n -e '//.*\\bTODO\\b|#.*\\bTODO\\b|/\\*.*\\bTODO\\b.*\\*/' --glob '!node_modules' --glob '!dist' --glob '!.git' --glob '!vendor' --glob '!.idea'"
 	},
 	"devDependencies": {

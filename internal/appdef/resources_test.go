@@ -21,7 +21,7 @@ func TestResourceProvider_String(t *testing.T) {
 	t.Parallel()
 
 	got := ResourceProviderDigitalOcean.String()
-	assert.Equal(t, "digital-ocean", got)
+	assert.Equal(t, "digitalocean", got)
 	assert.IsType(t, "", got)
 }
 
@@ -42,14 +42,14 @@ func TestRequiredOutputs(t *testing.T) {
 		},
 		"UnknownType": {
 			input: ResourceType("unknown"),
-			want:  []string{"id"},
+			want:  nil,
 		},
 	}
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got := test.input.RequiredOutputs()
+			got := test.input.Outputs()
 			assert.Equal(t, test.want, got)
 		})
 	}
@@ -88,8 +88,7 @@ func TestResourceApplyDefaults(t *testing.T) {
 		"Nil Config And Outputs": {
 			input: Resource{},
 			want: Resource{
-				Config:  make(map[string]any),
-				Outputs: []string{},
+				Config: make(map[string]any),
 				Backup: ResourceBackupConfig{
 					Enabled: true,
 				},
@@ -97,12 +96,10 @@ func TestResourceApplyDefaults(t *testing.T) {
 		},
 		"Existing Config And Outputs": {
 			input: Resource{
-				Config:  map[string]any{"size": "small"},
-				Outputs: []string{"url"},
+				Config: map[string]any{"size": "small"},
 			},
 			want: Resource{
-				Config:  map[string]any{"size": "small"},
-				Outputs: []string{"url"},
+				Config: map[string]any{"size": "small"},
 				Backup: ResourceBackupConfig{
 					Enabled: true,
 				},

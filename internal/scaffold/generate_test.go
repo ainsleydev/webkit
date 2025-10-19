@@ -1,6 +1,7 @@
 package scaffold
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -12,8 +13,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
-	"github.com/ainsleydev/webkit/internal/util/testutil"
+	"github.com/ainsleydev/webkit/internal/mocks"
 )
 
 func setup(t *testing.T) *FileGenerator {
@@ -46,7 +48,15 @@ func TestFileGenerator_Bytes(t *testing.T) {
 		t.Parallel()
 
 		gen := setup(t)
-		gen.fs = &testutil.AferoErrCreateFs{Fs: afero.NewMemMapFs()}
+
+		ctrl := gomock.NewController(t)
+		mock := mocks.NewMockFS(ctrl)
+
+		mock.EXPECT().MkdirAll(gomock.All(), os.ModePerm).Return(nil)
+		mock.EXPECT().Stat(gomock.Any()).Return(nil, errors.New("error"))
+		mock.EXPECT().OpenFile(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("error"))
+
+		gen.fs = mock
 
 		err := gen.Bytes("dir/file.txt", []byte("hello"))
 		assert.Error(t, err, "Expected error writing to path that is a directory")

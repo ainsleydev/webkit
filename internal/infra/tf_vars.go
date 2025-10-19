@@ -34,7 +34,6 @@ type (
 		PlatformType     string         `json:"platform_type"`
 		PlatformProvider string         `json:"platform_provider"`
 		Config           map[string]any `json:"config"`
-		Outputs          []string       `json:"outputs,omitempty"`
 	}
 	// tfApp represents an application in Terraform variable format.
 	tfApp struct {
@@ -90,7 +89,6 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 			PlatformType:     res.Type.String(),
 			PlatformProvider: res.Provider.String(),
 			Config:           res.Config,
-			Outputs:          res.Outputs,
 		})
 	}
 

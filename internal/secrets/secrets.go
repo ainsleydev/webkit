@@ -14,7 +14,8 @@ const AgePublicKey = "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmc
 var FilePath = filepath.Join("resources", "secrets")
 
 // FilePathFromEnv returns a filepath based off the environment.
-// For example: resources/secrets/{production}.yaml
+//
+// For example, resources/secrets/{production}.yaml
 func FilePathFromEnv(e env.Environment) string {
 	return filepath.Join(FilePath, e.String()+".yaml")
 }

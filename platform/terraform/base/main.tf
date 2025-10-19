@@ -125,7 +125,7 @@ locals {
   github_secrets = merge([
     for resource in var.resources : {
       for output_name in lookup(local.resource_output_map, resource.platform_type, []) :
-      upper("TF_${local.environment_short}_${resource.name}_${output_name}") => tomap({
+      upper("TF_${local.environment_short}_${replace(resource.name, "-", "_")}_${output_name}") => tomap({
         resource_name = resource.name
         output_name   = output_name
       })

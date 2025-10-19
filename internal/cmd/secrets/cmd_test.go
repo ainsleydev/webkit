@@ -10,7 +10,9 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 func setup(t *testing.T, def *appdef.Definition) (cmdtools.CommandInput, *bytes.Buffer) {
@@ -47,7 +49,7 @@ func setupEncryptedProdFile(t *testing.T, content string) (cmdtools.CommandInput
 	err = Scaffold(t.Context(), input)
 	require.NoError(t, err)
 
-	path := "resources/secrets/production.yaml"
+	path := secrets.FilePathFromEnv(env.Production)
 	err = afero.WriteFile(input.FS, path, []byte(content), os.ModePerm)
 	require.NoError(t, err)
 

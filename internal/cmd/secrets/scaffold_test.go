@@ -12,6 +12,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/mocks"
+	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -96,7 +97,7 @@ func TestScaffold(t *testing.T) {
 		t.Log("Secret Files Created")
 		{
 			for _, enviro := range env.All {
-				path := "resources/secrets/" + enviro.String() + ".yaml"
+				path := secrets.FilePathFromEnv(enviro)
 
 				exists, err := afero.Exists(input.FS, path)
 				assert.NoError(t, err)

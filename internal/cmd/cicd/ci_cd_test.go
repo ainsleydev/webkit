@@ -15,7 +15,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
-func TestCreateCICD(t *testing.T) {
+func TestCreatePRWorkflow(t *testing.T) {
 	t.Parallel()
 
 	if !executil.Exists("action-validator") {
@@ -57,7 +57,7 @@ func TestCreateCICD(t *testing.T) {
 				def := &appdef.Definition{Apps: []appdef.App{test.input}}
 				require.NoError(t, def.ApplyDefaults())
 
-				err := CreateCICD(t.Context(), cmdtools.CommandInput{
+				err := CreatePRWorkflow(t.Context(), cmdtools.CommandInput{
 					FS:          fs,
 					AppDefCache: def,
 				})
