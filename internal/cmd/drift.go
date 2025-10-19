@@ -12,10 +12,16 @@ import (
 
 var driftCmd = &cli.Command{
 	Name:        "drift",
-	Description: "Detect file drift caused by outdated WebKit templates",
+	Usage:       "Detect manual modifications to generated files",
+	Description: "Checks if generated files have been manually modified or deleted since the last webkit update",
 	Action:      cmdtools.Wrap(drift),
 }
 
+// drift detects if tracked files have been manually modified or deleted.
+//
+// Note: This only detects drift from the last webkit update. If templates have
+// been updated in a newer version of WebKit but webkit update hasn't been run,
+// this will not detect that the files are outdated.
 func drift(_ context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 
