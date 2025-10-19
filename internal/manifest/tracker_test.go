@@ -79,10 +79,10 @@ func TestTracker_Save(t *testing.T) {
 		fs := afero.NewMemMapFs()
 		tracker := NewTracker()
 
-		err := tracker.Save(fs, "manifest.json")
+		err := tracker.Save(fs)
 		require.NoError(t, err)
 
-		exists, err := afero.Exists(fs, "manifest.json")
+		exists, err := afero.Exists(fs, ManifestPath)
 		require.NoError(t, err)
 		assert.True(t, exists)
 	})
@@ -98,10 +98,10 @@ func TestTracker_Save(t *testing.T) {
 			Hash:   "abc123",
 		})
 
-		err := tracker.Save(fs, "manifest.json")
+		err := tracker.Save(fs)
 		require.NoError(t, err)
 
-		manifest, err := Load(fs, "manifest.json")
+		manifest, err := Load(fs)
 		require.NoError(t, err)
 
 		assert.NotEmpty(t, manifest.Version)
@@ -120,24 +120,24 @@ func TestTracker_Save(t *testing.T) {
 			return nil, errors.New("marshal error")
 		}
 
-		err := tracker.Save(fs, "manifest.json")
+		err := tracker.Save(fs)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "marshal error")
 	})
 
-	t.Run("Creates Nested Directories", func(t *testing.T) {
-		t.Parallel()
-
-		fs := afero.NewMemMapFs()
-		tracker := NewTracker()
-
-		err := tracker.Save(fs, "deep/nested/path/manifest.json")
-		require.NoError(t, err)
-
-		exists, err := afero.Exists(fs, "deep/nested/path/manifest.json")
-		require.NoError(t, err)
-		assert.True(t, exists)
-	})
+	//t.Run("Creates Nested Directories", func(t *testing.T) {
+	//	t.Parallel()
+	//
+	//	fs := afero.NewMemMapFs()
+	//	tracker := NewTracker()
+	//
+	//	err := tracker.Save(fs)
+	//	require.NoError(t, err)
+	//
+	//	exists, err := afero.Exists(fs)
+	//	require.NoError(t, err)
+	//	assert.True(t, exists)
+	//})
 
 	t.Run("Read-Only Filesystem", func(t *testing.T) {
 		t.Parallel()
@@ -145,7 +145,7 @@ func TestTracker_Save(t *testing.T) {
 		fs := afero.NewReadOnlyFs(afero.NewMemMapFs())
 		tracker := NewTracker()
 
-		err := tracker.Save(fs, "manifest.json")
+		err := tracker.Save(fs)
 		assert.Error(t, err)
 	})
 }
@@ -160,10 +160,10 @@ func TestLoad(t *testing.T) {
 		tracker := NewTracker()
 		tracker.Add(FileEntry{Path: "test.txt", Source: "project", Hash: "xyz"})
 
-		err := tracker.Save(fs, "manifest.json")
+		err := tracker.Save(fs)
 		require.NoError(t, err)
 
-		manifest, err := Load(fs, "manifest.json")
+		manifest, err := Load(fs)
 		require.NoError(t, err)
 
 		assert.NotNil(t, manifest)
@@ -176,7 +176,7 @@ func TestLoad(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 
-		_, err := Load(fs, "nonexistent.json")
+		_, err := Load(fs)
 		assert.Error(t, err)
 	})
 
@@ -185,10 +185,10 @@ func TestLoad(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 
-		err := afero.WriteFile(fs, "bad.json", []byte("{invalid json"), 0644)
+		err := afero.WriteFile(fs, ManifestPath, []byte("{invalid json"), 0644)
 		require.NoError(t, err)
 
-		_, err = Load(fs, "bad.json")
+		_, err = Load(fs)
 		assert.Error(t, err)
 	})
 }
@@ -200,11 +200,11 @@ func TestManifestTimestamp(t *testing.T) {
 	tracker := NewTracker()
 
 	before := time.Now()
-	err := tracker.Save(fs, "manifest.json")
+	err := tracker.Save(fs)
 	require.NoError(t, err)
 	after := time.Now()
 
-	manifest, err := Load(fs, "manifest.json")
+	manifest, err := Load(fs)
 	require.NoError(t, err)
 
 	// GeneratedAt should be between before and after.

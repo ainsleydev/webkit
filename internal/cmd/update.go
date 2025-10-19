@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/urfave/cli/v3"
 
@@ -34,13 +33,11 @@ var updateOps = []cmdtools.RunCommand{
 	env.Sync,
 }
 
-var manifestFilePath = filepath.Join(".webkit", "manifest.json")
-
 func update(ctx context.Context, input cmdtools.CommandInput) error {
 	gen := scaffold.New(input.FS, input.Manifest)
 
 	// 1. Load previous manifest
-	oldManifest, err := manifest.Load(input.FS, manifestFilePath)
+	oldManifest, err := manifest.Load(input.FS)
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("loading manifest: %w", err)
 	}
@@ -59,7 +56,7 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// 4. Cleanup orphaned files
 	if oldManifest != nil {
-		newManifest, _ := manifest.Load(input.FS, manifestFilePath)
+		newManifest, _ := manifest.Load(input.FS)
 		if err := manifest.Cleanup(input.FS, oldManifest, newManifest, gen.Printer); err != nil {
 			return fmt.Errorf("cleaning up: %w", err)
 		}

@@ -76,7 +76,7 @@ func writeMapToFile(args writeArgs) error {
 	if args.IsScaffold {
 		opts = append(opts, scaffold.WithScaffoldMode())
 	}
-	opts = append(opts, scaffold.WithTracking("env", true))
+	opts = append(opts, scaffold.WithTracking(manifest.SourceProject()))
 
 	return gen.Bytes(envPath, []byte(buf), opts...)
 }

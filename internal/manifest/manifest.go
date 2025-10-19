@@ -13,12 +13,12 @@ type (
 		Files       map[string]FileEntry `json:"files"` // Filepath to Entry
 	}
 	FileEntry struct {
-		Path          string    `json:"path"`
-		Generator     string    `json:"generator"` // e.g. "cicd.BackupWorkflow", "files.PackageJSON"
-		Source        string    `json:"source"`    // What in app.json caused this? e.g., "resource:postgres-prod"
-		Hash          string    `json:"hash"`      // SHA256 of content for drift detection
-		WebKitManaged bool      `json:"webkit_managed"`
-		GeneratedAt   time.Time `json:"generated_at"`
+		Path         string    `json:"path"`
+		Generator    string    `json:"generator"` // e.g. "cicd.BackupWorkflow", "files.PackageJSON"
+		Source       string    `json:"source"`    // What in app.json caused this? e.g., "resource:postgres-prod"
+		Hash         string    `json:"hash"`      // SHA256 of content for drift detection
+		ScaffoldMode bool      `json:"scaffolded"`
+		GeneratedAt  time.Time `json:"generated_at"`
 	}
 )
 

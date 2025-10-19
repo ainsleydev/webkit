@@ -10,7 +10,13 @@ import (
 
 // Cleanup removes files that are no longer needed
 func Cleanup(fs afero.Fs, oldManifest, newManifest *Manifest, console *printer.Console) error {
-	for path := range oldManifest.Files {
+	for path, entry := range oldManifest.Files {
+		// Don't try and hash stuff that's managed by the
+		// user and not WebKit.
+		if entry.ScaffoldMode {
+			continue
+		}
+
 		// File existed before but doesn't exist now = orphaned
 		if _, exists := newManifest.Files[path]; !exists {
 			console.Warn(fmt.Sprintf("Removing orphaned: %s", path))
@@ -39,7 +45,7 @@ func DetectDrift(fs afero.Fs, manifest *Manifest) ([]string, error) {
 
 		// Don't try and hash stuff that's managed by the
 		// user and not WebKit.
-		if !entry.WebKitManaged {
+		if entry.ScaffoldMode {
 			continue
 		}
 

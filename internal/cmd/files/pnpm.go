@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
@@ -30,5 +31,5 @@ func CreatePNPMWorkspace(_ context.Context, input cmdtools.CommandInput) error {
 
 	return gen.YAML("pnpm-workspace.yaml", map[string]any{
 		"packages": packages,
-	}, scaffold.WithTracking("project:root", true))
+	}, scaffold.WithTracking(manifest.SourceProject()))
 }

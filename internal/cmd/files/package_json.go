@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
@@ -59,7 +60,8 @@ func PackageJSON(_ context.Context, input cmdtools.CommandInput) error {
 	}
 
 	return gen.JSON("package.json", p,
-		scaffold.WithTracking("project:root", false),
+		scaffold.WithTracking(manifest.SourceProject()),
+		scaffold.WithScaffoldMode(),
 	)
 }
 

@@ -65,6 +65,21 @@ const (
 func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 	options := applyOptions(opts...)
 
+	// Add to the manifest at to begin with, otherwise
+	// scaffolded files won't be appended.
+	if options.tracking.enabled {
+		fmt.Println(path)
+		fmt.Println("-----")
+		f.manifest.Add(manifest.FileEntry{
+			Path:         path,
+			Generator:    options.tracking.generator,
+			Source:       options.tracking.source,
+			ScaffoldMode: options.mode == ModeScaffold,
+			Hash:         manifest.HashContent(data),
+			GeneratedAt:  time.Now(),
+		})
+	}
+
 	if f.shouldSkipScaffold(path, options.mode) {
 		return nil
 	}
@@ -81,17 +96,6 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 	exists, _ := afero.Exists(f.fs, path)
 	if exists {
 		f.Printer.Print("Updated: " + path)
-	}
-
-	if options.tracking.enabled {
-		f.manifest.Add(manifest.FileEntry{
-			Path:          path,
-			Generator:     options.tracking.generator,
-			Source:        options.tracking.source,
-			WebKitManaged: options.tracking.managed,
-			Hash:          manifest.HashContent(data),
-			GeneratedAt:   time.Now(),
-		})
 	}
 
 	if err := afero.WriteFile(f.fs, path, data, os.ModePerm); err != nil {
@@ -137,7 +141,7 @@ func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
 // Finalize writes the manifest to disk.
 // Should be called after all files have been generated and copied.
 func (f FileGenerator) Finalize() error {
-	return f.manifest.Save(f.fs, ".webkit/generated.json")
+	return f.manifest.Save(f.fs)
 }
 
 // YAML writes YAML content with the given mode.

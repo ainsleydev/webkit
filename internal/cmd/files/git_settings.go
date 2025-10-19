@@ -5,6 +5,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/internal/schemas/github"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
@@ -25,7 +26,7 @@ func GitSettings(_ context.Context, input cmdtools.CommandInput) error {
 		err := gen.Template(file,
 			templates.MustLoadTemplate(template),
 			app,
-			scaffold.WithTracking("project:root", true),
+			scaffold.WithTracking(manifest.SourceProject()),
 		)
 		if err != nil {
 			return err

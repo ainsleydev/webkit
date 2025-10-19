@@ -21,7 +21,6 @@ type trackingData struct {
 	enabled   bool
 	generator string // Which function generated this.
 	source    string // What app.json element caused this.
-	managed   bool   // If it's webkit managed (false would be user).
 }
 
 // WithScaffoldMode sets the write mode for the operation
@@ -41,14 +40,13 @@ func WithNotice(enabled bool) Option {
 
 // WithTracking adds generators and sources to each file
 // so it can be tracked in the manifest.
-func WithTracking(generator string, managed bool) Option {
+func WithTracking(source string) Option {
 	caller := manifest.Caller()
 	return func(opts *writeOptions) {
 		opts.tracking = trackingData{
 			enabled:   true,
-			generator: generator,
-			source:    fmt.Sprintf("%s:%s", caller.Package, caller.Function),
-			managed:   managed,
+			generator: fmt.Sprintf("%s:%s", caller.Package, caller.Function),
+			source:    source,
 		}
 	}
 }
