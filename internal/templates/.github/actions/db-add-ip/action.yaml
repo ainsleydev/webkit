@@ -20,7 +20,7 @@ runs:
     - name: Set up doctl
       uses: digitalocean/action-doctl@v2
       with:
-        token: {{ ghInput "doctl-token" }}
+        token: ${{ inputs.doctl-token }}
 
     - name: Add Runner IP to Database Firewall
       run: |

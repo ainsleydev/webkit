@@ -2,6 +2,7 @@ package scaffold
 
 import (
 	"bytes"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 
@@ -107,6 +109,24 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 	}
 
 	return nil
+}
+
+// Copy simply copies a file to the destination using the scaffolder.
+func (f FileGenerator) Copy(from, to string, opts ...Option) error {
+	file, err := afero.ReadFile(f.fs, from)
+	if err != nil {
+		return errors.Wrap(err, "unable to copy file")
+	}
+	return f.Bytes(to, file, opts...)
+}
+
+// CopyFromEmbed copies a file from an embedded FS to the generator's FS.
+func (f FileGenerator) CopyFromEmbed(efs embed.FS, from, to string, opts ...Option) error {
+	file, err := efs.ReadFile(from)
+	if err != nil {
+		return errors.Wrap(err, "unable to copy embedded file")
+	}
+	return f.Bytes(to, file, opts...)
 }
 
 // Template writes a template file with the given mode.

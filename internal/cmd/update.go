@@ -44,6 +44,7 @@ var updateOps = []runner{
 	{files.TurboJSON, "Files: Create turbo.json"},
 	{cicd.CreatePRWorkflow, "CICD: Create PR workflows"},
 	{cicd.BackupResourcesWorkflow, "CICD: Create backup workflows"},
+	{cicd.ActionTemplates, "CICD: Create action templates"},
 
 	// Lastly
 	{env.Scaffold, "Env: Sync .env files"},

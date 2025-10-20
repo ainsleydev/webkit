@@ -19,17 +19,18 @@ var ActionsCmd = &cli.Command{
 }
 
 var actionTemplates = map[string]string{
-	"db-add-ip/action.yaml": "db-add-ip.yaml",
+	"db-add-ip/action.yaml":        "db-add-ip/action.yaml",
+	"setup-webkit-cli/action.yaml": "setup-webkit-cli/action.yaml",
 }
 
+// ActionTemplates copies action.yaml files from the templates folder
+// so services can use re-usable workflow helpers in CI/CD.
 func ActionTemplates(_ context.Context, input cmdtools.CommandInput) error {
 	base := filepath.Join(".github", "actions")
 	gen := scaffold.New(afero.NewBasePathFs(input.FS, base), input.Manifest)
-	app := input.AppDef()
 
-	for file, template := range actionTemplates {
-		tpl := templates.MustLoadTemplate(filepath.Join(".github", "actions", template))
-		err := gen.Template(file, tpl, app)
+	for from, to := range actionTemplates {
+		err := gen.CopyFromEmbed(templates.Embed, filepath.Join(base, from), to)
 		if err != nil {
 			return err
 		}

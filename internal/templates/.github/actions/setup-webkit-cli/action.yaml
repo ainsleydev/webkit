@@ -1,0 +1,92 @@
+name: 'Setup WebKit CLI'
+description: 'Downloads and installs the WebKit CLI at the version specified in app.json'
+
+inputs:
+  app-json-path:
+    description: 'Path to app.json file'
+    required: false
+    default: 'app.json'
+
+outputs:
+  version:
+    description: 'The WebKit version that was installed'
+    value: ${{ steps.version.outputs.version }}
+  cli-path:
+    description: 'Path to the webkit CLI binary'
+    value: ${{ steps.install.outputs.cli-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Read WebKit Version
+      id: version
+      shell: bash
+      run: |
+        WEBKIT_VERSION=$(jq -r '.webkit_version // "latest"' ${{ inputs.app-json-path }})
+        echo "version=$WEBKIT_VERSION" >> $GITHUB_OUTPUT
+        echo "Detected WebKit version: $WEBKIT_VERSION"
+
+    - name: Install WebKit CLI
+      id: install
+      shell: bash
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+
+        # Determine download URL based on version
+        if [ "$VERSION" = "latest" ] || [ -z "$VERSION" ]; then
+          DOWNLOAD_URL="https://github.com/ainsleydev/webkit/releases/latest/download"
+        else
+          DOWNLOAD_URL="https://github.com/ainsleydev/webkit/releases/download/v${VERSION}"
+        fi
+
+        # Detect OS and architecture
+        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+        ARCH=$(uname -m)
+
+        case "$ARCH" in
+          x86_64)
+            ARCH="x86_64"
+            ;;
+          aarch64|arm64)
+            ARCH="arm64"
+            ;;
+          *)
+            echo "Unsupported architecture: $ARCH"
+            exit 1
+            ;;
+        esac
+
+        # Construct filename based on OS
+        if [ "$OS" = "linux" ] || [ "$OS" = "darwin" ]; then
+          ARCHIVE="webkit_${OS}_${ARCH}.tar.gz"
+        elif [ "$OS" = "windows" ] || [ "$OS" = "mingw"* ]; then
+          ARCHIVE="webkit_windows_${ARCH}.zip"
+        else
+          echo "Unsupported OS: $OS"
+          exit 1
+        fi
+
+        echo "Downloading from: ${DOWNLOAD_URL}/${ARCHIVE}"
+
+        # Download and extract
+        mkdir -p /tmp/webkit-install
+        cd /tmp/webkit-install
+
+        if curl -fsSL "${DOWNLOAD_URL}/${ARCHIVE}" -o "${ARCHIVE}"; then
+          if [[ "$ARCHIVE" == *.tar.gz ]]; then
+            tar -xzf "${ARCHIVE}"
+          else
+            unzip -q "${ARCHIVE}"
+          fi
+
+          chmod +x webkit
+          CLI_PATH="/tmp/webkit-install/webkit"
+          echo "cli-path=$CLI_PATH" >> $GITHUB_OUTPUT
+          echo "WebKit CLI installed successfully at $CLI_PATH"
+
+          # Verify installation
+          $CLI_PATH version || echo "Warning: Could not verify webkit version"
+        else
+          echo "Failed to download WebKit CLI from ${DOWNLOAD_URL}/${ARCHIVE}"
+          exit 1
+        fi
