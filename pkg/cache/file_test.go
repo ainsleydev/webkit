@@ -12,8 +12,6 @@ import (
 )
 
 func TestFile_Ping(t *testing.T) {
-	t.Parallel()
-
 	tempDir := t.TempDir()
 	store, err := NewFileCache(filepath.Join(tempDir, "cache.json"))
 	require.NoError(t, err)
@@ -23,8 +21,6 @@ func TestFile_Ping(t *testing.T) {
 }
 
 func TestFile_SetAndGet(t *testing.T) {
-	t.Parallel()
-
 	var (
 		key   = "key"
 		value = "value"
@@ -57,8 +53,6 @@ func TestFile_SetAndGet(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
 			tempDir := t.TempDir()
 			store, err := NewFileCache(filepath.Join(tempDir, "cache.json"))
 			require.NoError(t, err)
@@ -73,7 +67,6 @@ func TestFile_SetAndGet(t *testing.T) {
 	}
 
 	t.Run("Returns error if value is not a pointer", func(t *testing.T) {
-		t.Parallel()
 		tempDir := t.TempDir()
 		store, err := NewFileCache(filepath.Join(tempDir, "cache.json"))
 		require.NoError(t, err)
@@ -86,7 +79,6 @@ func TestFile_SetAndGet(t *testing.T) {
 	})
 
 	t.Run("Works with slices", func(t *testing.T) {
-		t.Parallel()
 		tempDir := t.TempDir()
 		store, err := NewFileCache(filepath.Join(tempDir, "cache.json"))
 		require.NoError(t, err)
@@ -102,8 +94,6 @@ func TestFile_SetAndGet(t *testing.T) {
 }
 
 func TestFile_Delete(t *testing.T) {
-	t.Parallel()
-
 	tempDir := t.TempDir()
 	store, err := NewFileCache(filepath.Join(tempDir, "cache.json"))
 	require.NoError(t, err)
@@ -118,8 +108,6 @@ func TestFile_Delete(t *testing.T) {
 }
 
 func TestFile_Flush(t *testing.T) {
-	t.Parallel()
-
 	tempDir := t.TempDir()
 	store, err := NewFileCache(filepath.Join(tempDir, "cache.json"))
 	require.NoError(t, err)
@@ -132,8 +120,6 @@ func TestFile_Flush(t *testing.T) {
 }
 
 func TestFile_Invalidate(t *testing.T) {
-	t.Parallel()
-
 	tt := map[string]struct {
 		initialData    map[string]fileCacheItem
 		invalidateTags []string
@@ -207,8 +193,6 @@ func TestFile_Close(t *testing.T) {
 }
 
 func TestFile_Persistence(t *testing.T) {
-	t.Parallel()
-
 	tempDir := t.TempDir()
 	filePath := filepath.Join(tempDir, "cache")
 
@@ -255,8 +239,6 @@ func TestFile_Persistence(t *testing.T) {
 }
 
 func TestFile_LoadError(t *testing.T) {
-	t.Parallel()
-
 	// Test with a directory instead of a file
 	tempDir := t.TempDir()
 	_, err := NewFileCache(tempDir)
@@ -265,8 +247,6 @@ func TestFile_LoadError(t *testing.T) {
 }
 
 func TestFile_SaveError(t *testing.T) {
-	t.Parallel()
-
 	tempDir := t.TempDir()
 	filePath := filepath.Join(tempDir, "cache.json")
 	store, err := NewFileCache(filePath)
@@ -280,8 +260,6 @@ func TestFile_SaveError(t *testing.T) {
 }
 
 func TestFile_GetMarshalError(t *testing.T) {
-	t.Parallel()
-
 	tempDir := t.TempDir()
 	store, err := NewFileCache(filepath.Join(tempDir, "cache.json"))
 	require.NoError(t, err)
