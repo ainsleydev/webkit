@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
@@ -74,7 +73,7 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// 3. Save new manifest
 	if err = input.Manifest.Save(input.FS); err != nil {
-		return fmt.Errorf("saving manifest: %w", err)
+		return errors.Wrap(err, "saving manifest")
 	}
 
 	// 4. Cleanup orphaned files

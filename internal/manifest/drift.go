@@ -1,25 +1,55 @@
 package manifest
 
 import (
+	"fmt"
+
 	"github.com/spf13/afero"
 )
 
-// DriftType represents the kind of drift detected
-type DriftType string
+// DriftReason represents the kind of drift detected
+type DriftReason int
 
+// DriftReason constants.
 const (
-	DriftTypeModified DriftType = "modified" // File was manually edited
-	DriftTypeDeleted  DriftType = "deleted"  // File should be removed
-	DriftTypeOutdated DriftType = "outdated" // app.json changed, needs regen
-	DriftTypeNew      DriftType = "new"      // File should exist but doesn't
+	DriftReasonModified DriftReason = iota // File was manually edited
+	DriftReasonDeleted                     // File should be removed
+	DriftReasonOutdated                    // app.json changed, needs regen
+	DriftReasonNew                         // File should exist but doesn't
 )
+
+// driftReasonStrings maps DriftReason values to their string representations.
+var driftReasonStrings = map[DriftReason]string{
+	DriftReasonModified: "modified",
+	DriftReasonDeleted:  "deleted",
+	DriftReasonOutdated: "outdated",
+	DriftReasonNew:      "new",
+}
+
+// String implements fmt.Stringer on the DriftReason.
+func (d DriftReason) String() string {
+	if s, ok := driftReasonStrings[d]; ok {
+		return s
+	}
+	return fmt.Sprintf("unknown(%d)", int(d))
+}
+
+// FilterEntries plucks entries by the selected DriftReason.
+func (d DriftReason) FilterEntries(filtered []DriftEntry) []DriftEntry {
+	var out []DriftEntry
+	for _, entry := range filtered {
+		if entry.Type == d {
+			out = append(out, entry)
+		}
+	}
+	return out
+}
 
 // DriftEntry contains information about a single drifted file
 type DriftEntry struct {
-	Path      string    // File path
-	Type      DriftType // Type of drift
-	Source    string    // What in app.json caused this
-	Generator string    // Which generator created it
+	Path      string      // File path
+	Type      DriftReason // Type of drift
+	Source    string      // What in app.json caused this
+	Generator string      // Which generator created it
 }
 
 // DetectDrift compares actual files on disk against what should be generated.
@@ -69,7 +99,7 @@ func DetectDrift(actualFS, expectedFS afero.Fs) ([]DriftEntry, error) {
 			// File should exist but doesn't
 			drifted = append(drifted, DriftEntry{
 				Path:      path,
-				Type:      DriftTypeNew,
+				Type:      DriftReasonNew,
 				Source:    expectedEntry.Source,
 				Generator: expectedEntry.Generator,
 			})
@@ -82,16 +112,16 @@ func DetectDrift(actualFS, expectedFS afero.Fs) ([]DriftEntry, error) {
 
 		if expectedHash != actualHash {
 			// Determine if this is a manual edit or outdated from app.json change
-			driftType := DriftTypeOutdated
+			driftType := DriftReasonOutdated
 
 			// If file exists in old manifest with same hash, it was manually modified
 			if oldEntry, exists := actualManifest.Files[path]; exists {
 				if oldEntry.Hash == HashContent(actualData) {
 					// File matches what we last generated, so app.json must have changed
-					driftType = DriftTypeOutdated
+					driftType = DriftReasonOutdated
 				} else {
 					// File doesn't match what we last generated, so user edited it
-					driftType = DriftTypeModified
+					driftType = DriftReasonModified
 				}
 			}
 
@@ -117,7 +147,7 @@ func DetectDrift(actualFS, expectedFS afero.Fs) ([]DriftEntry, error) {
 			if exists {
 				drifted = append(drifted, DriftEntry{
 					Path:      path,
-					Type:      DriftTypeDeleted,
+					Type:      DriftReasonDeleted,
 					Source:    entry.Source,
 					Generator: entry.Generator,
 				})

@@ -49,7 +49,7 @@ func drift(ctx context.Context, input cmdtools.CommandInput) error {
 	// Compare actual vs expected
 	drifted, err := manifest.DetectDrift(input.FS, memFS)
 	if err != nil {
-		return fmt.Errorf("detecting drift: %w", err)
+		return errors.Wrap(err, "detecting drift")
 	}
 
 	if len(drifted) == 0 {
@@ -58,43 +58,43 @@ func drift(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 
 	// Group by type
-	modified := filterByType(drifted, manifest.DriftTypeModified)
-	outdated := filterByType(drifted, manifest.DriftTypeOutdated)
-	new := filterByType(drifted, manifest.DriftTypeNew)
-	deleted := filterByType(drifted, manifest.DriftTypeDeleted)
+	modifiedFiles := manifest.DriftReasonModified.FilterEntries(drifted)
+	outdatedFiles := manifest.DriftReasonOutdated.FilterEntries(drifted)
+	newFiles := manifest.DriftReasonNew.FilterEntries(drifted)
+	deletedFiles := manifest.DriftReasonDeleted.FilterEntries(drifted)
 
 	// Report findings
-	if len(modified) > 0 {
+	if len(modifiedFiles) > 0 {
 		printer.Error("⚠ Manual modifications detected:")
 		printer.Println("  These files were manually edited:")
-		for _, d := range modified {
+		for _, d := range modifiedFiles {
 			printer.Println(fmt.Sprintf("    • %s", d.Path))
 		}
 		printer.LineBreak()
 	}
 
-	if len(outdated) > 0 {
-		printer.Error("⚠ Outdated files detected:")
-		printer.Println("  app.json changed, these files need regeneration:")
-		for _, d := range outdated {
+	if len(outdatedFiles) > 0 {
+		printer.Error("Outdated files detected:")
+		printer.Println("app.json changed, these files need regeneration:")
+		for _, d := range outdatedFiles {
 			printer.Println(fmt.Sprintf("    • %s", d.Path))
 		}
 		printer.LineBreak()
 	}
 
-	if len(new) > 0 {
+	if len(newFiles) > 0 {
 		printer.Error("Missing files detected:")
-		printer.Println("  These files should exist:")
-		for _, d := range new {
+		printer.Println("These files should exist:")
+		for _, d := range newFiles {
 			printer.Println(fmt.Sprintf("    • %s", d.Path))
 		}
 		printer.LineBreak()
 	}
 
-	if len(deleted) > 0 {
+	if len(deletedFiles) > 0 {
 		printer.Warn("Orphaned files detected:")
-		printer.Println("  These files should be removed:")
-		for _, d := range deleted {
+		printer.Println("These files should be removed:")
+		for _, d := range deletedFiles {
 			printer.Println(fmt.Sprintf("    • %s", d.Path))
 		}
 		printer.LineBreak()
@@ -102,15 +102,5 @@ func drift(ctx context.Context, input cmdtools.CommandInput) error {
 
 	printer.Info("Run 'webkit update' to sync all files")
 
-	return fmt.Errorf("drift detected")
-}
-
-func filterByType(entries []manifest.DriftEntry, driftType manifest.DriftType) []manifest.DriftEntry {
-	var filtered []manifest.DriftEntry
-	for _, entry := range entries {
-		if entry.Type == driftType {
-			filtered = append(filtered, entry)
-		}
-	}
-	return filtered
+	return cmdtools.ExitWithCode(1)
 }
