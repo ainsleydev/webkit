@@ -26,11 +26,10 @@ var actionTemplates = map[string]string{
 // ActionTemplates copies action.yaml files from the templates folder
 // so services can use re-usable workflow helpers in CI/CD.
 func ActionTemplates(_ context.Context, input cmdtools.CommandInput) error {
-	base := filepath.Join(".github", "actions")
-	gen := scaffold.New(afero.NewBasePathFs(input.FS, base), input.Manifest)
+	gen := scaffold.New(afero.NewBasePathFs(input.FS, actionsPath), input.Manifest)
 
 	for from, to := range actionTemplates {
-		err := gen.CopyFromEmbed(templates.Embed, filepath.Join(base, from), to)
+		err := gen.CopyFromEmbed(templates.Embed, filepath.Join(actionsPath, from), to)
 		if err != nil {
 			return err
 		}

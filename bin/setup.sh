@@ -10,6 +10,7 @@ declare -A tools=(
   [sops]="sops"
   [age]="age"
   [repomix]="repomix"
+  [terraform]="terraform"
 )
 
 # Install each one
@@ -26,5 +27,12 @@ for cmd in "${!tools[@]}"; do
     echo "✅ $cmd already installed."
   fi
 done
+
+# Install npm packages globally (or save-dev)
+echo "📦 Installing npm packages..."
+if ! command -v npm >/dev/null 2>&1; then
+  echo "❌ npm not found. Please install Node.js first: https://nodejs.org/"
+  exit 1
+fi
 
 echo "✅ Setup complete!"

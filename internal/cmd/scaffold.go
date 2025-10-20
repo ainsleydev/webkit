@@ -33,7 +33,7 @@ var scaffoldCmd = &cli.Command{
 		{
 			Name:   "cicd",
 			Usage:  "Generate GitHub Actions workflow files",
-			Action: cmdtools.Wrap(cicd.CreatePRWorkflow),
+			Action: cmdtools.Wrap(cicd.AppPRWorkflow),
 		},
 		{
 			Name:   "pnpm-workspace",

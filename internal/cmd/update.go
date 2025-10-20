@@ -42,8 +42,9 @@ var updateOps = []runner{
 	{files.GitSettings, "Files: Create git settings"},
 	{files.PackageJSON, "Files: Create package.json"},
 	{files.TurboJSON, "Files: Create turbo.json"},
-	{cicd.CreatePRWorkflow, "CICD: Create PR workflows"},
-	{cicd.BackupResourcesWorkflow, "CICD: Create backup workflows"},
+	{cicd.AppPRWorkflow, "CICD: Create app PR workflows"},
+	{cicd.DriftDetection, "CICD: Creates drift detection workflow"},
+	{cicd.BackupWorkflow, "CICD: Create backup workflows"},
 	{cicd.ActionTemplates, "CICD: Create action templates"},
 
 	// Lastly

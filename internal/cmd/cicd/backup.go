@@ -19,12 +19,13 @@ import (
 var BackupCmd = &cli.Command{
 	Name:   "backup",
 	Usage:  "Generate backup workflows for resources",
-	Action: cmdtools.Wrap(BackupResourcesWorkflow),
+	Action: cmdtools.Wrap(BackupWorkflow),
 }
 
-func BackupResourcesWorkflow(_ context.Context, input cmdtools.CommandInput) error {
-	base := filepath.Join(".github", "workflows")
-	gen := scaffold.New(afero.NewBasePathFs(input.FS, base), input.Manifest)
+// BackupWorkflow creates backup workflows for every resource if the
+// backup config is enabled.
+func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
+	gen := scaffold.New(afero.NewBasePathFs(input.FS, workflowsPath), input.Manifest)
 	appDef := input.AppDef()
 	enviro := env.Production
 
@@ -36,7 +37,7 @@ func BackupResourcesWorkflow(_ context.Context, input cmdtools.CommandInput) err
 
 		// Postgres DB
 		if resource.Type == appdef.ResourceTypePostgres {
-			tpl := templates.MustLoadTemplate(".github/workflows/backup-postgres.yaml.tmpl")
+			tpl := templates.MustLoadTemplate(filepath.Join(workflowsPath, "backup-postgres.yaml.tmpl"))
 			path := fmt.Sprintf("backup-postgres-%s.yaml", resource.Name)
 
 			if err := gen.Template(path, tpl, map[string]any{

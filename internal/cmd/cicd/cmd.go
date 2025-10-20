@@ -1,6 +1,8 @@
 package cicd
 
 import (
+	"path/filepath"
+
 	"github.com/urfave/cli/v3"
 )
 
@@ -13,5 +15,11 @@ var Command = &cli.Command{
 	Commands: []*cli.Command{
 		ActionsCmd,
 		BackupCmd,
+		DriftCmd,
 	},
 }
+
+var (
+	actionsPath   = filepath.Join(".github", "actions")
+	workflowsPath = filepath.Join(".github", "workflows")
+)

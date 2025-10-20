@@ -9,20 +9,25 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
-	"github.com/ainsleydev/webkit/internal/util/executil"
-	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
-func TestCreatePRWorkflow(t *testing.T) {
+func TestAppPRWorkflow(t *testing.T) {
 	t.Parallel()
 
-	if !executil.Exists("action-validator") {
-		t.Skip("action-validator CLI not found in PATH; skipping integration test")
-	}
+	t.Run("No Apps", func(t *testing.T) {
+		t.Context()
 
-	t.Run("PRs", func(t *testing.T) {
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := AppPRWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+	})
+
+	t.Run("Creates Workflow", func(t *testing.T) {
 		t.Parallel()
 
 		tt := map[string]struct {
@@ -53,31 +58,18 @@ func TestCreatePRWorkflow(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				fs := afero.NewMemMapFs()
-				def := &appdef.Definition{Apps: []appdef.App{test.input}}
-				require.NoError(t, def.ApplyDefaults())
+				appDef := &appdef.Definition{Apps: []appdef.App{test.input}}
+				input := setup(t, afero.NewMemMapFs(), appDef)
+				require.NoError(t, appDef.ApplyDefaults())
 
-				err := CreatePRWorkflow(t.Context(), cmdtools.CommandInput{
-					FS:          fs,
-					AppDefCache: def,
-					Manifest:    &manifest.Tracker{},
-				})
+				err := AppPRWorkflow(t.Context(), input)
 				require.NoError(t, err)
 
-				file, err := afero.ReadFile(fs, test.want)
+				file, err := afero.ReadFile(input.FS, test.want)
 				require.NoError(t, err)
 
-				t.Log("YAML is valid")
-				{
-					err = testutil.ValidateYAML(t, file)
-					assert.NoError(t, err)
-				}
-
-				t.Log("Github Action is validated")
-				{
-					err = testutil.ValidateGithubAction(t, file)
-					require.NoError(t, err)
-				}
+				err = validateWorkflow(t, file)
+				assert.NoError(t, err)
 
 				t.Log("Commands are in order")
 				{
@@ -100,5 +92,25 @@ func TestCreatePRWorkflow(t *testing.T) {
 				}
 			})
 		}
+	})
+
+	t.Run("FS Failure", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Path:  "./web",
+					Type:  appdef.AppTypeGoLang,
+				},
+			},
+		}
+
+		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), appDef)
+
+		got := AppPRWorkflow(t.Context(), input)
+		assert.Error(t, got)
 	})
 }
