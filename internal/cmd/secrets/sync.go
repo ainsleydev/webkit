@@ -33,7 +33,6 @@ func Sync(_ context.Context, input cmdtools.CommandInput) error {
 
 	files := syncSecrets(input.FS, app)
 	if len(files) == 0 {
-		printer.Warn("No secrets with source: 'sops' found in app.json")
 		return nil
 	}
 

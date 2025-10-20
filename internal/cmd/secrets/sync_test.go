@@ -24,11 +24,10 @@ func TestSync(t *testing.T) {
 	}
 
 	t.Run("No Files", func(t *testing.T) {
-		input, buf := setup(t, &appdef.Definition{})
+		input, _ := setup(t, &appdef.Definition{})
 
 		got := Sync(t.Context(), input)
 		assert.NoError(t, got)
-		assert.Contains(t, buf.String(), "No secrets")
 	})
 
 	t.Run("Scaffold Error", func(t *testing.T) {

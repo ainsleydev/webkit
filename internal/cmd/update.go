@@ -34,6 +34,7 @@ var updateOps = []runner{
 	// - Create repo?
 	// - Validate definition
 	{files.Manifest, "Manifest: Scaffold manifest files"},
+	{files.Definition, "Definition: Update webkit_version in app.json"},
 	{env.Scaffold, "Env: Scaffold .env files"},
 	{secrets.Scaffold, "Secrets: Scaffold secret files"},
 
