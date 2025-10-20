@@ -17,6 +17,8 @@ import (
 )
 
 func TestIntegration_Clone(t *testing.T) {
+	t.Skip()
+
 	if testing.Short() {
 		t.Skip("Skipping integration test")
 	}

@@ -31,7 +31,12 @@
 		"lint": "pnpm lint:go && pnpm lint:js",
 		"lint:go": "golangci-lint run --fix ./...",
 		"lint:js": "biome lint --write .",
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "pnpm test:go",
+		"test:go": "go test ./...",
+		"release:check": "goreleaser check",
+		"release:test": "goreleaser release --snapshot --clean --skip=publish",
+		"release:version": "git describe --tags --always --dirty 2>/dev/null || echo 'no tags'",
+		"release:clean": "rm -rf dist/",
 		"repopack": "repomix --include \"internal/**/*.go,platform/**/*.tf,.go\" --style markdown --output repopack.txt",
 		"todo": "rg --no-heading --color always -n -e '//.*\\bTODO\\b|#.*\\bTODO\\b|/\\*.*\\bTODO\\b.*\\*/' --glob '!node_modules' --glob '!dist' --glob '!.git' --glob '!vendor' --glob '!.idea'"
 	},

@@ -83,8 +83,8 @@ func TestDetectDrift(t *testing.T) {
 		content := []byte("test content")
 
 		// Both have same file
-		require.NoError(t, afero.WriteFile(actualFS, "file.txt", content, 0644))
-		require.NoError(t, afero.WriteFile(expectedFS, "file.txt", content, 0644))
+		require.NoError(t, afero.WriteFile(actualFS, "file.txt", content, 0o644))
+		require.NoError(t, afero.WriteFile(expectedFS, "file.txt", content, 0o644))
 
 		// Both manifests match
 		setupManifest(t, actualFS, "file.txt", content)
@@ -104,7 +104,7 @@ func TestDetectDrift(t *testing.T) {
 		// No manifest on actual filesystem
 		// Setup expected manifest
 		content := []byte("test")
-		require.NoError(t, afero.WriteFile(expectedFS, "file.txt", content, 0644))
+		require.NoError(t, afero.WriteFile(expectedFS, "file.txt", content, 0o644))
 		setupManifest(t, expectedFS, "file.txt", content)
 
 		drift, err := DetectDrift(actualFS, expectedFS)
@@ -120,7 +120,7 @@ func TestDetectDrift(t *testing.T) {
 		expectedFS := afero.NewMemMapFs()
 
 		content := []byte("test")
-		require.NoError(t, afero.WriteFile(actualFS, "file.txt", content, 0644))
+		require.NoError(t, afero.WriteFile(actualFS, "file.txt", content, 0o644))
 		setupManifest(t, actualFS, "file.txt", content)
 
 		drift, err := DetectDrift(actualFS, expectedFS)
@@ -137,7 +137,7 @@ func TestDetectDrift(t *testing.T) {
 		content := []byte("test")
 
 		// File exists on actual
-		require.NoError(t, afero.WriteFile(actualFS, "file.txt", content, 0644))
+		require.NoError(t, afero.WriteFile(actualFS, "file.txt", content, 0o644))
 
 		// Manifest says file should exist on expected, but it doesn't
 		setupManifest(t, actualFS, "file.txt", content)
@@ -158,10 +158,10 @@ func TestDetectDrift(t *testing.T) {
 		modifiedContent := []byte("user modified")
 
 		// User manually modified the file
-		require.NoError(t, afero.WriteFile(actualFS, "file.txt", modifiedContent, 0644))
+		require.NoError(t, afero.WriteFile(actualFS, "file.txt", modifiedContent, 0o644))
 
 		// Expected hasn't changed
-		require.NoError(t, afero.WriteFile(expectedFS, "file.txt", originalContent, 0644))
+		require.NoError(t, afero.WriteFile(expectedFS, "file.txt", originalContent, 0o644))
 
 		// Old manifest shows original
 		setupManifest(t, actualFS, "file.txt", originalContent)
@@ -185,10 +185,10 @@ func TestDetectDrift(t *testing.T) {
 		newContent := []byte("DATABASE_URL=new")
 
 		// File on disk matches what was last generated
-		require.NoError(t, afero.WriteFile(actualFS, ".env", oldContent, 0644))
+		require.NoError(t, afero.WriteFile(actualFS, ".env", oldContent, 0o644))
 
 		// But app.json changed, so expected is different
-		require.NoError(t, afero.WriteFile(expectedFS, ".env", newContent, 0644))
+		require.NoError(t, afero.WriteFile(expectedFS, ".env", newContent, 0o644))
 
 		// Old manifest shows we generated the old content
 		setupManifest(t, actualFS, ".env", oldContent)
@@ -211,7 +211,7 @@ func TestDetectDrift(t *testing.T) {
 		content := []byte("should exist")
 
 		// Expected has file
-		require.NoError(t, afero.WriteFile(expectedFS, "new.txt", content, 0644))
+		require.NoError(t, afero.WriteFile(expectedFS, "new.txt", content, 0o644))
 
 		// Actual doesn't
 		setupManifest(t, actualFS)
@@ -234,7 +234,7 @@ func TestDetectDrift(t *testing.T) {
 		oldContent := []byte("old")
 
 		// File exists on actual
-		require.NoError(t, afero.WriteFile(actualFS, "orphaned.txt", oldContent, 0644))
+		require.NoError(t, afero.WriteFile(actualFS, "orphaned.txt", oldContent, 0o644))
 
 		// Old manifest tracked it
 		setupManifest(t, actualFS, "orphaned.txt", oldContent)
@@ -257,8 +257,8 @@ func TestDetectDrift(t *testing.T) {
 		expectedFS := afero.NewMemMapFs()
 
 		// User modified scaffold file
-		require.NoError(t, afero.WriteFile(actualFS, ".env", []byte("USER=modified"), 0644))
-		require.NoError(t, afero.WriteFile(expectedFS, ".env", []byte("ORIGINAL=true"), 0644))
+		require.NoError(t, afero.WriteFile(actualFS, ".env", []byte("USER=modified"), 0o644))
+		require.NoError(t, afero.WriteFile(expectedFS, ".env", []byte("ORIGINAL=true"), 0o644))
 
 		setupManifestWithScaffold(t, actualFS, ".env", []byte("ORIGINAL=true"), true)
 		setupManifestWithScaffold(t, expectedFS, ".env", []byte("ORIGINAL=true"), true)

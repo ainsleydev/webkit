@@ -14,8 +14,6 @@ import (
 )
 
 func TestSync(t *testing.T) {
-	t.Parallel()
-
 	envFixture := appdef.Environment{
 		Production: map[string]appdef.EnvValue{
 			"SECRET_KEY": {
@@ -26,8 +24,6 @@ func TestSync(t *testing.T) {
 	}
 
 	t.Run("No Files", func(t *testing.T) {
-		t.Parallel()
-
 		input, buf := setup(t, &appdef.Definition{})
 
 		got := Sync(t.Context(), input)
@@ -36,8 +32,6 @@ func TestSync(t *testing.T) {
 	})
 
 	t.Run("Scaffold Error", func(t *testing.T) {
-		t.Parallel()
-
 		def := &appdef.Definition{
 			Apps: []appdef.App{
 				{Name: "app1", Env: envFixture},
@@ -52,8 +46,6 @@ func TestSync(t *testing.T) {
 	})
 
 	t.Run("Invalid YAML", func(t *testing.T) {
-		t.Parallel()
-
 		def := &appdef.Definition{
 			Apps: []appdef.App{
 				{Name: "app1", Env: envFixture},
@@ -129,8 +121,6 @@ func TestSync(t *testing.T) {
 	})
 
 	t.Run("Sync's Shared", func(t *testing.T) {
-		t.Parallel()
-
 		def := &appdef.Definition{
 			Shared: appdef.Shared{
 				Env: envFixture,
@@ -151,8 +141,6 @@ func TestSync(t *testing.T) {
 	})
 
 	t.Run("Sync's Apps", func(t *testing.T) {
-		t.Parallel()
-
 		def := &appdef.Definition{
 			Apps: []appdef.App{
 				{Name: "app1", Env: envFixture},

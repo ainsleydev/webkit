@@ -36,10 +36,7 @@ func newClient(provider Provider) (*Client, *executil.MemRunner) {
 }
 
 func TestClient_Decrypt(t *testing.T) {
-	t.Parallel()
-
 	t.Run("Already Decrypted", func(t *testing.T) {
-		t.Parallel()
 		client, mem := newClient(&fakeProvider{})
 
 		mem.AddStub("sops --decrypt", executil.Result{},
@@ -50,7 +47,6 @@ func TestClient_Decrypt(t *testing.T) {
 	})
 
 	t.Run("CLI Failure", func(t *testing.T) {
-		t.Parallel()
 		client, mem := newClient(&fakeProvider{})
 
 		mem.AddStub("sops --decrypt", executil.Result{
@@ -63,7 +59,6 @@ func TestClient_Decrypt(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		t.Parallel()
 		client, mem := newClient(&fakeProvider{})
 
 		mem.AddStub("sops --decrypt", executil.Result{
@@ -76,10 +71,7 @@ func TestClient_Decrypt(t *testing.T) {
 }
 
 func TestClient_Encrypt(t *testing.T) {
-	t.Parallel()
-
 	t.Run("Already Encrypted", func(t *testing.T) {
-		t.Parallel()
 		client, mem := newClient(&fakeProvider{})
 
 		mem.AddStub("sops --encrypt", executil.Result{},
@@ -90,7 +82,6 @@ func TestClient_Encrypt(t *testing.T) {
 	})
 
 	t.Run("Doesn't Error Empty File", func(t *testing.T) {
-		t.Parallel()
 		client, mem := newClient(&fakeProvider{})
 
 		mem.AddStub("sops --encrypt", executil.Result{},
@@ -101,7 +92,6 @@ func TestClient_Encrypt(t *testing.T) {
 	})
 
 	t.Run("Provider Error", func(t *testing.T) {
-		t.Parallel()
 		client, _ := newClient(&fakeProvider{err: fmt.Errorf("provider failure")})
 
 		err := client.Encrypt("file.yaml")
@@ -110,7 +100,6 @@ func TestClient_Encrypt(t *testing.T) {
 	})
 
 	t.Run("Encrypt CLI Failure", func(t *testing.T) {
-		t.Parallel()
 		client, mem := newClient(&fakeProvider{})
 
 		mem.AddStub("sops --encrypt", executil.Result{
@@ -123,7 +112,6 @@ func TestClient_Encrypt(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		t.Parallel()
 		client, mem := newClient(&fakeProvider{})
 
 		mem.AddStub("sops --encrypt", executil.Result{
