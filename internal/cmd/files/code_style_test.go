@@ -9,7 +9,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 )
 
-func TestCreateCodeStyleFiles(t *testing.T) {
+func TestCodeStyle(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {

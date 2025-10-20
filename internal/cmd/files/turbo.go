@@ -9,7 +9,9 @@ import (
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
-func CreateTurboJson(_ context.Context, input cmdtools.CommandInput) error {
+// TurboJSON adds a boilerplate turbo.json file at the root of
+// the project.
+func TurboJSON(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	gen := scaffold.New(input.FS, input.Manifest)
 

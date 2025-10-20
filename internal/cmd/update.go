@@ -42,7 +42,7 @@ var updateOps = []runner{
 	{files.CodeStyle, "Files: Create code style files"},
 	{files.GitSettings, "Files: Create git settings"},
 	{files.PackageJSON, "Files: Create package.json"},
-	{files.CreateTurboJson, "Files: Create turbo.json"},
+	{files.TurboJSON, "Files: Create turbo.json"},
 	{cicd.CreatePRWorkflow, "CICD: Create PR workflows"},
 	{cicd.BackupResourcesWorkflow, "CICD: Create backup workflows"},
 

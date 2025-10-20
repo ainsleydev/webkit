@@ -8,9 +8,9 @@ import (
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
-// CreatePNPMWorkspace scaffolds the pnpm-workspace.yaml file with
+// PnpmWorkspace scaffolds the pnpm-workspace.yaml file with
 // all apps that use NPM/pnpm.
-func CreatePNPMWorkspace(_ context.Context, input cmdtools.CommandInput) error {
+func PnpmWorkspace(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	gen := scaffold.New(input.FS, input.Manifest)
 

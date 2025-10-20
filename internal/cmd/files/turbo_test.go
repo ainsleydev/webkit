@@ -6,31 +6,22 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
-func TestCreatePNPMWorkspace(t *testing.T) {
+func TestTurboJSON(t *testing.T) {
 	t.Parallel()
 
 	t.Run("No Apps", func(t *testing.T) {
 		t.Context()
 
-		appDef := &appdef.Definition{
+		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{
 			Apps: []appdef.App{},
-		}
+		})
 
-		input := cmdtools.CommandInput{
-			FS:          afero.NewMemMapFs(),
-			AppDefCache: appDef,
-			Manifest:    manifest.NewTracker(),
-		}
-
-		got := CreatePNPMWorkspace(t.Context(), input)
+		got := TurboJSON(t.Context(), input)
 		assert.NoError(t, got)
 	})
 
@@ -48,13 +39,9 @@ func TestCreatePNPMWorkspace(t *testing.T) {
 			},
 		}
 
-		input := cmdtools.CommandInput{
-			FS:          afero.NewMemMapFs(),
-			AppDefCache: appDef,
-			Manifest:    manifest.NewTracker(),
-		}
+		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		got := CreatePNPMWorkspace(t.Context(), input)
+		got := TurboJSON(t.Context(), input)
 		assert.NoError(t, got)
 	})
 
@@ -64,56 +51,22 @@ func TestCreatePNPMWorkspace(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:    "api",
-					Type:    appdef.AppTypeGoLang,
-					Path:    "./apps/api",
-					UsesNPM: ptr.BoolPtr(true), // Go app but explicitly uses NPM
-				},
-				{
 					Name: "cms",
 					Type: appdef.AppTypePayload,
 					Path: "./apps/cms",
 				},
-				{
-					Name:    "web",
-					Type:    appdef.AppTypeSvelteKit,
-					Path:    "./apps/web",
-					UsesNPM: ptr.BoolPtr(false), // JS app but explicitly doesn't use NPM
-				},
 			},
 		}
 
-		fs := afero.NewMemMapFs()
-		input := cmdtools.CommandInput{
-			FS:          fs,
-			AppDefCache: appDef,
-			Manifest:    manifest.NewTracker(),
-		}
+		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		err := CreatePNPMWorkspace(t.Context(), input)
+		err := TurboJSON(t.Context(), input)
 		require.NoError(t, err)
 
-		file, err := afero.ReadFile(fs, "pnpm-workspace.yaml")
-
-		t.Log("Verify File")
-		{
-			require.NoError(t, err)
-			assert.NotEmpty(t, file)
-		}
-
-		t.Log("Verify Packages")
-		{
-			var workspace map[string]any
-			err = yaml.Unmarshal(file, &workspace)
-			require.NoError(t, err)
-
-			packages, ok := workspace["packages"]
-			require.True(t, ok)
-			assert.Len(t, packages, 2)
-			assert.Contains(t, packages, "./apps/api")    // Go app with UsesNPM: true
-			assert.Contains(t, packages, "./apps/cms")    // JS app (default)
-			assert.NotContains(t, packages, "./apps/web") // JS app with UsesNPM: false
-		}
+		file, err := afero.ReadFile(input.FS, "turbo.json")
+		require.NoError(t, err)
+		assert.NotEmpty(t, file)
+		assert.Contains(t, string(file), "https://turborepo.com/schema.json")
 	})
 
 	t.Run("FS Failure", func(t *testing.T) {
@@ -125,13 +78,9 @@ func TestCreatePNPMWorkspace(t *testing.T) {
 			},
 		}
 
-		input := cmdtools.CommandInput{
-			FS:          afero.NewReadOnlyFs(afero.NewMemMapFs()),
-			AppDefCache: appDef,
-			Manifest:    manifest.NewTracker(),
-		}
+		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), appDef)
 
-		got := CreatePNPMWorkspace(t.Context(), input)
+		got := TurboJSON(t.Context(), input)
 		assert.Error(t, got)
 	})
 }

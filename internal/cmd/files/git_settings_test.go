@@ -11,7 +11,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
-func TestCreateGitSettings(t *testing.T) {
+func TestGitSettings(t *testing.T) {
 	t.Parallel()
 
 	appDef := &appdef.Definition{

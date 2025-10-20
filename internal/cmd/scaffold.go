@@ -38,12 +38,12 @@ var scaffoldCmd = &cli.Command{
 		{
 			Name:   "pnpm-workspace",
 			Usage:  "Generate pnpm-workspace file if there are any compatible apps.",
-			Action: cmdtools.Wrap(files.CreatePNPMWorkspace),
+			Action: cmdtools.Wrap(files.PnpmWorkspace),
 		},
 		{
 			Name:   "turbo",
 			Usage:  "Generate turbo.json file if there are any compatible apps.",
-			Action: cmdtools.Wrap(files.CreateTurboJson),
+			Action: cmdtools.Wrap(files.TurboJSON),
 		},
 		{
 			Name:   "docker-ignore",
