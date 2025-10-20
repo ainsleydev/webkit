@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"io"
 
+	"github.com/pkg/errors"
+	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
@@ -22,53 +25,92 @@ var driftCmd = &cli.Command{
 // Note: This only detects drift from the last webkit update. If templates have
 // been updated in a newer version of WebKit but webkit update hasn't been run,
 // this will not detect that the files are outdated.
-func drift(_ context.Context, input cmdtools.CommandInput) error {
+func drift(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 
-	mani, err := manifest.Load(input.FS)
-	if err != nil && errors.Is(err, manifest.ErrNoManifest) {
+	printer.Info("Checking for drift...")
+
+	// Run update in memory to see what should be generated
+	memFS := afero.NewMemMapFs()
+	memTracker := manifest.NewTracker()
+
+	memInput := cmdtools.CommandInput{
+		FS:          memFS,
+		AppDefCache: input.AppDef(),
+		Manifest:    memTracker,
+		BaseDir:     input.BaseDir,
+	}
+	memInput.Printer().SetWriter(io.Discard)
+
+	if err := update(ctx, memInput); err != nil {
+		return errors.Wrap(err, "running update for in-mem manifest")
+	}
+
+	// Compare actual vs expected
+	drifted, err := manifest.DetectDrift(input.FS, memFS)
+	if err != nil {
+		return fmt.Errorf("detecting drift: %w", err)
+	}
+
+	if len(drifted) == 0 {
+		printer.Success("✓ No drift detected - all files are up to date")
 		return nil
-	} else if err != nil {
-		return err
 	}
 
-	drifted := manifest.DetectDrift(input.FS, mani)
-	if drifted == nil {
-		printer.Success("No drift detected")
-		return nil
-	}
+	// Group by type
+	modified := filterByType(drifted, manifest.DriftTypeModified)
+	outdated := filterByType(drifted, manifest.DriftTypeOutdated)
+	new := filterByType(drifted, manifest.DriftTypeNew)
+	deleted := filterByType(drifted, manifest.DriftTypeDeleted)
 
-	printer.Error("Drift found")
-	printer.Println("Action Required: Run webkit update to sync your project.")
-	printer.LineBreak()
-
-	// Group by reason for better output
-	var modified []string
-	var deleted []string
-
-	for _, file := range drifted {
-		switch file.Reason {
-		case manifest.DriftReasonModified:
-			modified = append(modified, file.Path)
-		case manifest.DriftReasonDeleted:
-			deleted = append(deleted, file.Path)
-		}
-	}
-
+	// Report findings
 	if len(modified) > 0 {
-		printer.Println("Modified files:")
-		printer.List(modified)
+		printer.Error("⚠ Manual modifications detected:")
+		printer.Println("  These files were manually edited:")
+		for _, d := range modified {
+			printer.Println(fmt.Sprintf("    • %s", d.Path))
+		}
+		printer.LineBreak()
+	}
+
+	if len(outdated) > 0 {
+		printer.Error("⚠ Outdated files detected:")
+		printer.Println("  app.json changed, these files need regeneration:")
+		for _, d := range outdated {
+			printer.Println(fmt.Sprintf("    • %s", d.Path))
+		}
+		printer.LineBreak()
+	}
+
+	if len(new) > 0 {
+		printer.Error("Missing files detected:")
+		printer.Println("  These files should exist:")
+		for _, d := range new {
+			printer.Println(fmt.Sprintf("    • %s", d.Path))
+		}
 		printer.LineBreak()
 	}
 
 	if len(deleted) > 0 {
-		printer.LineBreak()
-		printer.Println("Deleted files:")
-		printer.List(deleted)
+		printer.Warn("Orphaned files detected:")
+		printer.Println("  These files should be removed:")
+		for _, d := range deleted {
+			printer.Println(fmt.Sprintf("    • %s", d.Path))
+		}
 		printer.LineBreak()
 	}
 
-	printer.LineBreak()
+	printer.Info("Run 'webkit update' to sync all files")
 
-	return cmdtools.ExitWithCode(1)
+	return fmt.Errorf("drift detected")
+}
+
+func filterByType(entries []manifest.DriftEntry, driftType manifest.DriftType) []manifest.DriftEntry {
+	var filtered []manifest.DriftEntry
+	for _, entry := range entries {
+		if entry.Type == driftType {
+			filtered = append(filtered, entry)
+		}
+	}
+	return filtered
 }

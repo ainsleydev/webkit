@@ -11,7 +11,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
-func TestCreatePackageJson(t *testing.T) {
+func TestPackageJSON(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {

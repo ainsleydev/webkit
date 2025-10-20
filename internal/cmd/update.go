@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
@@ -35,6 +34,7 @@ var updateOps = []runner{
 	// - Create app.json file.
 	// - Create repo?
 	// - Validate definition
+	{files.Manifest, "Manifest: Scaffold manifest files"},
 	{env.Scaffold, "Env: Scaffold .env files"},
 	{secrets.Scaffold, "Secrets: Scaffold secret files"},
 
@@ -60,8 +60,8 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// 1. Load previous manifest
 	oldManifest, err := manifest.Load(input.FS)
-	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("loading manifest: %w", err)
+	if err != nil && !errors.Is(err, manifest.ErrNoManifest) {
+		return errors.Wrap(err, "loading manifest")
 	}
 
 	// 2. Generate all files (they auto-track to new manifest)

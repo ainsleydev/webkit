@@ -1,70 +1,129 @@
 package manifest
 
-import "github.com/spf13/afero"
-
-// DriftReason represents why a file has drifted
-type DriftReason int
-
-const (
-	// DriftReasonModified indicates the file content has changed.
-	DriftReasonModified DriftReason = iota
-	// DriftReasonDeleted indicates the file no longer exists.
-	DriftReasonDeleted
+import (
+	"github.com/spf13/afero"
 )
 
-var driftReasonStrings = map[DriftReason]string{
-	DriftReasonModified: "modified",
-	DriftReasonDeleted:  "deleted",
+// DriftType represents the kind of drift detected
+type DriftType string
+
+const (
+	DriftTypeModified DriftType = "modified" // File was manually edited
+	DriftTypeDeleted  DriftType = "deleted"  // File should be removed
+	DriftTypeOutdated DriftType = "outdated" // app.json changed, needs regen
+	DriftTypeNew      DriftType = "new"      // File should exist but doesn't
+)
+
+// DriftEntry contains information about a single drifted file
+type DriftEntry struct {
+	Path      string    // File path
+	Type      DriftType // Type of drift
+	Source    string    // What in app.json caused this
+	Generator string    // Which generator created it
 }
 
-// String implements fmt.Stringer on the DriftReason.
-func (r DriftReason) String() string {
-	if s, ok := driftReasonStrings[r]; ok {
-		return s
-	}
-	return "unknown"
-}
-
-// DriftedFile represents a file that has drifted from its tracked state.
-type DriftedFile struct {
-	Path   string
-	Reason DriftReason
-}
-
-// DetectDrift checks if files have been manually modified and returns a list
-// of files that have changed.
+// DetectDrift compares actual files on disk against what should be generated.
+// It detects both manual modifications and source drift (app.json changes).
 //
-// If the list is empty, no changes have been made.
-func DetectDrift(fs afero.Fs, manifest *Manifest) []DriftedFile {
-	var drifted []DriftedFile
+// actualFS: The real filesystem
+// expectedFS: In-memory filesystem with freshly generated files from current app.json
+//
+// Returns all drift: manual edits, outdated files, missing files, and orphaned files.
+func DetectDrift(actualFS, expectedFS afero.Fs) ([]DriftEntry, error) {
+	var drifted []DriftEntry
 
-	for path, entry := range manifest.Files {
-		// Don't try and hash stuff that's managed by the
-		// user and not WebKit.
-		if entry.ScaffoldMode {
+	// Load what was previously generated
+	actualManifest, err := Load(actualFS)
+	if err != nil {
+		// No manifest means nothing to compare
+		return nil, err
+	}
+
+	// Load what should be generated now
+	expectedManifest, err := Load(expectedFS)
+	if err != nil {
+		return nil, err
+	}
+
+	// Track which files we've checked
+	checkedFiles := make(map[string]bool)
+
+	// Check all files that should exist
+	for path, expectedEntry := range expectedManifest.Files {
+		checkedFiles[path] = true
+
+		// Skip user-managed files
+		if expectedEntry.ScaffoldMode {
 			continue
 		}
 
-		// Check if the file exists.
-		data, err := afero.ReadFile(fs, path)
+		// Read expected content
+		expectedData, err := afero.ReadFile(expectedFS, path)
 		if err != nil {
-			// File might be deleted or moved
-			drifted = append(drifted, DriftedFile{
-				Path:   path,
-				Reason: DriftReasonDeleted,
+			continue
+		}
+
+		// Read actual content
+		actualData, err := afero.ReadFile(actualFS, path)
+		if err != nil {
+			// File should exist but doesn't
+			drifted = append(drifted, DriftEntry{
+				Path:      path,
+				Type:      DriftTypeNew,
+				Source:    expectedEntry.Source,
+				Generator: expectedEntry.Generator,
 			})
 			continue
 		}
 
-		// Check if content has changed
-		currentHash := HashContent(data)
-		if currentHash != entry.Hash {
-			drifted = append(drifted, DriftedFile{
-				Path:   path,
-				Reason: DriftReasonModified,
+		// Compare content
+		expectedHash := HashContent(expectedData)
+		actualHash := HashContent(actualData)
+
+		if expectedHash != actualHash {
+			// Determine if this is a manual edit or outdated from app.json change
+			driftType := DriftTypeOutdated
+
+			// If file exists in old manifest with same hash, it was manually modified
+			if oldEntry, exists := actualManifest.Files[path]; exists {
+				if oldEntry.Hash == HashContent(actualData) {
+					// File matches what we last generated, so app.json must have changed
+					driftType = DriftTypeOutdated
+				} else {
+					// File doesn't match what we last generated, so user edited it
+					driftType = DriftTypeModified
+				}
+			}
+
+			drifted = append(drifted, DriftEntry{
+				Path:      path,
+				Type:      driftType,
+				Source:    expectedEntry.Source,
+				Generator: expectedEntry.Generator,
 			})
 		}
 	}
 
-	return drifted
+	// Check for orphaned files (in old manifest but not expected anymore)
+	for path, entry := range actualManifest.Files {
+		if entry.ScaffoldMode || checkedFiles[path] {
+			continue
+		}
+
+		// File was generated before but shouldn't be generated now
+		_, existsInExpected := expectedManifest.Files[path]
+		if !existsInExpected {
+			exists, _ := afero.Exists(actualFS, path)
+			if exists {
+				drifted = append(drifted, DriftEntry{
+					Path:      path,
+					Type:      DriftTypeDeleted,
+					Source:    entry.Source,
+					Generator: entry.Generator,
+				})
+			}
+		}
+	}
+
+	return drifted, nil
 }
