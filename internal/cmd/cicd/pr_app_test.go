@@ -68,7 +68,7 @@ func TestAppPRWorkflow(t *testing.T) {
 				file, err := afero.ReadFile(input.FS, test.want)
 				require.NoError(t, err)
 
-				err = validateWorkflow(t, file)
+				err = validateGithubYaml(t, file, false)
 				assert.NoError(t, err)
 
 				t.Log("Commands are in order")

@@ -51,7 +51,7 @@ func TestBackupWorkflow(t *testing.T) {
 		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup-postgres-db.yaml"))
 		require.NoError(t, err)
 
-		err = validateWorkflow(t, file)
+		err = validateGithubYaml(t, file, false)
 		assert.NoError(t, err)
 	})
 

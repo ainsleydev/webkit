@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
@@ -67,6 +68,7 @@ func TestTurboJSON(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEmpty(t, file)
 		assert.Contains(t, string(file), "https://turborepo.com/schema.json")
+		assert.NotContains(t, string(file), scaffold.WebKitNotice)
 	})
 
 	t.Run("FS Failure", func(t *testing.T) {

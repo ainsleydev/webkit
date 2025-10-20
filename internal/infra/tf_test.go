@@ -175,7 +175,7 @@ func TestTerraform_Plan(t *testing.T) {
 			Name: "project",
 			Repo: appdef.GitHubRepo{
 				Owner: "ainsley-dev",
-				Repo:  "project",
+				Name:  "project",
 			},
 		},
 		Resources: []appdef.Resource{
@@ -362,7 +362,7 @@ func TestTerraform_Apply(t *testing.T) {
 			Name: "project",
 			Repo: appdef.GitHubRepo{
 				Owner: "ainsley-dev",
-				Repo:  "project",
+				Name:  "project",
 			},
 		},
 		Resources: []appdef.Resource{
@@ -428,7 +428,7 @@ func TestTerraform_Destroy(t *testing.T) {
 			Name: "project",
 			Repo: appdef.GitHubRepo{
 				Owner: "ainsley-dev",
-				Repo:  "project",
+				Name:  "project",
 			},
 		},
 		Resources: []appdef.Resource{
@@ -509,7 +509,7 @@ func TestTerraform_Output(t *testing.T) {
 			Name: "project",
 			Repo: appdef.GitHubRepo{
 				Owner: "ainsley-dev",
-				Repo:  "project",
+				Name:  "project",
 			},
 		},
 		Resources: []appdef.Resource{

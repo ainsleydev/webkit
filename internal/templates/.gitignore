@@ -6,6 +6,7 @@
 # Credentials
 .env
 .env.local
+.env.production
 **/.env
 
 # IDE Directories

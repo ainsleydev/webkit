@@ -25,7 +25,7 @@ func TestDriftDetection(t *testing.T) {
 		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "drift.yaml"))
 		require.NoError(t, err)
 
-		err = validateWorkflow(t, file)
+		err = validateGithubYaml(t, file, false)
 		assert.NoError(t, err)
 	})
 

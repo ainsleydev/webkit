@@ -131,8 +131,12 @@ func (f FileGenerator) CopyFromEmbed(efs embed.FS, from, to string, opts ...Opti
 
 // Template writes a template file with the given mode.
 func (f FileGenerator) Template(path string, tpl *template.Template, data any, opts ...Option) error {
+	options := applyOptions(opts...)
+
 	buf := &bytes.Buffer{}
-	buf.WriteString(noticeForFile(path))
+	if !options.suppressNotice {
+		buf.WriteString(noticeForFile(path))
+	}
 
 	if err := tpl.Execute(buf, data); err != nil {
 		return fmt.Errorf("executing template %s: %w", tpl.Name(), err)

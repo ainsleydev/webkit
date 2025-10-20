@@ -46,7 +46,7 @@ func Read(root afero.Fs) (*Definition, error) {
 
 	// TODO: Apply defaults and return validation errors if the user has fucked it.
 	def := &Definition{}
-	if err := json.Unmarshal(data, def); err != nil {
+	if err = json.Unmarshal(data, def); err != nil {
 		return nil, errors.New("unmarshalling app definition: " + err.Error())
 	}
 

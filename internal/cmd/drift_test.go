@@ -24,7 +24,7 @@ func TestDrift(t *testing.T) {
 		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test",
-				Repo: appdef.GitHubRepo{Owner: "test", Repo: "test"},
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
 			},
 		})
 
@@ -58,7 +58,7 @@ func TestDrift(t *testing.T) {
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test",
-				Repo: appdef.GitHubRepo{Owner: "test", Repo: "test"},
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
 			},
 		}
 
@@ -83,7 +83,7 @@ func TestDrift(t *testing.T) {
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test",
-				Repo: appdef.GitHubRepo{Owner: "test", Repo: "test"},
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
 			},
 		}
 
@@ -114,7 +114,7 @@ func TestDrift(t *testing.T) {
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test",
-				Repo: appdef.GitHubRepo{Owner: "test", Repo: "test"},
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
 			},
 		}
 
@@ -142,7 +142,7 @@ func TestDrift(t *testing.T) {
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test",
-				Repo: appdef.GitHubRepo{Owner: "test", Repo: "test"},
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
 			},
 		}
 
@@ -172,7 +172,7 @@ func TestDrift(t *testing.T) {
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test",
-				Repo: appdef.GitHubRepo{Owner: "test", Repo: "test"},
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
 			},
 			Apps: []appdef.App{
 				{Name: "cms", Type: appdef.AppTypePayload, Path: "services/cms"},

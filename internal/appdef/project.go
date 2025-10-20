@@ -13,6 +13,6 @@ type (
 	// an app declaration.
 	GitHubRepo struct {
 		Owner string `json:"owner"`
-		Repo  string `json:"repo"`
+		Name  string `json:"name"`
 	}
 )

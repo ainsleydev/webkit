@@ -79,7 +79,7 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 		Resources:   make([]tfResource, 0, len(def.Resources)),
 		GithubConfig: tfGithubConfig{
 			Owner: def.Project.Repo.Owner,
-			Repo:  def.Project.Repo.Repo,
+			Repo:  def.Project.Repo.Name,
 		},
 	}
 

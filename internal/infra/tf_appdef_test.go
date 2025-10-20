@@ -21,7 +21,7 @@ func TestTerraform_Resources(t *testing.T) {
 				Name: "project",
 				Repo: appdef.GitHubRepo{
 					Owner: "ainsley-dev",
-					Repo:  "project",
+					Name:  "project",
 				},
 			},
 			Resources: []appdef.Resource{
@@ -164,7 +164,7 @@ func TestTerraform_Resources(t *testing.T) {
 				Name: "project",
 				Repo: appdef.GitHubRepo{
 					Owner: "ainsley-dev",
-					Repo:  "project",
+					Name:  "project",
 				},
 			},
 			Resources: []appdef.Resource{
@@ -306,7 +306,7 @@ func TestTerraform_Apps(t *testing.T) {
 				Name: "project",
 				Repo: appdef.GitHubRepo{
 					Owner: "ainsley-dev",
-					Repo:  "project",
+					Name:  "project",
 				},
 			},
 			Apps: []appdef.App{

@@ -32,7 +32,7 @@ func TestIntegration_Clone(t *testing.T) {
 	tmpDir := t.TempDir()
 	repoPath := filepath.Join(tmpDir, "webkit")
 
-	t.Log("Clone Repo")
+	t.Log("Clone Name")
 	{
 		cfg := git.CloneConfig{
 			URL:       "https://github.com/ainsleydev/webkit.git",

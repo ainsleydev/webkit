@@ -26,7 +26,7 @@ func setup(t *testing.T, fs afero.Fs, appDef *appdef.Definition) cmdtools.Comman
 	}
 }
 
-func validateWorkflow(t *testing.T, file []byte) error {
+func validateGithubYaml(t *testing.T, file []byte, isAction bool) error {
 	t.Helper()
 
 	t.Log("YAML is valid")
@@ -34,8 +34,11 @@ func validateWorkflow(t *testing.T, file []byte) error {
 		return err
 	}
 
+	if isAction {
+
+	}
 	t.Log("Github Action is validated")
-	if err := testutil.ValidateGithubAction(t, file); err != nil {
+	if err := testutil.ValidateGithubAction(t, file, isAction); err != nil {
 		return err
 	}
 

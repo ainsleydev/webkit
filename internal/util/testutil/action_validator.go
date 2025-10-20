@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
 
@@ -26,7 +26,7 @@ func ValidateYAML(t *testing.T, data []byte) error {
 // no error will be returned.
 //
 // Ref: https://github.com/mpalmer/action-validator
-func ValidateGithubAction(t *testing.T, data []byte) error {
+func ValidateGithubAction(t *testing.T, data []byte, isAction bool) error {
 	t.Helper()
 
 	// Check if action-validator is installed
@@ -34,22 +34,22 @@ func ValidateGithubAction(t *testing.T, data []byte) error {
 		return errors.New("action-validator is not installed; see: https://github.com/mpalmer/action-validator")
 	}
 
-	// Write the YAML to a temporary file
-	tmpFile, err := os.CreateTemp("", "action-validate-*.yml")
-	if err != nil {
-		return fmt.Errorf("failed to create temp file: %w", err)
+	// Determine filename based on type
+	filename := "temp.yml"
+	if isAction {
+		filename = "action.yml"
 	}
-	defer func(name string) {
-		assert.NoError(t, os.Remove(name))
-	}(tmpFile.Name()) // Ensure cleanup
 
-	if _, err := tmpFile.Write(data); err != nil {
+	tmpFilePath := filepath.Join(os.TempDir(), filename)
+	if err := os.WriteFile(tmpFilePath, data, 0o644); err != nil {
 		return fmt.Errorf("failed to write temp file: %w", err)
 	}
-	tmpFile.Close()
+	defer func(name string) {
+		_ = os.Remove(name) //nolint
+	}(tmpFilePath) // Ensure cleanup
 
 	// Run the action-validator command
-	cmd := exec.Command("action-validator", tmpFile.Name())
+	cmd := exec.Command("action-validator", tmpFilePath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("validation failed:\n%s", string(output))

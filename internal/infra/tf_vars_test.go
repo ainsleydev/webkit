@@ -37,7 +37,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 				Name: "project",
 				Repo: appdef.GitHubRepo{
 					Owner: "ainsley-dev",
-					Repo:  "project",
+					Name:  "project",
 				},
 			},
 			Resources: []appdef.Resource{
@@ -90,7 +90,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 				Name: "single-app-project",
 				Repo: appdef.GitHubRepo{
 					Owner: "owner",
-					Repo:  "single-app-project",
+					Name:  "single-app-project",
 				},
 			},
 			Apps: []appdef.App{
@@ -155,7 +155,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 				Name: "complex-project",
 				Repo: appdef.GitHubRepo{
 					Owner: "owner",
-					Repo:  "complex-project",
+					Name:  "complex-project",
 				},
 			},
 			Apps: []appdef.App{

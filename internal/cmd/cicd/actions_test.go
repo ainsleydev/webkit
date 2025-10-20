@@ -23,8 +23,11 @@ func TestActionTemplates(t *testing.T) {
 		assert.NoError(t, got)
 
 		for _, path := range actionTemplates {
-			_, err := afero.ReadFile(input.FS, filepath.Join(actionsPath, path))
+			file, err := afero.ReadFile(input.FS, filepath.Join(actionsPath, path))
 			require.NoError(t, err)
+
+			err = validateGithubYaml(t, file, true)
+			assert.NoError(t, err)
 		}
 	})
 
