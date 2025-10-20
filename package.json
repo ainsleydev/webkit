@@ -34,7 +34,7 @@
 		"test": "pnpm test:go",
 		"test:go": "go test ./...",
 		"release:check": "goreleaser check",
-		"release:test": "goreleaser release --snapshot --clean --skip=publish",
+		"release:test": "pnpm release:clean && goreleaser release --snapshot --clean --skip=publish",
 		"release:version": "git describe --tags --always --dirty 2>/dev/null || echo 'no tags'",
 		"release:clean": "rm -rf dist/",
 		"repopack": "repomix --include \"internal/**/*.go,platform/**/*.tf,.go\" --style markdown --output repopack.txt",
