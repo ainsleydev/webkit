@@ -24,7 +24,10 @@ jobs:
                     go-version: ${{ matrix.go-version }}
 
             -   name: Install Dependencies
-                run: go mod tidy
+                run:  |
+                  go mod tidy
+                  chmod +x bin/setup.sh
+                  ./bin/setup.sh
 
             -   name: Test
                 run: go test ./... -race -coverprofile=./coverage.out -covermode=atomic

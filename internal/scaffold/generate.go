@@ -37,6 +37,7 @@ type (
 
 // New creates a new FileGenerator with the provided afero.Fs.
 func New(fs afero.Fs, manifest *manifest.Tracker) *FileGenerator {
+	enforce.NotNil(fs, "file system is required")
 	enforce.NotNil(manifest, "manifest definition is required")
 
 	var w io.Writer

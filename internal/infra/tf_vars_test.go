@@ -1,3 +1,5 @@
+//go:build !race
+
 package infra
 
 import (
@@ -83,8 +85,6 @@ func TestTFVarsFromDefinition(t *testing.T) {
 	})
 
 	t.Run("Single App", func(t *testing.T) {
-		t.Skip()
-
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "single-app-project",

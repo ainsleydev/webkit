@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/spf13/afero"
@@ -16,6 +17,7 @@ import (
 // Used to track which files were created by webkit and from which source.
 type Tracker struct {
 	files      map[string]FileEntry
+	mtx        *sync.Mutex
 	marshaller func(v any, prefix, indent string) ([]byte, error)
 }
 
@@ -23,6 +25,7 @@ type Tracker struct {
 func NewTracker() *Tracker {
 	return &Tracker{
 		files:      make(map[string]FileEntry),
+		mtx:        &sync.Mutex{},
 		marshaller: json.MarshalIndent,
 	}
 }
@@ -33,6 +36,8 @@ var Path = filepath.Join(".webkit", "manifest.json")
 // Add stores a file entry in the tracker, keyed by its path.
 // If an entry with the same path exists, it will be overwritten.
 func (t *Tracker) Add(entry FileEntry) {
+	t.mtx.Lock()
+	defer t.mtx.Unlock()
 	t.files[entry.Path] = entry
 }
 
