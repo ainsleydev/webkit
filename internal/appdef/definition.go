@@ -1,3 +1,5 @@
+// Package appdef provides types and functions for parsing and working with
+// the WebKit application definition file (app.json).
 package appdef
 
 import (
@@ -10,12 +12,14 @@ import (
 )
 
 const (
-	// JsonFileName defines the file name of the app manifest,
-	// that should appear in the root of each webkit dir.
+	// JsonFileName defines the file name of the app manifest
+	// that should appear in the root of each WebKit directory.
 	JsonFileName = "app.json"
 )
 
 type (
+	// Definition represents the complete WebKit application manifest,
+	// including project metadata, shared configuration, resources, and apps.
 	Definition struct {
 		WebkitVersion string     `json:"webkit_version"`
 		Project       Project    `json:"project"`
@@ -23,15 +27,17 @@ type (
 		Resources     []Resource `json:"resources"`
 		Apps          []App      `json:"apps"`
 	}
+
+	// Shared contains configuration that is shared across all apps,
+	// such as environment variables.
 	Shared struct {
 		Env Environment `json:"env"`
 	}
 )
 
-/************************************
-	General
-************************************/
-
+// Read reads and parses the WebKit application definition from the filesystem.
+// It unmarshals the JSON file, applies default values, and returns the complete
+// definition or an error if parsing fails.
 func Read(root afero.Fs) (*Definition, error) {
 	file, err := root.Open(JsonFileName)
 	if err != nil {
@@ -44,7 +50,6 @@ func Read(root afero.Fs) (*Definition, error) {
 		return nil, err
 	}
 
-	// TODO: Apply defaults and return validation errors if the user has fucked it.
 	def := &Definition{}
 	if err = json.Unmarshal(data, def); err != nil {
 		return nil, errors.New("unmarshalling app definition: " + err.Error())
@@ -85,10 +90,6 @@ func (d *Definition) ApplyDefaults() error {
 	return nil
 }
 
-/************************************
-	Apps
-************************************/
-
 // ContainsGo returns true if any of the apps are marked as Go.
 func (d *Definition) ContainsGo() bool {
 	for _, app := range d.Apps {
@@ -108,10 +109,6 @@ func (d *Definition) ContainsJS() bool {
 	}
 	return false
 }
-
-/************************************
-	Env
-************************************/
 
 // MergeAllEnvironments merges shared env variables with all apps' environments.
 // App-specific values take precedence over shared ones. If multiple apps define the same variable,

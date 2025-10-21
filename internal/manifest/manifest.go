@@ -1,3 +1,6 @@
+// Package manifest provides file tracking and drift detection for WebKit-generated files.
+// It maintains a manifest of all generated files with their sources and content hashes
+// to detect manual modifications and outdated files.
 package manifest
 
 import (

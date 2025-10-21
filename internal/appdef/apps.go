@@ -6,6 +6,8 @@ import (
 )
 
 type (
+	// App represents a single application within the WebKit project,
+	// including its configuration, build settings, infrastructure, and domains.
 	App struct {
 		Name        string                  `json:"name"`
 		Title       string                  `json:"title"`
@@ -19,15 +21,21 @@ type (
 		Domains     []Domain                `json:"domains,omitzero"`
 		Commands    map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string"`
 	}
+
+	// Build contains build-related configuration for an app.
 	Build struct {
 		Dockerfile string `json:"dockerfile"`
 	}
+
+	// Infra defines the infrastructure configuration for an app,
+	// including the cloud provider and deployment settings.
 	Infra struct {
 		Provider ResourceProvider `json:"provider"`
-		// TODO, we need to define this as a AppResourceType or something.
-		Type   string         `json:"type"`
-		Config map[string]any `json:"config"`
+		Type     string            `json:"type"`
+		Config   map[string]any    `json:"config"`
 	}
+
+	// Domain represents a domain name configuration for an app.
 	Domain struct {
 		Name     string `json:"name"`
 		Type     string `json:"type"`
@@ -112,6 +120,8 @@ func (a *App) ShouldUseNPM() bool {
 	return a.Language() == "js"
 }
 
+// applyDefaults applies default values to the App, including default commands
+// for the app type and build configuration.
 func (a *App) applyDefaults() error {
 	if a.Commands == nil {
 		a.Commands = make(map[Command]CommandSpec)

@@ -1,3 +1,4 @@
+// Package cicd provides commands for managing GitHub Actions workflows and CI/CD configurations.
 package cicd
 
 import (
@@ -6,8 +7,8 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// Command defines the env commands for interacting and generating
-// github workflow/action file artifacts.
+// Command defines the CI/CD commands for generating and managing
+// GitHub workflow and action file artifacts.
 var Command = &cli.Command{
 	Name:        "cicd",
 	Usage:       "Manage github workflows",

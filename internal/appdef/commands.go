@@ -40,8 +40,7 @@ const (
 	CommandBuild  Command = "build"
 )
 
-// Commands defines all the Commands available that should be
-// run in order.
+// Commands defines all available commands in the order they should be executed.
 var Commands = []Command{
 	CommandFormat,
 	CommandLint,
@@ -49,9 +48,8 @@ var Commands = []Command{
 	CommandBuild,
 }
 
-// defaultCommands defines the default actions for each
-// application type. If not overridden, these Commands
-// will be used.
+// defaultCommands maps application types to their default command specifications.
+// These commands are used when not explicitly overridden in the app definition.
 var defaultCommands = map[AppType]map[Command]string{
 	AppTypePayload: {
 		CommandFormat: "pnpm format",
@@ -74,7 +72,8 @@ var defaultCommands = map[AppType]map[Command]string{
 	},
 }
 
-// UnmarshalJSON implements json.Unmarshaler to
+// UnmarshalJSON implements json.Unmarshaler to support multiple input formats:
+// boolean (false = disabled), string (command override), or object (full specification).
 func (c *CommandSpec) UnmarshalJSON(data []byte) error {
 	// Try bool (false = disabled)
 	var b bool

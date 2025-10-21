@@ -1,3 +1,4 @@
+// Package cmd provides the main CLI commands and subcommands for the WebKit CLI tool.
 package cmd
 
 import (
@@ -16,6 +17,7 @@ import (
 	"github.com/ainsleydev/webkit/pkg/log"
 )
 
+// Run initializes and executes the WebKit CLI application with all registered commands.
 func Run() {
 	cmd := &cli.Command{
 		Name:  "webkit",

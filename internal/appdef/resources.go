@@ -52,8 +52,8 @@ func (r ResourceProvider) String() string {
 	return string(r)
 }
 
-// requiredOutputs is a global lookup of all required outputs
-// from a resource type.
+// requiredOutputs maps resource types to their required Terraform outputs.
+// These outputs must always be available for the resource type.
 var requiredOutputs = map[ResourceType][]string{
 	ResourceTypePostgres: {
 		"id",
@@ -98,7 +98,8 @@ func (r *Resource) GitHubSecretName(environment env.Environment, output string) 
 		strings.ToUpper(output))
 }
 
-// applyDefaults applies default values to a Resource.
+// applyDefaults applies default values to a Resource, including
+// initializing the config map, enabling backups, and setting type-specific defaults.
 func (r *Resource) applyDefaults() {
 	if r.Config == nil {
 		r.Config = make(map[string]any)
@@ -108,8 +109,7 @@ func (r *Resource) applyDefaults() {
 		Enabled: true,
 	}
 
-	// Apply type-specific defaults
-	// TODO: These types should be nicely hardcoded.
+	// Apply type-specific defaults.
 	switch r.Type {
 	case "postgres":
 		if _, ok := r.Config["engine_version"]; !ok {

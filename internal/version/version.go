@@ -1,6 +1,8 @@
+// Package version provides version information for the WebKit CLI,
+// including version number, commit hash, and build metadata.
 package version
 
-// Version is the current version number that Webkit is running on.
+// Version is the current version number that WebKit is running on.
 // This value is injected by GoReleaser during builds via ldflags.
 var Version = "dev"
 

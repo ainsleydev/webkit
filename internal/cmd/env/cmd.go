@@ -1,3 +1,5 @@
+// Package env provides commands for managing environment variable files (.env)
+// based on the application definition.
 package env
 
 import (
@@ -16,8 +18,8 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-// Command defines the env commands for interacting and generating
-// env file artifacts.
+// Command defines the environment commands for generating and managing
+// environment variable files.
 var Command = &cli.Command{
 	Name:        "env",
 	Usage:       "Manage environment variables",
@@ -35,6 +37,7 @@ var environmentsWithDotEnv = []env.Environment{
 	env.Production,
 }
 
+// writeArgs contains the parameters needed to write environment variables to a file.
 type writeArgs struct {
 	Input       cmdtools.CommandInput
 	Vars        appdef.EnvVar
@@ -43,6 +46,7 @@ type writeArgs struct {
 	IsScaffold  bool
 }
 
+// dotEnvMarshaller is the function used to marshal environment variables to dotenv format.
 var dotEnvMarshaller = godotenv.Marshal
 
 // writeMapToFile writes environment variables to dotenv file.

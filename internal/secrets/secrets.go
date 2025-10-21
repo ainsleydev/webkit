@@ -1,3 +1,5 @@
+// Package secrets provides utilities for managing SOPS-encrypted secret files
+// and resolving secret values from environment variable configurations.
 package secrets
 
 import (

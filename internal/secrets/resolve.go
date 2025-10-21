@@ -11,13 +11,15 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-// ResolveConfig defines the data needed in order to decrypt the
-// definitions environments secrets.
+// ResolveConfig defines the configuration needed to decrypt
+// environment secrets from the application definition.
 type ResolveConfig struct {
 	SOPSClient sops.EncrypterDecrypter
 	BaseDir    string
 }
 
+// Resolve decrypts all SOPS-encrypted secrets in the application definition
+// and updates the environment values with their decrypted contents.
 func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) error {
 	// Resolve shared environment
 	if err := resolveAllEnvs(ctx, cfg, &def.Shared.Env); err != nil {
@@ -59,6 +61,7 @@ func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Envir
 	})
 }
 
+// resolveContext contains the context needed to resolve a single environment variable.
 type resolveContext struct {
 	cfg    ResolveConfig
 	env    env.Environment
@@ -67,6 +70,7 @@ type resolveContext struct {
 	vars   appdef.EnvVar
 }
 
+// resolveFunc is a function that resolves a single environment variable value.
 type resolveFunc func(ctx context.Context, rc resolveContext) error
 
 var resolver = map[appdef.EnvSource]resolveFunc{

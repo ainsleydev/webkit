@@ -1,3 +1,5 @@
+// Package fsext provides filesystem extensions and utilities for working with
+// embedded filesystems and file copying operations.
 package fsext
 
 import (

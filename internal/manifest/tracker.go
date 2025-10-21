@@ -63,8 +63,7 @@ func (t *Tracker) Save(fs afero.Fs) error {
 	return afero.WriteFile(fs, Path, data, 0o644)
 }
 
-// ErrNoManifest is returned by Load() when there hasen't been
-// a manifest generated yet.
+// ErrNoManifest is returned by Load when no manifest has been generated yet.
 var ErrNoManifest = fmt.Errorf("no manifest found")
 
 // Load reads a manifest JSON file and deserializes it.

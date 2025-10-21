@@ -21,17 +21,17 @@ var updateCmd = &cli.Command{
 	Action:      cmdtools.Wrap(update),
 }
 
+// runner defines an operation to execute during the update process,
+// pairing a command function with a descriptive name for logging.
 type runner struct {
 	command cmdtools.RunCommand
 	name    string
 }
 
+// updateOps defines all operations to run during an update, in order.
+// The order is significant: manifest and definition must be first,
+// and environment/secrets sync should be last.
 var updateOps = []runner{
-	// Must be first
-	// TODO:
-	// - Create app.json file.
-	// - Create repo?
-	// - Validate definition
 	{files.Manifest, "Manifest: Scaffold manifest files"},
 	{files.Definition, "Definition: Update webkit_version in app.json"},
 	{env.Scaffold, "Env: Scaffold .env files"},
@@ -51,6 +51,9 @@ var updateOps = []runner{
 	{secrets.Sync, "Secrets: Sync secret files"},
 }
 
+// update regenerates all project files based on the current app.json configuration.
+// It loads the previous manifest, executes all update operations, saves the new manifest,
+// and cleans up any orphaned files from the previous generation.
 func update(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 
