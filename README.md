@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://webkit.ainsley.dev">
-    <img src="./resources/webkit-logo.png" height="96">
+    <img src="./resources/symbol.png" height="96">
     <h3 align="center">WebKit</h3>
   </a>
 </p>
