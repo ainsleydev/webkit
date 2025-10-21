@@ -184,7 +184,6 @@ func TestFileGenerator_Copy(t *testing.T) {
 var testEmbed embed.FS
 
 func TestFileGenerator_CopyFromEmbed(t *testing.T) {
-
 	t.Run("From Doesn't Exist", func(t *testing.T) {
 		gen := setup(t)
 

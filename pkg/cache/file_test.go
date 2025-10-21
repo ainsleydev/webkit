@@ -147,8 +147,6 @@ func TestFile_Invalidate(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
 			tempDir := t.TempDir()
 			store, err := NewFileCache(filepath.Join(tempDir, "cache.json"))
 			require.NoError(t, err)

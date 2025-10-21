@@ -31,8 +31,6 @@ func Scaffold(_ context.Context, input cmdtools.CommandInput) error {
 	for _, enviro := range env.All {
 		path := filepath.Join("resources", "secrets", fmt.Sprintf("%s.yaml", enviro))
 
-		fmt.Println(path)
-
 		// If we generate a file that has YAML commentary in the file,
 		// SOPS will encrypt the comments when Encrypt() is called,
 		// malforming the file.

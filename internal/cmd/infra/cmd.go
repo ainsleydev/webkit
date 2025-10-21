@@ -72,5 +72,4 @@ func initTerraform(ctx context.Context, input cmdtools.CommandInput) (infra.Mana
 	spinner.Stop()
 
 	return tf, teardown, nil
-
 }

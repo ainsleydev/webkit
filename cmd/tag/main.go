@@ -46,12 +46,7 @@ func main() {
 }
 
 func createTag(console *printer.Console, reader *bufio.Reader) {
-	// Get latest tag
-	latestTag, err := getLatestTag()
-	if err != nil {
-		console.Error(fmt.Sprintf("Error getting latest tag: %s", err))
-		os.Exit(1)
-	}
+	latestTag := getLatestTag()
 
 	console.Printf("\nCurrent version: %s\n\n", latestTag)
 
@@ -224,14 +219,14 @@ func deleteTag(console *printer.Console, reader *bufio.Reader) {
 	console.Success("Tag deletion completed successfully!")
 }
 
-func getLatestTag() (string, error) {
+func getLatestTag() string {
 	cmd := exec.Command("git", "describe", "--tags", "--abbrev=0")
 	output, err := cmd.Output()
 	if err != nil {
 		// No tags exist yet, start from v0.0.0
-		return "v0.0.0", nil
+		return "v0.0.0"
 	}
-	return strings.TrimSpace(string(output)), nil
+	return strings.TrimSpace(string(output))
 }
 
 func getAllTags() ([]string, error) {

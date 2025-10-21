@@ -60,7 +60,7 @@ func setup(t *testing.T, appDef *appdef.Definition, mock *mockinfra.MockManager,
 	}
 }
 
-func setupWithPrinter(t *testing.T, def *appdef.Definition, manager *mockinfra.MockManager, initError bool) (cmdtools.CommandInput, *bytes.Buffer, func()) {
+func setupWithPrinter(t *testing.T, def *appdef.Definition, manager *mockinfra.MockManager, initError bool) (cmdtools.CommandInput, *bytes.Buffer, func()) { //nolint
 	t.Helper()
 	t.Skip("Need better DI")
 
