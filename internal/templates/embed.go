@@ -18,6 +18,7 @@ func LoadTemplate(name string) (*template.Template, error) {
 	}
 
 	funcs := sprig.FuncMap()
+	funcs["ghVar"] = githubVariable
 	funcs["ghSecret"] = githubSecret
 	funcs["ghInput"] = githubInput
 	funcs["ghEnv"] = githubEnv

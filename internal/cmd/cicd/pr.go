@@ -2,7 +2,6 @@ package cicd
 
 import (
 	"context"
-	"fmt"
 	"path/filepath"
 
 	"github.com/urfave/cli/v3"
@@ -26,21 +25,7 @@ func PR(_ context.Context, input cmdtools.CommandInput) error {
 	data := map[string]any{
 		"Apps": appDef.Apps,
 	}
+	file := filepath.Join(workflowsPath, "pr.yaml")
 
-	// Generate drift detection workflow
-	driftPath := filepath.Join(workflowsPath, "drift.yaml")
-	if err := input.Generator().Template(driftPath, tpl, data); err != nil {
-		return err
-	}
-
-	// Generate app-specific PR workflows
-	for _, app := range appDef.Apps {
-		data["App"] = &app
-		file := filepath.Join(workflowsPath, fmt.Sprintf("pr-%s.yaml", app.Name))
-		if err := input.Generator().Template(file, tpl, data); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return input.Generator().Template(file, tpl, data)
 }

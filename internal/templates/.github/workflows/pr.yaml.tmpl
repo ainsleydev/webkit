@@ -1,5 +1,4 @@
-{{- if not .App }}
-name: WebKit Drift Detection
+name: PR
 
 on:
   workflow_dispatch:
@@ -10,7 +9,7 @@ on:
 
 # Only allow one of these to run per branch
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: {{ ghVar "github.workflow" }}-{{ ghVar "github.ref" }}
   cancel-in-progress: true
 
 permissions:
@@ -20,7 +19,7 @@ permissions:
 
 jobs:
   drift-detection:
-    name: Detect WebKit Drift
+    name: Drift Detection
     runs-on: ubuntu-latest
 
     steps:
@@ -34,7 +33,7 @@ jobs:
       - name: Run Drift Detection
         id: drift
         run: |
-          if ${{ steps.webkit.outputs.cli-path }} drift; then
+          if {{ ghVar "steps.webkit.outputs.cli-path" }} drift; then
             echo "drift_detected=false" >> $GITHUB_OUTPUT
           else
             echo "drift_detected=true" >> $GITHUB_OUTPUT
@@ -45,7 +44,7 @@ jobs:
         uses: peter-evans/find-comment@v3
         id: find-comment
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: {{ ghVar "github.event.pull_request.number" }}
           comment-author: 'github-actions[bot]'
           body-includes: 'WebKit Drift'
 
@@ -53,12 +52,12 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: peter-evans/create-or-update-comment@v5
         with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: {{ ghVar "steps.find-comment.outputs.comment-id" }}
+          issue-number: {{ ghVar "github.event.pull_request.number" }}
           body: |
             ## WebKit Drift Detection
 
-            ${{ steps.drift.outputs.drift_detected == 'true' && '❌ Drift detected' || '✅ No drift detected' }}
+            {{`${{ steps.drift.outputs.drift_detected == 'true' && '❌ Drift detected' || '✅ No drift detected' }}`}}
           edit-mode: replace
 
       - name: Fail Workflow if Drift Detected
@@ -67,24 +66,16 @@ jobs:
           echo "❌ Drift detected in WebKit-generated files"
           echo "Run 'webkit update' to sync your project with the latest templates"
           exit 1
-{{- else }}
-name: PR - {{ .App.Title }}
 
-on:
-  workflow_dispatch:
-  pull_request:
-    paths:
-      - '{{ .App.Path }}/**'
-
-jobs:
-  {{ .App.Name | lower }}:
+	{{- range .Apps }}
+  {{ .Name | lower }}:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-{{- if eq .App.Language "js" }}
+{{- if eq .Language "js" }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -97,7 +88,7 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-{{- else if eq .App.Language "go" }}
+{{- else if eq .Language "go" }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -105,12 +96,12 @@ jobs:
           go-version: '1.25'
 {{- end }}
 
-{{- range $spec := .App.OrderedCommands }}
+{{- range $spec := .OrderedCommands }}
 {{- if not $spec.Disabled }}
 
       - name: {{ $spec.Name | title }}
-{{- if $.App.Path }}
-        working-directory: {{ $.App.Path }}
+{{- if $.Path }}
+        working-directory: {{ $.Path }}
 {{- end }}
         run: {{ $spec.Cmd }}
 {{- end }}

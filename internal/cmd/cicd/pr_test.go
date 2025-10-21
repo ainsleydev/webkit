@@ -15,31 +15,24 @@ import (
 func TestPR(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Creates Drift Workflow", func(t *testing.T) {
-		t.Parallel()
-
-		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{})
-
-		err := PR(t.Context(), input)
-		require.NoError(t, err)
-
-		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "drift.yaml"))
-		require.NoError(t, err)
-
-		err = validateGithubYaml(t, file, false)
-		assert.NoError(t, err)
-
-		// Verify it's the drift workflow
-		content := string(file)
-		assert.Contains(t, content, "WebKit Drift Detection")
-		assert.Contains(t, content, "drift-detection:")
-	})
-
-	t.Run("No Apps - Still Creates Drift", func(t *testing.T) {
+	t.Run("Creates Workflow", func(t *testing.T) {
 		t.Parallel()
 
 		appDef := &appdef.Definition{
-			Apps: []appdef.App{},
+			Apps: []appdef.App{
+				{
+					Name:  "cms",
+					Title: "CMS",
+					Path:  "./cms",
+					Type:  appdef.AppTypePayload,
+				},
+				{
+					Name:  "web",
+					Title: "Web",
+					Path:  "./web",
+					Type:  appdef.AppTypeGoLang,
+				},
+			},
 		}
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
@@ -47,82 +40,53 @@ func TestPR(t *testing.T) {
 		err := PR(t.Context(), input)
 		require.NoError(t, err)
 
-		// Should still create drift workflow
-		exists, err := afero.Exists(input.FS, filepath.Join(workflowsPath, "drift.yaml"))
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "pr.yaml"))
 		require.NoError(t, err)
-		assert.True(t, exists)
-	})
 
-	t.Run("Creates App Workflows", func(t *testing.T) {
-		t.Parallel()
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
 
-		tt := map[string]struct {
-			input appdef.App
-			want  string
-		}{
-			"Javascript": {
-				input: appdef.App{
-					Name:  "cms",
-					Title: "CMS",
-					Path:  "./cms",
-					Type:  appdef.AppTypePayload,
-				},
-				want: ".github/workflows/pr-cms.yaml",
-			},
-			"Go": {
-				input: appdef.App{
-					Name:  "web",
-					Title: "Web",
-					Path:  "./web",
-					Type:  appdef.AppTypeGoLang,
-				},
-				want: ".github/workflows/pr-web.yaml",
-			},
+		content := string(file)
+
+		t.Log("Drift")
+		{
+
+			assert.Contains(t, content, "WebKit Drift Detection")
+			assert.Contains(t, content, "drift-detection:")
 		}
 
-		for name, test := range tt {
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
+		t.Log("Apps")
+		{
+			for _, app := range appDef.Apps {
+				jobName := strings.ToLower(app.Name)
+				assert.Contains(t, content, jobName+":", "workflow should contain job for app "+app.Name)
 
-				appDef := &appdef.Definition{Apps: []appdef.App{test.input}}
-				input := setup(t, afero.NewMemMapFs(), appDef)
-				require.NoError(t, appDef.ApplyDefaults())
-
-				err := PR(t.Context(), input)
-				require.NoError(t, err)
-
-				// Check drift workflow exists
-				driftFile, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "drift.yaml"))
-				require.NoError(t, err)
-				assert.Contains(t, string(driftFile), "WebKit Drift Detection")
-
-				// Check app workflow
-				file, err := afero.ReadFile(input.FS, test.want)
-				require.NoError(t, err)
-
-				err = validateGithubYaml(t, file, false)
-				assert.NoError(t, err)
-
-				t.Log("Commands are in order")
-				{
-					content := string(file)
-
-					// Get positions for each command in the canonical order
-					var positions []int
-					for _, cmd := range appdef.Commands {
-						pos := strings.Index(content, "name: "+strings.Title(cmd.String()))
-						if pos != -1 {
-							positions = append(positions, pos)
-						}
-					}
-
-					// Verify positions are in ascending order
-					for i := 0; i < len(positions)-1; i++ {
-						assert.Less(t, positions[i], positions[i+1],
-							"commands should appear in order defined by appdef.Commands")
-					}
+				switch app.Type {
+				case appdef.AppTypeGoLang:
+					assert.Contains(t, content, "Set up Go", "Go app should have Go setup")
+				case appdef.AppTypePayload:
+					assert.Contains(t, content, "Install pnpm", "JS app should have pnpm setup")
+					assert.Contains(t, content, "Set up Node", "JS app should have Node setup")
 				}
-			})
+			}
+		}
+
+		t.Log("Commands")
+		{
+			// Get positions for each command in the canonical order.
+			var positions []int
+			for _, cmd := range appdef.Commands {
+				pos := strings.Index(content, "name: "+strings.Title(cmd.String()))
+				if pos != -1 {
+					positions = append(positions, pos)
+				}
+			}
+
+			// Verify positions are in ascending order.
+			for i := 0; i < len(positions)-1; i++ {
+				assert.Less(t, positions[i], positions[i+1],
+					"commands should appear in order defined by appdef.Commands")
+			}
 		}
 	})
 
