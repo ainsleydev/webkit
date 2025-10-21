@@ -26,12 +26,15 @@ runs:
         echo "version=$WEBKIT_VERSION" >> $GITHUB_OUTPUT
         echo "Detected WebKit version: $WEBKIT_VERSION"
 
-    - name: Download WebKit CLI Artifact
-      id: download
-      uses: actions/download-artifact@v5
+    - name: Download WebKit Release Asset
+      id: setup
+      uses: robinraju/release-downloader@v1
       with:
-        name: webkit-cli-${{ steps.version.outputs.version }}
-        path: /tmp/webkit-install
+        repository: 'ainsleydev/webkit'
+        tag: ${{ steps.version.outputs.version }}
+        fileName: 'webkit_linux_x86_64.tar.gz'
+        out-file-path: '/tmp/webkit-install'
+        extract: true
 
     - name: Set CLI Path
       shell: bash
