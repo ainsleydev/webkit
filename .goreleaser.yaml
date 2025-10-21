@@ -91,14 +91,17 @@ release:
   header: |
     ## Installation
 
-    ### Download Binary
-    Download the appropriate binary for your platform from the assets below.
-
-    ### Using Go
+    **Quick install:**
     ```bash
-    go install github.com/ainsleydev/webkit/cmd/webkit@{{.Tag}}
+    curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | sh
     ```
 
+    Or download binaries from the [latest release](https://github.com/ainsleydev/webkit/releases/latest).
+
+    **Verify installation:**
+    ```bash
+    webkit version
+    ```
     ---
   footer: |
     ---

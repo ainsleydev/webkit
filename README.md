@@ -45,6 +45,21 @@ and project files and manages secrets in different enviornments.
 > **Note:** For user documentation and guides,
 > visit [webkit.ainsley.dev](https://webkit.ainsley.dev)
 
+
+## Installation
+
+**Quick install:**
+```bash
+curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | sh
+```
+
+Or download binaries from the [latest release](https://github.com/ainsleydev/webkit/releases/latest).
+
+**Verify installation:**
+```bash
+webkit version
+```
+
 ## Development Setup
 
 Run the following to get setup with `webkit`.
