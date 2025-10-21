@@ -36,5 +36,12 @@ func CodeStyle(_ context.Context, input cmdtools.CommandInput) error {
 		}
 	}
 
+	// Only bootstrap the Go files if necessary.
+	if app.ContainsGo() {
+		return input.
+			Generator().
+			CopyFromEmbed(templates.Embed, ".golangci.yaml", ".golangci.yaml")
+	}
+
 	return nil
 }

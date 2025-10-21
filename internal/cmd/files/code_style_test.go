@@ -27,6 +27,26 @@ func TestCodeStyle(t *testing.T) {
 		}
 	})
 
+	t.Run("With Go", func(t *testing.T) {
+		t.Parallel()
+
+		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name: "api",
+					Type: appdef.AppTypeGoLang,
+				},
+			},
+		})
+
+		got := CodeStyle(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, ".golangci.yaml")
+		assert.NoError(t, err)
+		assert.NotEmpty(t, file)
+	})
+
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 

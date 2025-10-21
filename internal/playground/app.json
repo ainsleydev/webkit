@@ -114,7 +114,7 @@
 				}
 			},
 			"usesNPM": null,
-			"Commands": {
+			"commands": {
 				"build": {
 					"command": "pnpm build"
 				},
@@ -166,7 +166,7 @@
 				}
 			},
 			"usesNPM": null,
-			"Commands": {
+			"commands": {
 				"build": {
 					"command": "pnpm build"
 				},
@@ -178,6 +178,37 @@
 				},
 				"test": {
 					"command": "pnpm test"
+				}
+			}
+		},
+		{
+			"name": "api",
+			"title": "API",
+			"type": "golang",
+			"description": "GoLang API",
+			"path": "api",
+			"build": {
+				"dockerfile": "Dockerfile"
+			},
+			"infra": {
+				"provider": "",
+				"type": "",
+				"config": null
+			},
+			"env": {},
+			"usesNPM": null,
+			"commands": {
+				"build": {
+					"command": "go build main.go"
+				},
+				"format": {
+					"command": "gofmt -w ."
+				},
+				"lint": {
+					"command": "golangci-lint run"
+				},
+				"test": {
+					"command": "go test ./..."
 				}
 			}
 		}

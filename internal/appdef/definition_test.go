@@ -49,6 +49,74 @@ func TestGithubLabels(t *testing.T) {
 	}
 }
 
+func TestContainsGo(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input Definition
+		want  bool
+	}{
+		"Truthy": {
+			input: Definition{
+				Apps: []App{
+					{Type: AppTypeGoLang},
+				},
+			},
+			want: true,
+		},
+		"Falsey": {
+			input: Definition{
+				Apps: []App{
+					{Type: AppTypeSvelteKit},
+				},
+			},
+			want: false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.input.ContainsGo()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestContainsJS(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input Definition
+		want  bool
+	}{
+		"Truthy": {
+			input: Definition{
+				Apps: []App{
+					{Type: AppTypeSvelteKit},
+				},
+			},
+			want: true,
+		},
+		"Falsey": {
+			input: Definition{
+				Apps: []App{
+					{Type: AppTypeGoLang},
+				},
+			},
+			want: false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.input.ContainsJS()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestMergeAllEnvironments(t *testing.T) {
 	t.Parallel()
 

@@ -86,6 +86,30 @@ func (d *Definition) ApplyDefaults() error {
 }
 
 /************************************
+	Apps
+************************************/
+
+// ContainsGo returns true if any of the apps are marked as Go.
+func (d *Definition) ContainsGo() bool {
+	for _, app := range d.Apps {
+		if app.Language() == "go" {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsJS returns true if any of the apps are marked as JS.
+func (d *Definition) ContainsJS() bool {
+	for _, app := range d.Apps {
+		if app.Language() == "js" {
+			return true
+		}
+	}
+	return false
+}
+
+/************************************
 	Env
 ************************************/
 

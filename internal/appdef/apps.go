@@ -16,8 +16,8 @@ type (
 		Infra       Infra                   `json:"infra"`
 		Env         Environment             `json:"env"`
 		UsesNPM     *bool                   `json:"usesNPM"`
-		Domains     []Domain                `json:"domains,omitempty"`
-		Commands    map[Command]CommandSpec `json:"Commands,omitempty" jsonschema:"oneof_type=boolean;object;string"`
+		Domains     []Domain                `json:"domains,omitzero"`
+		Commands    map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string"`
 	}
 	Build struct {
 		Dockerfile string `json:"dockerfile"`
