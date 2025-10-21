@@ -1,4 +1,4 @@
-{{- if not .Name }}
+{{- if not .App }}
 name: WebKit Drift Detection
 
 on:
@@ -68,23 +68,23 @@ jobs:
           echo "Run 'webkit update' to sync your project with the latest templates"
           exit 1
 {{- else }}
-name: PR - {{ .Title }}
+name: PR - {{ .App.Title }}
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
-      - '{{ .Path }}/**'
+      - '{{ .App.Path }}/**'
 
 jobs:
-  {{ .Name | lower }}:
+  {{ .App.Name | lower }}:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-{{- if eq .Language "js" }}
+{{- if eq .App.Language "js" }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -97,7 +97,7 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-{{- else if eq .Language "go" }}
+{{- else if eq .App.Language "go" }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -105,12 +105,12 @@ jobs:
           go-version: '1.25'
 {{- end }}
 
-{{- range $spec := .OrderedCommands }}
+{{- range $spec := .App.OrderedCommands }}
 {{- if not $spec.Disabled }}
 
       - name: {{ $spec.Name | title }}
-{{- if $.Path }}
-        working-directory: {{ $.Path }}
+{{- if $.App.Path }}
+        working-directory: {{ $.App.Path }}
 {{- end }}
         run: {{ $spec.Cmd }}
 {{- end }}

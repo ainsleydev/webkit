@@ -12,7 +12,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 )
 
-func TestPRWorkflow(t *testing.T) {
+func TestPR(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Creates Drift Workflow", func(t *testing.T) {
@@ -20,7 +20,7 @@ func TestPRWorkflow(t *testing.T) {
 
 		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{})
 
-		err := PRWorkflow(t.Context(), input)
+		err := PR(t.Context(), input)
 		require.NoError(t, err)
 
 		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "drift.yaml"))
@@ -44,7 +44,7 @@ func TestPRWorkflow(t *testing.T) {
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		err := PRWorkflow(t.Context(), input)
+		err := PR(t.Context(), input)
 		require.NoError(t, err)
 
 		// Should still create drift workflow
@@ -88,7 +88,7 @@ func TestPRWorkflow(t *testing.T) {
 				input := setup(t, afero.NewMemMapFs(), appDef)
 				require.NoError(t, appDef.ApplyDefaults())
 
-				err := PRWorkflow(t.Context(), input)
+				err := PR(t.Context(), input)
 				require.NoError(t, err)
 
 				// Check drift workflow exists
@@ -142,7 +142,7 @@ func TestPRWorkflow(t *testing.T) {
 
 		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), appDef)
 
-		err := PRWorkflow(t.Context(), input)
+		err := PR(t.Context(), input)
 		assert.Error(t, err)
 	})
 }
