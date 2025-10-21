@@ -5,6 +5,9 @@ export default defineConfig({
     lang: 'en-GB',
     title: "WebKit",
     description: "ainsley.dev's App Manifest",
+	sitemap: {
+		hostname: 'https://example.com'
+	},
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         nav: [
