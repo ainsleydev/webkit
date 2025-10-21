@@ -15,7 +15,7 @@ var Command = &cli.Command{
 	Commands: []*cli.Command{
 		ActionsCmd,
 		BackupCmd,
-		DriftCmd,
+		PRCmd,
 	},
 }
 
