@@ -1,32 +1,24 @@
-setup-mac: # Install dev tools on macOS
-	@echo "🔧 Setting up development environment for macOS..."
+setup: # Install all dev tools (Homebrew packages + Go tools + action-validator)
+
+	# Brew
+	@echo "Setting up development environment..."
 	@if ! command -v brew >/dev/null 2>&1; then \
-		echo "❌ Homebrew not found. Please install from https://brew.sh/"; \
-		exit 1; \
+		echo "Homebrew not found. Installing Homebrew..."; \
+		/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
 	fi
+	@echo "Installing Brew packages..."
 	@brew install ripgrep jq sops age terraform || true
-	@$(MAKE) install-go-tools
-	@$(MAKE) install-action-validator
-	@echo "✅ macOS setup complete!"
-.PHONY: setup-mac
 
-setup-linux: # Install dev tools on Linux (Ubuntu/Debian)
-	@echo "🔧 Setting up development environment for Linux..."
-	@if command -v apt-get >/dev/null 2>&1; then \
-		sudo apt-get update -y && \
-		sudo apt-get install -y ripgrep jq sops age terraform; \
-	elif command -v dnf >/dev/null 2>&1; then \
-		sudo dnf install -y ripgrep jq sops age terraform; \
-	else \
-		echo "❌ No supported package manager found (need apt or dnf)"; \
+	# Go Dependencies
+	@echo "Installing Go tools..."
+	@if ! command -v go >/dev/null 2>&1; then \
+		echo "Go not found. Please install Go first: https://go.dev/dl/"; \
 		exit 1; \
 	fi
-	@$(MAKE) install-go-tools
-	@$(MAKE) install-action-validator
-	@echo "✅ Linux setup complete!"
-.PHONY: setup-linux
+	go install go.uber.org/mock/mockgen@latest
+	@echo "Go tools installed."
 
-install-action-validator: # Install action-validator via npm
+	# Action Validator
 	@if command -v action-validator >/dev/null 2>&1; then \
 		echo "action-validator already installed."; \
 	elif command -v npm >/dev/null 2>&1; then \
@@ -36,22 +28,13 @@ install-action-validator: # Install action-validator via npm
 		echo "npm not found. Please install Node.js first: https://nodejs.org/"; \
 		exit 1; \
 	fi
-.PHONY: install-action-validator
 
-install-go-tools: ## Install Go-based tools used in the project
-	@echo "Installing Go tools..."
-	@if ! command -v go >/dev/null 2>&1; then \
-		echo "Go not found. Please install Go first: https://go.dev/dl/"; \
-		exit 1; \
-	fi
-	go install go.uber.org/mock/mockgen@latest
-	@echo "Go tools installed."
-.PHONY: install-go-tools
+	@echo "Setup complete."
+.PHONY: setup
 
 help: # Show available commands
 	@echo ""
 	@echo "Available make commands:"
-	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "} {printf "  \033[36m%-25s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "} {printf "  %-25s %s\n", $$1, $$2}'
 	@echo ""
-
 .PHONY: help

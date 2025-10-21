@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
 	"github.com/ainsleydev/webkit/pkg/env"

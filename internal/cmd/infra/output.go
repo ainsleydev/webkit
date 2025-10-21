@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 

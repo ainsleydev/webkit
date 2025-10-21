@@ -56,7 +56,7 @@ type terraformExecutor interface {
 // the terraform binary on the system.
 //
 // Returns an error if terraform cannot be found in PATH.
-func NewTerraform(ctx context.Context, appDef *appdef.Definition, manifest *manifest.Tracker) (Manager, error) {
+func NewTerraform(ctx context.Context, appDef *appdef.Definition, manifest *manifest.Tracker) (*Terraform, error) {
 	enforce.NotNil(appDef, "app definition is required")
 	enforce.NotNil(manifest, "manifest definition is required")
 

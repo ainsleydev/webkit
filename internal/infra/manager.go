@@ -6,7 +6,7 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-//go:generate go tool go.uber.org/mock/mockgen -source=manager.go -destination ../mocks/infra.go -package=mocks
+//go:generate go tool go.uber.org/mock/mockgen -source=manager.go -destination ./mocks/infra.go -package=mockinfra
 
 type Manager interface {
 	Init(ctx context.Context) error

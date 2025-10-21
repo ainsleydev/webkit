@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/manifest"
 )
 

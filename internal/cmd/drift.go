@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/manifest"
 )
 

@@ -6,8 +6,8 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmd/cicd"
 	"github.com/ainsleydev/webkit/internal/cmd/env"
 	"github.com/ainsleydev/webkit/internal/cmd/files"
-	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/secrets"
+	"github.com/ainsleydev/webkit/internal/cmdtools"
 )
 
 var scaffoldCmd = &cli.Command{

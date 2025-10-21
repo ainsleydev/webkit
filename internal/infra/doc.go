@@ -1,3 +1,5 @@
+//go:build !race
+
 package infra
 
 // Package infra manages Terraform-based infrastructure provisioning for WebKit projects.
