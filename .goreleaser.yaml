@@ -88,9 +88,19 @@ release:
     owner: ainsleydev
     name: webkit
   name_template: "v{{.Version}}"
-  header:
-    from_file:
-      path: ./.github/release-header.md
+  include_meta: true
+  header: |
+    ## Installation
+
+    ### Download Binary
+    Download the appropriate binary for your platform from the assets below.
+
+    ### Using Go
+    ```bash
+    go install github.com/ainsleydev/webkit/cmd/webkit@{{.Tag}}
+    ```
+
+    ---
   footer: |
     ---
 
