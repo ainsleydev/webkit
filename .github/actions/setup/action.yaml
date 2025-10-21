@@ -4,11 +4,6 @@ description: "Checkout, setup Go, Node, and dependencies"
 runs:
   using: "composite"
   steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
