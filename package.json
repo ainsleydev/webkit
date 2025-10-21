@@ -33,6 +33,7 @@
 		"lint:js": "biome lint --write .",
 		"test": "pnpm test:go",
 		"test:go": "go test ./...",
+		"release:tag": "go run cmd/tag/main.go",
 		"release:check": "goreleaser check",
 		"release:test": "pnpm release:clean && goreleaser release --snapshot --clean --skip=publish",
 		"release:version": "git describe --tags --always --dirty 2>/dev/null || echo 'no tags'",
