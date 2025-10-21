@@ -1,20 +1,90 @@
-name: PR - {{ .Title }}
+{{- if not .App }}
+name: WebKit Drift Detection
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - master
+
+# Only allow one of these to run per branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  drift-detection:
+    name: Detect WebKit Drift
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup WebKit CLI
+        id: webkit
+        uses: ./.github/actions/setup-webkit-cli
+
+      - name: Run Drift Detection
+        id: drift
+        run: |
+          if ${{ steps.webkit.outputs.cli-path }} drift; then
+            echo "drift_detected=false" >> $GITHUB_OUTPUT
+          else
+            echo "drift_detected=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Find existing comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'WebKit Drift'
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## WebKit Drift Detection
+
+            ${{ steps.drift.outputs.drift_detected == 'true' && '❌ Drift detected' || '✅ No drift detected' }}
+          edit-mode: replace
+
+      - name: Fail Workflow if Drift Detected
+        if: steps.drift.outputs.drift_detected == 'true'
+        run: |
+          echo "❌ Drift detected in WebKit-generated files"
+          echo "Run 'webkit update' to sync your project with the latest templates"
+          exit 1
+{{- else }}
+name: PR - {{ .App.Title }}
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
-      - '{{ .Path }}/**'
+      - '{{ .App.Path }}/**'
 
 jobs:
-  {{ .Name | lower }}:
+  {{ .App.Name | lower }}:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-{{- if eq .Language "js" }}
+{{- if eq .App.Language "js" }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -27,7 +97,7 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-{{- else if eq .Language "go" }}
+{{- else if eq .App.Language "go" }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -35,13 +105,14 @@ jobs:
           go-version: '1.25'
 {{- end }}
 
-{{- range $spec := .OrderedCommands }}
+{{- range $spec := .App.OrderedCommands }}
 {{- if not $spec.Disabled }}
 
       - name: {{ $spec.Name | title }}
-{{- if $.Path }}
-        working-directory: {{ $.Path }}
+{{- if $.App.Path }}
+        working-directory: {{ $.App.Path }}
 {{- end }}
         run: {{ $spec.Cmd }}
+{{- end }}
 {{- end }}
 {{- end }}

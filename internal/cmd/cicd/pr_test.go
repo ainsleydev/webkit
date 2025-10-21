@@ -1,6 +1,7 @@
 package cicd
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -11,11 +12,31 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 )
 
-func TestAppPRWorkflow(t *testing.T) {
+func TestPR(t *testing.T) {
 	t.Parallel()
 
-	t.Run("No Apps", func(t *testing.T) {
-		t.Context()
+	t.Run("Creates Drift Workflow", func(t *testing.T) {
+		t.Parallel()
+
+		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{})
+
+		err := PR(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "drift.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		// Verify it's the drift workflow
+		content := string(file)
+		assert.Contains(t, content, "WebKit Drift Detection")
+		assert.Contains(t, content, "drift-detection:")
+	})
+
+	t.Run("No Apps - Still Creates Drift", func(t *testing.T) {
+		t.Parallel()
 
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{},
@@ -23,11 +44,16 @@ func TestAppPRWorkflow(t *testing.T) {
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		got := AppPRWorkflow(t.Context(), input)
-		assert.NoError(t, got)
+		err := PR(t.Context(), input)
+		require.NoError(t, err)
+
+		// Should still create drift workflow
+		exists, err := afero.Exists(input.FS, filepath.Join(workflowsPath, "drift.yaml"))
+		require.NoError(t, err)
+		assert.True(t, exists)
 	})
 
-	t.Run("Creates Workflow", func(t *testing.T) {
+	t.Run("Creates App Workflows", func(t *testing.T) {
 		t.Parallel()
 
 		tt := map[string]struct {
@@ -62,9 +88,15 @@ func TestAppPRWorkflow(t *testing.T) {
 				input := setup(t, afero.NewMemMapFs(), appDef)
 				require.NoError(t, appDef.ApplyDefaults())
 
-				err := AppPRWorkflow(t.Context(), input)
+				err := PR(t.Context(), input)
 				require.NoError(t, err)
 
+				// Check drift workflow exists
+				driftFile, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "drift.yaml"))
+				require.NoError(t, err)
+				assert.Contains(t, string(driftFile), "WebKit Drift Detection")
+
+				// Check app workflow
 				file, err := afero.ReadFile(input.FS, test.want)
 				require.NoError(t, err)
 
@@ -110,7 +142,7 @@ func TestAppPRWorkflow(t *testing.T) {
 
 		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), appDef)
 
-		got := AppPRWorkflow(t.Context(), input)
-		assert.Error(t, got)
+		err := PR(t.Context(), input)
+		assert.Error(t, err)
 	})
 }
