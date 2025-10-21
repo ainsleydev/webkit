@@ -12,7 +12,6 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/cmd/secrets"
 	"github.com/ainsleydev/webkit/internal/manifest"
-	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
 var updateCmd = &cli.Command{
@@ -54,7 +53,6 @@ var updateOps = []runner{
 }
 
 func update(ctx context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(input.FS, input.Manifest)
 	printer := input.Printer()
 
 	printer.Info("Updating project dependencies...")
@@ -85,7 +83,7 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 		if err != nil {
 			return errors.Wrap(err, "loading manifest")
 		}
-		if err = manifest.Cleanup(input.FS, oldManifest, newManifest, gen.Printer); err != nil {
+		if err = manifest.Cleanup(input.FS, oldManifest, newManifest, input.Printer()); err != nil {
 			return errors.Wrap(err, "cleaning up manifest")
 		}
 	}

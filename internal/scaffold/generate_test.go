@@ -18,16 +18,17 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/mocks"
+	"github.com/ainsleydev/webkit/internal/printer"
 )
 
 func setup(t *testing.T) *FileGenerator {
 	t.Helper()
 
 	fs := afero.NewMemMapFs()
-	gen := New(fs, manifest.NewTracker())
+	gen := New(fs, manifest.NewTracker(), printer.New(io.Discard))
 
 	if !testing.Verbose() {
-		gen.Printer.SetWriter(io.Discard)
+		gen.Printer.SetWriter(os.Stdout)
 	}
 
 	return gen

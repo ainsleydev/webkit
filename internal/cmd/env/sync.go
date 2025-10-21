@@ -33,11 +33,10 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 
 		for _, enviro := range environmentsWithDotEnv {
 			err = writeMapToFile(writeArgs{
-				FS:          input.FS,
+				Input:       input,
 				Vars:        mergedApp.Production,
 				App:         app,
 				Environment: enviro,
-				Manifest:    input.Manifest,
 				IsScaffold:  false,
 			})
 			if err != nil {

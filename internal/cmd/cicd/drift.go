@@ -7,7 +7,6 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
@@ -19,8 +18,6 @@ var DriftCmd = &cli.Command{
 
 // DriftDetection simply copies the drift detection workflow.
 func DriftDetection(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(input.FS, input.Manifest)
 	path := filepath.Join(workflowsPath, "drift.yaml")
-
-	return gen.CopyFromEmbed(templates.Embed, path, path)
+	return input.Generator().CopyFromEmbed(templates.Embed, path, path)
 }

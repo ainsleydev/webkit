@@ -5,10 +5,8 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
-	"testing"
 	"text/template"
 	"time"
 
@@ -25,6 +23,8 @@ type (
 	// Generator is used for scaffolding files to a WebKit project.
 	Generator interface {
 		Bytes(path string, data []byte, opts ...Option) error
+		Copy(from, to string, opts ...Option) error
+		CopyFromEmbed(efs embed.FS, from, to string, opts ...Option) error
 		Template(path string, tpl *template.Template, data any, opts ...Option) error
 		JSON(path string, content any, opts ...Option) error
 		YAML(path string, content any, opts ...Option) error
@@ -38,18 +38,13 @@ type (
 )
 
 // New creates a new FileGenerator with the provided afero.Fs.
-func New(fs afero.Fs, manifest *manifest.Tracker) *FileGenerator {
+func New(fs afero.Fs, manifest *manifest.Tracker, printer *printer.Console) *FileGenerator {
 	enforce.NotNil(fs, "file system is required")
 	enforce.NotNil(manifest, "manifest definition is required")
-
-	var w io.Writer
-	w = os.Stdout
-	if testing.Testing() {
-		w = io.Discard
-	}
+	enforce.NotNil(printer, "printer is required")
 
 	return &FileGenerator{
-		Printer:  printer.New(w),
+		Printer:  printer,
 		fs:       fs,
 		manifest: manifest,
 	}

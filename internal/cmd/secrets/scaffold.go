@@ -3,9 +3,9 @@ package secrets
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
@@ -24,21 +24,23 @@ var ScaffoldCmd = &cli.Command{
 // This creates empty secret files and SOPS configuration without
 // parsing app.json.
 func Scaffold(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(afero.NewBasePathFs(input.FS, "resources"), input.Manifest)
-
-	if err := generateSOPSConfig(gen); err != nil {
+	if err := generateSOPSConfig(input.Generator()); err != nil {
 		return errors.Wrap(err, "generating sops config")
 	}
 
 	for _, enviro := range env.All {
-		filePath := fmt.Sprintf("secrets/%s.yaml", enviro)
+		path := filepath.Join("resources", "secrets", fmt.Sprintf("%s.yaml", enviro))
+
+		fmt.Println(path)
 
 		// If we generate a file that has YAML commentary in the file,
 		// SOPS will encrypt the comments when Encrypt() is called,
 		// malforming the file.
-		err := gen.Bytes(filePath, make([]byte, 0), scaffold.WithScaffoldMode(), scaffold.WithoutNotice())
+		err := input.
+			Generator().
+			Bytes(path, make([]byte, 0), scaffold.WithScaffoldMode(), scaffold.WithoutNotice())
 		if err != nil {
-			return fmt.Errorf("generating %s: %w", filePath, err)
+			return fmt.Errorf("generating %s: %w", path, err)
 		}
 	}
 
@@ -57,5 +59,5 @@ func generateSOPSConfig(gen scaffold.Generator) error {
 			},
 		},
 	}
-	return gen.YAML(".sops.yaml", config)
+	return gen.YAML(filepath.Join("resources", ".sops.yaml"), config)
 }

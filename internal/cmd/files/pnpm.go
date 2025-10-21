@@ -12,7 +12,6 @@ import (
 // all apps that use NPM/pnpm.
 func PnpmWorkspace(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
-	gen := scaffold.New(input.FS, input.Manifest)
 
 	if len(appDef.Apps) == 0 {
 		return nil
@@ -29,7 +28,7 @@ func PnpmWorkspace(_ context.Context, input cmdtools.CommandInput) error {
 		return nil
 	}
 
-	return gen.YAML("pnpm-workspace.yaml", map[string]any{
+	return input.Generator().YAML("pnpm-workspace.yaml", map[string]any{
 		"packages": packages,
 	}, scaffold.WithTracking(manifest.SourceProject()))
 }

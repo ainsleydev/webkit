@@ -23,11 +23,10 @@ var codeStyleTemplates = map[string]string{
 // IDEA: Might be good in the AppDef if we could specify what files
 // we want to generate or exclude from this.
 func CodeStyle(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(input.FS, input.Manifest)
 	app := input.AppDef()
 
 	for file, template := range codeStyleTemplates {
-		err := gen.Template(file,
+		err := input.Generator().Template(file,
 			templates.MustLoadTemplate(template),
 			app,
 			scaffold.WithTracking(manifest.SourceProject()),

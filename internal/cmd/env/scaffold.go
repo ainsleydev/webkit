@@ -22,11 +22,10 @@ func Scaffold(_ context.Context, input cmdtools.CommandInput) error {
 	for _, env := range environmentsWithDotEnv {
 		for _, app := range appDef.Apps {
 			err := writeMapToFile(writeArgs{
-				FS:          input.FS,
+				Input:       input,
 				Vars:        nil, // Just generate the notice.
 				App:         app,
 				Environment: env,
-				Manifest:    input.Manifest,
 				IsScaffold:  true,
 			})
 			if err != nil {

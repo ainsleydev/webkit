@@ -13,7 +13,6 @@ import (
 // the project.
 func TurboJSON(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
-	gen := scaffold.New(input.FS, input.Manifest)
 
 	if len(appDef.Apps) == 0 {
 		return nil
@@ -30,7 +29,7 @@ func TurboJSON(_ context.Context, input cmdtools.CommandInput) error {
 		return nil
 	}
 
-	return gen.Template("./turbo.json",
+	return input.Generator().Template("./turbo.json",
 		templates.MustLoadTemplate("turbo.json"),
 		nil,
 		scaffold.WithTracking(manifest.SourceProject()),

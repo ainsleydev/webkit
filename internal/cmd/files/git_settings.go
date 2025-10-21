@@ -19,11 +19,10 @@ var gitSettingsTemplates = map[string]string{
 //
 // TODO: Stale, Pull Request Template.
 func GitSettings(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(input.FS, input.Manifest)
 	app := input.AppDef()
 
 	for file, template := range gitSettingsTemplates {
-		err := gen.Template(file,
+		err := input.Generator().Template(file,
 			templates.MustLoadTemplate(template),
 			app,
 			scaffold.WithTracking(manifest.SourceProject()),
@@ -33,7 +32,7 @@ func GitSettings(_ context.Context, input cmdtools.CommandInput) error {
 		}
 	}
 
-	return gen.YAML(".github/settings.yaml", repoSettings(input))
+	return input.Generator().YAML(".github/settings.yaml", repoSettings(input))
 }
 
 func repoSettings(input cmdtools.CommandInput) github.RepoSettings {

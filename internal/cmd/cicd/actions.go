@@ -4,11 +4,9 @@ import (
 	"context"
 	"path/filepath"
 
-	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
@@ -26,14 +24,14 @@ var actionTemplates = map[string]string{
 // ActionTemplates copies action.yaml files from the templates folder
 // so services can use re-usable workflow helpers in CI/CD.
 func ActionTemplates(_ context.Context, input cmdtools.CommandInput) error {
-	gen := scaffold.New(afero.NewBasePathFs(input.FS, actionsPath), input.Manifest)
-
 	for from, to := range actionTemplates {
-		err := gen.CopyFromEmbed(templates.Embed, filepath.Join(actionsPath, from), to)
+		err := input.Generator().CopyFromEmbed(templates.Embed,
+			filepath.Join(actionsPath, from),
+			filepath.Join(actionsPath, to),
+		)
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }

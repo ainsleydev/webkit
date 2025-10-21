@@ -12,6 +12,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
 	"github.com/ainsleydev/webkit/pkg/env"
@@ -70,6 +71,11 @@ func (c *CommandInput) AppDef() *appdef.Definition {
 	c.AppDefCache = read
 
 	return read
+}
+
+// Generator creates a new file scaffolder for command actions.
+func (c *CommandInput) Generator() scaffold.Generator {
+	return scaffold.New(c.FS, c.Manifest, c.Printer())
 }
 
 // Printer returns a new console writer to stdout.

@@ -5,6 +5,7 @@ import (
 	"io"
 	"path/filepath"
 
+	"github.com/ainsleydev/webkit/internal/printer"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 	"github.com/ainsleydev/webkit/pkg/env"
@@ -18,8 +19,7 @@ const (
 // writeS3Backend writes the complete Terraform backend configuration
 // with a dynamic key based on project name and environment
 func (t *Terraform) writeS3Backend(infraDir string, environment env.Environment) (string, error) {
-	gen := scaffold.New(t.fs, t.manifest)
-	gen.Printer.SetWriter(io.Discard)
+	gen := scaffold.New(t.fs, t.manifest, printer.New(io.Discard))
 
 	// For example, project-name/environment/terraform.tfstate
 	folder := fmt.Sprintf("%s/%s/terraform.tfstate", t.appDef.Project.Name, environment)

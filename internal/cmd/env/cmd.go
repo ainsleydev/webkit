@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 
 	"github.com/joho/godotenv"
-	"github.com/spf13/afero"
 	"github.com/spf13/cast"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/cmd/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/pkg/env"
@@ -36,11 +36,10 @@ var environmentsWithDotEnv = []env.Environment{
 }
 
 type writeArgs struct {
-	FS          afero.Fs
+	Input       cmdtools.CommandInput
 	Vars        appdef.EnvVar
 	App         appdef.App
 	Environment env.Environment
-	Manifest    *manifest.Tracker
 	IsScaffold  bool
 }
 
@@ -48,8 +47,6 @@ var dotEnvMarshaller = godotenv.Marshal
 
 // writeMapToFile writes environment variables to dotenv file.
 func writeMapToFile(args writeArgs) error {
-	gen := scaffold.New(args.FS, args.Manifest)
-
 	envMap := make(map[string]string)
 	for k, v := range args.Vars {
 		envMap[k] = cast.ToString(v.Value)
@@ -60,7 +57,7 @@ func writeMapToFile(args writeArgs) error {
 		return err
 	}
 
-	err = args.FS.MkdirAll(args.App.Path, os.ModePerm)
+	err = args.Input.FS.MkdirAll(args.App.Path, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -78,5 +75,5 @@ func writeMapToFile(args writeArgs) error {
 	}
 	opts = append(opts, scaffold.WithTracking(manifest.SourceProject()))
 
-	return gen.Bytes(envPath, []byte(buf), opts...)
+	return args.Input.Generator().Bytes(envPath, []byte(buf), opts...)
 }
