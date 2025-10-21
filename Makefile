@@ -1,10 +1,10 @@
 setup: # Install all dev tools (Homebrew packages + Go tools + action-validator)
+	@echo "Setting up development environment..."
 
 	# Brew
-	@echo "Setting up development environment..."
 	@if ! command -v brew >/dev/null 2>&1; then \
-		echo "Homebrew not found. Installing Homebrew..."; \
-		/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
+		echo "Homebrew not found."; \
+		exit 1; \
 	fi
 	@echo "Installing Brew packages..."
 	@brew install ripgrep jq sops age terraform || true
@@ -22,7 +22,6 @@ setup: # Install all dev tools (Homebrew packages + Go tools + action-validator)
 	@if command -v action-validator >/dev/null 2>&1; then \
 		echo "action-validator already installed."; \
 	elif command -v npm >/dev/null 2>&1; then \
-		echo "Installing via npm..."; \
 		npm install -g @action-validator/core @action-validator/cli; \
 	else \
 		echo "npm not found. Please install Node.js first: https://nodejs.org/"; \

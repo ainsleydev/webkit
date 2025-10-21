@@ -20,11 +20,18 @@ runs:
       with:
         node-version: "lts/*"
 
+    - name: Install Brew
+      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      shell: bash
+
     - name: Setup Biome
       uses: biomejs/setup-biome@v2
       with:
-        version: latest
+        # This should match the schema version defined in boime.json
+        version: "1.8.3"
 
     - name: Install dependencies
-      run: make setup
+      run: |
+        export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+        make setup
       shell: bash
