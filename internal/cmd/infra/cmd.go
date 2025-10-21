@@ -33,7 +33,9 @@ var Command = &cli.Command{
 	},
 }
 
-func initTerraform(ctx context.Context, input cmdtools.CommandInput) (*infra.Terraform, func(), error) {
+var newTerraform = infra.NewTerraform
+
+func initTerraform(ctx context.Context, input cmdtools.CommandInput) (infra.Manager, func(), error) {
 	appDef := input.AppDef()
 	printer := input.Printer()
 	spinner := input.Spinner()
@@ -55,7 +57,7 @@ func initTerraform(ctx context.Context, input cmdtools.CommandInput) (*infra.Ter
 	printer.Println("Initializing Terraform...")
 	spinner.Start()
 
-	tf, err := infra.NewTerraform(ctx, appDef, input.Manifest)
+	tf, err := newTerraform(ctx, appDef, input.Manifest)
 	teardown := func() {
 		tf.Cleanup()
 	}
@@ -70,4 +72,5 @@ func initTerraform(ctx context.Context, input cmdtools.CommandInput) (*infra.Ter
 	spinner.Stop()
 
 	return tf, teardown, nil
+
 }

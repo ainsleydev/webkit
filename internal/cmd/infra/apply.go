@@ -23,10 +23,10 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 	spinner := input.Spinner()
 
 	tf, cleanup, err := initTerraform(ctx, input)
+	defer cleanup()
 	if err != nil {
 		return err
 	}
-	defer cleanup()
 
 	printer.Println("Applying Changes...")
 	spinner.Start()

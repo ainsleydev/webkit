@@ -22,10 +22,10 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	spinner := input.Spinner()
 
 	tf, cleanup, err := initTerraform(ctx, input)
+	defer cleanup()
 	if err != nil {
 		return err
 	}
-	defer cleanup()
 
 	printer.Print("Making Plan...")
 	spinner.Start()
