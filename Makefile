@@ -5,6 +5,7 @@ setup-mac: # Install dev tools on macOS
 		exit 1; \
 	fi
 	@brew install ripgrep jq sops age terraform || true
+	@$(MAKE) install-go-tools
 	@$(MAKE) install-action-validator
 	@echo "✅ macOS setup complete!"
 .PHONY: setup-mac
@@ -20,34 +21,31 @@ setup-linux: # Install dev tools on Linux (Ubuntu/Debian)
 		echo "❌ No supported package manager found (need apt or dnf)"; \
 		exit 1; \
 	fi
+	@$(MAKE) install-go-tools
 	@$(MAKE) install-action-validator
 	@echo "✅ Linux setup complete!"
 .PHONY: setup-linux
 
-install-action-validator: # Install action-validator via npm or cargo
-	@echo "🧩 Installing action-validator..."
+install-action-validator: # Install action-validator via npm
 	@if command -v action-validator >/dev/null 2>&1; then \
-		echo "✅ action-validator already installed."; \
+		echo "action-validator already installed."; \
 	elif command -v npm >/dev/null 2>&1; then \
-		echo "📦 Installing via npm..."; \
+		echo "Installing via npm..."; \
 		npm install -g @action-validator/core @action-validator/cli; \
-	elif command -v cargo >/dev/null 2>&1; then \
-		echo "⚙️ Installing via cargo..."; \
-		cargo install action-validator; \
 	else \
-		echo "❌ Neither npm nor cargo found. Please install Node.js or Rust first."; \
+		echo "npm not found. Please install Node.js first: https://nodejs.org/"; \
 		exit 1; \
 	fi
 .PHONY: install-action-validator
 
 install-go-tools: ## Install Go-based tools used in the project
-	@echo "🐹 Installing Go tools..."
+	@echo "Installing Go tools..."
 	@if ! command -v go >/dev/null 2>&1; then \
-		echo "❌ Go not found. Please install Go first: https://go.dev/dl/"; \
+		echo "Go not found. Please install Go first: https://go.dev/dl/"; \
 		exit 1; \
 	fi
 	go install go.uber.org/mock/mockgen@latest
-	@echo "✅ Go tools installed!"
+	@echo "Go tools installed."
 .PHONY: install-go-tools
 
 help: # Show available commands
