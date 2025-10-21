@@ -32,6 +32,7 @@ builds:
       - -X github.com/ainsleydev/webkit/internal/version.Commit={{.Commit}}
       - -X github.com/ainsleydev/webkit/internal/version.Date={{.Date}}
       - -X github.com/ainsleydev/webkit/internal/version.BuiltBy=goreleaser
+    mod_timestamp: '{{ .CommitTimestamp }}'
 archives:
   - formats: [tar.gz]
     # This name template makes the OS and Arch compatible with the results of `uname`.
@@ -46,6 +47,10 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
+    files:
+      - README.md
+      - LICENSE*
+      - CHANGELOG.md
 
 checksum:
   name_template: 'checksums.txt'
@@ -53,12 +58,14 @@ checksum:
 
 changelog:
   sort: asc
+  use: github
   filters:
     exclude:
-      - "^docs:"
       - "^test:"
       - "^chore:"
       - "^ci:"
+      - Merge pull request  # ← ADD: Filter merge commits
+      - Merge branch        # ← ADD: Filter merge commits
   groups:
     - title: 'Features'
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
@@ -69,7 +76,10 @@ changelog:
     - title: 'Refactors'
       regexp: '^.*?refactor(\([[:word:]]+\))??!?:.+$'
       order: 1
-    - title: 'Others'
+    - title: 'Documentation'
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: 'Other'
       order: 999
 
 release:
@@ -77,17 +87,11 @@ release:
   github:
     owner: ainsleydev
     name: webkit
-  name_template: "{{.ProjectName}} v{{.Version}}"
+  name_template: "v{{.Version}}"
+  header:
+    from_file:
+      path: ./.github/release-header.md
   footer: |
     ---
 
     **Full Changelog**: https://github.com/ainsleydev/webkit/compare/{{.PreviousTag}}...{{.Tag}}
-
-    ## Installation
-
-    Download the appropriate binary for your platform from the assets below.
-
-    ### Using Go
-    ```bash
-    go install github.com/ainsleydev/webkit/cmd/webkit@{{.Tag}}
-    ```
