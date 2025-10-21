@@ -35,7 +35,7 @@ triggered by creating and pushing a git tag.
 Use the interactive tag tool:
 
 ```bash
-pnpm release:tag
+pnpm tag
 ```
 
 This will guide you through:
