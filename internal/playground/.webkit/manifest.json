@@ -1,6 +1,6 @@
 {
-	"version": "dev",
-	"generated_at": "2025-10-22T11:42:52.953801+01:00",
+	"version": "v0.0.1",
+	"generated_at": "2025-10-22T19:09:35.546845+01:00",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -8,7 +8,7 @@
 			"source": "project",
 			"hash": "ab566c1c6cb968859aa8df09d347a87bedd703b47881e28aaa74bc35e3e23069",
 			"scaffolded": false,
-			"generated_at": "2025-10-22T11:42:52.952092+01:00"
+			"generated_at": "2025-10-22T19:09:35.543074+01:00"
 		},
 		".editorconfig": {
 			"path": ".editorconfig",
@@ -16,7 +16,7 @@
 			"source": "project",
 			"hash": "3ef257d024d2cb37d22672dea599b129d79ef2e25158189db3ed6f25deb4939e",
 			"scaffolded": false,
-			"generated_at": "2025-10-22T11:42:52.949598+01:00"
+			"generated_at": "2025-10-22T19:09:35.539692+01:00"
 		},
 		".github/dependabot.yaml": {
 			"path": ".github/dependabot.yaml",
@@ -24,7 +24,7 @@
 			"source": "project",
 			"hash": "59d62cf8d9972220acc74610d85bd29193abd825dc4cc7468590ed35929434bd",
 			"scaffolded": false,
-			"generated_at": "2025-10-22T11:42:52.951501+01:00"
+			"generated_at": "2025-10-22T19:09:35.541601+01:00"
 		},
 		".gitignore": {
 			"path": ".gitignore",
@@ -32,7 +32,7 @@
 			"source": "project",
 			"hash": "041bebf80d9016ba2e4f2fe85d4df89dd11bc8d42c23ed8cf7d97fb2744408a8",
 			"scaffolded": false,
-			"generated_at": "2025-10-22T11:42:52.951229+01:00"
+			"generated_at": "2025-10-22T19:09:35.541916+01:00"
 		},
 		".prettierignore": {
 			"path": ".prettierignore",
@@ -40,7 +40,7 @@
 			"source": "project",
 			"hash": "be358b5050cc5cb844b5c8c8de8ef8fd524e1ae32844c352d80c3a3b5851b136",
 			"scaffolded": false,
-			"generated_at": "2025-10-22T11:42:52.950403+01:00"
+			"generated_at": "2025-10-22T19:09:35.540446+01:00"
 		},
 		".prettierrc": {
 			"path": ".prettierrc",
@@ -48,7 +48,15 @@
 			"source": "project",
 			"hash": "f5442b14b45eda3a7066fa9dd386fcaf7df32903014ae746047a4264805aaa2b",
 			"scaffolded": false,
-			"generated_at": "2025-10-22T11:42:52.950069+01:00"
+			"generated_at": "2025-10-22T19:09:35.540088+01:00"
+		},
+		"AGENTS.md": {
+			"path": "AGENTS.md",
+			"generator": "docs:Agents",
+			"source": "project",
+			"hash": "523cd8af2e117a44c26f02d15293a2ed4273b19ca953dda2b675b6fd22661c55",
+			"scaffolded": false,
+			"generated_at": "2025-10-22T19:09:35.545329+01:00"
 		},
 		"api/.env": {
 			"path": "api/.env",
@@ -56,7 +64,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-22T11:42:52.953263+01:00"
+			"generated_at": "2025-10-22T19:09:35.545809+01:00"
 		},
 		"api/.env.production": {
 			"path": "api/.env.production",
@@ -64,7 +72,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-22T11:42:52.9533+01:00"
+			"generated_at": "2025-10-22T19:09:35.545847+01:00"
 		},
 		"cms/.env": {
 			"path": "cms/.env",
@@ -72,7 +80,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-22T11:42:52.953235+01:00"
+			"generated_at": "2025-10-22T19:09:35.545782+01:00"
 		},
 		"cms/.env.production": {
 			"path": "cms/.env.production",
@@ -80,7 +88,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-22T11:42:52.953276+01:00"
+			"generated_at": "2025-10-22T19:09:35.545821+01:00"
 		},
 		"eslint.config.js": {
 			"path": "eslint.config.js",
@@ -88,7 +96,7 @@
 			"source": "project",
 			"hash": "95ca512c342a7a92d220f6172c666320c193e0fd7d710521d49bf98cd5a9240e",
 			"scaffolded": false,
-			"generated_at": "2025-10-22T11:42:52.950759+01:00"
+			"generated_at": "2025-10-22T19:09:35.540759+01:00"
 		},
 		"package.json": {
 			"path": "package.json",
@@ -96,7 +104,7 @@
 			"source": "project",
 			"hash": "a18deb7d9169ec349885247247e018caad241f3c91df62ec1e295b54a1b3bbf8",
 			"scaffolded": true,
-			"generated_at": "2025-10-22T11:42:52.951948+01:00"
+			"generated_at": "2025-10-22T19:09:35.542761+01:00"
 		},
 		"web/.env": {
 			"path": "web/.env",
@@ -104,7 +112,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-22T11:42:52.95325+01:00"
+			"generated_at": "2025-10-22T19:09:35.545797+01:00"
 		},
 		"web/.env.production": {
 			"path": "web/.env.production",
@@ -112,7 +120,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-22T11:42:52.953288+01:00"
+			"generated_at": "2025-10-22T19:09:35.545833+01:00"
 		}
 	}
 }

@@ -30,3 +30,7 @@ runs:
         export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
         make setup
       shell: bash
+
+    - name: Set Homebrew path
+      run: echo "/opt/homebrew/bin:$PATH" >> $GITHUB_ENV
+      shell: bash

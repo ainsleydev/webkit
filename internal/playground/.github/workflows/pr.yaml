@@ -51,9 +51,8 @@ jobs:
           path: webkit
           if-no-files-found: error
   drift-detection:
-    name: Drift Detection
     runs-on: ubuntu-latest
-
+    needs: setup-webkit
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
