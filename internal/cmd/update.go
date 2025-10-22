@@ -7,6 +7,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmd/cicd"
+	"github.com/ainsleydev/webkit/internal/cmd/docs"
 	"github.com/ainsleydev/webkit/internal/cmd/env"
 	"github.com/ainsleydev/webkit/internal/cmd/files"
 	"github.com/ainsleydev/webkit/internal/cmd/secrets"
@@ -45,6 +46,7 @@ var updateOps = []runner{
 	{cicd.PR, "CICD: Create PR workflows"},
 	{cicd.BackupWorkflow, "CICD: Create backup workflows"},
 	{cicd.ActionTemplates, "CICD: Create action templates"},
+	{docs.Agents, "Docs: Agents AGENTS.md"},
 
 	// Lastly
 	{env.Scaffold, "Env: Sync .env files"},
