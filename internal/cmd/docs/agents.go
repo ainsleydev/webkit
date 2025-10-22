@@ -14,23 +14,17 @@ import (
 )
 
 const (
-	// outputPath is where the generated AGENTS.md file will be written
-	outputPath = "AGENTS.md"
-	// baseTemplateName is the name of the base template in internal/templates/
-	baseTemplateName = "AGENTS.md"
-	// customContentPathTmpl is the path for custom template content
-	customContentPathTmpl = "docs/AGENTS.md.tmpl"
-	// customContentPath is the path for custom static content
-	customContentPath = "docs/AGENTS.md"
+	// agentsPathTpl is the path for custom template content
+	agentsPathTpl = "docs/AGENTS.md.tmpl"
+
+	// agentsPath is the path for custom static content
+	agentsPath = "docs/AGENTS.md"
 )
 
-// Generate creates the AGENTS.md file at the project root by combining
+// Agents creates the AGENTS.md file at the project root by combining
 // the base template with optional custom content from docs/.
-func Generate(_ context.Context, input cmdtools.CommandInput) error {
-	baseTemplate, err := templates.LoadTemplate(baseTemplateName)
-	if err != nil {
-		return errors.Wrap(err, "loading base template")
-	}
+func Agents(_ context.Context, input cmdtools.CommandInput) error {
+	baseTemplate := templates.MustLoadTemplate("AGENTS.md")
 
 	customContent, err := loadCustomContent(input.FS, input.AppDef())
 	if err != nil {
@@ -43,7 +37,7 @@ func Generate(_ context.Context, input cmdtools.CommandInput) error {
 	}
 
 	err = input.Generator().Template(
-		outputPath,
+		"AGENTS.md",
 		baseTemplate,
 		data,
 		scaffold.WithTracking(manifest.SourceProject()),
@@ -61,33 +55,27 @@ func Generate(_ context.Context, input cmdtools.CommandInput) error {
 // It tries docs/AGENTS.md.tmpl first, then docs/AGENTS.md, and returns
 // an empty string if neither exists.
 func loadCustomContent(fs afero.Fs, appDef any) (string, error) {
-	// Try loading template file first
-	if exists, _ := afero.Exists(fs, customContentPathTmpl); exists {
-		content, err := afero.ReadFile(fs, customContentPathTmpl)
+	// Try loading the template file first,
+	if exists, _ := afero.Exists(fs, agentsPathTpl); exists {
+		tmpl, err := templates.LoadTemplateFromFS(fs, agentsPathTpl)
 		if err != nil {
-			return "", errors.Wrap(err, "reading custom template")
-		}
-
-		tmpl, err := templates.LoadTemplate("AGENTS.md.tmpl")
-		if err != nil {
-			// If LoadTemplate fails, treat it as a static file
-			return string(content), nil
+			return "", errors.Wrap(err, "loading custom agents content")
 		}
 
 		buf := &bytes.Buffer{}
 		data := map[string]any{
 			"Definition": appDef,
 		}
-		if err := tmpl.Execute(buf, data); err != nil {
+		if err = tmpl.Execute(buf, data); err != nil {
 			return "", errors.Wrap(err, "executing custom template")
 		}
 
 		return buf.String(), nil
 	}
 
-	// Fallback to static markdown file
-	if exists, _ := afero.Exists(fs, customContentPath); exists {
-		content, err := afero.ReadFile(fs, customContentPath)
+	// Fallback to a static markdown file,
+	if exists, _ := afero.Exists(fs, agentsPath); exists {
+		content, err := afero.ReadFile(fs, agentsPath)
 		if err != nil {
 			return "", errors.Wrap(err, "reading custom content")
 		}

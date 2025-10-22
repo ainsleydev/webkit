@@ -46,7 +46,7 @@ var updateOps = []runner{
 	{cicd.PR, "CICD: Create PR workflows"},
 	{cicd.BackupWorkflow, "CICD: Create backup workflows"},
 	{cicd.ActionTemplates, "CICD: Create action templates"},
-	{docs.Generate, "Docs: Generate AGENTS.md"},
+	{docs.Agents, "Docs: Agents AGENTS.md"},
 
 	// Lastly
 	{env.Scaffold, "Env: Sync .env files"},
@@ -65,7 +65,7 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 		return errors.Wrap(err, "loading manifest")
 	}
 
-	// 2. Generate all files (they auto-track to new manifest)
+	// 2. Agents all files (they auto-track to new manifest)
 	for _, op := range updateOps {
 		printer.Printf("🏃 %v\n", op.name)
 		if err = op.command(ctx, input); err != nil {

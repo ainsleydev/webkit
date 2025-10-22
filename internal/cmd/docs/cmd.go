@@ -10,13 +10,13 @@ import (
 var Command = &cli.Command{
 	Name:        "agents",
 	Usage:       "Manage AI assistant documentation",
-	Description: "Generate and manage documentation files for AI coding assistants",
+	Description: "Agents and manage documentation files for AI coding assistants",
 	Commands: []*cli.Command{
 		{
 			Name:        "generate",
-			Usage:       "Generate AGENTS.md file",
+			Usage:       "Agents AGENTS.md file",
 			Description: "Generates AGENTS.md file from base template and optional custom content",
-			Action:      cmdtools.Wrap(Generate),
+			Action:      cmdtools.Wrap(Agents),
 		},
 	},
 }

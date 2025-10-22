@@ -13,17 +13,15 @@ import (
 func TestGenerate(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("With no custom content", func(t *testing.T) {
 		t.Parallel()
 
-		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{
-			Name: "test-app",
-		})
+		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{})
 
-		err := Generate(t.Context(), input)
+		err := Agents(t.Context(), input)
 		require.NoError(t, err)
 
-		got, err := afero.ReadFile(input.FS, outputPath)
+		got, err := afero.ReadFile(input.FS, "AGENTS.md")
 		require.NoError(t, err)
 		assert.NotEmpty(t, got)
 		assert.Contains(t, string(got), "# Agent Guidelines")
@@ -36,17 +34,15 @@ func TestGenerate(t *testing.T) {
 		fs := afero.NewMemMapFs()
 		customContent := "## Custom Project Rules\n\nThis is custom content for the project."
 
-		err := afero.WriteFile(fs, customContentPath, []byte(customContent), 0644)
+		err := afero.WriteFile(fs, agentsPath, []byte(customContent), 0644)
 		require.NoError(t, err)
 
-		input := setup(t, fs, &appdef.Definition{
-			Name: "test-app",
-		})
+		input := setup(t, fs, &appdef.Definition{})
 
-		err = Generate(t.Context(), input)
+		err = Agents(t.Context(), input)
 		require.NoError(t, err)
 
-		got, err := afero.ReadFile(input.FS, outputPath)
+		got, err := afero.ReadFile(input.FS, "AGENTS.md")
 		require.NoError(t, err)
 		assert.NotEmpty(t, got)
 		assert.Contains(t, string(got), "# Agent Guidelines")
@@ -57,19 +53,21 @@ func TestGenerate(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		customTemplate := "## App Name: {{.Definition.Name}}\n\nThis is a template."
+		customTemplate := "## App Name: {{ .Definition.Project.Name }}\n\nThis is a template."
 
-		err := afero.WriteFile(fs, customContentPathTmpl, []byte(customTemplate), 0644)
+		err := afero.WriteFile(fs, agentsPathTpl, []byte(customTemplate), 0644)
 		require.NoError(t, err)
 
 		input := setup(t, fs, &appdef.Definition{
-			Name: "test-app",
+			Project: appdef.Project{
+				Name: "test-app",
+			},
 		})
 
-		err = Generate(t.Context(), input)
+		err = Agents(t.Context(), input)
 		require.NoError(t, err)
 
-		got, err := afero.ReadFile(input.FS, outputPath)
+		got, err := afero.ReadFile(input.FS, "AGENTS.md")
 		require.NoError(t, err)
 		assert.NotEmpty(t, got)
 		assert.Contains(t, string(got), "# Agent Guidelines")
@@ -81,7 +79,7 @@ func TestGenerate(t *testing.T) {
 
 		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), &appdef.Definition{})
 
-		err := Generate(t.Context(), input)
+		err := Agents(t.Context(), input)
 		assert.Error(t, err)
 	})
 }
@@ -92,10 +90,7 @@ func TestLoadCustomContent(t *testing.T) {
 	t.Run("No custom content", func(t *testing.T) {
 		t.Parallel()
 
-		fs := afero.NewMemMapFs()
-		appDef := &appdef.Definition{Name: "test-app"}
-
-		got, err := loadCustomContent(fs, appDef)
+		got, err := loadCustomContent(afero.NewMemMapFs(), &appdef.Definition{})
 
 		require.NoError(t, err)
 		assert.Empty(t, got)
@@ -105,12 +100,10 @@ func TestLoadCustomContent(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := afero.WriteFile(fs, customContentPath, []byte("# Custom Content"), 0644)
+		err := afero.WriteFile(fs, agentsPath, []byte("# Custom Content"), 0644)
 		require.NoError(t, err)
 
-		appDef := &appdef.Definition{Name: "test-app"}
-
-		got, err := loadCustomContent(fs, appDef)
+		got, err := loadCustomContent(fs, &appdef.Definition{})
 
 		require.NoError(t, err)
 		assert.Contains(t, got, "# Custom Content")
@@ -120,12 +113,14 @@ func TestLoadCustomContent(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := afero.WriteFile(fs, customContentPathTmpl, []byte("App: {{.Definition.Name}}"), 0644)
+		err := afero.WriteFile(fs, agentsPathTpl, []byte("App: {{ .Definition.Project.Name }}"), 0644)
 		require.NoError(t, err)
 
-		appDef := &appdef.Definition{Name: "test-app"}
-
-		got, err := loadCustomContent(fs, appDef)
+		got, err := loadCustomContent(fs, &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-app",
+			},
+		})
 
 		require.NoError(t, err)
 		assert.Contains(t, got, "App: test-app")
@@ -135,14 +130,12 @@ func TestLoadCustomContent(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := afero.WriteFile(fs, customContentPathTmpl, []byte("Template content"), 0644)
+		err := afero.WriteFile(fs, agentsPathTpl, []byte("Template content"), 0644)
 		require.NoError(t, err)
-		err = afero.WriteFile(fs, customContentPath, []byte("Static content"), 0644)
+		err = afero.WriteFile(fs, agentsPath, []byte("Static content"), 0644)
 		require.NoError(t, err)
 
-		appDef := &appdef.Definition{Name: "test-app"}
-
-		got, err := loadCustomContent(fs, appDef)
+		got, err := loadCustomContent(fs, &appdef.Definition{})
 
 		require.NoError(t, err)
 		assert.Contains(t, got, "Template content")

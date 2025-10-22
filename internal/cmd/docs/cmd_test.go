@@ -1,6 +1,7 @@
 package docs
 
 import (
+	"io"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -13,9 +14,12 @@ import (
 func setup(t *testing.T, fs afero.Fs, appDef *appdef.Definition) cmdtools.CommandInput {
 	t.Helper()
 
-	return cmdtools.CommandInput{
+	input := cmdtools.CommandInput{
 		FS:          fs,
 		AppDefCache: appDef,
 		Manifest:    manifest.NewTracker(),
 	}
+	input.Printer().SetWriter(io.Discard)
+
+	return input
 }

@@ -8,7 +8,7 @@ This is a living document that will improve as more people/agents use it over ti
 been made to keep the guidance in here as generic and reusable as possible. Please keep this in mind
 with any future edits.
 
-{{.Content}}
+{{ .Content }}
 
 ## WebKit
 
