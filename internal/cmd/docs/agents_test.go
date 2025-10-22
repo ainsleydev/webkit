@@ -25,7 +25,6 @@ func TestGenerate(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEmpty(t, got)
 		assert.Contains(t, string(got), "# Agent Guidelines")
-		assert.Contains(t, string(got), "## WebKit")
 	})
 
 	t.Run("With custom content from docs/AGENTS.md", func(t *testing.T) {

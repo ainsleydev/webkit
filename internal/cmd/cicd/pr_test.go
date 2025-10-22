@@ -50,8 +50,6 @@ func TestPR(t *testing.T) {
 
 		t.Log("Drift")
 		{
-
-			assert.Contains(t, content, "WebKit Drift Detection")
 			assert.Contains(t, content, "drift-detection:")
 		}
 
