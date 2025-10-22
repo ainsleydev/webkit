@@ -2,7 +2,7 @@ package version
 
 // Version is the current version number that Webkit is running on.
 // This value is injected by GoReleaser during builds via ldflags.
-var Version = "dev"
+var Version = "v0.0.1"
 
 // BuildInfo contains additional build metadata injected by GoReleaser.
 var (
