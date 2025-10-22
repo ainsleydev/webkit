@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -29,6 +30,11 @@ var driftCmd = &cli.Command{
 	Action: cmdtools.Wrap(drift),
 }
 
+var userManagedPaths = []string{
+	"docs/AGENTS.md",
+	"docs/AGENTS.md.tmpl",
+}
+
 // drift detects if tracked files have been manually modified or deleted.
 //
 // Note: This only detects drift from the last webkit update. If templates have
@@ -50,9 +56,12 @@ func drift(ctx context.Context, input cmdtools.CommandInput) error {
 		printer.Info("Checking for drift...")
 	}
 
-	// Run update in memory to see what should be generated
 	memFS := afero.NewMemMapFs()
 	memTracker := manifest.NewTracker()
+
+	if err := copyUserFiles(input.FS, memFS); err != nil {
+		return errors.Wrap(err, "copying user files to memory")
+	}
 
 	memInput := cmdtools.CommandInput{
 		FS:          memFS,
@@ -267,4 +276,36 @@ func formatDriftAsJSON(drifted []manifest.DriftEntry) (string, error) {
 	}
 
 	return string(data), nil
+}
+
+// copyUserFiles copies user-managed files to the in-memory filesystem because
+// templates depend on them. Without these files, generated output differs from
+// actual files, causing false drift warnings.
+func copyUserFiles(srcFS, dstFS afero.Fs) error {
+	for _, path := range userManagedPaths {
+		exists, err := afero.Exists(srcFS, path)
+		if err != nil {
+			return errors.Wrap(err, "checking if file exists: "+path)
+		}
+
+		if !exists {
+			continue
+		}
+
+		content, err := afero.ReadFile(srcFS, path)
+		if err != nil {
+			return errors.Wrap(err, "reading file: "+path)
+		}
+
+		dir := filepath.Dir(path)
+		if err := dstFS.MkdirAll(dir, 0755); err != nil {
+			return errors.Wrap(err, "creating directory: "+dir)
+		}
+
+		if err := afero.WriteFile(dstFS, path, content, 0644); err != nil {
+			return errors.Wrap(err, "writing file: "+path)
+		}
+	}
+
+	return nil
 }

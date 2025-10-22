@@ -8,6 +8,9 @@ This is a living document that will improve as more people/agents use it over ti
 been made to keep the guidance in here as generic and reusable as possible. Please keep this in mind
 with any future edits.
 
+**Note**: Investigation summaries and debugging analysis should be displayed via UI only, not
+committed to the repository.
+
 {{ .Content -}}
 
 ## Content
