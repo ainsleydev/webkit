@@ -88,18 +88,27 @@ func drift(ctx context.Context, input cmdtools.CommandInput) error {
 	return nil
 }
 
+// driftFormatter is a function type for formatting drift results.
+type driftFormatter func([]manifest.DriftEntry) (string, error)
+
+// driftFormatters maps format names to their formatting functions.
+var driftFormatters = map[string]driftFormatter{
+	"text": func(drifted []manifest.DriftEntry) (string, error) {
+		return formatDriftAsText(drifted), nil
+	},
+	"markdown": func(drifted []manifest.DriftEntry) (string, error) {
+		return formatDriftAsMarkdown(drifted), nil
+	},
+	"json": formatDriftAsJSON,
+}
+
 // formatDriftOutput formats drift results based on the requested format.
 func formatDriftOutput(drifted []manifest.DriftEntry, format string) (string, error) {
-	switch format {
-	case "text":
-		return formatDriftAsText(drifted), nil
-	case "markdown":
-		return formatDriftAsMarkdown(drifted), nil
-	case "json":
-		return formatDriftAsJSON(drifted)
-	default:
+	formatter, exists := driftFormatters[format]
+	if !exists {
 		return "", fmt.Errorf("unsupported format: %s", format)
 	}
+	return formatter(drifted)
 }
 
 // formatDriftAsText formats drift results as human-readable text output.
