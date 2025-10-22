@@ -1,5 +1,3 @@
-// internal/cmd/drift_test.go
-
 package cmd
 
 import (
@@ -31,11 +29,6 @@ func TestDrift(t *testing.T) {
 
 		err := drift(t.Context(), input)
 		assert.Error(t, err, "should error when no manifest exists")
-	})
-
-	t.Run("Update Error", func(t *testing.T) {
-		t.Parallel()
-		t.Skip("TODO")
 	})
 
 	t.Run("FS Error", func(t *testing.T) {

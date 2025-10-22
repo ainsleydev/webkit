@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
@@ -19,6 +20,7 @@ func setup(t *testing.T, fs afero.Fs, appDef *appdef.Definition) cmdtools.Comman
 		FS:          fs,
 		AppDefCache: appDef,
 		Manifest:    manifest.NewTracker(),
+		Command:     &cli.Command{},
 	}
 	input.Printer().SetWriter(io.Discard)
 

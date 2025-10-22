@@ -35,17 +35,17 @@ var driftCmd = &cli.Command{
 // been updated in a newer version of WebKit but webkit update hasn't been run,
 // this will not detect that the files are outdated.
 func drift(ctx context.Context, input cmdtools.CommandInput) error {
-	cmd := ctx.Value(cmdtools.CommandKey{}).(*cli.Command)
+	cmd := input.Command
 	format := cmd.String("format")
 	printer := input.Printer()
 
 	// Validate format
 	validFormats := map[string]bool{"text": true, "markdown": true, "json": true}
 	if !validFormats[format] {
-		return fmt.Errorf("invalid format %q: must be text, markdown, or json", format)
+		format = "text"
 	}
 
-	// Only show info message for text format (not for structured output)
+	// Only show info message for text format (not for structured output).
 	if format == "text" {
 		printer.Info("Checking for drift...")
 	}
@@ -244,10 +244,10 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 // formatDriftAsJSON formats drift results as JSON.
 func formatDriftAsJSON(drifted []manifest.DriftEntry) (string, error) {
 	type driftOutput struct {
-		DriftDetected bool                   `json:"drift_detected"`
-		TotalFiles    int                    `json:"total_files"`
-		Files         []manifest.DriftEntry  `json:"files"`
-		Summary       map[string]int         `json:"summary"`
+		DriftDetected bool                  `json:"drift_detected"`
+		TotalFiles    int                   `json:"total_files"`
+		Files         []manifest.DriftEntry `json:"files"`
+		Summary       map[string]int        `json:"summary"`
 	}
 
 	// Build summary counts

@@ -39,7 +39,7 @@ func Wrap(command RunCommand) cli.ActionFunc {
 		fs := afero.NewOsFs()
 		dir := "./"
 
-		if env.AppEnvironment() == env.Development {
+		if env.Get(env.AppEnvironmentKey, "false") == env.Development.String() {
 			// Let's temporarily use playground so we don't override any shit.
 			path := "./internal/playground"
 			fs = afero.NewBasePathFs(afero.NewOsFs(), path)
