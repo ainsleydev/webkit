@@ -60,7 +60,8 @@ jobs:
 
       - name: Upload Backup to S3
         run: |
-          s3cmd put --acl-private $BACKUP_FILE s3://${{ secrets.ORG_BACK_BLAZE_BUCKET }}${BACKUP_PATH}
+          # TODO: The name of the bucket needs to somehow be dynamic, how can we tell what bucket to use and where? Do we do a global one?
+          s3cmd put --acl-private $BACKUP_FILE s3://my-website${BACKUP_PATH}
 
       - name: Retain only 30 latest backups
         run: |

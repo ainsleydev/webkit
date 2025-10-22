@@ -42,6 +42,9 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 				"DatabaseID":  resource.GitHubSecretName(enviro, "id"),
 				"AccessKey":   resource.GitHubSecretName(enviro, "access_key"),
 				"SecretKey":   resource.GitHubSecretName(enviro, "secret_key"),
+
+				// TODO: This may change at some point, see workflow for more details.
+				"BucketName": appDef.Project.Name,
 			}); err != nil {
 				return err
 			}
