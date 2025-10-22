@@ -298,6 +298,7 @@ func copyUserFiles(srcFS, dstFS afero.Fs) error {
 		}
 
 		dir := filepath.Dir(path)
+
 		if err := dstFS.MkdirAll(dir, 0755); err != nil {
 			return errors.Wrap(err, "creating directory: "+dir)
 		}

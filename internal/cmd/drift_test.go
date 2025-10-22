@@ -36,8 +36,9 @@ func TestDrift(t *testing.T) {
 
 		mock := mocks.NewMockFS(gomock.NewController(t))
 		mock.EXPECT().
-			Open(gomock.Any()).
-			Return(nil, fmt.Errorf("open error"))
+			Stat(gomock.Any()).
+			Return(nil, fmt.Errorf("stat error")).
+			AnyTimes()
 
 		input := setup(t, mock, &appdef.Definition{})
 
