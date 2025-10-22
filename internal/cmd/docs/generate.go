@@ -27,25 +27,21 @@ const (
 // Generate creates the AGENTS.md file at the project root by combining
 // the base template with optional custom content from docs/.
 func Generate(_ context.Context, input cmdtools.CommandInput) error {
-	// Load base template
 	baseTemplate, err := templates.LoadTemplate(baseTemplateName)
 	if err != nil {
 		return errors.Wrap(err, "loading base template")
 	}
 
-	// Load custom content (try .tmpl first, fallback to .md, else empty)
 	customContent, err := loadCustomContent(input.FS, input.AppDef())
 	if err != nil {
 		return errors.Wrap(err, "loading custom content")
 	}
 
-	// Create template context with app definition and custom content
 	data := map[string]any{
 		"Definition": input.AppDef(),
 		"Content":    customContent,
 	}
 
-	// Generate file
 	err = input.Generator().Template(
 		outputPath,
 		baseTemplate,
@@ -72,14 +68,12 @@ func loadCustomContent(fs afero.Fs, appDef any) (string, error) {
 			return "", errors.Wrap(err, "reading custom template")
 		}
 
-		// Parse and execute the template
 		tmpl, err := templates.LoadTemplate("AGENTS.md.tmpl")
 		if err != nil {
 			// If LoadTemplate fails, treat it as a static file
 			return string(content), nil
 		}
 
-		// Execute template with app definition context
 		buf := &bytes.Buffer{}
 		data := map[string]any{
 			"Definition": appDef,
@@ -100,6 +94,5 @@ func loadCustomContent(fs afero.Fs, appDef any) (string, error) {
 		return string(content), nil
 	}
 
-	// No custom content found - return empty string
 	return "", nil
 }

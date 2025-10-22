@@ -94,6 +94,12 @@ Use `context.Context` as the first parameter for functions that perform I/O or c
 
 - Document all exported types, functions, and constants with Go doc comments.
 - Ensure that the comments convey the meaning behind the code, not just the what.
+- Within function bodies, only keep comments that explain _why_ something is done, not _what_ is
+  done. The code itself should be clear enough to show what it does.
+- Keep high-level comments that explain the flow or purpose of a section (e.g., "Try loading
+  template file first", "Fallback to static markdown file").
+- Remove obvious comments that just restate the code (e.g., "Load base template" before a
+  `LoadTemplate()` call).
 
 **Example:**
 
@@ -180,7 +186,9 @@ All Go tests should be written in one of two ways:
    Use [**`t.Run`**](http://t.Run) **subtests** when:
 
 - The number of input arguments in the test table exceeds **3**, or
-- The complexity of assertions increases (we should **never** use `if` statements in test tables).
+- The complexity of assertions increases (we should **never** use `if` statements in test tables), or
+- Individual test cases require unique setup logic that would need a setup function in the test
+  table.
 
 #### General Rules
 
@@ -194,6 +202,7 @@ All Go tests should be written in one of two ways:
 - Prefer one assertion per test when possible.
 - Never use `else` blocks — use assert logic instead.
 - Never redeclare variables like `test := test` (variable shadowing).
+- Use `got` as the variable name for actual results when comparing against expected values.
 - Test names should:
 	- Start with a capitalised first word,
 	- Use spaces between words,

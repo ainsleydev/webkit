@@ -6,11 +6,11 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 )
 
-// Command is the docs sub-command for managing agent documentation.
+// Command is the sub-command for managing AI assistant documentation.
 var Command = &cli.Command{
-	Name:        "docs",
-	Usage:       "Manage agent documentation",
-	Description: "Generate and manage AGENTS.md documentation for AI coding assistants",
+	Name:        "agents",
+	Usage:       "Manage AI assistant documentation",
+	Description: "Generate and manage documentation files for AI coding assistants",
 	Commands: []*cli.Command{
 		{
 			Name:        "generate",
