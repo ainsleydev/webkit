@@ -30,32 +30,29 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	}
 
 	tpl := templates.MustLoadTemplate(filepath.Join(workflowsPath, "backup.yaml.tmpl"))
+	path := filepath.Join(workflowsPath, "backup.yaml")
 
+	// Build data map with all resource secrets
+	secretData := make(map[string]string)
 	for _, resource := range appDef.Resources {
-		path := filepath.Join(workflowsPath, fmt.Sprintf("backup-%s.yaml", resource.Name))
-
-		data := map[string]any{
-			"Resource": resource,
-		}
-
-		// Add resource-specific data based on type
 		switch resource.Type {
 		case appdef.ResourceTypePostgres:
-			data["DatabaseURL"] = resource.GitHubSecretName(enviro, "connection_url")
-			data["DatabaseID"] = resource.GitHubSecretName(enviro, "id")
-			data["BucketName"] = appDef.Project.Name // TODO: This may change at some point, see workflow for more details.
+			secretData[fmt.Sprintf("%s_DatabaseURL", resource.Name)] = resource.GitHubSecretName(enviro, "connection_url")
+			secretData[fmt.Sprintf("%s_DatabaseID", resource.Name)] = resource.GitHubSecretName(enviro, "id")
 
 		case appdef.ResourceTypeS3:
-			data["AccessKey"] = resource.GitHubSecretName(enviro, "access_key")
-			data["SecretKey"] = resource.GitHubSecretName(enviro, "secret_key")
-			data["Region"] = resource.GitHubSecretName(enviro, "region")
-			data["BucketName"] = resource.GitHubSecretName(enviro, "bucket_name")
-		}
-
-		if err := input.Generator().Template(path, tpl, data); err != nil {
-			return err
+			secretData[fmt.Sprintf("%s_AccessKey", resource.Name)] = resource.GitHubSecretName(enviro, "access_key")
+			secretData[fmt.Sprintf("%s_SecretKey", resource.Name)] = resource.GitHubSecretName(enviro, "secret_key")
+			secretData[fmt.Sprintf("%s_Region", resource.Name)] = resource.GitHubSecretName(enviro, "region")
+			secretData[fmt.Sprintf("%s_BucketName", resource.Name)] = resource.GitHubSecretName(enviro, "bucket_name")
 		}
 	}
 
-	return nil
+	data := map[string]any{
+		"Resources":  appDef.Resources,
+		"Data":       secretData,
+		"BucketName": appDef.Project.Name, // TODO: This may change at some point, see workflow for more details.
+	}
+
+	return input.Generator().Template(path, tpl, data)
 }

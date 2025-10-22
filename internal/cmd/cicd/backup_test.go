@@ -15,7 +15,7 @@ func TestBackupWorkflow(t *testing.T) {
 	t.Parallel()
 
 	t.Run("No Resources", func(t *testing.T) {
-		t.Context()
+		t.Parallel()
 
 		appDef := &appdef.Definition{
 			Resources: []appdef.Resource{},
@@ -48,7 +48,7 @@ func TestBackupWorkflow(t *testing.T) {
 		got := BackupWorkflow(t.Context(), input)
 		assert.NoError(t, got)
 
-		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup-db.yaml"))
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
 		require.NoError(t, err)
 
 		err = validateGithubYaml(t, file, false)
@@ -79,7 +79,43 @@ func TestBackupWorkflow(t *testing.T) {
 		got := BackupWorkflow(t.Context(), input)
 		assert.NoError(t, got)
 
-		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup-store.yaml"))
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Multiple Resources", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Resources: []appdef.Resource{
+				{
+					Name:     "db",
+					Type:     appdef.ResourceTypePostgres,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+				{
+					Name:     "store",
+					Type:     appdef.ResourceTypeS3,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
 		require.NoError(t, err)
 
 		err = validateGithubYaml(t, file, false)
