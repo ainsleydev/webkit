@@ -65,7 +65,7 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 		return errors.Wrap(err, "loading manifest")
 	}
 
-	// 2. Agents all files (they auto-track to new manifest)
+	// 2. Generate all files (they auto-track to new manifest)
 	for _, op := range updateOps {
 		printer.Printf("🏃 %v\n", op.name)
 		if err = op.command(ctx, input); err != nil {
