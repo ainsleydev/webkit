@@ -32,7 +32,7 @@
 	},
 	"files": ["dist", "bin.js", "types.js", "types.ts", "types.d.ts"],
 	"dependencies": {
-		"payload": "3.56.0",
+		"payload": "3.60.0",
 		"@payloadcms/db-sqlite": "3.56.0",
 		"@payloadcms/richtext-lexical": "3.56.0",
 		"@payloadcms/plugin-form-builder": "3.56.0",
