@@ -33,7 +33,7 @@ func TestGenerate(t *testing.T) {
 		fs := afero.NewMemMapFs()
 		customContent := "## Custom Project Rules\n\nThis is custom content for the project."
 
-		err := afero.WriteFile(fs, agentsPath, []byte(customContent), 0644)
+		err := afero.WriteFile(fs, agentsPath, []byte(customContent), 0o644)
 		require.NoError(t, err)
 
 		input := setup(t, fs, &appdef.Definition{})
@@ -54,7 +54,7 @@ func TestGenerate(t *testing.T) {
 		fs := afero.NewMemMapFs()
 		customTemplate := "## App Name: {{ .Definition.Project.Name }}\n\nThis is a template."
 
-		err := afero.WriteFile(fs, agentsPathTpl, []byte(customTemplate), 0644)
+		err := afero.WriteFile(fs, agentsPathTpl, []byte(customTemplate), 0o644)
 		require.NoError(t, err)
 
 		input := setup(t, fs, &appdef.Definition{
@@ -99,7 +99,7 @@ func TestLoadCustomContent(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := afero.WriteFile(fs, agentsPath, []byte("# Custom Content"), 0644)
+		err := afero.WriteFile(fs, agentsPath, []byte("# Custom Content"), 0o644)
 		require.NoError(t, err)
 
 		got, err := loadCustomContent(fs, &appdef.Definition{})
@@ -112,7 +112,7 @@ func TestLoadCustomContent(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := afero.WriteFile(fs, agentsPathTpl, []byte("App: {{ .Definition.Project.Name }}"), 0644)
+		err := afero.WriteFile(fs, agentsPathTpl, []byte("App: {{ .Definition.Project.Name }}"), 0o644)
 		require.NoError(t, err)
 
 		got, err := loadCustomContent(fs, &appdef.Definition{
@@ -129,9 +129,9 @@ func TestLoadCustomContent(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := afero.WriteFile(fs, agentsPathTpl, []byte("Template content"), 0644)
+		err := afero.WriteFile(fs, agentsPathTpl, []byte("Template content"), 0o644)
 		require.NoError(t, err)
-		err = afero.WriteFile(fs, agentsPath, []byte("Static content"), 0644)
+		err = afero.WriteFile(fs, agentsPath, []byte("Static content"), 0o644)
 		require.NoError(t, err)
 
 		got, err := loadCustomContent(fs, &appdef.Definition{})
