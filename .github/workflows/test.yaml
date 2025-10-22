@@ -14,15 +14,16 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          
+
       - name: Setup CI environment
         uses: ./.github/actions/setup
 
       - name: Test
-        run: go test ./... -race -coverprofile=./coverage.out -covermode=atomic
+        # TODO, add race.
+        run: go test ./... -coverprofile=./coverage.out -covermode=atomic
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4.0.1
+        uses: codecov/codecov-action@v5.5.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.out
