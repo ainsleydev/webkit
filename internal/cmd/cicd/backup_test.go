@@ -48,7 +48,7 @@ func TestBackupWorkflow(t *testing.T) {
 		got := BackupWorkflow(t.Context(), input)
 		assert.NoError(t, got)
 
-		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup-postgres-db.yaml"))
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup-db.yaml"))
 		require.NoError(t, err)
 
 		err = validateGithubYaml(t, file, false)
@@ -79,12 +79,11 @@ func TestBackupWorkflow(t *testing.T) {
 		got := BackupWorkflow(t.Context(), input)
 		assert.NoError(t, got)
 
-		// Implement when added!
-		//file, err := afero.ReadFile(input.FS, filepath.Join(".github", "workflows", "backup-s3-store.yaml"))
-		//require.NoError(t, err)
-		//
-		//err = validateWorkflow(t, file)
-		//assert.NoError(t, err)
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup-store.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
 	})
 
 	t.Run("FS Failure", func(t *testing.T) {

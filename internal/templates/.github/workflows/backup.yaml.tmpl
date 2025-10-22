@@ -1,4 +1,5 @@
-name: Backup Database
+{{- if eq .Resource.Type "postgres" -}}
+name: Backup Database - {{ .Resource.Name }}
 
 on:
   workflow_dispatch:
@@ -89,3 +90,55 @@ jobs:
           commit_sha: ${{"{{"}} github.sha }}
           slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
           channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
+{{- else if eq .Resource.Type "s3" -}}
+name: Backup Bucket - {{ .Resource.Name }}
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *' # Runs daily at 3 AM
+
+jobs:
+  backup-bucket:
+    name: Backup DigitalOcean Spaces to Backblaze B2
+    runs-on: ubuntu-latest
+    timeout-minutes: 60 # 1 Hour
+    env:
+      BACKUP_PATH: '/backups/bucket/'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone for DigitalOcean Spaces
+        run: |
+          rclone config create do_spaces s3 \
+            env_auth true \
+            provider DigitalOcean \
+            access_key_id {{ ghSecret .AccessKey }} \
+            secret_access_key {{ ghSecret .SecretKey }} \
+            region {{ ghSecret .Region }} \
+            endpoint https://{{ ghSecret .Region }}.digitaloceanspaces.com
+
+      - name: Configure rclone for Backblaze B2
+        run: |
+          rclone config create b2_backup b2 \
+            account {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }} \
+            key {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+
+      - name: Sync Bucket to B2
+        run: |
+          # Sync entire DO Spaces bucket to B2, deleting extraneous files
+          rclone sync do_spaces:{{ ghSecret .BucketName }} b2_backup:{{ ghSecret "ORG_BACK_BLAZE_BUCKET" }} \
+            --progress --transfers=16 --checkers=16 --delete-excluded
+
+      - name: Verify Backup
+        run: |
+          echo "Backup completed successfully!"
+{{- end -}}
