@@ -33,11 +33,19 @@ jobs:
       - name: Run Drift Detection
         id: drift
         run: |
-          if {{ ghVar "steps.webkit.outputs.cli-path" }} drift; then
+          # Capture drift output in markdown format
+          if {{ ghVar "steps.webkit.outputs.cli-path" }} drift --format=markdown > drift-output.md 2>&1; then
             echo "drift_detected=false" >> $GITHUB_OUTPUT
           else
             echo "drift_detected=true" >> $GITHUB_OUTPUT
           fi
+
+          # Store output for PR comment
+          {
+            echo 'drift_message<<EOF'
+            cat drift-output.md
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
 
       - name: Find existing comment
         if: github.event_name == 'pull_request'
@@ -54,10 +62,7 @@ jobs:
         with:
           comment-id: {{ ghVar "steps.find-comment.outputs.comment-id" }}
           issue-number: {{ ghVar "github.event.pull_request.number" }}
-          body: |
-            ## WebKit Drift Detection
-
-            {{`${{ steps.drift.outputs.drift_detected == 'true' && '❌ Drift detected' || '✅ No drift detected' }}`}}
+          body: {{`${{ steps.drift.outputs.drift_message }}`}}
           edit-mode: replace
 
       - name: Fail Workflow if Drift Detected

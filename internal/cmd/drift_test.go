@@ -12,6 +12,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/mocks"
 )
 
@@ -194,5 +195,273 @@ func TestDrift(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, buf.String(), "Orphaned files detected")
 		assert.Contains(t, buf.String(), "Run 'webkit update' to sync all files")
+	})
+}
+
+func TestFormatDriftOutput(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input   []manifest.DriftEntry
+		format  string
+		wantErr bool
+	}{
+		"Text format": {
+			input:   []manifest.DriftEntry{},
+			format:  "text",
+			wantErr: false,
+		},
+		"Markdown format": {
+			input:   []manifest.DriftEntry{},
+			format:  "markdown",
+			wantErr: false,
+		},
+		"JSON format": {
+			input:   []manifest.DriftEntry{},
+			format:  "json",
+			wantErr: false,
+		},
+		"Invalid format": {
+			input:   []manifest.DriftEntry{},
+			format:  "invalid",
+			wantErr: true,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := formatDriftOutput(test.input, test.format)
+			assert.Equal(t, test.wantErr, err != nil)
+		})
+	}
+}
+
+func TestFormatDriftAsText(t *testing.T) {
+	t.Parallel()
+
+	t.Run("No drift", func(t *testing.T) {
+		t.Parallel()
+
+		output := formatDriftAsText([]manifest.DriftEntry{})
+		assert.Contains(t, output, "No drift detected")
+		assert.Contains(t, output, "all files are up to date")
+	})
+
+	t.Run("Modified files", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "file1.txt", Type: manifest.DriftReasonModified},
+			{Path: "file2.txt", Type: manifest.DriftReasonModified},
+		}
+
+		output := formatDriftAsText(drifted)
+		assert.Contains(t, output, "Manual modifications detected")
+		assert.Contains(t, output, "file1.txt")
+		assert.Contains(t, output, "file2.txt")
+		assert.Contains(t, output, "Run 'webkit update' to sync all files")
+	})
+
+	t.Run("Outdated files", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: ".env", Type: manifest.DriftReasonOutdated},
+		}
+
+		output := formatDriftAsText(drifted)
+		assert.Contains(t, output, "Outdated files detected")
+		assert.Contains(t, output, ".env")
+		assert.Contains(t, output, "app.json changed")
+	})
+
+	t.Run("Missing files", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "missing.txt", Type: manifest.DriftReasonNew},
+		}
+
+		output := formatDriftAsText(drifted)
+		assert.Contains(t, output, "Missing files detected")
+		assert.Contains(t, output, "missing.txt")
+	})
+
+	t.Run("Orphaned files", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "orphan.txt", Type: manifest.DriftReasonDeleted},
+		}
+
+		output := formatDriftAsText(drifted)
+		assert.Contains(t, output, "Orphaned files detected")
+		assert.Contains(t, output, "orphan.txt")
+	})
+
+	t.Run("Mixed drift types", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "modified.txt", Type: manifest.DriftReasonModified},
+			{Path: "outdated.txt", Type: manifest.DriftReasonOutdated},
+			{Path: "missing.txt", Type: manifest.DriftReasonNew},
+			{Path: "orphan.txt", Type: manifest.DriftReasonDeleted},
+		}
+
+		output := formatDriftAsText(drifted)
+		assert.Contains(t, output, "Manual modifications detected")
+		assert.Contains(t, output, "Outdated files detected")
+		assert.Contains(t, output, "Missing files detected")
+		assert.Contains(t, output, "Orphaned files detected")
+	})
+}
+
+func TestFormatDriftAsMarkdown(t *testing.T) {
+	t.Parallel()
+
+	t.Run("No drift", func(t *testing.T) {
+		t.Parallel()
+
+		output := formatDriftAsMarkdown([]manifest.DriftEntry{})
+		assert.Contains(t, output, "## WebKit Drift Detection")
+		assert.Contains(t, output, "No drift detected")
+		assert.Contains(t, output, "all files are up to date")
+	})
+
+	t.Run("Modified files - singular", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "file1.txt", Type: manifest.DriftReasonModified},
+		}
+
+		output := formatDriftAsMarkdown(drifted)
+		assert.Contains(t, output, "## WebKit Drift Detection")
+		assert.Contains(t, output, "Manual modifications detected (1 file)")
+		assert.Contains(t, output, "`file1.txt`")
+		assert.Contains(t, output, "**Action Required:**")
+		assert.Contains(t, output, "`webkit update`")
+	})
+
+	t.Run("Modified files - plural", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "file1.txt", Type: manifest.DriftReasonModified},
+			{Path: "file2.txt", Type: manifest.DriftReasonModified},
+		}
+
+		output := formatDriftAsMarkdown(drifted)
+		assert.Contains(t, output, "Manual modifications detected (2 files)")
+		assert.Contains(t, output, "`file1.txt`")
+		assert.Contains(t, output, "`file2.txt`")
+	})
+
+	t.Run("Outdated files", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: ".env", Type: manifest.DriftReasonOutdated},
+			{Path: "config.yaml", Type: manifest.DriftReasonOutdated},
+		}
+
+		output := formatDriftAsMarkdown(drifted)
+		assert.Contains(t, output, "Outdated files detected (2 files)")
+		assert.Contains(t, output, "app.json changed")
+		assert.Contains(t, output, "`.env`")
+		assert.Contains(t, output, "`config.yaml`")
+	})
+
+	t.Run("Missing files", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "missing.txt", Type: manifest.DriftReasonNew},
+		}
+
+		output := formatDriftAsMarkdown(drifted)
+		assert.Contains(t, output, "Missing files detected (1 file)")
+		assert.Contains(t, output, "`missing.txt`")
+	})
+
+	t.Run("Orphaned files", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "orphan.txt", Type: manifest.DriftReasonDeleted},
+		}
+
+		output := formatDriftAsMarkdown(drifted)
+		assert.Contains(t, output, "Orphaned files detected (1 file)")
+		assert.Contains(t, output, "`orphan.txt`")
+	})
+
+	t.Run("Mixed drift types", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "modified.txt", Type: manifest.DriftReasonModified},
+			{Path: "outdated.txt", Type: manifest.DriftReasonOutdated},
+			{Path: "missing.txt", Type: manifest.DriftReasonNew},
+			{Path: "orphan.txt", Type: manifest.DriftReasonDeleted},
+		}
+
+		output := formatDriftAsMarkdown(drifted)
+		assert.Contains(t, output, "### ⚠ Manual modifications detected")
+		assert.Contains(t, output, "### 📝 Outdated files detected")
+		assert.Contains(t, output, "### 📄 Missing files detected")
+		assert.Contains(t, output, "### 🗑️ Orphaned files detected")
+		assert.Contains(t, output, "---")
+	})
+}
+
+func TestFormatDriftAsJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("No drift", func(t *testing.T) {
+		t.Parallel()
+
+		output, err := formatDriftAsJSON([]manifest.DriftEntry{})
+		require.NoError(t, err)
+		assert.Contains(t, output, `"drift_detected": false`)
+		assert.Contains(t, output, `"total_files": 0`)
+	})
+
+	t.Run("With drift", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "file1.txt", Type: manifest.DriftReasonModified},
+			{Path: "file2.txt", Type: manifest.DriftReasonOutdated},
+		}
+
+		output, err := formatDriftAsJSON(drifted)
+		require.NoError(t, err)
+		assert.Contains(t, output, `"drift_detected": true`)
+		assert.Contains(t, output, `"total_files": 2`)
+		assert.Contains(t, output, `"file1.txt"`)
+		assert.Contains(t, output, `"file2.txt"`)
+	})
+
+	t.Run("Summary counts", func(t *testing.T) {
+		t.Parallel()
+
+		drifted := []manifest.DriftEntry{
+			{Path: "modified1.txt", Type: manifest.DriftReasonModified},
+			{Path: "modified2.txt", Type: manifest.DriftReasonModified},
+			{Path: "outdated.txt", Type: manifest.DriftReasonOutdated},
+			{Path: "missing.txt", Type: manifest.DriftReasonNew},
+			{Path: "orphan.txt", Type: manifest.DriftReasonDeleted},
+		}
+
+		output, err := formatDriftAsJSON(drifted)
+		require.NoError(t, err)
+		assert.Contains(t, output, `"modified": 2`)
+		assert.Contains(t, output, `"outdated": 1`)
+		assert.Contains(t, output, `"new": 1`)
+		assert.Contains(t, output, `"deleted": 1`)
 	})
 }
