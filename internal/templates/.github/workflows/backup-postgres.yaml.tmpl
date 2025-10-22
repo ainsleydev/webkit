@@ -1,0 +1,91 @@
+name: Backup Database
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *' # Runs daily at 2 AM
+
+jobs:
+  backup-postgres:
+    name: Backup Database to BackBlaze
+    runs-on: ubuntu-latest
+    env:
+      BACKUP_PATH: '/backups/db/'
+      DO_ACCESS_TOKEN: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: {{ ghEnv "DO_ACCESS_TOKEN" }}
+
+      - name: Add Runner IP to Database
+        uses: ./.github/actions/db-add-ip
+        with:
+          database-id: {{ ghSecret .DatabaseID }}
+          doctl-token: {{ ghSecret "DO_ACCESS_TOKEN" }}
+
+      - name: Dump and Compress PostgreSQL Database
+        env:
+          DATABASE_URL: {{ ghSecret .DatabaseURL }}
+        run: |
+          # Install PostgreSQL client
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+
+          # Generate timestamp
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+
+          # Dump and compress in one step
+          pg_dump "$DATABASE_URL" -O | gzip > backup-$TIMESTAMP.sql.gz
+
+          # Make the backup filename available to next steps
+          echo "BACKUP_FILE=backup-$TIMESTAMP.sql.gz" >> $GITHUB_ENV
+
+      - name: Install s3cmd
+        run: sudo apt-get update && sudo apt-get install -y s3cmd
+
+      - name: Configure s3cmd for Backblaze B2
+        run: |
+          echo "[default]" > $HOME/.s3cfg
+          echo "access_key = {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }}" >> $HOME/.s3cfg
+          echo "secret_key = ${{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}" >> $HOME/.s3cfg
+          echo "host_base = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
+          echo "host_bucket = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
+
+      - name: Upload Backup to S3
+        run: |
+          # TODO: The name of the bucket needs to somehow be dynamic, how can we tell what bucket to use and where? Do we do a global one?
+          s3cmd put --acl-private $BACKUP_FILE s3://{{ .BucketName }}${BACKUP_PATH}
+
+      - name: Retain only 30 latest backups
+        run: |
+          # List backups, skip newest 30, delete the rest
+          s3cmd ls s3://{{ ghSecret "ORG_BACK_BLAZE_BUCKET" }}${BACKUP_PATH} \
+          | sort -k1,2 \
+          | sort -k1,2 \
+          | head -n -30 \
+          | awk '{print $4}' \
+          | xargs -r s3cmd del
+
+      - name: Remove Runner IP from Database
+        if: always()
+        uses: ./.github/actions/db-remove-ip
+        with:
+          database-id: {{ ghSecret .DatabaseID }}
+          doctl-token: {{ ghEnv "DO_ACCESS_TOKEN" }}
+
+      - name: Notify Slack of Backup Failure
+        if: failure()
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Database Backup Failed'
+          message: 'The scheduled database backup has failed.'
+          status: 'failure'
+          commit_sha: ${{"{{"}} github.sha }}
+          slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
+          channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}

@@ -35,7 +35,7 @@ func TestInitSentry(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			if test.dev {
-				require.NoError(t, os.Setenv(env.AppEnvironmentKey, env.Development))
+				require.NoError(t, os.Setenv(env.AppEnvironmentKey, env.Development.String()))
 			}
 			_, err := Init(test.dsn)
 			assert.Equal(t, test.wantError, err != nil)

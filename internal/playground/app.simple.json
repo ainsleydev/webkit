@@ -1,0 +1,56 @@
+{
+	"webkit_version": "0.1.0",
+	"project": {
+		"name": "my-website",
+		"title": "My Website",
+		"description": "My website is a bespoke sales platform for developers and designers.",
+		"repo": {
+			"owner": "ainsleydev",
+			"repo": "my-website"
+		}
+	},
+	"shared": {
+		"env": {
+			"dev": {
+				"FRONTEND_URL": {
+					"source": "value",
+					"value": "http://localhost:3000"
+				}
+			},
+			"staging": {
+				"FRONTEND_URL": {
+					"source": "value",
+					"value": "https://staging.my-website.com"
+				}
+			},
+			"production": {
+				"SENTRY_DSN": {
+					"source": "sops",
+					"path": "SENTRY_DSN"
+				},
+				"FRONTEND_URL": {
+					"source": "value",
+					"value": "https://my-website.com"
+				},
+				"TODO": {
+					"source": "sops",
+					"value": "https://my-website.com"
+				}
+			}
+		}
+	},
+	"resources": [
+		{
+			"name": "store-temp2",
+			"type": "s3",
+			"provider": "digitalocean",
+			"config": {
+			},
+			"outputs": [
+
+			]
+		}
+	],
+	"apps": [
+	]
+}

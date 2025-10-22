@@ -1,0 +1,5 @@
+- name: Install tools
+  apt:
+    name: '{{ packages }}'
+    state: present
+    update_cache: yes

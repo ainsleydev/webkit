@@ -1,0 +1,216 @@
+{
+	"webkit_version": "v0.0.1",
+	"project": {
+		"name": "my-website",
+		"title": "My Website",
+		"description": "My website is a bespoke sales platform for developers and designers.",
+		"repo": {
+			"owner": "ainsleydev",
+			"name": ""
+		}
+	},
+	"shared": {
+		"env": {
+			"dev": {
+				"FRONTEND_URL": {
+					"source": "value",
+					"value": "http://localhost:3000"
+				}
+			},
+			"staging": {
+				"FRONTEND_URL": {
+					"source": "value",
+					"value": "https://staging.my-website.com"
+				}
+			},
+			"production": {
+				"FRONTEND_URL": {
+					"source": "value",
+					"value": "https://my-website.com"
+				},
+				"SENTRY_DSN": {
+					"source": "sops",
+					"path": "SENTRY_DSN"
+				},
+				"TODO": {
+					"source": "sops",
+					"value": "https://my-website.com"
+				}
+			}
+		}
+	},
+	"resources": [
+		{
+			"name": "db",
+			"type": "postgres",
+			"provider": "digitalocean",
+			"config": {
+				"engine_version": "17",
+				"region": "nyc3",
+				"size": "db-s-1vcpu-1gb"
+			},
+			"backup": {
+				"enabled": true
+			}
+		},
+		{
+			"name": "store",
+			"type": "s3",
+			"provider": "digitalocean",
+			"config": {
+				"acl": "public-read",
+				"region": "ams3"
+			},
+			"backup": {
+				"enabled": true
+			}
+		}
+	],
+	"apps": [
+		{
+			"name": "cms",
+			"title": "CMS",
+			"type": "payload",
+			"description": "Payload CMS for managing content.",
+			"path": "cms",
+			"build": {
+				"dockerfile": "Dockerfile"
+			},
+			"infra": {
+				"provider": "digitalocean",
+				"type": "vm",
+				"config": {
+					"domain": "cms.my-website.com",
+					"region": "nyc3",
+					"size": "s-2vcpu-4gb"
+				}
+			},
+			"env": {
+				"dev": {
+					"DATABASE_URL": {
+						"source": "resource",
+						"value": "db.connection_url"
+					},
+					"PAYLOAD_SECRET": {
+						"source": "sops",
+						"path": "PAYLOAD_SECRET"
+					}
+				},
+				"staging": {
+					"DATABASE_URL": {
+						"source": "resource",
+						"value": "db.connection_url"
+					}
+				},
+				"production": {
+					"DATABASE_URL": {
+						"source": "resource",
+						"value": "db.connection_url"
+					},
+					"PAYLOAD_SECRET": {
+						"source": "sops",
+						"path": "PAYLOAD_SECRET"
+					}
+				}
+			},
+			"usesNPM": null,
+			"commands": {
+				"build": {
+					"command": "pnpm build"
+				},
+				"format": {
+					"command": "pnpm format"
+				},
+				"lint": {
+					"command": "pnpm lint"
+				},
+				"test": {
+					"command": "pnpm test"
+				}
+			}
+		},
+		{
+			"name": "web",
+			"title": "Web",
+			"type": "svelte-kit",
+			"path": "web",
+			"build": {
+				"dockerfile": "Dockerfile"
+			},
+			"infra": {
+				"provider": "digitalocean",
+				"type": "container",
+				"config": {
+					"domain": "www.my-website.com",
+					"env_from_shared": true,
+					"instance_count": 2,
+					"region": "fra1"
+				}
+			},
+			"env": {
+				"dev": {
+					"PUBLIC_API_URL": {
+						"source": "value",
+						"value": "http://localhost:3000"
+					}
+				},
+				"production": {
+					"ASSETS_BUCKET": {
+						"source": "resource",
+						"value": "store.bucket_name"
+					},
+					"PUBLIC_API_URL": {
+						"source": "value",
+						"value": "https://api.my-website.com"
+					}
+				}
+			},
+			"usesNPM": null,
+			"commands": {
+				"build": {
+					"command": "pnpm build"
+				},
+				"format": {
+					"command": "pnpm format"
+				},
+				"lint": {
+					"command": "pnpm lint"
+				},
+				"test": {
+					"command": "pnpm test"
+				}
+			}
+		},
+		{
+			"name": "api",
+			"title": "API",
+			"type": "golang",
+			"description": "GoLang API",
+			"path": "api",
+			"build": {
+				"dockerfile": "Dockerfile"
+			},
+			"infra": {
+				"provider": "",
+				"type": "",
+				"config": null
+			},
+			"env": {},
+			"usesNPM": null,
+			"commands": {
+				"build": {
+					"command": "go build main.go"
+				},
+				"format": {
+					"command": "gofmt -w ."
+				},
+				"lint": {
+					"command": "golangci-lint run"
+				},
+				"test": {
+					"command": "go test ./..."
+				}
+			}
+		}
+	]
+}

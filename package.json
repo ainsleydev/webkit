@@ -21,6 +21,9 @@
 	"scripts": {
 		"precommit": "npx lint-staged",
 		"prepare": "husky",
+		"setup-deps": "bash bin/setup.sh",
+		"webkit": "APP_ENV=development go run main.go ${npm_config_argv[@]}",
+		"build": "go build -o webkit && go install",
 		"check": "pnpm format && pnpm lint && pnpm test",
 		"format": "pnpm format:go && biome check --write .",
 		"format:go": "go fmt ./...",
@@ -28,7 +31,18 @@
 		"lint": "pnpm lint:go && pnpm lint:js",
 		"lint:go": "golangci-lint run --fix ./...",
 		"lint:js": "biome lint --write .",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "pnpm test:go",
+		"test:go": "go test ./...",
+		"act:lint": "act pull_request -W .github/workflows/lint.yaml -b",
+		"act:test": "act pull_request -W .github/workflows/test.yaml -b",
+		"act:release": "act push -W .github/workflows/release.yaml --dryrun -b",
+		"tag": "pnpm release:check && go run cmd/tag/main.go",
+		"release:check": "goreleaser check",
+		"release:test": "pnpm release:clean && goreleaser release --snapshot --clean --skip=publish",
+		"release:version": "git describe --tags --always --dirty 2>/dev/null || echo 'no tags'",
+		"release:clean": "rm -rf dist/",
+		"repopack": "repomix --include 'internal/**/*.go,platform/**/*.tf,**/*.go,packages/**/*.{ts,js},pkg/**/*' --ignore '**/node_modules/**' --style markdown --output repopack.txt",
+		"todo": "rg --no-heading --color always -n -e '//.*\\bTODO\\b|#.*\\bTODO\\b|/\\*.*\\bTODO\\b.*\\*/' --glob '!node_modules' --glob '!dist' --glob '!.git' --glob '!vendor' --glob '!.idea'"
 	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
@@ -40,8 +54,7 @@
 	"lint-staged": {
 		"*.{js,ts,cjs,mjs,d.cts,d.mts,mjs,jsx,ts,tsx,json,jsonc}": [
 			"biome format --write --no-errors-on-unmatched",
-			"biome lint --write --no-errors-on-unmatched",
-			"biome check --files-ignore-unknown=true"
+			"biome lint --write --no-errors-on-unmatched"
 		],
 		"*.go": ["gofmt -w"],
 		"*.templ": ["templ fmt"]

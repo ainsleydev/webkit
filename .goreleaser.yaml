@@ -1,0 +1,109 @@
+# GoReleaser configuration for webkit CLI
+# Documentation: https://goreleaser.com
+
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+# Main Build
+# See: https://goreleaser.com/customization/builds/
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    binary: webkit
+    ignore:
+      - goos: windows
+        goarch: arm64
+    tags:
+      - prod
+    ldflags:
+      - -s -w
+      - -X github.com/ainsleydev/webkit/internal/version.Version={{.Version}}
+      - -X github.com/ainsleydev/webkit/internal/version.Commit={{.Commit}}
+      - -X github.com/ainsleydev/webkit/internal/version.Date={{.Date}}
+      - -X github.com/ainsleydev/webkit/internal/version.BuiltBy=goreleaser
+    mod_timestamp: '{{ .CommitTimestamp }}'
+archives:
+  - formats: [tar.gz]
+    # This name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+      - LICENSE*
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - Merge pull request  # ← ADD: Filter merge commits
+      - Merge branch        # ← ADD: Filter merge commits
+  groups:
+    - title: 'Features'
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: 'Bug Fixes'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: 'Refactors'
+      regexp: '^.*?refactor(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: 'Documentation'
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: 'Other'
+      order: 999
+
+release:
+  draft: false
+  github:
+    owner: ainsleydev
+    name: webkit
+  name_template: "v{{.Version}}"
+  include_meta: true
+  header: |
+    ## Installation
+
+    **Quick install:**
+    ```bash
+    curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | sh
+    ```
+
+    Or download binaries from the [latest release](https://github.com/ainsleydev/webkit/releases/latest).
+
+    **Verify installation:**
+    ```bash
+    webkit version
+    ```
+    ---
+  footer: |
+    ---
+
+    **Full Changelog**: https://github.com/ainsleydev/webkit/compare/{{.PreviousTag}}...{{.Tag}}

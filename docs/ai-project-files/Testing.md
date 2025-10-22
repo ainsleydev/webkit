@@ -1,0 +1,14 @@
+The test should be:
+- In a map[string]struct{} format. Where the string is the name of the test.
+- Prefer input and want variable names within the struct for assertion.
+- The test loop should read: for name, test := range tt where by the name of the test table variable is tt
+- Add t.Parallel() at the top of the function then a line break.
+- Add t.Parallel() for each sub test.
+- The first letter of the test name should be capitalised with spaces.
+- Prefer one assertion where possible.
+- Should use the assert library.
+- You should show all additional test cases.
+- If 100% test coverage can't be achieved, explain why.
+- Never add shadow test declarations such as test := test
+- Don't use else statements for assertion, I prefer assert.Equal(t, test.wantErr, err != nil)  if wantErr is required (the function returns an error)
+- Dont' add any code comments

@@ -8,6 +8,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestEnvironment_String(t *testing.T) {
+	t.Parallel()
+
+	got := Production.String()
+	assert.Equal(t, "production", got)
+	assert.IsType(t, "", got)
+}
+
 func TestParseConfig(t *testing.T) {
 	type env struct {
 		Key string `env:"ENV_KEY,required"`
@@ -35,6 +43,28 @@ func TestParseConfig(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "test", cfg.Key)
 	})
+}
+
+func TestEnvironment_Short(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		env  Environment
+		want string
+	}{
+		"Development": {env: Development, want: "dev"},
+		"Staging":     {env: Staging, want: "staging"},
+		"Production":  {env: Production, want: "prod"},
+		"Unknown":     {env: Environment("random"), want: "unknown"},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.env.Short()
+			assert.Equal(t, test.want, got)
+		})
+	}
 }
 
 func TestGet_WithExistingKey(t *testing.T) {
@@ -97,12 +127,12 @@ func TestAppEnvironment(t *testing.T) {
 	t.Setenv(AppEnvironmentKey, "edge_case_value")
 	got := AppEnvironment()
 	want := "edge_case_value"
-	assert.Equal(t, want, got)
+	assert.EqualValues(t, want, got)
 }
 
 func TestIsDevelopment(t *testing.T) {
 	t.Run("Development", func(t *testing.T) {
-		t.Setenv(AppEnvironmentKey, Development)
+		t.Setenv(AppEnvironmentKey, Development.String())
 		got := IsDevelopment()
 		assert.True(t, got)
 	})
@@ -114,13 +144,13 @@ func TestIsDevelopment(t *testing.T) {
 }
 
 func TestIsStaging(t *testing.T) {
-	t.Setenv(AppEnvironmentKey, Staging)
+	t.Setenv(AppEnvironmentKey, Staging.String())
 	got := IsStaging()
 	assert.True(t, got)
 }
 
 func TestIsProduction(t *testing.T) {
-	t.Setenv(AppEnvironmentKey, Production)
+	t.Setenv(AppEnvironmentKey, Production.String())
 	got := IsProduction()
 	assert.True(t, got)
 }

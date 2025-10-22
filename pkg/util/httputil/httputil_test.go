@@ -102,6 +102,8 @@ func TestIs4xx(t *testing.T) {
 }
 
 func TestIs5xx(t *testing.T) {
+	t.Parallel()
+
 	tt := map[string]struct {
 		input int
 		want  bool
@@ -126,6 +128,7 @@ func TestIs5xx(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := Is5xx(test.input)
 			assert.Equal(t, test.want, got)
 		})

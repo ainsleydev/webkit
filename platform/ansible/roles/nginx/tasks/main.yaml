@@ -1,0 +1,32 @@
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+  become: true
+
+- name: Remove all files in sites-enabled
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop: "{{ lookup('fileglob', '/etc/nginx/sites-enabled/*', wantlist=True) }}"
+
+- name: Deploy Nginx config
+  template:
+    src: ../templates/nginx.conf.j2
+    dest: '/etc/nginx/sites-available/{{ domain }}.conf'
+    mode: '0644'
+
+- name: Enable site
+  file:
+    src: '/etc/nginx/sites-available/{{ domain }}.conf'
+    dest: '/etc/nginx/sites-enabled/{{ domain }}.conf'
+    state: link
+
+- name: Test Nginx configuration
+  command: nginx -t
+  changed_when: false
+
+- name: Restart Nginx
+  service:
+    name: nginx
+    state: restarted

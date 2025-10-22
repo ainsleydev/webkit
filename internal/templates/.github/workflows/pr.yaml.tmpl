@@ -1,0 +1,149 @@
+name: PR
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - master
+
+# Only allow one of these to run per branch
+concurrency:
+  group: {{ ghVar "github.workflow" }}-{{ ghVar "github.ref" }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  setup-webkit:
+    runs-on: ubuntu-latest
+    outputs:
+      version: {{ ghVar "steps.version.outputs.version" }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Read WebKit Version
+        id: version
+        shell: bash
+        run: |
+          WEBKIT_VERSION=$(jq -r '.webkit_version // "latest"' "app.json")
+          echo "version=$WEBKIT_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected WebKit version: $WEBKIT_VERSION"
+
+      - name: Download WebKit Release Asset
+        id: setup
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: 'ainsleydev/webkit'
+          tag: {{ ghVar "steps.version.outputs.version" }}
+          fileName: 'webkit_linux_x86_64.tar.gz'
+          extract: true
+
+      - name: Upload WebKit CLI Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webkit
+          path: webkit
+          if-no-files-found: error
+  drift-detection:
+    runs-on: ubuntu-latest
+    needs: setup-webkit
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Download WebKit CLI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webkit
+          path: ./
+
+      - name: Make WebKit executable
+        run: chmod +x ./webkit
+
+      - name: Run Drift Detection
+        id: drift
+        run: |
+          # Capture drift output in markdown format
+          if ./webkit drift --format=markdown > drift-output.md 2>&1; then
+            echo "drift_detected=false" >> $GITHUB_OUTPUT
+          else
+            echo "drift_detected=true" >> $GITHUB_OUTPUT
+          fi
+
+          # Store output for PR comment
+          {
+            echo 'drift_message<<EOF'
+            cat drift-output.md
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Find existing comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: {{ ghVar "github.event.pull_request.number" }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'WebKit Drift'
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          comment-id: {{ ghVar "steps.find-comment.outputs.comment-id" }}
+          issue-number: {{ ghVar "github.event.pull_request.number" }}
+          body: {{ ghVar "steps.drift.outputs.drift_message" }}
+          edit-mode: replace
+
+      - name: Fail Workflow if Drift Detected
+        if: steps.drift.outputs.drift_detected == 'true'
+        run: |
+          echo "❌ Drift detected in WebKit-generated files"
+          echo "Run 'webkit update' to sync your project with the latest templates"
+          exit 1
+
+	{{- range .Apps }}
+  {{ .Name | lower }}:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+{{- if eq .Language "js" }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+{{- else if eq .Language "go" }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+{{- end }}
+
+{{- range $spec := .OrderedCommands }}
+{{- if not $spec.Disabled }}
+
+      - name: {{ $spec.Name | title }}
+{{- if $.Path }}
+        working-directory: {{ $.Path }}
+{{- end }}
+        run: {{ $spec.Cmd }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -20,7 +20,7 @@ var form = ` {
 		{
 			"id": "66978fa9cfde9d48af3ee2ea",
 			"name": "name",
-			"label": "Name",
+			"label": "Key",
 			"width": null,
 			"defaultValue": null,
 			"required": true,
@@ -73,7 +73,7 @@ func TestForm_UnmarshalJSON(t *testing.T) {
 					{
 						ID:        "66978fa9cfde9d48af3ee2ea",
 						Name:      "name",
-						Label:     "Name",
+						Label:     "Key",
 						Required:  ptr.BoolPtr(true),
 						BlockType: FormBlockTypeText,
 					},

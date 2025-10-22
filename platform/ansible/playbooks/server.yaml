@@ -1,0 +1,111 @@
+- name: Deploy server with Docker and Nginx (Ansible-native)
+  hosts: all
+  become: true
+  vars:
+    domain: cms.searchspares.com
+    admin_email: hello@ainsley.dev
+    github_user: ainsleydev
+    github_repo: search-spares
+    docker_image: search-spares-cms
+    docker_image_tag: 'sha-{{ git_sha }}'
+    docker_port: 3000
+    app_env:
+      PORT: '{{ docker_port | string }}'
+      DATABASE_URI: '{{ database_uri }}'
+      PAYLOAD_SECRET: '{{ payload_secret }}'
+      FRONTEND_URL: 'https://searchspares.com'
+      S3_REGION: '{{ s3_region }}'
+      S3_ENDPOINT: '{{ s3_endpoint }}'
+      S3_BUCKET: '{{ s3_bucket }}'
+      S3_ACCESS_KEY: '{{ s3_access_key }}'
+      S3_SECRET: '{{ s3_secret }}'
+      API_KEY: '{{ api_key }}'
+      GOOGLE_PLACES_API_KEY: '{{ google_places_api_key }}'
+      RESEND_TOKEN: '{{ resend_token }}'
+
+  # TODO (BUG):
+  # If the server updates it's packages then reboots,
+  # nginx will display a 502 whilst it updates Docker Swam again.
+  pre_tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+      register: upgrade_result
+
+    - name: Ensure python3-pip is installed
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Reboot if kernel updated
+      reboot:
+        msg: 'Reboot initiated by Ansible due to package upgrade'
+        reboot_timeout: 600
+      when: upgrade_result.changed
+
+  roles:
+    - fail2ban
+    - tools
+    - docker
+    - nginx
+    - ufw
+
+  tasks:
+    - name: Login to GitHub Container Registry
+      community.docker.docker_login:
+        registry_url: ghcr.io
+        username: '{{ github_user }}'
+        password: '{{ github_token }}'
+
+    - name: Ensure Docker Swarm is initialized
+      community.docker.docker_swarm:
+        state: present
+        advertise_addr: '{{ ansible_default_ipv4.address }}'
+
+    - name: Debug image tag
+      debug:
+        msg: 'Deploying image: ghcr.io/{{ github_user }}/{{ docker_image }}:{{ docker_image_tag }}'
+
+    - name: Deploy/update Docker Swarm service
+      community.docker.docker_swarm_service:
+        name: '{{ docker_image }}'
+        image: 'ghcr.io/{{ github_user }}/{{ docker_image }}:{{ docker_image_tag }}'
+        networks:
+          - name: host
+        env: '{{ app_env }}'
+        mode: replicated
+        replicas: 1
+        force_update: true # Force update even if no changes require it.
+        update_config:
+          parallelism: 1
+          delay: 10s
+          failure_action: rollback
+        restart_config:
+          condition: on-failure
+          delay: 5s
+          max_attempts: 3
+        publish:
+          - target_port: '{{ docker_port | int }}'
+            published_port: '{{ docker_port | int }}'
+            protocol: tcp
+            mode: host
+
+    - name: Wait for the app to respond on localhost
+      uri:
+        url: 'http://localhost:{{ docker_port }}'
+        method: GET
+        status_code: 200
+      register: curl_result
+      retries: 120
+      delay: 5
+      until: curl_result.status == 200
+      ignore_errors: yes
+
+    - name: Run Certbot to get HTTPS certificate
+      include_role:
+        name: certbot

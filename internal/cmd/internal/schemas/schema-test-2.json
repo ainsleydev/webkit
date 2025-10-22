@@ -1,0 +1,251 @@
+{
+	"$schema": "1.0.0",
+	"$id": "https://github.com/ainsleydev/webkit/internal/appdef/definition",
+	"$defs": {
+		"App": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"build": {
+					"$ref": "#/$defs/Build"
+				},
+				"infra": {
+					"$ref": "#/$defs/Infra"
+				},
+				"env": {
+					"$ref": "#/$defs/Env"
+				},
+				"commands": {
+					"additionalProperties": {
+						"$ref": "#/$defs/CommandSpec"
+					},
+					"type": "object"
+				},
+				"depends_on": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["name", "type", "path", "build", "infra", "env"]
+		},
+		"Build": {
+			"properties": {
+				"dockerfile": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["dockerfile"]
+		},
+		"CommandSpec": {
+			"properties": {
+				"command": {
+					"type": "string"
+				},
+				"skip_ci": {
+					"type": "boolean"
+				},
+				"timeout": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Env": {
+			"properties": {
+				"dev": {
+					"items": {
+						"$ref": "#/$defs/EnvValue"
+					},
+					"type": "array"
+				},
+				"staging": {
+					"items": {
+						"$ref": "#/$defs/EnvValue"
+					},
+					"type": "array"
+				},
+				"production": {
+					"items": {
+						"$ref": "#/$defs/EnvValue"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["dev", "staging", "production"]
+		},
+		"EnvValue": {
+			"properties": {
+				"key": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				},
+				"from": {
+					"type": "string"
+				},
+				"value": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["key", "type"]
+		},
+		"Infra": {
+			"properties": {
+				"provider": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				},
+				"config": {
+					"properties": {
+						"size": {
+							"type": "string"
+						},
+						"region": {
+							"type": "string"
+						},
+						"domain": {
+							"type": "string"
+						},
+						"ssh_keys": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
+						},
+						"instance_count": {
+							"type": "integer"
+						},
+						"env_from_shared": {
+							"type": "boolean"
+						}
+					},
+					"additionalProperties": false,
+					"type": "object",
+					"required": ["region", "domain"]
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["provider", "type", "config"]
+		},
+		"Project": {
+			"properties": {
+				"name": {
+					"type": "string",
+					"pattern": "^[a-z0-9-]+$",
+					"title": "Project Name",
+					"description": "Machine-readable project name (kebab-case)",
+					"examples": ["my-website"]
+				},
+				"title": {
+					"type": "string",
+					"title": "Project Title",
+					"description": "Human-readable project title",
+					"examples": ["My Website"]
+				},
+				"description": {
+					"type": "string",
+					"title": "Description",
+					"description": "Brief description of the project"
+				},
+				"repo": {
+					"type": "string",
+					"format": "uri",
+					"title": "Repository",
+					"description": "Git repository URL",
+					"examples": ["git@github.com:ainsley/my-website.git"]
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["name", "title", "description", "repo"]
+		},
+		"Resource": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				},
+				"provider": {
+					"type": "string"
+				},
+				"config": {
+					"type": "object"
+				},
+				"outputs": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["name", "type", "provider", "config", "outputs"]
+		},
+		"Shared": {
+			"properties": {
+				"env": {
+					"$ref": "#/$defs/Env"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["env"]
+		}
+	},
+	"properties": {
+		"webkit_version": {
+			"type": "string"
+		},
+		"project": {
+			"$ref": "#/$defs/Project"
+		},
+		"shared": {
+			"$ref": "#/$defs/Shared"
+		},
+		"resources": {
+			"items": {
+				"$ref": "#/$defs/Resource"
+			},
+			"type": "array"
+		},
+		"apps": {
+			"items": {
+				"$ref": "#/$defs/App"
+			},
+			"type": "array"
+		}
+	},
+	"additionalProperties": false,
+	"type": "object",
+	"required": ["webkit_version", "project", "shared", "resources", "apps"],
+	"title": "WebKit Application Manifest",
+	"description": "Schema for webkit app.json configuration file"
+}

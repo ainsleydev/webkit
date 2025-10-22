@@ -29,7 +29,7 @@ func TestGetSettings(t *testing.T) {
 
 	s := &Settings{
 		ID:       123,
-		SiteName: ptr.StringPtr("Site Name"),
+		SiteName: ptr.StringPtr("Site Key"),
 	}
 
 	t.Run("OK", func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestWithSettings(t *testing.T) {
 
 	s := &Settings{
 		ID:       123,
-		SiteName: ptr.StringPtr("Site Name"),
+		SiteName: ptr.StringPtr("Site Key"),
 	}
 
 	ctx := WithSettings(context.Background(), s)
@@ -65,7 +65,7 @@ func TestWithSettings(t *testing.T) {
 func TestMustGetSettings(t *testing.T) {
 	s := &Settings{
 		ID:       123,
-		SiteName: ptr.StringPtr("Site Name"),
+		SiteName: ptr.StringPtr("Site Key"),
 	}
 
 	t.Run("OK", func(t *testing.T) {

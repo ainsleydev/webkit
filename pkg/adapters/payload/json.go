@@ -30,7 +30,6 @@ func (j *JSON) UnmarshalJSON(data []byte) error {
 	var obj map[string]any
 	if err := json.Unmarshal(data, &obj); err != nil {
 		return errors.New("payload.JSON: " + err.Error())
-
 	}
 	*j = obj
 	return nil

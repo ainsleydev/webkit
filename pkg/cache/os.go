@@ -38,7 +38,7 @@ const osIndexFileName = "index.json"
 // NewOSCache creates and initializes a new OSCache instance.
 // It creates the base directory if it doesn't exist and loads the index.
 func NewOSCache(basePath string, prettyPrint bool) (*OSCache, error) {
-	if err := os.MkdirAll(basePath, 0755); err != nil {
+	if err := os.MkdirAll(basePath, 0o755); err != nil {
 		return nil, err
 	}
 
@@ -97,7 +97,7 @@ func (o *OSCache) Set(_ context.Context, key string, value any, options Options)
 
 	// Ensure the directory exists
 	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		slog.Error("Error creating directory: " + err.Error())
 		return
 	}
@@ -123,7 +123,7 @@ func (o *OSCache) Set(_ context.Context, key string, value any, options Options)
 		}
 	}
 
-	if err := os.WriteFile(filePath, data, 0644); err != nil {
+	if err := os.WriteFile(filePath, data, 0o644); err != nil {
 		slog.Error("Error writing to file: " + err.Error())
 		return
 	}
@@ -197,7 +197,6 @@ func (o *OSCache) Flush(_ context.Context) {
 		}
 		return nil
 	})
-
 	if err != nil {
 		slog.Error("Error flushing cache: " + err.Error())
 	}
@@ -239,7 +238,7 @@ func (o *OSCache) saveIndex() error {
 		return err
 	}
 
-	return os.WriteFile(o.indexPath, data, 0644)
+	return os.WriteFile(o.indexPath, data, 0o644)
 }
 
 func (o *OSCache) getFilePath(key string) string {

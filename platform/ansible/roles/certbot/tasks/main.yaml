@@ -1,0 +1,36 @@
+- name: Install Certbot and Nginx plugin
+  apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: yes
+
+- name: Test Certbot with dry-run
+  command: >
+    certbot certonly --nginx -d {{ domain }}
+    --non-interactive
+    --agree-tos
+    --email {{ admin_email }}
+    --redirect
+    --dry-run
+    -v
+  register: certbot_dry_run_result
+  ignore_errors: yes
+
+- name: Warn if dry-run failed
+  debug:
+    msg: 'Certbot dry-run failed, skipping production: {{ certbot_dry_run_result.stderr }}'
+  when: certbot_dry_run_result.rc != 0
+
+- name: Run Certbot production if dry-run succeeded
+  command: >
+    certbot --nginx -d {{ domain }}
+    --non-interactive
+    --agree-tos
+    --email {{ admin_email }}
+    --redirect
+    -v
+  register: certbot_prod_result
+  ignore_errors: no
+  when: certbot_dry_run_result.rc == 0

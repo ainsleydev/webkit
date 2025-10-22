@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/ainsleydev/webkit/pkg/log"
+	cli "github.com/ainsleydev/webkit/internal/cmd"
 )
 
 func main() {
-	log.Bootstrap("Prefix")
+	cli.Run()
 }

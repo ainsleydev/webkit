@@ -1,0 +1,41 @@
+{
+	"name": "@ainsleydev/eslint-config",
+	"version": "0.0.6",
+	"description": "ainsley.dev ESLint Configuration",
+	"license": "MIT",
+	"keywords": ["eslint", "eslintconfig"],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ainsleydev/webkit.git",
+		"directory": "packages/config-eslint"
+	},
+	"author": {
+		"name": "ainsley.dev LTD",
+		"email": "hello@ainsley.dev",
+		"url": "https://ainsley.dev"
+	},
+	"scripts": {
+		"publish": "npm publish"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"peerDependencies": {
+		"eslint": ">= 9"
+	},
+	"devDependencies": {
+		"add": "^2.0.6",
+		"eslint": "^9.37.0",
+		"eslint-plugin-import": "^2.32.0",
+		"pnpm": "^10.18.0"
+	},
+	"dependencies": {
+		"@eslint/compat": "^1.4.0",
+		"@eslint/js": "^9.37.0",
+		"@payloadcms/eslint-plugin": "^3.28.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-perfectionist": "^4.15.1",
+		"eslint-plugin-svelte": "^3.12.4",
+		"typescript-eslint": "^8.45.0"
+	}
+}

@@ -5,25 +5,54 @@ import (
 	"os"
 	"strings"
 
-	"github.com/caarlos0/env/v7"
+	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
 )
 
 // Environment definitions.
 const (
 	// Development env definition.
-	Development string = "development"
+	Development Environment = "development"
 	// Staging env definition.
-	Staging = "staging"
+	Staging Environment = "staging"
 	// Production env definition.
-	Production = "production"
+	Production Environment = "production"
 )
+
+// Environment represents the type of env.
+type Environment string
+
+// String implements fmt.Stringer on Command.
+func (e Environment) String() string {
+	return string(e)
+}
+
+// Short returns a short name for the environment.
+func (e Environment) Short() string {
+	switch e {
+	case Development:
+		return "dev"
+	case Staging:
+		return "staging"
+	case Production:
+		return "prod"
+	default:
+		return "unknown"
+	}
+}
 
 // Common keys
 const (
 	// AppEnvironmentKey is the key for the app environment, i.e. prod/dev
 	AppEnvironmentKey = "APP_ENV"
 )
+
+// All defines all environments combined.
+var All = []Environment{
+	Development,
+	Staging,
+	Production,
+}
 
 // ParseConfig loads the environment variables from the .env file and parses the
 // environment variables into the provided struct. It returns an error if the
@@ -71,8 +100,8 @@ func GetOrError(key string) (string, error) {
 }
 
 // AppEnvironment returns the app environment.
-func AppEnvironment() string {
-	return strings.ToLower(Get(AppEnvironmentKey, Development))
+func AppEnvironment() Environment {
+	return Environment(strings.ToLower(Get(AppEnvironmentKey, Development.String())))
 }
 
 // IsDevelopment returns whether we are running the app in development.

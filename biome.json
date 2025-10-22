@@ -27,7 +27,9 @@
 			"**/*.gohtml",
 			"**/*.tmpl",
 			"**/.next",
-			"**/plugins/**"
+			"**/plugins/**",
+			"internal/templates/**",
+			"internal/playground/**"
 		]
 	},
 	"formatter": {

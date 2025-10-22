@@ -72,14 +72,14 @@ var props = HeadProps{
 	//		{
 	//			Type:        "ListItem",
 	//			Position:    1,
-	//			Name:        "Home",
+	//			Key:        "Home",
 	//			AgencyDescription: "Homepage of the website",
 	//			URL:         "https://example.com",
 	//		},
 	//		{
 	//			Type:        "ListItem",
 	//			Position:    2,
-	//			Name:        "About Us",
+	//			Key:        "About Us",
 	//			AgencyDescription: "About us page",
 	//			URL:         "https://example.com/about",
 	//		},

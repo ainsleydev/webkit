@@ -14,7 +14,11 @@ import (
 )
 
 func TestNewOSCache(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
 		tempDir := t.TempDir()
 		store, err := NewOSCache(tempDir, true)
 		require.NoError(t, err)
@@ -28,7 +32,7 @@ func TestNewOSCache(t *testing.T) {
 		// Test with a file instead of a directory
 		tempDir := t.TempDir()
 		filePath := filepath.Join(tempDir, "not_a_dir")
-		err := os.WriteFile(filePath, []byte("not a directory"), 0644)
+		err := os.WriteFile(filePath, []byte("not a directory"), 0o644)
 		require.NoError(t, err)
 
 		_, err = NewOSCache(filePath, true)
@@ -111,7 +115,7 @@ func TestOSCache_Set(t *testing.T) {
 		require.NoError(t, err)
 
 		// Make the directory read-only
-		require.NoError(t, os.Chmod(tempDir, 0555))
+		require.NoError(t, os.Chmod(tempDir, 0o555))
 
 		// Attempt to set a value, which should trigger a directory creation error
 		store.Set(context.Background(), "nested/key", "value", Options{})
@@ -128,7 +132,7 @@ func TestOSCache_Set(t *testing.T) {
 		require.NoError(t, err)
 
 		// Make the directory read-only
-		require.NoError(t, os.Chmod(tempDir, 0555))
+		require.NoError(t, os.Chmod(tempDir, 0o555))
 
 		// Attempt to set a value, which should trigger a save error
 		store.Set(context.Background(), "key", "value", Options{})

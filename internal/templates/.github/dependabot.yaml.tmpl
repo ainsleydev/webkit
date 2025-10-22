@@ -1,0 +1,35 @@
+version: 2
+enable-beta-ecosystems: true
+updates:
+  {{- range .Apps }}
+- package-ecosystem: "{{ if eq .Language "go" }}gomod{{ else if eq .Language "js" }}npm{{ end }}"
+  directory: "/{{ .Path }}"
+  schedule:
+    interval: "weekly"
+    day: "sunday"
+    time: "04:00"
+  open-pull-requests-limit: 30
+  ignore:
+    - dependency-name: "*"
+      update-types: ["version-update:semver-patch"]
+  groups:
+    {{- if eq .Type "payload" }}
+    payload:
+      patterns:
+        - "@payloadcms/*"
+        - "payload"
+        - "@ainsleydev/payload-helper"
+      update-types:
+        - "minor"
+        - "patch"
+    {{- end }}
+    dependencies:
+      patterns:
+        - "*"
+      exclude-patterns:
+        {{- if eq .Type "payload" }}
+        - "@payloadcms/*"
+        - "payload"
+        - "@ainsleydev/payload-helper"
+        {{- end }}
+  {{- end }}
