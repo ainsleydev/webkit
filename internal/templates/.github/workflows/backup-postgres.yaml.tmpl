@@ -52,8 +52,8 @@ jobs:
       - name: Configure s3cmd for Backblaze B2
         run: |
           echo "[default]" > $HOME/.s3cfg
-          echo "access_key = ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}" >> $HOME/.s3cfg
-          echo "secret_key = ${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}" >> $HOME/.s3cfg
+          echo "access_key = {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }}" >> $HOME/.s3cfg
+          echo "secret_key = ${{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}" >> $HOME/.s3cfg
           echo "host_base = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
           echo "host_bucket = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
 
