@@ -34,7 +34,7 @@
 	"dependencies": {
 		"payload": "3.56.0",
 		"@payloadcms/db-sqlite": "3.56.0",
-		"@payloadcms/richtext-lexical": "3.56.0",
+		"@payloadcms/richtext-lexical": "3.60.0",
 		"@payloadcms/plugin-form-builder": "3.56.0",
 		"@payloadcms/plugin-seo": "3.56.0",
 		"@lexical/headless": "0.28.0",
