@@ -15,11 +15,7 @@ import (
 )
 
 func TestManifest(t *testing.T) {
-	t.Parallel()
-
 	t.Run("Exists Error", func(t *testing.T) {
-		t.Parallel()
-
 		mock := mocks.NewMockFS(gomock.NewController(t))
 		mock.EXPECT().Stat(gomock.Any()).Return(nil, errors.New("stat error"))
 
@@ -31,8 +27,6 @@ func TestManifest(t *testing.T) {
 	})
 
 	t.Run("Already Exists", func(t *testing.T) {
-		t.Parallel()
-
 		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{})
 
 		err := manifest.NewTracker().Save(input.FS)
@@ -43,8 +37,6 @@ func TestManifest(t *testing.T) {
 	})
 
 	t.Run("Save Error", func(t *testing.T) {
-		t.Parallel()
-
 		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), &appdef.Definition{})
 
 		err := Manifest(t.Context(), input)
@@ -53,8 +45,6 @@ func TestManifest(t *testing.T) {
 	})
 
 	t.Run("Creates Manifest", func(t *testing.T) {
-		t.Parallel()
-
 		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{})
 
 		err := Manifest(t.Context(), input)
