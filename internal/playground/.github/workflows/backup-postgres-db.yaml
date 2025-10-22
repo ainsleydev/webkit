@@ -29,7 +29,7 @@ jobs:
         uses: ./.github/actions/db-add-ip
         with:
           database-id: ${{ secrets.TF_PROD_DB_ID }}
-          doctl-token: ${{ secrets.ORG_DO_ACCESS_TOKEN }}
+          doctl-token: ${{ secrets.DO_ACCESS_TOKEN }}
 
       - name: Dump and Compress PostgreSQL Database
         env:
@@ -47,13 +47,16 @@ jobs:
           # Make the backup filename available to next steps
           echo "BACKUP_FILE=backup-$TIMESTAMP.sql.gz" >> $GITHUB_ENV
 
-      - name: Set up S3cmd for B2
-        uses: s3-actions/s3cmd@v2.0.1
-        with:
-          provider: backblaze
-          region: ""
-          access_key: ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}
-          secret_key: ${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}
+      - name: Install s3cmd
+        run: sudo apt-get update && sudo apt-get install -y s3cmd
+
+      - name: Configure s3cmd for Backblaze B2
+        run: |
+          echo "[default]" > $HOME/.s3cfg
+          echo "access_key = ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}" >> $HOME/.s3cfg
+          echo "secret_key = $${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}" >> $HOME/.s3cfg
+          echo "host_base = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
+          echo "host_bucket = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
 
       - name: Upload Backup to S3
         run: |

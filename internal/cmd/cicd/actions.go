@@ -17,8 +17,7 @@ var ActionsCmd = &cli.Command{
 }
 
 var actionTemplates = map[string]string{
-	"db-add-ip/action.yaml":        "db-add-ip/action.yaml",
-	"setup-webkit-cli/action.yaml": "setup-webkit-cli/action.yaml",
+	"db-add-ip/action.yaml": "db-add-ip/action.yaml",
 }
 
 // ActionTemplates copies action.yaml files from the templates folder
