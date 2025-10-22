@@ -1,5 +1,3 @@
-// Package config provides utilities for reading and writing files
-// in the WebKit configuration directory (~/.config/webkit).
 package config
 
 import (

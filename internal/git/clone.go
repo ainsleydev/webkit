@@ -9,7 +9,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
-// CloneConfig configures repository cloning operations.
+// CloneConfig configures repository cloning
 type CloneConfig struct {
 	URL       string // URL of the git repository.
 	Ref       string // Branch, tag, or commit to checkout.
@@ -17,7 +17,7 @@ type CloneConfig struct {
 	Depth     int    // Depth for shallow clone (0 = full clone)
 }
 
-// Validate checks that the CloneConfig has all required fields set.
+// Validate config before using it
 func (cfg CloneConfig) Validate() error {
 	if cfg.URL == "" {
 		return fmt.Errorf("URL is required")

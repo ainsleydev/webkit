@@ -8,7 +8,6 @@ import (
 
 //go:generate go tool go.uber.org/mock/mockgen -source=manager.go -destination ./mocks/infra.go -package=mockinfra
 
-// Manager defines the interface for managing Terraform infrastructure operations.
 type Manager interface {
 	Init(ctx context.Context) error
 	Plan(ctx context.Context, env env.Environment) (PlanOutput, error)

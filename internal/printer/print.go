@@ -1,5 +1,3 @@
-// Package printer provides utilities for styled console output using lipgloss,
-// including formatted messages, tables, lists, and trees.
 package printer
 
 import (
@@ -8,6 +6,9 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/printer/styles"
 )
+
+// See: https://github.com/hay-kot/scaffold/blob/main/internal/printer/printer.go
+// See: https://github.com/charmbracelet/lipgloss
 
 // Console provides simple, styled console output
 // using lipgloss for consistent branding.

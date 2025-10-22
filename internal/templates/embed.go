@@ -1,5 +1,3 @@
-// Package templates provides utilities for loading and parsing embedded Go templates
-// with custom functions for GitHub Actions workflow generation.
 package templates
 
 import (
@@ -12,7 +10,7 @@ import (
 //go:embed *
 var Embed embed.FS
 
-// LoadTemplate returns a parsed template from the embedded filesystem.
+// LoadTemplate returns a parsed template from embedded FS
 func LoadTemplate(name string) (*template.Template, error) {
 	content, err := Embed.ReadFile(name)
 	if err != nil {

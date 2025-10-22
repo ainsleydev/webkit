@@ -98,8 +98,6 @@ func (r *Resource) GitHubSecretName(environment env.Environment, output string) 
 		strings.ToUpper(output))
 }
 
-// applyDefaults applies default values to a Resource, including
-// initializing the config map, enabling backups, and setting type-specific defaults.
 func (r *Resource) applyDefaults() {
 	if r.Config == nil {
 		r.Config = make(map[string]any)
@@ -109,7 +107,8 @@ func (r *Resource) applyDefaults() {
 		Enabled: true,
 	}
 
-	// Apply type-specific defaults.
+	// Apply type-specific defaults
+	// TODO: These types should be nicely hardcoded.
 	switch r.Type {
 	case "postgres":
 		if _, ok := r.Config["engine_version"]; !ok {

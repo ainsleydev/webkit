@@ -6,8 +6,25 @@ import (
 )
 
 type (
-	// App represents a single application within the WebKit project,
-	// including its configuration, build settings, infrastructure, and domains.
+	// App represents a single application within the WebKit project.
+	//
+	// An App defines a deployable unit of work - typically a web application, API service,
+	// or background worker. Each app has its own configuration for building, deploying,
+	// and running in different environments.
+	//
+	// Apps can depend on shared resources (like databases) and inherit shared environment
+	// variables while also defining their own app-specific configuration. The Type field
+	// determines what kind of application this is (golang, svelte-kit, payload) which
+	// affects the default commands and build process.
+	//
+	// The Commands field allows customization of the CI/CD pipeline steps (format, lint,
+	// test, build) on a per-app basis. Commands can be enabled/disabled, overridden with
+	// custom shell commands, or configured with timeouts and CI skip flags.
+	//
+	// Infrastructure configuration (Infra) determines how the app is deployed - which
+	// cloud provider to use, what type of compute resource (container, VM, serverless),
+	// and provider-specific settings. Domains define the DNS configuration for accessing
+	// the deployed application.
 	App struct {
 		Name        string                  `json:"name"`
 		Title       string                  `json:"title"`
@@ -21,21 +38,15 @@ type (
 		Domains     []Domain                `json:"domains,omitzero"`
 		Commands    map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string"`
 	}
-
-	// Build contains build-related configuration for an app.
 	Build struct {
 		Dockerfile string `json:"dockerfile"`
 	}
-
-	// Infra defines the infrastructure configuration for an app,
-	// including the cloud provider and deployment settings.
 	Infra struct {
 		Provider ResourceProvider `json:"provider"`
-		Type     string            `json:"type"`
-		Config   map[string]any    `json:"config"`
+		// TODO, we need to define this as a AppResourceType or something.
+		Type   string         `json:"type"`
+		Config map[string]any `json:"config"`
 	}
-
-	// Domain represents a domain name configuration for an app.
 	Domain struct {
 		Name     string `json:"name"`
 		Type     string `json:"type"`
@@ -120,8 +131,6 @@ func (a *App) ShouldUseNPM() bool {
 	return a.Language() == "js"
 }
 
-// applyDefaults applies default values to the App, including default commands
-// for the app type and build configuration.
 func (a *App) applyDefaults() error {
 	if a.Commands == nil {
 		a.Commands = make(map[Command]CommandSpec)

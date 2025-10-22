@@ -1,5 +1,3 @@
-// Package scaffold provides utilities for generating files in WebKit projects,
-// including support for templates, scaffolding mode (non-overwriting), and manifest tracking.
 package scaffold
 
 import (

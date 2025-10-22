@@ -1,5 +1,3 @@
-// Package git provides a client for interacting with Git repositories,
-// including cloning, updating, and validating repository status.
 package git
 
 import (
@@ -11,7 +9,6 @@ import (
 	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
-// Client provides methods for interacting with Git repositories.
 type Client struct {
 	Runner executil.Runner
 }
