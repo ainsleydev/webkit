@@ -111,7 +111,6 @@ func formatDriftOutput(drifted []manifest.DriftEntry, format string) (string, er
 	return formatter(drifted)
 }
 
-// formatDriftAsText formats drift results as human-readable text output.
 func formatDriftAsText(drifted []manifest.DriftEntry) string {
 	if len(drifted) == 0 {
 		return "✓ No drift detected - all files are up to date"
@@ -167,7 +166,6 @@ func formatDriftAsText(drifted []manifest.DriftEntry) string {
 	return output.String()
 }
 
-// formatDriftAsMarkdown formats drift results as GitHub-friendly markdown.
 func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	if len(drifted) == 0 {
 		return "## WebKit Drift Detection\n\n✅ **No drift detected** - all files are up to date"
@@ -241,7 +239,6 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	return output.String()
 }
 
-// formatDriftAsJSON formats drift results as JSON.
 func formatDriftAsJSON(drifted []manifest.DriftEntry) (string, error) {
 	type driftOutput struct {
 		DriftDetected bool                  `json:"drift_detected"`
@@ -250,7 +247,6 @@ func formatDriftAsJSON(drifted []manifest.DriftEntry) (string, error) {
 		Summary       map[string]int        `json:"summary"`
 	}
 
-	// Build summary counts
 	summary := map[string]int{
 		"modified": len(manifest.DriftReasonModified.FilterEntries(drifted)),
 		"outdated": len(manifest.DriftReasonOutdated.FilterEntries(drifted)),

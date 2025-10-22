@@ -70,6 +70,35 @@ func TestDrift(t *testing.T) {
 		assert.Contains(t, buf.String(), "all files are up to date")
 	})
 
+	//t.Run("Format Error", func(t *testing.T) {
+	//	t.Parallel()
+	//
+	//	fs := afero.NewMemMapFs()
+	//	appDef := &appdef.Definition{
+	//		Project: appdef.Project{
+	//			Name: "test",
+	//			Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
+	//		},
+	//	}
+	//
+	//	input := setup(t, fs, appDef)
+	//	err := update(t.Context(), input)
+	//	require.NoError(t, err)
+	//
+	//	input.Command = &cli.Command{
+	//		Flags: []cli.Flag{
+	//			&cli.StringFlag{
+	//				Name:  "format",
+	//				Value: "wrong",
+	//			},
+	//		},
+	//	}
+	//
+	//	err = drift(t.Context(), input)
+	//	//fmt.Println(err.Error())
+	//	assert.Error(t, err)
+	//})
+
 	t.Run("Drift - Manual Modification", func(t *testing.T) {
 		t.Parallel()
 
@@ -97,35 +126,6 @@ func TestDrift(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, buf.String(), "Manual modifications detected")
 		assert.Contains(t, buf.String(), ".gitignore")
-		assert.Contains(t, buf.String(), "Run 'webkit update' to sync all files")
-	})
-
-	t.Run("Drift - Outdated From app.json Change", func(t *testing.T) {
-		t.Skip()
-		t.Parallel()
-
-		fs := afero.NewMemMapFs()
-		appDef := &appdef.Definition{
-			Project: appdef.Project{
-				Name: "test",
-				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
-			},
-		}
-
-		// Run update with initial app.json
-		input := setup(t, fs, appDef)
-		err := update(t.Context(), input)
-		require.NoError(t, err)
-
-		// Change app.json (simulate by changing the definition)
-		appDef.Project.Name = "test-renamed"
-
-		// Check drift with new app.json
-		input, buf := setupWithPrinter(t, fs, appDef)
-		err = drift(t.Context(), input)
-
-		assert.Error(t, err)
-		assert.Contains(t, buf.String(), "Outdated files detected")
 		assert.Contains(t, buf.String(), "Run 'webkit update' to sync all files")
 	})
 
