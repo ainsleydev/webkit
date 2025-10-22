@@ -267,7 +267,7 @@ func TestFormatDriftAsText(t *testing.T) {
 		output := formatDriftAsText(drifted)
 		assert.Contains(t, output, "Outdated files detected")
 		assert.Contains(t, output, ".env")
-		assert.Contains(t, output, "app.json changed")
+		assert.Contains(t, output, "Template or configuration changed")
 	})
 
 	t.Run("Missing files", func(t *testing.T) {
@@ -363,7 +363,7 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 
 		output := formatDriftAsMarkdown(drifted)
 		assert.Contains(t, output, "Outdated files detected (2 files)")
-		assert.Contains(t, output, "app.json changed")
+		assert.Contains(t, output, "Template or configuration changed")
 		assert.Contains(t, output, "`.env`")
 		assert.Contains(t, output, "`config.yaml`")
 	})

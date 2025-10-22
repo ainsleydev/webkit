@@ -136,7 +136,7 @@ func formatDriftAsText(drifted []manifest.DriftEntry) string {
 
 	if len(outdatedFiles) > 0 {
 		output.WriteString("Outdated files detected:\n")
-		output.WriteString("app.json changed, these files need regeneration:\n")
+		output.WriteString("Template or configuration changed, these files need regeneration:\n")
 		for _, d := range outdatedFiles {
 			output.WriteString(fmt.Sprintf("    • %s\n", d.Path))
 		}
@@ -200,7 +200,7 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 			output.WriteString("s")
 		}
 		output.WriteString(")\n\n")
-		output.WriteString("app.json changed, these files need regeneration:\n")
+		output.WriteString("Template or configuration changed, these files need regeneration:\n")
 		for _, d := range outdatedFiles {
 			output.WriteString(fmt.Sprintf("- `%s`\n", d.Path))
 		}
