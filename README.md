@@ -31,15 +31,16 @@
 
 WebKit is a CLI tool that transforms a single `app.json` manifest into production-ready
 infrastructure and CI/CD pipelines. It generates Terraform configurations, GitHub Actions workflows,
-and project files and manages secrets in different enviornments.
+and project files - all without cluttering your project repository with infrastructure code.
 
 **Key Features:**
 
-- **Single source of truth**: Define apps, resources, and environments in one manifest
-- **Infrastructure as code**: Automated Terraform generation and management
-- **Secrets management**: Built-in SOPS/Age encryption with environment resolution
-- **CI/CD automation**: GitHub Actions workflows for builds, deploys, and backups
-- **Developer experience**: Idempotent updates, validation, and zero-config defaults
+- **Single source of truth**: Define apps, resources, and environments in `app.json`
+- **Clean repositories**: No `infra/` folder needed - workflows contain everything
+- **Infrastructure as code**: Automated Terraform generation with centralized modules
+- **Secrets management**: Built-in SOPS/Age encryption with environment-specific decryption
+- **CI/CD automation**: GitHub Actions workflows for plans, deploys, and drift detection
+- **Developer experience**: Idempotent updates, local testing, and zero-config defaults
 
 > **Note:** For user documentation and guides,
 > visit [webkit.ainsley.dev](https://webkit.ainsley.dev)
@@ -86,6 +87,7 @@ webkit/
 │   ├── cmd/             # CLI command implementations
 │   │   ├── cicd/        # GitHub Actions workflow generation
 │   │   ├── env/         # Environment variable management
+│   │   ├── docs/        # Documentation generation
 │   │   ├── files/       # Project file generation
 │   │   ├── infra/       # Terraform infrastructure commands
 │   │   └── secrets/     # SOPS encryption/decryption
@@ -95,10 +97,9 @@ webkit/
 │   ├── secrets/         # SOPS/Age integration
 │   ├── templates/       # Embedded project templates
 │   └── util/            # Shared utilities
-├── platform/            # Terraform modules (infrastructure definitions)
-│   ├── digitalocean/    # DigitalOcean provider modules
-│   └── ...              # Additional providers
-└── docs/                # Documentation source (whitepaper, specs)
+└── platform/            # Terraform modules (separate infra repository)
+    ├── providers/       # Provider-specific modules (DO, B2, etc.)
+    └── modules/         # Orchestration modules (apps, resources)
 ```
 
 ### Architecture Overview
@@ -129,6 +130,8 @@ pnpm act:release
 ```
 
 ## Releasing
+
+*For maintainers only*
 
 WebKit uses [GoReleaser](https://goreleaser.com/) for automated releases. The release process is
 triggered by creating and pushing a git tag.
