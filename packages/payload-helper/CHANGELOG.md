@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.0.38
+
+### Patch Changes
+
+- 89f9d22: Fixing GitHub releases
+
 ## 0.0.37
 
 ### Patch Changes

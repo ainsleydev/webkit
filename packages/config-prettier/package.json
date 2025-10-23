@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/prettier-config",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "ainsley.dev Prettier Configuration",
 	"license": "MIT",
 	"keywords": ["prettier", "prettierconfig"],

@@ -1,5 +1,11 @@
 # @ainsleydev/eslint-config
 
+## 0.0.9
+
+### Patch Changes
+
+- 89f9d22: Fixing GitHub releases
+
 ## 0.0.8
 
 ### Patch Changes
