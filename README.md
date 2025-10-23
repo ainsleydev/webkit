@@ -17,10 +17,12 @@
 
 <div align="center">
 
-[![Build Status](https://github.com/ainsleydev/webkit/actions/workflows/test.yaml/badge.svg)](https://github.com/ainsleydev/webkit/actions/workflows/test.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ainsleydev/webkit)](https://goreportcard.com/report/github.com/ainsleydev/webkit)
-[![Coverage](https://codecov.io/gh/ainsleydev/webkit/branch/main/graph/badge.svg)](https://codecov.io/gh/ainsleydev/webkit)
+[![Release](https://img.shields.io/github/v/release/ainsleydev/webkit?color=brightgreen&label=Release)](https://github.com/ainsleydev/webkit/releases)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f5912a1dec11b8003850/maintainability)](https://codeclimate.com/github/ainsleydev/webkit/maintainability)
+[![Coverage](https://codecov.io/gh/ainsleydev/webkit/branch/main/graph/badge.svg)](https://codecov.io/gh/ainsleydev/webkit)
+![Made with Go](https://img.shields.io/badge/Made%20with-Go-00ADD8.svg?logo=go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ainsleydev/webkit.svg)](https://pkg.go.dev/github.com/ainsleydev/webkit)
 [![Latest Release](https://img.shields.io/github/v/release/ainsleydev/webkit)](https://github.com/ainsleydev/webkit/releases)
 [![ainsley.dev](https://img.shields.io/badge/-ainsley.dev-black?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QA/wD/AP+gvaeTAAAAB3RJTUUH5wEYDzUGL1b35AAABA1JREFUWMPtlttvFVUUxn977ZnZu+W0tLalqRovBAUvQag0xNQbpSIosSSIJC198YknJfHJxDf9A/DBJ0x8MbFACjVqvCASq6FYFLFBvJAaAomkFCmhHGpLO+PDzOmZzpn2nKP4pCs5ycmevb7vW99as/fA//FfD1XO5p1nzuA3NWJHx5T8cVkRBPHHQfRjd0tzyZhOOQIy27bAxET9zCuvvhY0r2kC/OiRABeAN4BL/4oDr9+3lGszPs7UVNfUE23v3Nj5koszR/8N4EXg3XJckFIFuCLUuU7GWNNtTg25cu4syJx0F+gGMuU4UJKAt1Yux1UKV6TVat1qs+OYwQESMwDQCjwKsOv4iZsnwGihwbiuEek2WjJGhMrvv0UujYKa08VFkQvuTXNgz6oVeCIo1CqrZYMRwTiaytERKn44kRQAsAFYDbBrsLgLRQU0GI919TXKiHQaUQ1GBCuCCQKqjg/MqInrM4lZrgc6A1CljHhRAZ4Ip65m77FaOmbJdehC5vzZr1RAf/T6x6NDwb3/uAVfP74GnwCjZasRuXuWXASj9XQme+3t6erqPcB0IvUuYCsUH8YFBRhRNBqvyYpsn0MeOnG6wvc/9x33MPBjSvp24Na/7cDP7Y/gKIURecZoeTBObkSwWg7UNjaOeFfGLgK9KRAPAM8Wc2FeAUaEWtddbEV2WBFtREXkCqvlghE5yOQkvucBHAR+T0BooAtYXLYDI5sewxWFJ/Kk1bI2UTlW5DMFp03+JPwJ+DQFai2wbiEXUgVUas0trmuslm4jUmGi/tuwDVmrpafBuNPVrs7N/wzQA2QTUJbwYLIlOxB0tOGJ4IhqsSJts+T54Rv0lBz1RFh9ZJA385fOAHAshaMNaAF4OcWFQgeUwhMlrlJdnqjaOLkR8Y2WvbWec9VIQeo4sJf8FZ2LmmgWJO1cmm8I7wc2a6XwosGL+v+rFfnYUYplh47Obo5dvZ8Av6TgbSZ8KxYWEGxZn/u7Dbg9t8HNnwF9S2qqzqVUn4vzQF/K+m3AC1A4jGlId0QC8l0BXKVGrahe//okNR99WZAUc6EXuJiC+zxw57wOxKp/DliRAvCFKDUkxS+YIeBwyvryCHuOC0kH6oBOCj/V/gTeA6aK0oefZj3ARGJdRdh1BQ7Eqm8HHk4B/Q7oB1B9acWFEWtDf5STjGbgqbgLcQcqCQ8NL5EUAPuBsRKqz8UVYB+F97QXcSyatSXoWJ8zvB04AFQlkoaBp4HhhaqPR1TdUsLjeVni8TjhVX0odCAkd4AdKeQAHxIwXEb1Odt+Az5IeVQVcTmhgDBWAhtTNl8G9qGAwKfU2N3SnJvi/RFGMjYCD8UFdACNKRsHgZMA6v0j5ZpAlPtNyvqSiJO/AKik60y0ALlUAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIzLTAxLTI0VDE1OjUzOjA2KzAwOjAwm5vntAAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMy0wMS0yNFQxNTo1MzowNiswMDowMOrGXwgAAABXelRYdFJhdyBwcm9maWxlIHR5cGUgaXB0YwAAeJzj8gwIcVYoKMpPy8xJ5VIAAyMLLmMLEyMTS5MUAxMgRIA0w2QDI7NUIMvY1MjEzMQcxAfLgEigSi4A6hcRdPJCNZUAAAAASUVORK5CYII=)](https://ainsley.dev)
 [![Twitter Handle](https://img.shields.io/twitter/follow/ainsleydev)](https://twitter.com/ainsleydev)
@@ -31,30 +33,33 @@
 
 WebKit is a CLI tool that transforms a single `app.json` manifest into production-ready
 infrastructure and CI/CD pipelines. It generates Terraform configurations, GitHub Actions workflows,
-and project files and manages secrets in different enviornments.
+and project files - all without cluttering your project repository with infrastructure code.
 
 **Key Features:**
 
-- **Single source of truth**: Define apps, resources, and environments in one manifest
-- **Infrastructure as code**: Automated Terraform generation and management
-- **Secrets management**: Built-in SOPS/Age encryption with environment resolution
-- **CI/CD automation**: GitHub Actions workflows for builds, deploys, and backups
-- **Developer experience**: Idempotent updates, validation, and zero-config defaults
+- **Single source of truth**: Define apps, resources, and environments in `app.json`
+- **Clean repositories**: No `infra/` folder needed - workflows contain everything
+- **Infrastructure as code**: Automated Terraform generation with centralized modules
+- **Secrets management**: Built-in SOPS/Age encryption with environment-specific decryption
+- **CI/CD automation**: GitHub Actions workflows for plans, deploys, and drift detection
+- **Developer experience**: Idempotent updates, local testing, and zero-config defaults
 
 > **Note:** For user documentation and guides,
 > visit [webkit.ainsley.dev](https://webkit.ainsley.dev)
 
-
 ## Installation
 
 **Quick install:**
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | sh
 ```
 
-Or download binaries from the [latest release](https://github.com/ainsleydev/webkit/releases/latest).
+Or download binaries from
+the [latest release](https://github.com/ainsleydev/webkit/releases/latest).
 
 **Verify installation:**
+
 ```bash
 webkit version
 ```
@@ -84,6 +89,7 @@ webkit/
 │   ├── cmd/             # CLI command implementations
 │   │   ├── cicd/        # GitHub Actions workflow generation
 │   │   ├── env/         # Environment variable management
+│   │   ├── docs/        # Documentation generation
 │   │   ├── files/       # Project file generation
 │   │   ├── infra/       # Terraform infrastructure commands
 │   │   └── secrets/     # SOPS encryption/decryption
@@ -93,10 +99,9 @@ webkit/
 │   ├── secrets/         # SOPS/Age integration
 │   ├── templates/       # Embedded project templates
 │   └── util/            # Shared utilities
-├── platform/            # Terraform modules (infrastructure definitions)
-│   ├── digitalocean/    # DigitalOcean provider modules
-│   └── ...              # Additional providers
-└── docs/                # Documentation source (whitepaper, specs)
+└── platform/            # Terraform modules (separate infra repository)
+    ├── providers/       # Provider-specific modules (DO, B2, etc.)
+    └── modules/         # Orchestration modules (apps, resources)
 ```
 
 ### Architecture Overview
@@ -126,13 +131,9 @@ pnpm act:test
 pnpm act:release
 ```
 
-**Note:** Make sure you have [act](https://github.com/nektos/act) installed:
-
-```bash
-brew install act
-```
-
 ## Releasing
+
+*For maintainers only*
 
 WebKit uses [GoReleaser](https://goreleaser.com/) for automated releases. The release process is
 triggered by creating and pushing a git tag.
@@ -147,19 +148,14 @@ pnpm tag
 
 This will guide you through:
 
-1. Choosing between creating or deleting a tag
-2. Selecting the version bump type (patch, minor, or major)
-3. Confirming the version
-4. Creating and pushing the tag
+1. Choosing between creating or deleting a tag.
+2. Selecting the version bump type (`patch`, `minor`, or `major`).
+3. Confirming the version.
+4. Creating and pushing the tag.
 
-### What Happens Next
-
-When a tag is pushed:
-
-1. GitHub Actions automatically triggers the GoReleaser workflow/
-2. Binaries are built for each platform.
-3. A GitHub release is created with the binaries attached
-4. Release notes can be edited on the GitHub releases page
+When a tag is pushed, the version will be injected then GitHub Actions automatically triggers the
+GoReleaser workflow, builds binaries for each platform and creates a GitHub release with the
+binaries attached.
 
 ### Semantic Versioning
 
@@ -169,12 +165,11 @@ WebKit follows [Semantic Versioning](https://semver.org/).
 - **Minor** (v1.1.0): New features, backwards compatible
 - **Major** (v2.0.0): Breaking changes
 
----
-
 ## Copyright
 
 You may not, except with our express written permission, distribute or commercially exploit the
-content found within this repository or any written text within this repository. Nor may you transmit
+content found within this repository or any written text within this repository. Nor may you
+transmit
 it or store it in any other website or other form of electronic retrieval system.
 
 Any redistribution or reproduction of part or all of the contents in any form is prohibited other
