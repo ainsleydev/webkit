@@ -130,6 +130,7 @@ jobs:
             echo "diff_found=true" >> $GITHUB_OUTPUT
             {
               echo 'diff_message<<EOF'
+              echo "<!-- app-diff -->"
               echo "### app.json has been changed"
               echo ""
               echo "Diff is below. \`a = base branch\`, \`b = this branch\`"
@@ -147,7 +148,7 @@ jobs:
         if: steps.diff.outputs.diff_found == 'true' && github.event_name == 'pull_request'
         uses: ./.github/actions/pr-comment
         with:
-          body-includes: 'WebKit Drift'
+          body-includes: '<!-- app-diff -->'
           comment-body: {{ ghVar "steps.diff.outputs.diff_message" }}
           issue-number: {{ ghVar "github.event.pull_request.number" }}
           private-key: {{ ghSecret "ORG_GITHUB_APP_PRIVATE_KEY" }}
