@@ -1,9 +1,5 @@
 repository:
-  topics:
-    - webkit
-    - payload
-    - svelte-kit
-    - golang
+  topics: webkit, payload, svelte-kit, golang
   private: false
   delete_branch_on_merge: true
   allow_merge_commit: false
