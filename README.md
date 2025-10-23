@@ -165,6 +165,10 @@ WebKit follows [Semantic Versioning](https://semver.org/).
 - **Minor** (v1.1.0): New features, backwards compatible
 - **Major** (v2.0.0): Breaking changes
 
+## Publishing npm packages
+
+WebKit uses [Changesets](https://github.com/changesets/changesets) for automated package versioning and publishing. When merging changes to npm packages in the `packages/` directory, create a changeset to document the change and specify the version bump type. See [packages/README.md](packages/README.md) for detailed instructions.
+
 ## Copyright
 
 You may not, except with our express written permission, distribute or commercially exploit the

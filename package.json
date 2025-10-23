@@ -33,6 +33,9 @@
 		"lint:js": "biome lint --write .",
 		"test": "pnpm test:go",
 		"test:go": "go test ./...",
+		"changeset": "changeset",
+		"changeset:version": "changeset version",
+		"changeset:publish": "pnpm turbo run build && changeset publish",
 		"act:lint": "act pull_request -W .github/workflows/lint.yaml -b",
 		"act:test": "act pull_request -W .github/workflows/test.yaml -b",
 		"act:release": "act push -W .github/workflows/release.yaml --dryrun -b",
@@ -47,9 +50,11 @@
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
 		"@biomejs/biome": "1.8.3",
+		"@changesets/cli": "^2.29.7",
 		"globals": "^15.9.0",
 		"husky": "^9.1.4",
-		"lint-staged": "^15.2.8"
+		"lint-staged": "^15.2.8",
+		"turbo": "^2.5.8"
 	},
 	"lint-staged": {
 		"*.{js,ts,cjs,mjs,d.cts,d.mts,mjs,jsx,ts,tsx,json,jsonc}": [
