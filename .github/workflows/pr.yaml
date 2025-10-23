@@ -1,4 +1,4 @@
-name: Test
+name: PR
 
 on:
   workflow_dispatch:
@@ -6,6 +6,32 @@ on:
     branches: [ main ]
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup CI environment
+        uses: ./.github/actions/setup
+
+      - name: Lint Go
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          skip-cache: true
+          args: --verbose
+          working-directory: ./
+
+      - name: Biome
+        run: biome ci .
+
+      - name: Diff
+        run: git diff
+
   test:
     name: Test
     runs-on: ubuntu-latest
