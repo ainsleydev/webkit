@@ -1,0 +1,67 @@
+name: PR
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+
+# Only allow one of these to run per branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write # Dependabot
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup CI environment
+        uses: ./.github/actions/setup
+
+      - name: Lint Go
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          skip-cache: true
+          args: --verbose
+          working-directory: ./
+
+      - name: Biome
+        run: biome ci .
+
+      - name: Diff
+        run: git diff
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup CI environment
+        uses: ./.github/actions/setup
+
+      - name: Test
+        # TODO, add race.
+        run: go test ./... -coverprofile=./coverage.out -covermode=atomic
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5.5.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.out
+          verbose: true
+
+      - name: Diff
+        run: git diff
