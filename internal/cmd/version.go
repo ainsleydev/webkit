@@ -13,7 +13,7 @@ var versionCmd = &cli.Command{
 	Name:  "version",
 	Usage: "Prints the current version of WebKit",
 	Action: cmdtools.Wrap(func(_ context.Context, input cmdtools.CommandInput) error {
-		input.Printer().Print(version.Info())
+		input.Printer().Print("WebKit " + version.Version)
 		return nil
 	}),
 }

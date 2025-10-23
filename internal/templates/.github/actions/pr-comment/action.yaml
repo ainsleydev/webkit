@@ -1,0 +1,53 @@
+name: 'Create or Update PR Comment'
+description: 'Creates or updates a PR comment with specified content'
+
+inputs:
+  body-includes:
+    description: 'Unique string to identify existing comments'
+    required: true
+  comment-body:
+    description: 'The comment body content'
+    required: true
+  issue-number:
+    description: 'PR number'
+    required: true
+  app-id:
+    description: 'GitHub App ID'
+    required: false
+    default: '2161597'
+  private-key:
+    description: 'GitHub App private key'
+    required: true
+
+outputs:
+  comment-id:
+    description: 'The ID of the created/updated comment'
+    value: ${{ steps.create-comment.outputs.comment-id }}
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/create-github-app-token@v2
+      id: app-token
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+
+    - name: Find existing comment
+      uses: peter-evans/find-comment@v3
+      id: find-comment
+      with:
+        token: ${{ steps.app-token.outputs.token }}
+        issue-number: ${{ inputs.issue-number }}
+        comment-author: 'ainsley-dev-bot[bot]'
+        body-includes: ${{ inputs.body-includes }}
+
+    - name: Create or update comment
+      uses: peter-evans/create-or-update-comment@v5
+      id: create-comment
+      with:
+        token: ${{ steps.app-token.outputs.token }}
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        issue-number: ${{ inputs.issue-number }}
+        body: ${{ inputs.comment-body }}
+        edit-mode: replace

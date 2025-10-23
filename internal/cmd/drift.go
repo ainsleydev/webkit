@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -29,6 +30,11 @@ var driftCmd = &cli.Command{
 	Action: cmdtools.Wrap(drift),
 }
 
+var userManagedPaths = []string{
+	"docs/AGENTS.md",
+	"docs/AGENTS.md.tmpl",
+}
+
 // drift detects if tracked files have been manually modified or deleted.
 //
 // Note: This only detects drift from the last webkit update. If templates have
@@ -50,9 +56,12 @@ func drift(ctx context.Context, input cmdtools.CommandInput) error {
 		printer.Info("Checking for drift...")
 	}
 
-	// Run update in memory to see what should be generated
 	memFS := afero.NewMemMapFs()
 	memTracker := manifest.NewTracker()
+
+	if err := copyUserFiles(input.FS, memFS); err != nil {
+		return errors.Wrap(err, "copying user files to memory")
+	}
 
 	memInput := cmdtools.CommandInput{
 		FS:          memFS,
@@ -136,7 +145,7 @@ func formatDriftAsText(drifted []manifest.DriftEntry) string {
 
 	if len(outdatedFiles) > 0 {
 		output.WriteString("Outdated files detected:\n")
-		output.WriteString("app.json changed, these files need regeneration:\n")
+		output.WriteString("Template or configuration changed, these files need regeneration:\n")
 		for _, d := range outdatedFiles {
 			output.WriteString(fmt.Sprintf("    • %s\n", d.Path))
 		}
@@ -168,21 +177,19 @@ func formatDriftAsText(drifted []manifest.DriftEntry) string {
 
 func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	if len(drifted) == 0 {
-		return "## WebKit Drift Detection\n\n✅ **No drift detected** - all files are up to date"
+		return "### WebKit Drift Detection\n\n✅ **No drift detected** - all files are up to date"
 	}
 
 	var output strings.Builder
-	output.WriteString("## WebKit Drift Detection\n\n")
+	output.WriteString("### WebKit Drift Detection\n\n")
 
-	// Group by type
 	modifiedFiles := manifest.DriftReasonModified.FilterEntries(drifted)
 	outdatedFiles := manifest.DriftReasonOutdated.FilterEntries(drifted)
 	newFiles := manifest.DriftReasonNew.FilterEntries(drifted)
 	deletedFiles := manifest.DriftReasonDeleted.FilterEntries(drifted)
 
-	// Report findings with collapsible sections for better readability
 	if len(modifiedFiles) > 0 {
-		output.WriteString(fmt.Sprintf("### ⚠ Manual modifications detected (%d file", len(modifiedFiles)))
+		output.WriteString(fmt.Sprintf("#### ⚠ Manual modifications detected (%d file", len(modifiedFiles)))
 		if len(modifiedFiles) != 1 {
 			output.WriteString("s")
 		}
@@ -195,12 +202,12 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	}
 
 	if len(outdatedFiles) > 0 {
-		output.WriteString(fmt.Sprintf("### 📝 Outdated files detected (%d file", len(outdatedFiles)))
+		output.WriteString(fmt.Sprintf("#### 📝 Outdated files detected (%d file", len(outdatedFiles)))
 		if len(outdatedFiles) != 1 {
 			output.WriteString("s")
 		}
 		output.WriteString(")\n\n")
-		output.WriteString("app.json changed, these files need regeneration:\n")
+		output.WriteString("Template or configuration changed, these files need regeneration:\n")
 		for _, d := range outdatedFiles {
 			output.WriteString(fmt.Sprintf("- `%s`\n", d.Path))
 		}
@@ -208,7 +215,7 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	}
 
 	if len(newFiles) > 0 {
-		output.WriteString(fmt.Sprintf("### 📄 Missing files detected (%d file", len(newFiles)))
+		output.WriteString(fmt.Sprintf("#### 📄 Missing files detected (%d file", len(newFiles)))
 		if len(newFiles) != 1 {
 			output.WriteString("s")
 		}
@@ -221,7 +228,7 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	}
 
 	if len(deletedFiles) > 0 {
-		output.WriteString(fmt.Sprintf("### 🗑️ Orphaned files detected (%d file", len(deletedFiles)))
+		output.WriteString(fmt.Sprintf("#### 🗑️ Orphaned files detected (%d file", len(deletedFiles)))
 		if len(deletedFiles) != 1 {
 			output.WriteString("s")
 		}
@@ -233,7 +240,6 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 		output.WriteString("\n")
 	}
 
-	output.WriteString("---\n")
 	output.WriteString("**Action Required:** Run `webkit update` to sync all files\n")
 
 	return output.String()
@@ -267,4 +273,37 @@ func formatDriftAsJSON(drifted []manifest.DriftEntry) (string, error) {
 	}
 
 	return string(data), nil
+}
+
+// copyUserFiles copies user-managed files to the in-memory filesystem because
+// templates depend on them. Without these files, generated output differs from
+// actual files, causing false drift warnings.
+func copyUserFiles(srcFS, dstFS afero.Fs) error {
+	for _, path := range userManagedPaths {
+		exists, err := afero.Exists(srcFS, path)
+		if err != nil {
+			return errors.Wrap(err, "checking if file exists: "+path)
+		}
+
+		if !exists {
+			continue
+		}
+
+		content, err := afero.ReadFile(srcFS, path)
+		if err != nil {
+			return errors.Wrap(err, "reading file: "+path)
+		}
+
+		dir := filepath.Dir(path)
+
+		if err := dstFS.MkdirAll(dir, 0o755); err != nil {
+			return errors.Wrap(err, "creating directory: "+dir)
+		}
+
+		if err := afero.WriteFile(dstFS, path, content, 0o644); err != nil {
+			return errors.Wrap(err, "writing file: "+path)
+		}
+	}
+
+	return nil
 }

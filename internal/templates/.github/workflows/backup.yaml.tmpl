@@ -29,12 +29,12 @@ jobs:
       - name: Add Runner IP to Database
         uses: ./.github/actions/db-add-ip
         with:
-          database-id: {{ ghSecret (index $.Data (printf "%s_DatabaseID" .Name)) }}
+          database-id: {{ ghSecret (index $.Data .Name "DatabaseID") }}
           doctl-token: {{ ghSecret "DO_ACCESS_TOKEN" }}
 
       - name: Dump and Compress PostgreSQL Database
         env:
-          DATABASE_URL: {{ ghSecret (index $.Data (printf "%s_DatabaseURL" .Name)) }}
+          DATABASE_URL: {{ ghSecret (index $.Data .Name "DatabaseURL") }}
         run: |
           # Install PostgreSQL client
           sudo apt-get update && sudo apt-get install -y postgresql-client
@@ -55,7 +55,7 @@ jobs:
         run: |
           echo "[default]" > $HOME/.s3cfg
           echo "access_key = {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }}" >> $HOME/.s3cfg
-          echo "secret_key = ${{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}" >> $HOME/.s3cfg
+          echo "secret_key = {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}" >> $HOME/.s3cfg
           echo "host_base = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
           echo "host_bucket = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
 
@@ -67,7 +67,7 @@ jobs:
       - name: Retain only 30 latest backups
         run: |
           # List backups, skip newest 30, delete the rest
-          s3cmd ls s3://{{ ghSecret "ORG_BACK_BLAZE_BUCKET" }}${BACKUP_PATH} \
+          s3cmd ls s3://{{ .BucketName }}${BACKUP_PATH} \
           | sort -k1,2 \
           | head -n -30 \
           | awk '{print $4}' \
@@ -77,7 +77,7 @@ jobs:
         if: always()
         uses: ./.github/actions/db-remove-ip
         with:
-          database-id: {{ ghSecret (index $.Data (printf "%s_DatabaseID" .Name)) }}
+          database-id: {{ ghSecret (index $.Data .Name "DatabaseID") }}
           doctl-token: {{ ghEnv "DO_ACCESS_TOKEN" }}
 
       - name: Notify Slack of Backup Failure
@@ -91,6 +91,7 @@ jobs:
           slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
           channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
 {{- else if eq .Type "s3" }}
+{{- /* NOTE: S3 backup is currently only compatible with DigitalOcean Spaces. */ -}}
   backup-{{ .Name }}:
     name: Backup {{ .Name }} Bucket to Backblaze B2
     runs-on: ubuntu-latest
@@ -113,10 +114,10 @@ jobs:
           rclone config create do_spaces s3 \
             env_auth true \
             provider DigitalOcean \
-            access_key_id {{ ghSecret (index $.Data (printf "%s_AccessKey" .Name)) }} \
-            secret_access_key {{ ghSecret (index $.Data (printf "%s_SecretKey" .Name)) }} \
-            region {{ ghSecret (index $.Data (printf "%s_Region" .Name)) }} \
-            endpoint https://{{ ghSecret (index $.Data (printf "%s_Region" .Name)) }}.digitaloceanspaces.com
+            access_key_id {{ ghSecret (index $.Data .Name "AccessKey") }} \
+            secret_access_key {{ ghSecret (index $.Data .Name "SecretKey") }} \
+            region {{ ghSecret (index $.Data .Name "Region") }} \
+            endpoint https://{{ ghSecret (index $.Data .Name "Region") }}.digitaloceanspaces.com
 
       - name: Configure rclone for Backblaze B2
         run: |
@@ -127,7 +128,7 @@ jobs:
       - name: Sync Bucket to B2
         run: |
           # Sync entire DO Spaces bucket to B2, deleting extraneous files
-          rclone sync do_spaces:{{ ghSecret (index $.Data (printf "%s_BucketName" .Name)) }} b2_backup:{{ ghSecret "ORG_BACK_BLAZE_BUCKET" }} \
+          rclone sync do_spaces:{{ ghSecret (index $.Data .Name "BucketName") }} b2_backup:{{ ghSecret "ORG_BACK_BLAZE_BUCKET" }} \
             --progress --transfers=16 --checkers=16 --delete-excluded
 
       - name: Verify Backup

@@ -26,9 +26,7 @@
 
 </div>
 
----
-
-# WebKit
+## WebKit
 
 WebKit is a CLI tool that transforms a single `app.json` manifest into production-ready
 infrastructure and CI/CD pipelines. It generates Terraform configurations, GitHub Actions workflows,

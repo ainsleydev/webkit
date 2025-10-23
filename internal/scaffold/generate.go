@@ -28,6 +28,7 @@ type (
 		Template(path string, tpl *template.Template, data any, opts ...Option) error
 		JSON(path string, content any, opts ...Option) error
 		YAML(path string, content any, opts ...Option) error
+		Code(path string, content string, opts ...Option) error
 	}
 	// FileGenerator handles file generation on a given filesystem.
 	FileGenerator struct {
@@ -171,6 +172,12 @@ func (f FileGenerator) YAML(path string, content any, opts ...Option) error {
 	opts = append(opts, WithoutNotice())
 
 	return f.Bytes(path, buf.Bytes(), opts...)
+}
+
+// Code writes Go code to a file with the given mode.
+// The content should be valid Go code and will have the WebKit notice prepended.
+func (f FileGenerator) Code(path string, content string, opts ...Option) error {
+	return f.Bytes(path, []byte(content), opts...)
 }
 
 func (f FileGenerator) shouldSkipScaffold(path string, mode WriteMode) bool {

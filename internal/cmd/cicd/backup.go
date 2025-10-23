@@ -9,6 +9,8 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -32,20 +34,31 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	tpl := templates.MustLoadTemplate(filepath.Join(workflowsPath, "backup.yaml.tmpl"))
 	path := filepath.Join(workflowsPath, "backup.yaml")
 
-	// Build data map with all resource secrets
-	secretData := make(map[string]string)
+	// Build nested data map with all resource secrets grouped by resource name.
+	// This allows cleaner template access: {{ index $.Data .Name "DatabaseURL" }}
+	secretData := make(map[string]map[string]string)
 	for _, resource := range appDef.Resources {
+		resourceSecrets := make(map[string]string)
+
 		switch resource.Type {
 		case appdef.ResourceTypePostgres:
-			secretData[fmt.Sprintf("%s_DatabaseURL", resource.Name)] = resource.GitHubSecretName(enviro, "connection_url")
-			secretData[fmt.Sprintf("%s_DatabaseID", resource.Name)] = resource.GitHubSecretName(enviro, "id")
+			resourceSecrets["DatabaseURL"] = resource.GitHubSecretName(enviro, "connection_url")
+			resourceSecrets["DatabaseID"] = resource.GitHubSecretName(enviro, "id")
 
 		case appdef.ResourceTypeS3:
-			secretData[fmt.Sprintf("%s_AccessKey", resource.Name)] = resource.GitHubSecretName(enviro, "access_key")
-			secretData[fmt.Sprintf("%s_SecretKey", resource.Name)] = resource.GitHubSecretName(enviro, "secret_key")
-			secretData[fmt.Sprintf("%s_Region", resource.Name)] = resource.GitHubSecretName(enviro, "region")
-			secretData[fmt.Sprintf("%s_BucketName", resource.Name)] = resource.GitHubSecretName(enviro, "bucket_name")
+			// NOTE: S3 backup is currently only compatible with DigitalOcean Spaces.
+			// Backblaze B2 and other providers are not yet supported.
+			if resource.Provider != appdef.ResourceProviderDigitalOcean {
+				continue
+			}
+
+			resourceSecrets["AccessKey"] = resource.GitHubSecretName(enviro, "access_key")
+			resourceSecrets["SecretKey"] = resource.GitHubSecretName(enviro, "secret_key")
+			resourceSecrets["Region"] = resource.GitHubSecretName(enviro, "region")
+			resourceSecrets["BucketName"] = resource.GitHubSecretName(enviro, "bucket_name")
 		}
+
+		secretData[resource.Name] = resourceSecrets
 	}
 
 	data := map[string]any{
@@ -54,5 +67,11 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 		"BucketName": appDef.Project.Name, // TODO: This may change at some point, see workflow for more details.
 	}
 
-	return input.Generator().Template(path, tpl, data)
+	// Track all resources as sources for this workflow
+	trackingOptions := []scaffold.Option{}
+	for _, resource := range appDef.Resources {
+		trackingOptions = append(trackingOptions, scaffold.WithTracking(manifest.SourceResource(resource.Name)))
+	}
+
+	return input.Generator().Template(path, tpl, data, trackingOptions...)
 }

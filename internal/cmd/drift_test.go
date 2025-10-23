@@ -36,8 +36,9 @@ func TestDrift(t *testing.T) {
 
 		mock := mocks.NewMockFS(gomock.NewController(t))
 		mock.EXPECT().
-			Open(gomock.Any()).
-			Return(nil, fmt.Errorf("open error"))
+			Stat(gomock.Any()).
+			Return(nil, fmt.Errorf("stat error")).
+			AnyTimes()
 
 		input := setup(t, mock, &appdef.Definition{})
 
@@ -189,6 +190,69 @@ func TestDrift(t *testing.T) {
 		assert.Contains(t, buf.String(), "Orphaned files detected")
 		assert.Contains(t, buf.String(), "Run 'webkit update' to sync all files")
 	})
+
+	t.Run("No Drift - With Custom AGENTS.md Content", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test",
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
+			},
+		}
+
+		customContent := "Custom Project Rules\n\nThese are project-specific guidelines."
+		err := afero.WriteFile(fs, "docs/AGENTS.md", []byte(customContent), 0o644)
+		require.NoError(t, err)
+
+		input := setup(t, fs, appDef)
+		err = update(t.Context(), input)
+		require.NoError(t, err)
+
+		agentsContent, err := afero.ReadFile(fs, "AGENTS.md")
+		require.NoError(t, err)
+		assert.Contains(t, string(agentsContent), customContent)
+
+		input, buf := setupWithPrinter(t, fs, appDef)
+		err = drift(t.Context(), input)
+
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "No drift detected")
+		assert.Contains(t, buf.String(), "all files are up to date")
+	})
+
+	t.Run("Drift - Modified Custom AGENTS.md Content", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test",
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
+			},
+		}
+
+		customContent := "Custom Project Rules\n\nThese are project-specific guidelines."
+		err := afero.WriteFile(fs, "docs/AGENTS.md", []byte(customContent), 0o644)
+		require.NoError(t, err)
+
+		input := setup(t, fs, appDef)
+		err = update(t.Context(), input)
+		require.NoError(t, err)
+
+		newCustomContent := "Updated Rules\n\nThese rules have been updated."
+		err = afero.WriteFile(fs, "docs/AGENTS.md", []byte(newCustomContent), 0o644)
+		require.NoError(t, err)
+
+		input, buf := setupWithPrinter(t, fs, appDef)
+		err = drift(t.Context(), input)
+
+		assert.Error(t, err)
+		assert.Contains(t, buf.String(), "Outdated files detected")
+		assert.Contains(t, buf.String(), "AGENTS.md")
+		assert.Contains(t, buf.String(), "Template or configuration changed")
+	})
 }
 
 func TestFormatDriftOutput(t *testing.T) {
@@ -267,7 +331,7 @@ func TestFormatDriftAsText(t *testing.T) {
 		output := formatDriftAsText(drifted)
 		assert.Contains(t, output, "Outdated files detected")
 		assert.Contains(t, output, ".env")
-		assert.Contains(t, output, "app.json changed")
+		assert.Contains(t, output, "Template or configuration changed")
 	})
 
 	t.Run("Missing files", func(t *testing.T) {
@@ -319,7 +383,7 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 		t.Parallel()
 
 		output := formatDriftAsMarkdown([]manifest.DriftEntry{})
-		assert.Contains(t, output, "## WebKit Drift Detection")
+		assert.Contains(t, output, "WebKit Drift Detection")
 		assert.Contains(t, output, "No drift detected")
 		assert.Contains(t, output, "all files are up to date")
 	})
@@ -332,7 +396,7 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 		}
 
 		output := formatDriftAsMarkdown(drifted)
-		assert.Contains(t, output, "## WebKit Drift Detection")
+		assert.Contains(t, output, "WebKit Drift Detection")
 		assert.Contains(t, output, "Manual modifications detected (1 file)")
 		assert.Contains(t, output, "`file1.txt`")
 		assert.Contains(t, output, "**Action Required:**")
@@ -363,7 +427,7 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 
 		output := formatDriftAsMarkdown(drifted)
 		assert.Contains(t, output, "Outdated files detected (2 files)")
-		assert.Contains(t, output, "app.json changed")
+		assert.Contains(t, output, "Template or configuration changed")
 		assert.Contains(t, output, "`.env`")
 		assert.Contains(t, output, "`config.yaml`")
 	})
@@ -403,11 +467,90 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 		}
 
 		output := formatDriftAsMarkdown(drifted)
-		assert.Contains(t, output, "### ⚠ Manual modifications detected")
-		assert.Contains(t, output, "### 📝 Outdated files detected")
-		assert.Contains(t, output, "### 📄 Missing files detected")
-		assert.Contains(t, output, "### 🗑️ Orphaned files detected")
-		assert.Contains(t, output, "---")
+		assert.Contains(t, output, "Manual modifications detected")
+		assert.Contains(t, output, "Outdated files detected")
+		assert.Contains(t, output, "Missing files detected")
+		assert.Contains(t, output, "Orphaned files detected")
+	})
+}
+
+func TestCopyUserFiles(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Copies AGENTS.md when it exists", func(t *testing.T) {
+		t.Parallel()
+
+		srcFS := afero.NewMemMapFs()
+		dstFS := afero.NewMemMapFs()
+
+		customContent := "Custom Content\n\nProject-specific rules."
+		err := afero.WriteFile(srcFS, "docs/AGENTS.md", []byte(customContent), 0o644)
+		require.NoError(t, err)
+
+		err = copyUserFiles(srcFS, dstFS)
+		require.NoError(t, err)
+
+		exists, err := afero.Exists(dstFS, "docs/AGENTS.md")
+		require.NoError(t, err)
+		assert.True(t, exists)
+
+		copiedContent, err := afero.ReadFile(dstFS, "docs/AGENTS.md")
+		require.NoError(t, err)
+		assert.Equal(t, customContent, string(copiedContent))
+	})
+
+	t.Run("Copies AGENTS.md.tmpl when it exists", func(t *testing.T) {
+		t.Parallel()
+
+		srcFS := afero.NewMemMapFs()
+		dstFS := afero.NewMemMapFs()
+
+		templateContent := "App: {{ .Definition.Project.Name }}"
+		err := afero.WriteFile(srcFS, "docs/AGENTS.md.tmpl", []byte(templateContent), 0o644)
+		require.NoError(t, err)
+
+		err = copyUserFiles(srcFS, dstFS)
+		require.NoError(t, err)
+
+		exists, err := afero.Exists(dstFS, "docs/AGENTS.md.tmpl")
+		require.NoError(t, err)
+		assert.True(t, exists)
+
+		copiedContent, err := afero.ReadFile(dstFS, "docs/AGENTS.md.tmpl")
+		require.NoError(t, err)
+		assert.Equal(t, templateContent, string(copiedContent))
+	})
+
+	t.Run("No error when files don't exist", func(t *testing.T) {
+		t.Parallel()
+
+		srcFS := afero.NewMemMapFs()
+		dstFS := afero.NewMemMapFs()
+
+		err := copyUserFiles(srcFS, dstFS)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Copies both files when both exist", func(t *testing.T) {
+		t.Parallel()
+
+		srcFS := afero.NewMemMapFs()
+		dstFS := afero.NewMemMapFs()
+
+		err := afero.WriteFile(srcFS, "docs/AGENTS.md", []byte("static content"), 0o644)
+		require.NoError(t, err)
+		err = afero.WriteFile(srcFS, "docs/AGENTS.md.tmpl", []byte("template content"), 0o644)
+		require.NoError(t, err)
+
+		err = copyUserFiles(srcFS, dstFS)
+		require.NoError(t, err)
+
+		exists1, err := afero.Exists(dstFS, "docs/AGENTS.md")
+		require.NoError(t, err)
+		exists2, err := afero.Exists(dstFS, "docs/AGENTS.md.tmpl")
+		require.NoError(t, err)
+		assert.True(t, exists1)
+		assert.True(t, exists2)
 	})
 }
 

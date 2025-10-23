@@ -7,6 +7,8 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
@@ -17,7 +19,8 @@ var ActionsCmd = &cli.Command{
 }
 
 var actionTemplates = map[string]string{
-	"db-add-ip/action.yaml": "db-add-ip/action.yaml",
+	"db-add-ip/action.yaml":  "db-add-ip/action.yaml",
+	"pr-comment/action.yaml": "pr-comment/action.yaml",
 }
 
 // ActionTemplates copies action.yaml files from the templates folder
@@ -27,6 +30,7 @@ func ActionTemplates(_ context.Context, input cmdtools.CommandInput) error {
 		err := input.Generator().CopyFromEmbed(templates.Embed,
 			filepath.Join(actionsPath, from),
 			filepath.Join(actionsPath, to),
+			scaffold.WithTracking(manifest.SourceProject()),
 		)
 		if err != nil {
 			return err
