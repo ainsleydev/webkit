@@ -299,11 +299,11 @@ func copyUserFiles(srcFS, dstFS afero.Fs) error {
 
 		dir := filepath.Dir(path)
 
-		if err := dstFS.MkdirAll(dir, 0755); err != nil {
+		if err := dstFS.MkdirAll(dir, 0o755); err != nil {
 			return errors.Wrap(err, "creating directory: "+dir)
 		}
 
-		if err := afero.WriteFile(dstFS, path, content, 0644); err != nil {
+		if err := afero.WriteFile(dstFS, path, content, 0o644); err != nil {
 			return errors.Wrap(err, "writing file: "+path)
 		}
 	}
