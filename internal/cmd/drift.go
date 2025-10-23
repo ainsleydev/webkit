@@ -177,21 +177,19 @@ func formatDriftAsText(drifted []manifest.DriftEntry) string {
 
 func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	if len(drifted) == 0 {
-		return "## WebKit Drift Detection\n\n✅ **No drift detected** - all files are up to date"
+		return "### WebKit Drift Detection\n\n✅ **No drift detected** - all files are up to date"
 	}
 
 	var output strings.Builder
-	output.WriteString("## WebKit Drift Detection\n\n")
+	output.WriteString("### WebKit Drift Detection\n\n")
 
-	// Group by type
 	modifiedFiles := manifest.DriftReasonModified.FilterEntries(drifted)
 	outdatedFiles := manifest.DriftReasonOutdated.FilterEntries(drifted)
 	newFiles := manifest.DriftReasonNew.FilterEntries(drifted)
 	deletedFiles := manifest.DriftReasonDeleted.FilterEntries(drifted)
 
-	// Report findings with collapsible sections for better readability
 	if len(modifiedFiles) > 0 {
-		output.WriteString(fmt.Sprintf("### ⚠ Manual modifications detected (%d file", len(modifiedFiles)))
+		output.WriteString(fmt.Sprintf("#### ⚠ Manual modifications detected (%d file", len(modifiedFiles)))
 		if len(modifiedFiles) != 1 {
 			output.WriteString("s")
 		}
@@ -204,7 +202,7 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	}
 
 	if len(outdatedFiles) > 0 {
-		output.WriteString(fmt.Sprintf("### 📝 Outdated files detected (%d file", len(outdatedFiles)))
+		output.WriteString(fmt.Sprintf("#### 📝 Outdated files detected (%d file", len(outdatedFiles)))
 		if len(outdatedFiles) != 1 {
 			output.WriteString("s")
 		}
@@ -217,7 +215,7 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	}
 
 	if len(newFiles) > 0 {
-		output.WriteString(fmt.Sprintf("### 📄 Missing files detected (%d file", len(newFiles)))
+		output.WriteString(fmt.Sprintf("#### 📄 Missing files detected (%d file", len(newFiles)))
 		if len(newFiles) != 1 {
 			output.WriteString("s")
 		}
@@ -230,7 +228,7 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	}
 
 	if len(deletedFiles) > 0 {
-		output.WriteString(fmt.Sprintf("### 🗑️ Orphaned files detected (%d file", len(deletedFiles)))
+		output.WriteString(fmt.Sprintf("#### 🗑️ Orphaned files detected (%d file", len(deletedFiles)))
 		if len(deletedFiles) != 1 {
 			output.WriteString("s")
 		}
@@ -242,7 +240,6 @@ func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 		output.WriteString("\n")
 	}
 
-	output.WriteString("---\n")
 	output.WriteString("**Action Required:** Run `webkit update` to sync all files\n")
 
 	return output.String()

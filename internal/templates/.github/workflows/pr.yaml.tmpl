@@ -24,7 +24,7 @@ jobs:
       version: {{ ghVar "steps.version.outputs.version" }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Read WebKit Version
         id: version
@@ -82,23 +82,14 @@ jobs:
             echo 'EOF'
           } >> $GITHUB_OUTPUT
 
-      - name: Find existing comment
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/find-comment@v3
-        id: find-comment
-        with:
-          issue-number: {{ ghVar "github.event.pull_request.number" }}
-          comment-author: 'github-actions[bot]'
-          body-includes: 'WebKit Drift'
-
       - name: Comment on PR
         if: github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v5
+        uses: ./.github/actions/pr-comment
         with:
-          comment-id: {{ ghVar "steps.find-comment.outputs.comment-id" }}
+          body-includes: 'WebKit Drift'
+          comment-body: {{ ghVar "steps.drift.outputs.drift_message" }}
           issue-number: {{ ghVar "github.event.pull_request.number" }}
-          body: {{ ghVar "steps.drift.outputs.drift_message" }}
-          edit-mode: replace
+          private-key: {{ ghSecret "ORG_GITHUB_APP_PRIVATE_KEY" }}
 
       - name: Fail Workflow if Drift Detected
         if: steps.drift.outputs.drift_detected == 'true'
@@ -107,8 +98,62 @@ jobs:
           echo "Run 'webkit update' to sync your project with the latest templates"
           exit 1
 
+  app-json-diff:
+    runs-on: ubuntu-latest
+    needs: setup-webkit
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Download WebKit CLI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webkit
+          path: ./
+
+      - name: Make WebKit executable
+        run: chmod +x ./webkit
+
+      - name: Calculate Diff
+        id: diff
+        run: |
+          base="remotes/origin/main"
+          output=$(git diff $base $GITHUB_BRANCH -- app.json)
+
+          echo "=== Raw diff output ==="
+          echo "$output"
+          echo "========================"
+
+          if [[ -n "$output" ]]; then
+            echo "diff_found=true" >> $GITHUB_OUTPUT
+            {
+              echo 'diff_message<<EOF'
+              echo "### app.json has been changed"
+              echo ""
+              echo "Diff is below. \`a = base branch\`, \`b = this branch\`"
+              echo ""
+              echo '```diff'
+              echo "$output"
+              echo '```'
+              echo 'EOF'
+            } >> $GITHUB_OUTPUT
+          else
+            echo "diff_found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment on PR
+        if: steps.diff.outputs.diff_found == 'true' && github.event_name == 'pull_request'
+        uses: ./.github/actions/pr-comment
+        with:
+          body-includes: 'WebKit Drift'
+          comment-body: {{ ghVar "steps.diff.outputs.diff_message" }}
+          issue-number: {{ ghVar "github.event.pull_request.number" }}
+          private-key: {{ ghSecret "ORG_GITHUB_APP_PRIVATE_KEY" }}
+
 	{{- range .Apps }}
-  {{ .Name | lower }}:
+  app-{{ .Name | lower }}:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
