@@ -2,6 +2,7 @@ package files
 
 import (
 	"context"
+	"strings"
 
 	"github.com/ainsleydev/webkit/internal/cmd/internal/schemas/github"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
@@ -40,21 +41,34 @@ func repoSettings(input cmdtools.CommandInput) github.RepoSettings {
 		Repository: github.Repository{
 			AllowMergeCommit:    false,
 			DeleteBranchOnMerge: true,
-			Topics:              input.AppDef().GithubLabels(),
-			Private:             true,
-			HasWiki:             false,
-			HasDownloads:        false,
+			// settings.yml files doesn't like list objects for some reason.
+			Topics:       strings.Join(input.AppDef().GithubLabels(), ", "),
+			Private:      true,
+			HasWiki:      false,
+			HasDownloads: false,
+		},
+		Teams: []github.Team{
+			{Name: "core", Permission: "admin"},
 		},
 		Branches: []github.Branch{
 			{
 				Name: "main",
 				Protection: &github.BranchProtection{
-					RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
-						DismissStaleReviews:          true,
-						RequireCodeOwnerReviews:      true,
-						RequiredApprovingReviewCount: 1,
+					// Add this when growing.
+					//RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
+					//	DismissStaleReviews:          true,
+					//	RequireCodeOwnerReviews:      false,
+					//	RequiredApprovingReviewCount: 1,
+					//},
+					Restrictions: &github.Restrictions{
+						// Only this team can merge
+						Teams: []string{"core"},
+						Users: make([]string, 0),
+						Apps:  make([]string, 0),
 					},
-					EnforceAdmins: true,
+					EnforceAdmins:  false,
+					AllowForcePush: false,
+					AllowDeletions: false,
 				},
 			},
 		},
