@@ -102,20 +102,20 @@ func (t *Tracker) hasFilesChanged() bool {
 		return true
 	}
 
-	// Check if file count differs
+	// Check if file count differs.
 	if len(t.files) != len(t.previousManifest.Files) {
 		return true
 	}
 
-	// Check if any file has a different GeneratedAt timestamp
-	// (which would have been updated by Add if the hash changed)
+	// Check if any file has a different GeneratedAt timestamp.
+	// (which would have been updated by Add if the hash changed).
 	for path, newEntry := range t.files {
 		previousEntry, exists := t.previousManifest.Files[path]
 		if !exists {
 			return true
 		}
-		// If the timestamp was preserved, they'll be equal
-		// If it was updated, they'll be different
+		// If the timestamp was preserved, they'll be equal.
+		// If it was updated, they'll be different.
 		if !newEntry.GeneratedAt.Equal(previousEntry.GeneratedAt) {
 			return true
 		}
