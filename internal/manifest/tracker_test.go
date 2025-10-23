@@ -227,10 +227,10 @@ func TestManifestTimestamp(t *testing.T) {
 	assert.True(t, manifest.GeneratedAt.Before(after) || manifest.GeneratedAt.Equal(after))
 }
 
-func TestTracker_WithOldManifest(t *testing.T) {
+func TestTracker_WithPreviousManifest(t *testing.T) {
 	t.Parallel()
 
-	oldManifest := &Manifest{
+	previousManifest := &Manifest{
 		Version:     "v1.0.0",
 		GeneratedAt: time.Now(),
 		Files: map[string]FileEntry{
@@ -242,10 +242,10 @@ func TestTracker_WithOldManifest(t *testing.T) {
 		},
 	}
 
-	tracker := NewTracker().WithOldManifest(oldManifest)
+	tracker := NewTracker().WithPreviousManifest(previousManifest)
 
-	assert.NotNil(t, tracker.oldManifest)
-	assert.Equal(t, oldManifest, tracker.oldManifest)
+	assert.NotNil(t, tracker.previousManifest)
+	assert.Equal(t, previousManifest, tracker.previousManifest)
 }
 
 func TestTracker_Add_PreservesTimestamp(t *testing.T) {
@@ -254,18 +254,18 @@ func TestTracker_Add_PreservesTimestamp(t *testing.T) {
 	t.Run("Preserves timestamp when hash unchanged", func(t *testing.T) {
 		t.Parallel()
 
-		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-		oldManifest := &Manifest{
+		previousTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		previousManifest := &Manifest{
 			Files: map[string]FileEntry{
 				"test.txt": {
 					Path:        "test.txt",
 					Hash:        "abc123",
-					GeneratedAt: oldTime,
+					GeneratedAt: previousTime,
 				},
 			},
 		}
 
-		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker := NewTracker().WithPreviousManifest(previousManifest)
 		newEntry := FileEntry{
 			Path:        "test.txt",
 			Hash:        "abc123", // Same hash
@@ -274,25 +274,25 @@ func TestTracker_Add_PreservesTimestamp(t *testing.T) {
 
 		tracker.Add(newEntry)
 
-		// Timestamp should be preserved from old manifest
-		assert.Equal(t, oldTime, tracker.files["test.txt"].GeneratedAt)
+		// Timestamp should be preserved from previous manifest
+		assert.Equal(t, previousTime, tracker.files["test.txt"].GeneratedAt)
 	})
 
 	t.Run("Updates timestamp when hash changed", func(t *testing.T) {
 		t.Parallel()
 
-		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-		oldManifest := &Manifest{
+		previousTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		previousManifest := &Manifest{
 			Files: map[string]FileEntry{
 				"test.txt": {
 					Path:        "test.txt",
 					Hash:        "abc123",
-					GeneratedAt: oldTime,
+					GeneratedAt: previousTime,
 				},
 			},
 		}
 
-		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker := NewTracker().WithPreviousManifest(previousManifest)
 		newTime := time.Now()
 		newEntry := FileEntry{
 			Path:        "test.txt",
@@ -309,11 +309,11 @@ func TestTracker_Add_PreservesTimestamp(t *testing.T) {
 	t.Run("New file gets new timestamp", func(t *testing.T) {
 		t.Parallel()
 
-		oldManifest := &Manifest{
+		previousManifest := &Manifest{
 			Files: map[string]FileEntry{},
 		}
 
-		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker := NewTracker().WithPreviousManifest(previousManifest)
 		newTime := time.Now()
 		newEntry := FileEntry{
 			Path:        "new.txt",
@@ -327,7 +327,7 @@ func TestTracker_Add_PreservesTimestamp(t *testing.T) {
 		assert.Equal(t, newTime.Truncate(time.Second), tracker.files["new.txt"].GeneratedAt.Truncate(time.Second))
 	})
 
-	t.Run("Works without old manifest", func(t *testing.T) {
+	t.Run("Works without previous manifest", func(t *testing.T) {
 		t.Parallel()
 
 		tracker := NewTracker()
@@ -352,12 +352,12 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		previousTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 		fileTime := time.Date(2024, 1, 1, 1, 0, 0, 0, time.UTC)
 
-		oldManifest := &Manifest{
+		previousManifest := &Manifest{
 			Version:     "v1.0.0",
-			GeneratedAt: oldTime,
+			GeneratedAt: previousTime,
 			Files: map[string]FileEntry{
 				"test.txt": {
 					Path:        "test.txt",
@@ -367,7 +367,7 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 			},
 		}
 
-		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker := NewTracker().WithPreviousManifest(previousManifest)
 		tracker.Add(FileEntry{
 			Path:        "test.txt",
 			Hash:        "abc123", // Same hash, so timestamp will be preserved
@@ -381,18 +381,18 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// Manifest timestamp should be preserved
-		assert.Equal(t, oldTime, manifest.GeneratedAt)
+		assert.Equal(t, previousTime, manifest.GeneratedAt)
 	})
 
 	t.Run("Updates manifest timestamp when file changed", func(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		previousTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		oldManifest := &Manifest{
+		previousManifest := &Manifest{
 			Version:     "v1.0.0",
-			GeneratedAt: oldTime,
+			GeneratedAt: previousTime,
 			Files: map[string]FileEntry{
 				"test.txt": {
 					Path:        "test.txt",
@@ -402,7 +402,7 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 			},
 		}
 
-		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker := NewTracker().WithPreviousManifest(previousManifest)
 		tracker.Add(FileEntry{
 			Path:        "test.txt",
 			Hash:        "xyz789", // Different hash
@@ -418,7 +418,7 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// Manifest timestamp should be updated
-		assert.True(t, manifest.GeneratedAt.After(oldTime))
+		assert.True(t, manifest.GeneratedAt.After(previousTime))
 		assert.True(t, manifest.GeneratedAt.After(before) || manifest.GeneratedAt.Equal(before))
 		assert.True(t, manifest.GeneratedAt.Before(after) || manifest.GeneratedAt.Equal(after))
 	})
@@ -427,11 +427,11 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		previousTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		oldManifest := &Manifest{
+		previousManifest := &Manifest{
 			Version:     "v1.0.0",
-			GeneratedAt: oldTime,
+			GeneratedAt: previousTime,
 			Files: map[string]FileEntry{
 				"old.txt": {
 					Path:        "old.txt",
@@ -441,7 +441,7 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 			},
 		}
 
-		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker := NewTracker().WithPreviousManifest(previousManifest)
 		tracker.Add(FileEntry{
 			Path:        "old.txt",
 			Hash:        "old123",
@@ -462,7 +462,7 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// Manifest timestamp should be updated because a new file was added
-		assert.True(t, manifest.GeneratedAt.After(oldTime))
+		assert.True(t, manifest.GeneratedAt.After(previousTime))
 		assert.True(t, manifest.GeneratedAt.After(before) || manifest.GeneratedAt.Equal(before))
 		assert.True(t, manifest.GeneratedAt.Before(after) || manifest.GeneratedAt.Equal(after))
 	})
@@ -471,11 +471,11 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		previousTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		oldManifest := &Manifest{
+		previousManifest := &Manifest{
 			Version:     "v1.0.0",
-			GeneratedAt: oldTime,
+			GeneratedAt: previousTime,
 			Files: map[string]FileEntry{
 				"file1.txt": {
 					Path:        "file1.txt",
@@ -490,7 +490,7 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 			},
 		}
 
-		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker := NewTracker().WithPreviousManifest(previousManifest)
 		// Only add one file (removing file2.txt)
 		tracker.Add(FileEntry{
 			Path:        "file1.txt",
@@ -507,7 +507,7 @@ func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// Manifest timestamp should be updated because a file was removed
-		assert.True(t, manifest.GeneratedAt.After(oldTime))
+		assert.True(t, manifest.GeneratedAt.After(previousTime))
 		assert.True(t, manifest.GeneratedAt.After(before) || manifest.GeneratedAt.Equal(before))
 		assert.True(t, manifest.GeneratedAt.Before(after) || manifest.GeneratedAt.Equal(after))
 	})

@@ -67,7 +67,7 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// 2. Configure tracker to preserve timestamps for unchanged files
 	if oldManifest != nil {
-		input.Manifest.WithOldManifest(oldManifest)
+		input.Manifest.WithPreviousManifest(oldManifest)
 	}
 
 	// 3. Generate all files (they auto-track to new manifest)
