@@ -483,4 +483,3 @@ func TestLoad(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
-
