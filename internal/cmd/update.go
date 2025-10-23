@@ -59,18 +59,21 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 	printer.Info("Updating project dependencies...")
 	printer.LineBreak()
 
-	// 1. Load previous manifest.
+	// Exits if app.json is not found.
+	_ = input.AppDef()
+
+	// Load previous manifest.
 	oldManifest, err := manifest.Load(input.FS)
 	if err != nil && !errors.Is(err, manifest.ErrNoManifest) {
 		return errors.Wrap(err, "loading manifest")
 	}
 
-	// 2. Configure tracker to preserve timestamps for unchanged files.
+	// Configure tracker to preserve timestamps for unchanged files.
 	if oldManifest != nil {
 		input.Manifest.WithPreviousManifest(oldManifest)
 	}
 
-	// 3. Generate all files (they auto-track to new manifest).
+	// Generate all files.
 	for _, op := range updateOps {
 		printer.Printf("🏃 %v\n", op.name)
 		if err = op.command(ctx, input); err != nil {
@@ -78,12 +81,12 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 		}
 	}
 
-	// 4. Save new manifest.
+	// Save new manifest.
 	if err = input.Manifest.Save(input.FS); err != nil {
 		return errors.Wrap(err, "saving manifest")
 	}
 
-	// 5. Cleanup orphaned files.
+	// Cleanup orphaned files.
 	if oldManifest != nil {
 		newManifest, err := manifest.Load(input.FS)
 		if err != nil {
