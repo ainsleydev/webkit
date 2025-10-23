@@ -6,6 +6,7 @@ repository:
     - golang
   private: false
   delete_branch_on_merge: true
+  allow_merge_commit: false
 branches:
   - name: main
     protection:
