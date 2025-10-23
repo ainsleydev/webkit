@@ -14,7 +14,7 @@ branches:
         dismiss_stale_reviews: true
         require_code_owner_reviews: false
       required_status_checks: null
-      enforce_admins: true
+      enforce_admins: false
       restrictions:
         apps: []
         users: []
