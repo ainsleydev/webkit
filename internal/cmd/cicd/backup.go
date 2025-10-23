@@ -9,6 +9,8 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -45,7 +47,7 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 
 				// TODO: This may change at some point, see workflow for more details.
 				"BucketName": appDef.Project.Name,
-			}); err != nil {
+			}, scaffold.WithTracking(manifest.SourceResource(resource.Name))); err != nil {
 				return err
 			}
 		}
