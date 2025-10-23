@@ -27,6 +27,12 @@ jobs:
       - name: Setup CI environment
         uses: ./.github/actions/setup
 
+      - name: Install dependencies with pnpm
+        run: pnpm install
+
+      - name: Build application
+        run: pnpm turbo run build
+
       - name: Create release PR or publish to npm
         id: changesets
         uses: changesets/action@v1
