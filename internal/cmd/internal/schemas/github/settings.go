@@ -29,7 +29,7 @@ type Repository struct {
 	HasDownloads                 bool   `yaml:"has_downloads,omitempty"`
 	DefaultBranch                string `yaml:"default_branch,omitempty"`
 	AllowSquashMerge             bool   `yaml:"allow_squash_merge,omitempty"`
-	AllowMergeCommit             bool   `yaml:"allow_merge_commit,omitempty"`
+	AllowMergeCommit             bool   `yaml:"allow_merge_commit"`
 	AllowRebaseMerge             bool   `yaml:"allow_rebase_merge,omitempty"`
 	DeleteBranchOnMerge          bool   `yaml:"delete_branch_on_merge,omitempty"`
 	EnableAutomatedSecurityFixes bool   `yaml:"enable_automated_security_fixes,omitempty"`
@@ -71,7 +71,7 @@ type Branch struct {
 
 // BranchProtection contains branch protection rules
 type BranchProtection struct {
-	RequiredPullRequestReviews *RequiredPullRequestReviews `yaml:"required_pull_request_reviews,omitempty"`
+	RequiredPullRequestReviews *RequiredPullRequestReviews `yaml:"required_pull_request_reviews"`
 	RequiredStatusChecks       *RequiredStatusChecks       `yaml:"required_status_checks"`
 	EnforceAdmins              bool                        `yaml:"enforce_admins"`
 	AllowForcePush             bool                        `yaml:"allow_force_pushes"`
