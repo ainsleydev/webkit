@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/cicd"
 	"github.com/ainsleydev/webkit/internal/cmd/docs"
 	"github.com/ainsleydev/webkit/internal/cmd/env"
@@ -59,18 +60,27 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 	printer.Info("Updating project dependencies...")
 	printer.LineBreak()
 
-	// 1. Load previous manifest.
+	// 1. Validate app.json exists before proceeding.
+	_, err := appdef.Read(input.FS)
+	if err != nil {
+		printer.LineBreak()
+		printer.Error("Could not find app.json in the current directory.")
+		printer.Info("Please run this command from the root of a WebKit project.")
+		return errors.Wrap(err, "reading app.json")
+	}
+
+	// 2. Load previous manifest.
 	oldManifest, err := manifest.Load(input.FS)
 	if err != nil && !errors.Is(err, manifest.ErrNoManifest) {
 		return errors.Wrap(err, "loading manifest")
 	}
 
-	// 2. Configure tracker to preserve timestamps for unchanged files.
+	// 3. Configure tracker to preserve timestamps for unchanged files.
 	if oldManifest != nil {
 		input.Manifest.WithPreviousManifest(oldManifest)
 	}
 
-	// 3. Generate all files (they auto-track to new manifest).
+	// 4. Generate all files (they auto-track to new manifest).
 	for _, op := range updateOps {
 		printer.Printf("🏃 %v\n", op.name)
 		if err = op.command(ctx, input); err != nil {
@@ -78,12 +88,12 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 		}
 	}
 
-	// 4. Save new manifest.
+	// 5. Save new manifest.
 	if err = input.Manifest.Save(input.FS); err != nil {
 		return errors.Wrap(err, "saving manifest")
 	}
 
-	// 5. Cleanup orphaned files.
+	// 6. Cleanup orphaned files.
 	if oldManifest != nil {
 		newManifest, err := manifest.Load(input.FS)
 		if err != nil {
