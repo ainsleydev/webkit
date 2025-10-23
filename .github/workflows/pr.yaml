@@ -3,7 +3,7 @@ name: PR
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 # Only allow one of these to run per branch
 concurrency:
@@ -65,3 +65,18 @@ jobs:
 
       - name: Diff
         run: git diff
+
+  secret-scan:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.ORG_GITLEAKS_LICENSE }}

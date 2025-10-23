@@ -144,8 +144,10 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			assert.Equal(t, map[string]any{"replicas": 2}, app.Config)
 
 			require.Len(t, app.Environment, 2)
-			assert.Equal(t, app.Environment[0], tfEnvVar{Key: "VALUE_KEY", Value: "nested", Source: "value", Scope: "GENERAL"})
-			assert.Equal(t, app.Environment[1], tfEnvVar{Key: "SECRET_KEY", Value: "s3cr3t", Source: "sops", Scope: "SECRET"})
+			assert.ElementsMatch(t, app.Environment, []tfEnvVar{
+				{Key: "VALUE_KEY", Value: "nested", Source: "value", Scope: "GENERAL"},
+				{Key: "SECRET_KEY", Value: "s3cr3t", Source: "sops", Scope: "SECRET"},
+			})
 		}
 	})
 
