@@ -3,10 +3,6 @@ name: 'Create or Update PR Comment'
 description: 'Creates or updates a PR comment with specified content'
 
 inputs:
-  comment-author:
-    description: 'Comment author name'
-    required: false
-    default: 'ainsley-dev-bot[bot]'
   body-includes:
     description: 'Unique string to identify existing comments'
     required: true
@@ -44,7 +40,7 @@ runs:
       with:
         token: ${{ steps.app-token.outputs.token }}
         issue-number: ${{ inputs.issue-number }}
-        comment-author: ${{ inputs.comment-author }}
+        comment-author: 'ainsley-dev-bot[bot]'
         body-includes: ${{ inputs.body-includes }}
 
     - name: Create or update comment
