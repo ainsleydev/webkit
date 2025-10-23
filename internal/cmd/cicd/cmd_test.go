@@ -35,10 +35,10 @@ func validateGithubYaml(t *testing.T, file []byte, isAction bool) error {
 	}
 
 	if isAction {
-	}
-	t.Log("Github Action is validated")
-	if err := testutil.ValidateGithubAction(t, file, isAction); err != nil {
-		return err
+		t.Log("Github Action is validated")
+		if err := testutil.ValidateGithubAction(t, file, isAction); err != nil {
+			return err
+		}
 	}
 
 	return nil
