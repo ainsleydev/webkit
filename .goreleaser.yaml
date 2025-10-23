@@ -7,6 +7,7 @@ before:
   hooks:
     - go mod tidy
     - go generate ./...
+    - go run cmd/genversion/main.go -version={{.Version}} -commit={{.Commit}} -date={{.Date}} -builtby=goreleaser
 
 # Main Build
 # See: https://goreleaser.com/customization/builds/
@@ -28,10 +29,6 @@ builds:
       - prod
     ldflags:
       - -s -w
-      - -X github.com/ainsleydev/webkit/internal/version.Version={{.Version}}
-      - -X github.com/ainsleydev/webkit/internal/version.Commit={{.Commit}}
-      - -X github.com/ainsleydev/webkit/internal/version.Date={{.Date}}
-      - -X github.com/ainsleydev/webkit/internal/version.BuiltBy=goreleaser
     mod_timestamp: '{{ .CommitTimestamp }}'
 archives:
   - formats: [tar.gz]
