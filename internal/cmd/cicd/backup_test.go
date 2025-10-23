@@ -86,6 +86,33 @@ func TestBackupWorkflow(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("S3 Non DigitalOcean Skipped", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Resources: []appdef.Resource{
+				{
+					Name:     "b2store",
+					Type:     appdef.ResourceTypeS3,
+					Provider: appdef.ResourceProviderBackBlaze,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		// File should be created but empty (no jobs) since B2 provider is not supported
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+		assert.NotEmpty(t, file)
+	})
+
 	t.Run("Multiple Resources", func(t *testing.T) {
 		t.Parallel()
 
