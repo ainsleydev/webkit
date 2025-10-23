@@ -68,7 +68,6 @@ func (c *CommandInput) AppDef() *appdef.Definition {
 	if err != nil {
 		c.Printer().LineBreak()
 		c.Printer().Error("Could not find app.json in the current directory.")
-		c.Printer().Info("Please run this command from the root of a WebKit project.")
 		c.Printer().LineBreak()
 		os.Exit(1)
 	}
