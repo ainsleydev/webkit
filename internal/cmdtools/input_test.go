@@ -28,7 +28,7 @@ func TestCommandInput_AppDef(t *testing.T) {
 					"name": "repo"
 				}
 			}
-		}`), 0644)
+		}`), 0o644)
 		require.NoError(t, err)
 
 		input := CommandInput{
@@ -54,7 +54,7 @@ func TestCommandInput_AppDef(t *testing.T) {
 					"name": "repo"
 				}
 			}
-		}`), 0644)
+		}`), 0o644)
 		require.NoError(t, err)
 
 		input := CommandInput{
@@ -73,7 +73,7 @@ func TestCommandInput_AppDef(t *testing.T) {
 					"name": "repo"
 				}
 			}
-		}`), 0644)
+		}`), 0o644)
 		require.NoError(t, err)
 
 		def2 := input.AppDef()
