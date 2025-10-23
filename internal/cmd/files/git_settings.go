@@ -56,7 +56,7 @@ func repoSettings(input cmdtools.CommandInput) github.RepoSettings {
 				Protection: &github.BranchProtection{
 					RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
 						DismissStaleReviews:          true,
-						RequireCodeOwnerReviews:      true,
+						RequireCodeOwnerReviews:      false,
 						RequiredApprovingReviewCount: 1,
 					},
 					Restrictions: &github.Restrictions{
@@ -65,7 +65,7 @@ func repoSettings(input cmdtools.CommandInput) github.RepoSettings {
 						Users: make([]string, 0),
 						Apps:  make([]string, 0),
 					},
-					EnforceAdmins: true,
+					EnforceAdmins: false,
 				},
 			},
 		},
