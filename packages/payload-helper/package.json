@@ -23,7 +23,6 @@
 		"build:types": "tsc --emitDeclarationOnly --outDir dist",
 		"format": "biome format --write . --apply-unsafe --organise-imports",
 		"lint": "biome lint --write .",
-		"release": "pnpm build && npm publish --access public",
 		"clean": "rimraf {dist,*.tsbuildinfo}",
 		"test": "jest"
 	},
@@ -31,6 +30,9 @@
 		"payload-helper": "bin.js"
 	},
 	"files": ["dist", "bin.js", "types.js", "types.ts", "types.d.ts"],
+	"publishConfig": {
+		"access": "public"
+	},
 	"dependencies": {
 		"payload": "3.56.0",
 		"@payloadcms/db-sqlite": "3.56.0",
