@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/payload-helper",
-	"version": "0.0.35",
+	"version": "0.0.36",
 	"description": "Payload CMS utilities, collections and global types for ainsley.dev builds",
 	"license": "MIT",
 	"type": "module",
