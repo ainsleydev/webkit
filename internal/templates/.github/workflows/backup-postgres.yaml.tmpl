@@ -65,7 +65,7 @@ jobs:
       - name: Retain only 30 latest backups
         run: |
           # List backups, skip newest 30, delete the rest
-          s3cmd ls s3://{{ ghSecret "ORG_BACK_BLAZE_BUCKET" }}${BACKUP_PATH} \
+          s3cmd ls s3://{{ .BucketName }}${BACKUP_PATH} \
           | sort -k1,2 \
           | sort -k1,2 \
           | head -n -30 \

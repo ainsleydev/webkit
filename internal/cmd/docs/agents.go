@@ -46,8 +46,6 @@ func Agents(_ context.Context, input cmdtools.CommandInput) error {
 		return errors.Wrap(err, "generating AGENTS.md")
 	}
 
-	input.Printer().Success("Generated AGENTS.md")
-
 	return nil
 }
 
