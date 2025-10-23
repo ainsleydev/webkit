@@ -2,7 +2,6 @@ package cicd
 
 import (
 	"context"
-	"fmt"
 	"path/filepath"
 
 	"github.com/urfave/cli/v3"
@@ -62,13 +61,14 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	}
 
 	data := map[string]any{
-		"Resources":  appDef.Resources,
-		"Data":       secretData,
-		"BucketName": appDef.Project.Name, // TODO: This may change at some point, see workflow for more details.
+		"Resources": appDef.Resources,
+		"Data":      secretData,
+		// TODO: This may change at some point, see workflow for more details.
+		"BucketName": appDef.Project.Name,
 	}
 
-	// Track all resources as sources for this workflow
-	trackingOptions := []scaffold.Option{}
+	// Track all resources as sources for this workflow.
+	var trackingOptions []scaffold.Option
 	for _, resource := range appDef.Resources {
 		trackingOptions = append(trackingOptions, scaffold.WithTracking(manifest.SourceResource(resource.Name)))
 	}

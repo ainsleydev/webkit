@@ -91,7 +91,6 @@ jobs:
           slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
           channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
 {{- else if eq .Type "s3" }}
-{{- /* NOTE: S3 backup is currently only compatible with DigitalOcean Spaces. */ -}}
   backup-{{ .Name }}:
     name: Backup {{ .Name }} Bucket to Backblaze B2
     runs-on: ubuntu-latest
