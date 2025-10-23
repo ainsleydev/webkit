@@ -7,7 +7,6 @@ before:
   hooks:
     - go mod tidy
     - go generate ./...
-    - go run cmd/genversion/main.go -version={{.Version}}
 
 # Main Build
 # See: https://goreleaser.com/customization/builds/
