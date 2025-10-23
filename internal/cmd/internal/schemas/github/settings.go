@@ -74,6 +74,8 @@ type BranchProtection struct {
 	RequiredPullRequestReviews *RequiredPullRequestReviews `yaml:"required_pull_request_reviews,omitempty"`
 	RequiredStatusChecks       *RequiredStatusChecks       `yaml:"required_status_checks"`
 	EnforceAdmins              bool                        `yaml:"enforce_admins"`
+	AllowForcePush             bool                        `yaml:"allow_force_pushes"`
+	AllowDeletions             bool                        `yaml:"allow_deletions"`
 	RequiredLinearHistory      bool                        `yaml:"required_linear_history,omitempty"`
 	Restrictions               *Restrictions               `yaml:"restrictions"`
 }

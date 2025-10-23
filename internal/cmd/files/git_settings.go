@@ -54,18 +54,21 @@ func repoSettings(input cmdtools.CommandInput) github.RepoSettings {
 			{
 				Name: "main",
 				Protection: &github.BranchProtection{
-					RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
-						DismissStaleReviews:          true,
-						RequireCodeOwnerReviews:      false,
-						RequiredApprovingReviewCount: 1,
-					},
+					// Add this when growing.
+					//RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
+					//	DismissStaleReviews:          true,
+					//	RequireCodeOwnerReviews:      false,
+					//	RequiredApprovingReviewCount: 1,
+					//},
 					Restrictions: &github.Restrictions{
 						// Only this team can merge
 						Teams: []string{"core"},
 						Users: make([]string, 0),
 						Apps:  make([]string, 0),
 					},
-					EnforceAdmins: false,
+					EnforceAdmins:  false,
+					AllowForcePush: false,
+					AllowDeletions: false,
 				},
 			},
 		},
