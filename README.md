@@ -17,11 +17,12 @@
 
 <div align="center">
 
-[![Build Status](https://github.com/ainsleydev/webkit/actions/workflows/test.yaml/badge.svg)](https://github.com/ainsleydev/webkit/actions/workflows/test.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ainsleydev/webkit)](https://goreportcard.com/report/github.com/ainsleydev/webkit)
-[![Coverage](https://codecov.io/gh/ainsleydev/webkit/branch/main/graph/badge.svg)](https://codecov.io/gh/ainsleydev/webkit)
+[![Release](https://img.shields.io/github/v/release/ainsleydev/webkit?color=brightgreen&label=Release)](https://github.com/ainsleydev/webkit/releases)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f5912a1dec11b8003850/maintainability)](https://codeclimate.com/github/ainsleydev/webkit/maintainability)
-[![Latest Release](https://img.shields.io/github/v/release/ainsleydev/webkit)](https://github.com/ainsleydev/webkit/releases)
+[![Coverage](https://codecov.io/gh/ainsleydev/webkit/branch/main/graph/badge.svg)](https://codecov.io/gh/ainsleydev/webkit)
+![Made with Go](https://img.shields.io/badge/Made%20with-Go-00ADD8.svg?logo=go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ainsleydev/webkit.svg)](https://pkg.go.dev/github.com/ainsleydev/webkit)
 [![Twitter Handle](https://img.shields.io/twitter/follow/ainsleydev)](https://twitter.com/ainsleydev)
 
 </div>
@@ -43,17 +44,19 @@ and project files and manages secrets in different enviornments.
 > **Note:** For user documentation and guides,
 > visit [webkit.ainsley.dev](https://webkit.ainsley.dev)
 
-
 ## Installation
 
 **Quick install:**
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | sh
 ```
 
-Or download binaries from the [latest release](https://github.com/ainsleydev/webkit/releases/latest).
+Or download binaries from
+the [latest release](https://github.com/ainsleydev/webkit/releases/latest).
 
 **Verify installation:**
+
 ```bash
 webkit version
 ```
@@ -125,12 +128,6 @@ pnpm act:test
 pnpm act:release
 ```
 
-**Note:** Make sure you have [act](https://github.com/nektos/act) installed:
-
-```bash
-brew install act
-```
-
 ## Releasing
 
 WebKit uses [GoReleaser](https://goreleaser.com/) for automated releases. The release process is
@@ -146,19 +143,14 @@ pnpm tag
 
 This will guide you through:
 
-1. Choosing between creating or deleting a tag
-2. Selecting the version bump type (patch, minor, or major)
-3. Confirming the version
-4. Creating and pushing the tag
+1. Choosing between creating or deleting a tag.
+2. Selecting the version bump type (`patch`, `minor`, or `major`).
+3. Confirming the version.
+4. Creating and pushing the tag.
 
-### What Happens Next
-
-When a tag is pushed:
-
-1. GitHub Actions automatically triggers the GoReleaser workflow/
-2. Binaries are built for each platform.
-3. A GitHub release is created with the binaries attached
-4. Release notes can be edited on the GitHub releases page
+When a tag is pushed, the version will be injected then GitHub Actions automatically triggers the
+GoReleaser workflow, builds binaries for each platform and creates a GitHub release with the
+binaries attached.
 
 ### Semantic Versioning
 
@@ -168,12 +160,11 @@ WebKit follows [Semantic Versioning](https://semver.org/).
 - **Minor** (v1.1.0): New features, backwards compatible
 - **Major** (v2.0.0): Breaking changes
 
----
-
 ## Copyright
 
 You may not, except with our express written permission, distribute or commercially exploit the
-content found within this repository or any written text within this repository. Nor may you transmit
+content found within this repository or any written text within this repository. Nor may you
+transmit
 it or store it in any other website or other form of electronic retrieval system.
 
 Any redistribution or reproduction of part or all of the contents in any form is prohibited other
