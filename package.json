@@ -17,9 +17,7 @@
 			"url": "https://ainsley.dev"
 		}
 	],
-	"workspaces:": [
-		"packages/*"
-	],
+	"workspaces:": ["packages/*"],
 	"scripts": {
 		"precommit": "npx lint-staged",
 		"prepare": "husky",
@@ -63,12 +61,8 @@
 			"biome format --write --no-errors-on-unmatched",
 			"biome lint --write --no-errors-on-unmatched"
 		],
-		"*.go": [
-			"gofmt -w"
-		],
-		"*.templ": [
-			"templ fmt"
-		]
+		"*.go": ["gofmt -w"],
+		"*.templ": ["templ fmt"]
 	},
 	"engines": {
 		"node": ">=18",
