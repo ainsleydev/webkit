@@ -15,8 +15,7 @@
 		"url": "https://ainsley.dev"
 	},
 	"scripts": {
-		"build": "echo 'No build required for config package'",
-		"publish": "npm publish"
+		"build": "echo 'No build required for config package'"
 	},
 	"publishConfig": {
 		"access": "public"
