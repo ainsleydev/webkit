@@ -173,15 +173,19 @@ jobs:
         run: pnpm install
 
       - name: Format
+        working-directory: cms
         run: pnpm format
 
       - name: Lint
+        working-directory: cms
         run: pnpm lint
 
       - name: Test
+        working-directory: cms
         run: pnpm test
 
       - name: Build
+        working-directory: cms
         run: pnpm build
   app-web:
     runs-on: ubuntu-latest
@@ -204,15 +208,19 @@ jobs:
         run: pnpm install
 
       - name: Format
+        working-directory: web
         run: pnpm format
 
       - name: Lint
+        working-directory: web
         run: pnpm lint
 
       - name: Test
+        working-directory: web
         run: pnpm test
 
       - name: Build
+        working-directory: web
         run: pnpm build
   app-api:
     runs-on: ubuntu-latest
@@ -228,13 +236,17 @@ jobs:
           go-version: '1.25'
 
       - name: Format
+        working-directory: api
         run: gofmt -w .
 
       - name: Lint
+        working-directory: api
         run: golangci-lint run
 
       - name: Test
+        working-directory: api
         run: go test ./...
 
       - name: Build
+        working-directory: api
         run: go build main.go

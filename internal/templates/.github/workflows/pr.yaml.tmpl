@@ -152,7 +152,7 @@ jobs:
           issue-number: {{ ghVar "github.event.pull_request.number" }}
           private-key: {{ ghSecret "ORG_GITHUB_APP_PRIVATE_KEY" }}
 
-	{{- range .Apps }}
+	{{- range $app := .Apps }}
   app-{{ .Name | lower }}:
     runs-on: ubuntu-latest
     steps:
@@ -160,7 +160,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-{{- if eq .Language "js" }}
+{{- if eq $app.Language "js" }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -173,7 +173,7 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-{{- else if eq .Language "go" }}
+{{- else if eq $app.Language "go" }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -181,12 +181,12 @@ jobs:
           go-version: '1.25'
 {{- end }}
 
-{{- range $spec := .OrderedCommands }}
+{{- range $spec := $app.OrderedCommands }}
 {{- if not $spec.Disabled }}
 
       - name: {{ $spec.Name | title }}
-{{- if $.Path }}
-        working-directory: {{ $.Path }}
+{{- if $app.Path }}
+        working-directory: {{ $app.Path }}
 {{- end }}
         run: {{ $spec.Cmd }}
 {{- end }}
