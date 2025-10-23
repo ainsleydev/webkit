@@ -202,7 +202,7 @@ func TestDrift(t *testing.T) {
 			},
 		}
 
-		customContent := "## Custom Project Rules\n\nThese are project-specific guidelines."
+		customContent := "Custom Project Rules\n\nThese are project-specific guidelines."
 		err := afero.WriteFile(fs, "docs/AGENTS.md", []byte(customContent), 0o644)
 		require.NoError(t, err)
 
@@ -233,7 +233,7 @@ func TestDrift(t *testing.T) {
 			},
 		}
 
-		customContent := "## Custom Project Rules\n\nThese are project-specific guidelines."
+		customContent := "Custom Project Rules\n\nThese are project-specific guidelines."
 		err := afero.WriteFile(fs, "docs/AGENTS.md", []byte(customContent), 0o644)
 		require.NoError(t, err)
 
@@ -241,7 +241,7 @@ func TestDrift(t *testing.T) {
 		err = update(t.Context(), input)
 		require.NoError(t, err)
 
-		newCustomContent := "## Updated Rules\n\nThese rules have been updated."
+		newCustomContent := "Updated Rules\n\nThese rules have been updated."
 		err = afero.WriteFile(fs, "docs/AGENTS.md", []byte(newCustomContent), 0o644)
 		require.NoError(t, err)
 
@@ -383,7 +383,7 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 		t.Parallel()
 
 		output := formatDriftAsMarkdown([]manifest.DriftEntry{})
-		assert.Contains(t, output, "## WebKit Drift Detection")
+		assert.Contains(t, output, "WebKit Drift Detection")
 		assert.Contains(t, output, "No drift detected")
 		assert.Contains(t, output, "all files are up to date")
 	})
@@ -396,7 +396,7 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 		}
 
 		output := formatDriftAsMarkdown(drifted)
-		assert.Contains(t, output, "## WebKit Drift Detection")
+		assert.Contains(t, output, "WebKit Drift Detection")
 		assert.Contains(t, output, "Manual modifications detected (1 file)")
 		assert.Contains(t, output, "`file1.txt`")
 		assert.Contains(t, output, "**Action Required:**")
@@ -467,11 +467,10 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 		}
 
 		output := formatDriftAsMarkdown(drifted)
-		assert.Contains(t, output, "### ⚠ Manual modifications detected")
-		assert.Contains(t, output, "### 📝 Outdated files detected")
-		assert.Contains(t, output, "### 📄 Missing files detected")
-		assert.Contains(t, output, "### 🗑️ Orphaned files detected")
-		assert.Contains(t, output, "---")
+		assert.Contains(t, output, "Manual modifications detected")
+		assert.Contains(t, output, "Outdated files detected")
+		assert.Contains(t, output, "Missing files detected")
+		assert.Contains(t, output, "Orphaned files detected")
 	})
 }
 
@@ -484,7 +483,7 @@ func TestCopyUserFiles(t *testing.T) {
 		srcFS := afero.NewMemMapFs()
 		dstFS := afero.NewMemMapFs()
 
-		customContent := "## Custom Content\n\nProject-specific rules."
+		customContent := "Custom Content\n\nProject-specific rules."
 		err := afero.WriteFile(srcFS, "docs/AGENTS.md", []byte(customContent), 0o644)
 		require.NoError(t, err)
 
@@ -506,7 +505,7 @@ func TestCopyUserFiles(t *testing.T) {
 		srcFS := afero.NewMemMapFs()
 		dstFS := afero.NewMemMapFs()
 
-		templateContent := "## App: {{ .Definition.Project.Name }}"
+		templateContent := "App: {{ .Definition.Project.Name }}"
 		err := afero.WriteFile(srcFS, "docs/AGENTS.md.tmpl", []byte(templateContent), 0o644)
 		require.NoError(t, err)
 
