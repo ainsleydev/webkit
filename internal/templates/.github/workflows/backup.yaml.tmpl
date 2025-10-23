@@ -62,12 +62,12 @@ jobs:
       - name: Upload Backup to S3
         run: |
           # TODO: The name of the bucket needs to somehow be dynamic, how can we tell what bucket to use and where? Do we do a global one?
-          s3cmd put --acl-private $BACKUP_FILE s3://{{ index $.Data "BucketName" }}${BACKUP_PATH}
+          s3cmd put --acl-private $BACKUP_FILE s3://{{ $.BucketName }}${BACKUP_PATH}
 
       - name: Retain only 30 latest backups
         run: |
           # List backups, skip newest 30, delete the rest
-          s3cmd ls s3://{{ .BucketName }}${BACKUP_PATH} \
+          s3cmd ls s3://{{ $.BucketName }}${BACKUP_PATH} \
           | sort -k1,2 \
           | head -n -30 \
           | awk '{print $4}' \
