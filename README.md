@@ -47,6 +47,14 @@ and project files - all without cluttering your project repository with infrastr
 > **Note:** For user documentation and guides,
 > visit [webkit.ainsley.dev](https://webkit.ainsley.dev)
 
+
+## Packages
+
+- ![npm](https://img.shields.io/npm/v/@ainsleydev/payload-helper?label=@ainsleydev/payload-helper&logo=npm&style=badge)
+- ![npm](https://img.shields.io/npm/v/@ainsleydev/eslint-config?label=@ainsleydev/eslint-config&logo=npm&style=badge)
+- ![npm](https://img.shields.io/npm/v/@ainsleydev/prettier-config?label=@ainsleydev/prettier-config&logo=npm&style=badge)
+
+
 ## Installation
 
 **Quick install:**

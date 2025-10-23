@@ -1,6 +1,11 @@
 name: "CI Setup"
 description: "Checkout, setup Go, Node, and dependencies"
 
+inputs:
+  integration:
+    description: "Whether to run full integration setup (brew, sops, dependencies)"
+    default: "true"
+
 runs:
   using: "composite"
   steps:
@@ -32,12 +37,14 @@ runs:
         version: "1.8.3"
 
     - name: Install dependencies
+      if: ${{ inputs.integration == 'true' }}
       shell: bash
       run: |
         export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
         make setup
 
     - name: Install sops
+      if: ${{ inputs.integration == 'true' }}
       shell: bash
       run: |
         curl -LO https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64
@@ -45,6 +52,7 @@ runs:
         chmod +x /usr/local/bin/sops
 
     - name: Install Terraform
+      if: ${{ inputs.integration == 'true' }}
       uses: hashicorp/setup-terraform@v3
       with:
         terraform_version: "1.13.0"
