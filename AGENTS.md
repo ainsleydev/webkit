@@ -92,6 +92,7 @@ Use `context.Context` as the first parameter for functions that perform I/O or c
 
 - Document all exported types, functions, and constants with Go doc comments.
 - Ensure that the comments convey the meaning behind the code, not just the what.
+- All comments must end with a full stop, including inline comments and multi-line comments.
 
 **Example:**
 
@@ -233,7 +234,7 @@ All Go tests should be written in one of two ways:
 #### General Rules
 
 - Always call `t.Parallel()` at the top of every test function and within each subtest, unless:
-	- It’s an integration test (files ending in `_integration_test.go`).
+	- It's an integration test (files ending in `_integration_test.go`).
 	- It performs file I/O, shell commands, or interacts with SOPS or the OS files
 	- Has the potential to fail with `--race` .
 - Always use `t.Context()` when a `context.Context` is required in tests instead of
@@ -249,6 +250,18 @@ All Go tests should be written in one of two ways:
 - Always include all relevant test cases, even edge or error conditions.
 - If 100% coverage is not possible, explain _why_ in a brief note above the test function (no inline
   comments).
+
+#### Test Organisation
+
+- **One test function per exported function/method** — add new test cases as subtests within the
+  existing test function rather than creating separate test functions.
+- Only create a new test function if:
+	- Testing a distinctly different aspect that warrants complete separation (e.g.,
+	  `TestTracker_Add` vs `TestTracker_Save`).
+	- The original test function would become unwieldy (>200 lines) with the addition.
+- Group related test cases using descriptive subtest names that explain what's being tested.
+- Aim for comprehensive coverage within each test function rather than fragmenting tests across
+  multiple functions.
 
 #### Test Tables
 
