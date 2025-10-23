@@ -1,4 +1,4 @@
-name: Backup Database
+name: Backup Resources
 
 on:
   workflow_dispatch:
@@ -6,11 +6,13 @@ on:
     - cron: '0 2 * * *' # Runs daily at 2 AM
 
 jobs:
-  backup-postgres:
-    name: Backup Database to BackBlaze
+{{- range .Resources }}
+{{- if eq .Type "postgres" }}
+  backup-{{ .Name }}:
+    name: Backup {{ .Name }} Database to BackBlaze
     runs-on: ubuntu-latest
     env:
-      BACKUP_PATH: '/backups/db/'
+      BACKUP_PATH: '/backups/db/{{ .Name }}/'
       DO_ACCESS_TOKEN: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
 
     steps:
@@ -27,12 +29,12 @@ jobs:
       - name: Add Runner IP to Database
         uses: ./.github/actions/db-add-ip
         with:
-          database-id: {{ ghSecret .DatabaseID }}
+          database-id: {{ ghSecret (index $.Data .Name "DatabaseID") }}
           doctl-token: {{ ghSecret "DO_ACCESS_TOKEN" }}
 
       - name: Dump and Compress PostgreSQL Database
         env:
-          DATABASE_URL: {{ ghSecret .DatabaseURL }}
+          DATABASE_URL: {{ ghSecret (index $.Data .Name "DatabaseURL") }}
         run: |
           # Install PostgreSQL client
           sudo apt-get update && sudo apt-get install -y postgresql-client
@@ -60,13 +62,12 @@ jobs:
       - name: Upload Backup to S3
         run: |
           # TODO: The name of the bucket needs to somehow be dynamic, how can we tell what bucket to use and where? Do we do a global one?
-          s3cmd put --acl-private $BACKUP_FILE s3://{{ .BucketName }}${BACKUP_PATH}
+          s3cmd put --acl-private $BACKUP_FILE s3://{{ $.BucketName }}${BACKUP_PATH}
 
       - name: Retain only 30 latest backups
         run: |
           # List backups, skip newest 30, delete the rest
-          s3cmd ls s3://{{ .BucketName }}${BACKUP_PATH} \
-          | sort -k1,2 \
+          s3cmd ls s3://{{ $.BucketName }}${BACKUP_PATH} \
           | sort -k1,2 \
           | head -n -30 \
           | awk '{print $4}' \
@@ -76,16 +77,61 @@ jobs:
         if: always()
         uses: ./.github/actions/db-remove-ip
         with:
-          database-id: {{ ghSecret .DatabaseID }}
+          database-id: {{ ghSecret (index $.Data .Name "DatabaseID") }}
           doctl-token: {{ ghEnv "DO_ACCESS_TOKEN" }}
 
       - name: Notify Slack of Backup Failure
         if: failure()
         uses: ./.github/actions/slack-notify
         with:
-          title: 'Database Backup Failed'
+          title: '{{ .Name }} Database Backup Failed'
           message: 'The scheduled database backup has failed.'
           status: 'failure'
           commit_sha: ${{"{{"}} github.sha }}
           slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
           channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
+{{- else if eq .Type "s3" }}
+  backup-{{ .Name }}:
+    name: Backup {{ .Name }} Bucket to Backblaze B2
+    runs-on: ubuntu-latest
+    timeout-minutes: 60 # 1 Hour
+    env:
+      BACKUP_PATH: '/backups/bucket/{{ .Name }}/'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone for DigitalOcean Spaces
+        run: |
+          rclone config create do_spaces s3 \
+            env_auth true \
+            provider DigitalOcean \
+            access_key_id {{ ghSecret (index $.Data .Name "AccessKey") }} \
+            secret_access_key {{ ghSecret (index $.Data .Name "SecretKey") }} \
+            region {{ ghSecret (index $.Data .Name "Region") }} \
+            endpoint https://{{ ghSecret (index $.Data .Name "Region") }}.digitaloceanspaces.com
+
+      - name: Configure rclone for Backblaze B2
+        run: |
+          rclone config create b2_backup b2 \
+            account {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }} \
+            key {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+
+      - name: Sync Bucket to B2
+        run: |
+          # Sync entire DO Spaces bucket to B2, deleting extraneous files
+          rclone sync do_spaces:{{ ghSecret (index $.Data .Name "BucketName") }} b2_backup:{{ ghSecret "ORG_BACK_BLAZE_BUCKET" }} \
+            --progress --transfers=16 --checkers=16 --delete-excluded
+
+      - name: Verify Backup
+        run: |
+          echo "Backup completed successfully!"
+{{- end }}
+{{- end }}

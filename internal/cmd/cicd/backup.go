@@ -2,7 +2,6 @@ package cicd
 
 import (
 	"context"
-	"fmt"
 	"path/filepath"
 
 	"github.com/urfave/cli/v3"
@@ -31,32 +30,48 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 		return nil
 	}
 
+	tpl := templates.MustLoadTemplate(filepath.Join(workflowsPath, "backup.yaml.tmpl"))
+	path := filepath.Join(workflowsPath, "backup.yaml")
+
+	// Build nested data map with all resource secrets grouped by resource name.
+	// This allows cleaner template access: {{ index $.Data .Name "DatabaseURL" }}
+	secretData := make(map[string]map[string]string)
 	for _, resource := range appDef.Resources {
+		resourceSecrets := make(map[string]string)
 
-		// Postgres DB
-		if resource.Type == appdef.ResourceTypePostgres {
-			tpl := templates.MustLoadTemplate(filepath.Join(workflowsPath, "backup-postgres.yaml.tmpl"))
-			path := filepath.Join(workflowsPath, fmt.Sprintf("backup-postgres-%s.yaml", resource.Name))
+		switch resource.Type {
+		case appdef.ResourceTypePostgres:
+			resourceSecrets["DatabaseURL"] = resource.GitHubSecretName(enviro, "connection_url")
+			resourceSecrets["DatabaseID"] = resource.GitHubSecretName(enviro, "id")
 
-			if err := input.Generator().Template(path, tpl, map[string]any{
-				"Resource":    resource,
-				"DatabaseURL": resource.GitHubSecretName(enviro, "connection_url"),
-				"DatabaseID":  resource.GitHubSecretName(enviro, "id"),
-				"AccessKey":   resource.GitHubSecretName(enviro, "access_key"),
-				"SecretKey":   resource.GitHubSecretName(enviro, "secret_key"),
-
-				// TODO: This may change at some point, see workflow for more details.
-				"BucketName": appDef.Project.Name,
-			}, scaffold.WithTracking(manifest.SourceResource(resource.Name))); err != nil {
-				return err
+		case appdef.ResourceTypeS3:
+			// NOTE: S3 backup is currently only compatible with DigitalOcean Spaces.
+			// Backblaze B2 and other providers are not yet supported.
+			if resource.Provider != appdef.ResourceProviderDigitalOcean {
+				continue
 			}
+
+			resourceSecrets["AccessKey"] = resource.GitHubSecretName(enviro, "access_key")
+			resourceSecrets["SecretKey"] = resource.GitHubSecretName(enviro, "secret_key")
+			resourceSecrets["Region"] = resource.GitHubSecretName(enviro, "region")
+			resourceSecrets["BucketName"] = resource.GitHubSecretName(enviro, "bucket_name")
 		}
 
-		// S3 Storage
-		if resource.Type == appdef.ResourceTypeS3 {
-			// TODO
-		}
+		secretData[resource.Name] = resourceSecrets
 	}
 
-	return nil
+	data := map[string]any{
+		"Resources": appDef.Resources,
+		"Data":      secretData,
+		// TODO: This may change at some point, see workflow for more details.
+		"BucketName": appDef.Project.Name,
+	}
+
+	// Track all resources as sources for this workflow.
+	var trackingOptions []scaffold.Option
+	for _, resource := range appDef.Resources {
+		trackingOptions = append(trackingOptions, scaffold.WithTracking(manifest.SourceResource(resource.Name)))
+	}
+
+	return input.Generator().Template(path, tpl, data, trackingOptions...)
 }
