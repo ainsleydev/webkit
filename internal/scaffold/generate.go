@@ -175,9 +175,8 @@ func (f FileGenerator) YAML(path string, content any, opts ...Option) error {
 }
 
 // Code writes Go code to a file with the given mode.
-// The content should be valid Go code without the package header notice.
+// The content should be valid Go code and will have the WebKit notice prepended.
 func (f FileGenerator) Code(path string, content string, opts ...Option) error {
-	opts = append(opts, WithoutNotice())
 	return f.Bytes(path, []byte(content), opts...)
 }
 
