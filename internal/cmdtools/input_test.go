@@ -21,10 +21,13 @@ func TestCommandInput_AppDef(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 		err := afero.WriteFile(fs, "app.json", []byte(`{
-			"name": "test-app",
-			"repo": "test/repo",
-			"email": "test@example.com",
-			"types": ["web"]
+			"project": {
+				"name": "test-app",
+				"repo": {
+					"owner": "test",
+					"name": "repo"
+				}
+			}
 		}`), 0644)
 		require.NoError(t, err)
 
@@ -35,8 +38,8 @@ func TestCommandInput_AppDef(t *testing.T) {
 
 		def := input.AppDef()
 		assert.NotNil(t, def)
-		assert.Equal(t, "test-app", def.Name)
-		assert.Equal(t, "test/repo", def.Repo)
+		assert.Equal(t, "test-app", def.Project.Name)
+		assert.Equal(t, "test", def.Project.Repo.Owner)
 	})
 
 	t.Run("Caching", func(t *testing.T) {
@@ -44,10 +47,13 @@ func TestCommandInput_AppDef(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 		err := afero.WriteFile(fs, "app.json", []byte(`{
-			"name": "cached-app",
-			"repo": "cached/repo",
-			"email": "cached@example.com",
-			"types": ["web"]
+			"project": {
+				"name": "cached-app",
+				"repo": {
+					"owner": "cached",
+					"name": "repo"
+				}
+			}
 		}`), 0644)
 		require.NoError(t, err)
 
@@ -60,15 +66,18 @@ func TestCommandInput_AppDef(t *testing.T) {
 		require.NotNil(t, def1)
 
 		err = afero.WriteFile(fs, "app.json", []byte(`{
-			"name": "modified-app",
-			"repo": "modified/repo",
-			"email": "modified@example.com",
-			"types": ["api"]
+			"project": {
+				"name": "modified-app",
+				"repo": {
+					"owner": "modified",
+					"name": "repo"
+				}
+			}
 		}`), 0644)
 		require.NoError(t, err)
 
 		def2 := input.AppDef()
 		assert.Same(t, def1, def2)
-		assert.Equal(t, "cached-app", def2.Name)
+		assert.Equal(t, "cached-app", def2.Project.Name)
 	})
 }
