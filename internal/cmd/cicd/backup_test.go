@@ -18,6 +18,9 @@ func TestBackupWorkflow(t *testing.T) {
 		t.Parallel()
 
 		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
 			Resources: []appdef.Resource{},
 		}
 
@@ -31,6 +34,9 @@ func TestBackupWorkflow(t *testing.T) {
 		t.Parallel()
 
 		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
 			Resources: []appdef.Resource{
 				{
 					Name:     "db",
@@ -59,6 +65,9 @@ func TestBackupWorkflow(t *testing.T) {
 		t.Parallel()
 
 		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
 			Resources: []appdef.Resource{
 				{
 					Name:     "store",
@@ -90,6 +99,9 @@ func TestBackupWorkflow(t *testing.T) {
 		t.Parallel()
 
 		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
 			Resources: []appdef.Resource{
 				{
 					Name:     "b2store",
@@ -117,6 +129,9 @@ func TestBackupWorkflow(t *testing.T) {
 		t.Parallel()
 
 		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
 			Resources: []appdef.Resource{
 				{
 					Name:     "db",
@@ -153,6 +168,9 @@ func TestBackupWorkflow(t *testing.T) {
 		t.Parallel()
 
 		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
 			Resources: []appdef.Resource{
 				{
 					Name:     "db",
