@@ -7,6 +7,8 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
@@ -27,6 +29,7 @@ func ActionTemplates(_ context.Context, input cmdtools.CommandInput) error {
 		err := input.Generator().CopyFromEmbed(templates.Embed,
 			filepath.Join(actionsPath, from),
 			filepath.Join(actionsPath, to),
+			scaffold.WithTracking(manifest.SourceProject()),
 		)
 		if err != nil {
 			return err

@@ -7,6 +7,8 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
@@ -27,5 +29,7 @@ func PR(_ context.Context, input cmdtools.CommandInput) error {
 	}
 	file := filepath.Join(workflowsPath, "pr.yaml")
 
-	return input.Generator().Template(file, tpl, data)
+	return input.Generator().Template(file, tpl, data,
+		scaffold.WithTracking(manifest.SourceProject()),
+	)
 }
