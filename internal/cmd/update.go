@@ -65,7 +65,12 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 		return errors.Wrap(err, "loading manifest")
 	}
 
-	// 2. Generate all files (they auto-track to new manifest)
+	// 2. Configure tracker to preserve timestamps for unchanged files
+	if oldManifest != nil {
+		input.Manifest.WithOldManifest(oldManifest)
+	}
+
+	// 3. Generate all files (they auto-track to new manifest)
 	for _, op := range updateOps {
 		printer.Printf("🏃 %v\n", op.name)
 		if err = op.command(ctx, input); err != nil {
@@ -73,12 +78,12 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 		}
 	}
 
-	// 3. Save new manifest
+	// 4. Save new manifest
 	if err = input.Manifest.Save(input.FS); err != nil {
 		return errors.Wrap(err, "saving manifest")
 	}
 
-	// 4. Cleanup orphaned files
+	// 5. Cleanup orphaned files
 	if oldManifest != nil {
 		newManifest, err := manifest.Load(input.FS)
 		if err != nil {

@@ -61,10 +61,19 @@ detect_arch() {
 
 # Get latest release version from GitHub
 get_latest_version() {
-    LATEST_VERSION=$(curl -sSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    info "Fetching latest release information from GitHub..."
+
+    # Try to get the latest release using GitHub API
+    API_RESPONSE=$(curl -sSL "https://api.github.com/repos/$REPO/releases/latest" 2>&1)
+
+    if [ $? -ne 0 ]; then
+        error "Failed to connect to GitHub API. Check your internet connection."
+    fi
+
+    LATEST_VERSION=$(echo "$API_RESPONSE" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | head -n 1)
 
     if [ -z "$LATEST_VERSION" ]; then
-        error "Failed to fetch latest version"
+        error "Failed to fetch latest version. API response may be rate-limited or no releases exist.\nTry setting VERSION environment variable explicitly: VERSION=v0.0.3 sh install.sh"
     fi
 
     echo "$LATEST_VERSION"
@@ -83,6 +92,7 @@ install_webkit() {
     info "Installing webkit $VERSION for $OS/$ARCH..."
 
     # Construct download URL and file extension
+    # Note: This naming must match GoReleaser's archive naming template
     BINARY_NAME="webkit_${OS}_${ARCH}"
 
     if [ "$OS" = "windows" ]; then
@@ -94,6 +104,7 @@ install_webkit() {
     ARCHIVE_NAME="${BINARY_NAME}${ARCHIVE_EXT}"
     DOWNLOAD_URL="https://github.com/$REPO/releases/download/$VERSION/$ARCHIVE_NAME"
 
+    info "Archive name: $ARCHIVE_NAME"
     info "Downloading from: $DOWNLOAD_URL"
 
     # Create temporary directory

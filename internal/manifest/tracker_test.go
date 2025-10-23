@@ -226,3 +226,289 @@ func TestManifestTimestamp(t *testing.T) {
 	assert.True(t, manifest.GeneratedAt.After(before) || manifest.GeneratedAt.Equal(before))
 	assert.True(t, manifest.GeneratedAt.Before(after) || manifest.GeneratedAt.Equal(after))
 }
+
+func TestTracker_WithOldManifest(t *testing.T) {
+	t.Parallel()
+
+	oldManifest := &Manifest{
+		Version:     "v1.0.0",
+		GeneratedAt: time.Now(),
+		Files: map[string]FileEntry{
+			"test.txt": {
+				Path:        "test.txt",
+				Hash:        "abc123",
+				GeneratedAt: time.Now(),
+			},
+		},
+	}
+
+	tracker := NewTracker().WithOldManifest(oldManifest)
+
+	assert.NotNil(t, tracker.oldManifest)
+	assert.Equal(t, oldManifest, tracker.oldManifest)
+}
+
+func TestTracker_Add_PreservesTimestamp(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Preserves timestamp when hash unchanged", func(t *testing.T) {
+		t.Parallel()
+
+		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		oldManifest := &Manifest{
+			Files: map[string]FileEntry{
+				"test.txt": {
+					Path:        "test.txt",
+					Hash:        "abc123",
+					GeneratedAt: oldTime,
+				},
+			},
+		}
+
+		tracker := NewTracker().WithOldManifest(oldManifest)
+		newEntry := FileEntry{
+			Path:        "test.txt",
+			Hash:        "abc123", // Same hash
+			GeneratedAt: time.Now(),
+		}
+
+		tracker.Add(newEntry)
+
+		// Timestamp should be preserved from old manifest
+		assert.Equal(t, oldTime, tracker.files["test.txt"].GeneratedAt)
+	})
+
+	t.Run("Updates timestamp when hash changed", func(t *testing.T) {
+		t.Parallel()
+
+		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		oldManifest := &Manifest{
+			Files: map[string]FileEntry{
+				"test.txt": {
+					Path:        "test.txt",
+					Hash:        "abc123",
+					GeneratedAt: oldTime,
+				},
+			},
+		}
+
+		tracker := NewTracker().WithOldManifest(oldManifest)
+		newTime := time.Now()
+		newEntry := FileEntry{
+			Path:        "test.txt",
+			Hash:        "xyz789", // Different hash
+			GeneratedAt: newTime,
+		}
+
+		tracker.Add(newEntry)
+
+		// Timestamp should be the new one since hash changed
+		assert.Equal(t, newTime.Truncate(time.Second), tracker.files["test.txt"].GeneratedAt.Truncate(time.Second))
+	})
+
+	t.Run("New file gets new timestamp", func(t *testing.T) {
+		t.Parallel()
+
+		oldManifest := &Manifest{
+			Files: map[string]FileEntry{},
+		}
+
+		tracker := NewTracker().WithOldManifest(oldManifest)
+		newTime := time.Now()
+		newEntry := FileEntry{
+			Path:        "new.txt",
+			Hash:        "new123",
+			GeneratedAt: newTime,
+		}
+
+		tracker.Add(newEntry)
+
+		// New file should keep its new timestamp
+		assert.Equal(t, newTime.Truncate(time.Second), tracker.files["new.txt"].GeneratedAt.Truncate(time.Second))
+	})
+
+	t.Run("Works without old manifest", func(t *testing.T) {
+		t.Parallel()
+
+		tracker := NewTracker()
+		newTime := time.Now()
+		entry := FileEntry{
+			Path:        "test.txt",
+			Hash:        "abc123",
+			GeneratedAt: newTime,
+		}
+
+		tracker.Add(entry)
+
+		// Should just add the entry normally
+		assert.Equal(t, newTime.Truncate(time.Second), tracker.files["test.txt"].GeneratedAt.Truncate(time.Second))
+	})
+}
+
+func TestTracker_Save_PreservesManifestTimestamp(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Preserves manifest timestamp when nothing changed", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		fileTime := time.Date(2024, 1, 1, 1, 0, 0, 0, time.UTC)
+
+		oldManifest := &Manifest{
+			Version:     "v1.0.0",
+			GeneratedAt: oldTime,
+			Files: map[string]FileEntry{
+				"test.txt": {
+					Path:        "test.txt",
+					Hash:        "abc123",
+					GeneratedAt: fileTime,
+				},
+			},
+		}
+
+		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker.Add(FileEntry{
+			Path:        "test.txt",
+			Hash:        "abc123", // Same hash, so timestamp will be preserved
+			GeneratedAt: time.Now(),
+		})
+
+		err := tracker.Save(fs)
+		require.NoError(t, err)
+
+		manifest, err := Load(fs)
+		require.NoError(t, err)
+
+		// Manifest timestamp should be preserved
+		assert.Equal(t, oldTime, manifest.GeneratedAt)
+	})
+
+	t.Run("Updates manifest timestamp when file changed", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		oldManifest := &Manifest{
+			Version:     "v1.0.0",
+			GeneratedAt: oldTime,
+			Files: map[string]FileEntry{
+				"test.txt": {
+					Path:        "test.txt",
+					Hash:        "abc123",
+					GeneratedAt: time.Date(2024, 1, 1, 1, 0, 0, 0, time.UTC),
+				},
+			},
+		}
+
+		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker.Add(FileEntry{
+			Path:        "test.txt",
+			Hash:        "xyz789", // Different hash
+			GeneratedAt: time.Now(),
+		})
+
+		before := time.Now()
+		err := tracker.Save(fs)
+		require.NoError(t, err)
+		after := time.Now()
+
+		manifest, err := Load(fs)
+		require.NoError(t, err)
+
+		// Manifest timestamp should be updated
+		assert.True(t, manifest.GeneratedAt.After(oldTime))
+		assert.True(t, manifest.GeneratedAt.After(before) || manifest.GeneratedAt.Equal(before))
+		assert.True(t, manifest.GeneratedAt.Before(after) || manifest.GeneratedAt.Equal(after))
+	})
+
+	t.Run("Updates manifest timestamp when file added", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		oldManifest := &Manifest{
+			Version:     "v1.0.0",
+			GeneratedAt: oldTime,
+			Files: map[string]FileEntry{
+				"old.txt": {
+					Path:        "old.txt",
+					Hash:        "old123",
+					GeneratedAt: time.Date(2024, 1, 1, 1, 0, 0, 0, time.UTC),
+				},
+			},
+		}
+
+		tracker := NewTracker().WithOldManifest(oldManifest)
+		tracker.Add(FileEntry{
+			Path:        "old.txt",
+			Hash:        "old123",
+			GeneratedAt: time.Now(),
+		})
+		tracker.Add(FileEntry{
+			Path:        "new.txt", // New file
+			Hash:        "new123",
+			GeneratedAt: time.Now(),
+		})
+
+		before := time.Now()
+		err := tracker.Save(fs)
+		require.NoError(t, err)
+		after := time.Now()
+
+		manifest, err := Load(fs)
+		require.NoError(t, err)
+
+		// Manifest timestamp should be updated because a new file was added
+		assert.True(t, manifest.GeneratedAt.After(oldTime))
+		assert.True(t, manifest.GeneratedAt.After(before) || manifest.GeneratedAt.Equal(before))
+		assert.True(t, manifest.GeneratedAt.Before(after) || manifest.GeneratedAt.Equal(after))
+	})
+
+	t.Run("Updates manifest timestamp when file removed", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		oldManifest := &Manifest{
+			Version:     "v1.0.0",
+			GeneratedAt: oldTime,
+			Files: map[string]FileEntry{
+				"file1.txt": {
+					Path:        "file1.txt",
+					Hash:        "hash1",
+					GeneratedAt: time.Date(2024, 1, 1, 1, 0, 0, 0, time.UTC),
+				},
+				"file2.txt": {
+					Path:        "file2.txt",
+					Hash:        "hash2",
+					GeneratedAt: time.Date(2024, 1, 1, 1, 0, 0, 0, time.UTC),
+				},
+			},
+		}
+
+		tracker := NewTracker().WithOldManifest(oldManifest)
+		// Only add one file (removing file2.txt)
+		tracker.Add(FileEntry{
+			Path:        "file1.txt",
+			Hash:        "hash1",
+			GeneratedAt: time.Now(),
+		})
+
+		before := time.Now()
+		err := tracker.Save(fs)
+		require.NoError(t, err)
+		after := time.Now()
+
+		manifest, err := Load(fs)
+		require.NoError(t, err)
+
+		// Manifest timestamp should be updated because a file was removed
+		assert.True(t, manifest.GeneratedAt.After(oldTime))
+		assert.True(t, manifest.GeneratedAt.After(before) || manifest.GeneratedAt.Equal(before))
+		assert.True(t, manifest.GeneratedAt.Before(after) || manifest.GeneratedAt.Equal(after))
+	})
+}

@@ -16,12 +16,15 @@ import (
 // Tracker maintains a collection of generated files and their metadata.
 // Used to track which files were created by webkit and from which source.
 type Tracker struct {
-	files      map[string]FileEntry
-	mtx        *sync.Mutex
-	marshaller func(v any, prefix, indent string) ([]byte, error)
+	files         map[string]FileEntry
+	oldManifest   *Manifest
+	mtx           *sync.Mutex
+	marshaller    func(v any, prefix, indent string) ([]byte, error)
 }
 
 // NewTracker creates a tracker with an initialized file map.
+// If an old manifest is provided, it will be used to preserve timestamps
+// for files that haven't changed.
 func NewTracker() *Tracker {
 	return &Tracker{
 		files:      make(map[string]FileEntry),
@@ -30,23 +33,52 @@ func NewTracker() *Tracker {
 	}
 }
 
+// WithOldManifest sets the old manifest for timestamp preservation.
+func (t *Tracker) WithOldManifest(old *Manifest) *Tracker {
+	t.oldManifest = old
+	return t
+}
+
 // Path defines the filepath where the manifest resides.
 var Path = filepath.Join(".webkit", "manifest.json")
 
 // Add stores a file entry in the tracker, keyed by its path.
 // If an entry with the same path exists, it will be overwritten.
+// If the old manifest contains the same file with the same hash,
+// the GeneratedAt timestamp will be preserved.
 func (t *Tracker) Add(entry FileEntry) {
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
+
+	// Check if we have an old manifest and if this file existed before
+	if t.oldManifest != nil {
+		if oldEntry, exists := t.oldManifest.Files[entry.Path]; exists {
+			// If the content hash hasn't changed, preserve the old timestamp
+			if oldEntry.Hash == entry.Hash {
+				entry.GeneratedAt = oldEntry.GeneratedAt
+			}
+		}
+	}
+
 	t.files[entry.Path] = entry
 }
 
 // Save writes the tracker's files to a manifest JSON file.
 // Creates parent directories if they don't exist.
+// If an old manifest was provided and no files have changed,
+// the manifest's GeneratedAt timestamp will be preserved.
 func (t *Tracker) Save(fs afero.Fs) error {
+	generatedAt := time.Now()
+
+	// If we have an old manifest, check if any files actually changed
+	if t.oldManifest != nil && t.hasFilesChanged() == false {
+		// No changes detected, preserve the old manifest's timestamp
+		generatedAt = t.oldManifest.GeneratedAt
+	}
+
 	manifest := Manifest{
 		Version:     version.Version,
-		GeneratedAt: time.Now(),
+		GeneratedAt: generatedAt,
 		Files:       t.files,
 	}
 
@@ -61,6 +93,35 @@ func (t *Tracker) Save(fs afero.Fs) error {
 	}
 
 	return afero.WriteFile(fs, Path, data, 0o644)
+}
+
+// hasFilesChanged checks if any files have different timestamps
+// compared to the old manifest, indicating actual changes.
+func (t *Tracker) hasFilesChanged() bool {
+	if t.oldManifest == nil {
+		return true
+	}
+
+	// Check if file count differs
+	if len(t.files) != len(t.oldManifest.Files) {
+		return true
+	}
+
+	// Check if any file has a different GeneratedAt timestamp
+	// (which would have been updated by Add if the hash changed)
+	for path, newEntry := range t.files {
+		oldEntry, exists := t.oldManifest.Files[path]
+		if !exists {
+			return true
+		}
+		// If the timestamp was preserved, they'll be equal
+		// If it was updated, they'll be different
+		if !newEntry.GeneratedAt.Equal(oldEntry.GeneratedAt) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // ErrNoManifest is returned by Load() when there hasen't been
