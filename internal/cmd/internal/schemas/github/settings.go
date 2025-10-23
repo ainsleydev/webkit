@@ -5,6 +5,8 @@ package github
 //
 // See: https://github.com/apps/settings
 // And: https://github.com/repository-settings/app/blob/master/docs/configuration.md
+//
+// TODO: Potential to use this? https://github.com/google/go-github
 type RepoSettings struct {
 	Repository    Repository     `yaml:"repository"`
 	Labels        []Label        `yaml:"labels,omitempty"`
@@ -16,22 +18,22 @@ type RepoSettings struct {
 
 // Repository contains all repository-level settings
 type Repository struct {
-	Name                         string   `yaml:"name,omitempty"`
-	Description                  string   `yaml:"description,omitempty"`
-	Homepage                     string   `yaml:"homepage,omitempty"`
-	Topics                       []string `yaml:"topics,omitempty"`
-	Private                      bool     `yaml:"private,omitempty"`
-	HasIssues                    bool     `yaml:"has_issues,omitempty"`
-	HasProjects                  bool     `yaml:"has_projects,omitempty"`
-	HasWiki                      bool     `yaml:"has_wiki,omitempty"`
-	HasDownloads                 bool     `yaml:"has_downloads,omitempty"`
-	DefaultBranch                string   `yaml:"default_branch,omitempty"`
-	AllowSquashMerge             bool     `yaml:"allow_squash_merge,omitempty"`
-	AllowMergeCommit             bool     `yaml:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge             bool     `yaml:"allow_rebase_merge,omitempty"`
-	DeleteBranchOnMerge          bool     `yaml:"delete_branch_on_merge,omitempty"`
-	EnableAutomatedSecurityFixes bool     `yaml:"enable_automated_security_fixes,omitempty"`
-	EnableVulnerabilityAlerts    bool     `yaml:"enable_vulnerability_alerts,omitempty"`
+	Name                         string `yaml:"name,omitempty"`
+	Description                  string `yaml:"description,omitempty"`
+	Homepage                     string `yaml:"homepage,omitempty"`
+	Topics                       string `yaml:"topics,omitempty"`
+	Private                      bool   `yaml:"private,omitempty"`
+	HasIssues                    bool   `yaml:"has_issues,omitempty"`
+	HasProjects                  bool   `yaml:"has_projects,omitempty"`
+	HasWiki                      bool   `yaml:"has_wiki,omitempty"`
+	HasDownloads                 bool   `yaml:"has_downloads,omitempty"`
+	DefaultBranch                string `yaml:"default_branch,omitempty"`
+	AllowSquashMerge             bool   `yaml:"allow_squash_merge,omitempty"`
+	AllowMergeCommit             bool   `yaml:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge             bool   `yaml:"allow_rebase_merge,omitempty"`
+	DeleteBranchOnMerge          bool   `yaml:"delete_branch_on_merge,omitempty"`
+	EnableAutomatedSecurityFixes bool   `yaml:"enable_automated_security_fixes,omitempty"`
+	EnableVulnerabilityAlerts    bool   `yaml:"enable_vulnerability_alerts,omitempty"`
 }
 
 // Label represents a GitHub label configuration
@@ -70,10 +72,10 @@ type Branch struct {
 // BranchProtection contains branch protection rules
 type BranchProtection struct {
 	RequiredPullRequestReviews *RequiredPullRequestReviews `yaml:"required_pull_request_reviews,omitempty"`
-	RequiredStatusChecks       *RequiredStatusChecks       `yaml:"required_status_checks,omitempty"`
+	RequiredStatusChecks       *RequiredStatusChecks       `yaml:"required_status_checks"`
 	EnforceAdmins              bool                        `yaml:"enforce_admins,omitempty"`
 	RequiredLinearHistory      bool                        `yaml:"required_linear_history,omitempty"`
-	Restrictions               *Restrictions               `yaml:"restrictions,omitempty"`
+	Restrictions               *Restrictions               `yaml:"restrictions"`
 }
 
 // RequiredPullRequestReviews contains PR review requirements
@@ -98,7 +100,7 @@ type RequiredStatusChecks struct {
 
 // Restrictions contains push restrictions
 type Restrictions struct {
-	Apps  []string `yaml:"apps,omitempty"`
-	Users []string `yaml:"users,omitempty"`
-	Teams []string `yaml:"teams,omitempty"`
+	Apps  []string `yaml:"apps"`
+	Users []string `yaml:"users"`
+	Teams []string `yaml:"teams"`
 }
