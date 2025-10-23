@@ -28,10 +28,6 @@ builds:
       - prod
     ldflags:
       - -s -w
-      - -X github.com/ainsleydev/webkit/internal/version.Version={{.Version}}
-      - -X github.com/ainsleydev/webkit/internal/version.Commit={{.Commit}}
-      - -X github.com/ainsleydev/webkit/internal/version.Date={{.Date}}
-      - -X github.com/ainsleydev/webkit/internal/version.BuiltBy=goreleaser
     mod_timestamp: '{{ .CommitTimestamp }}'
 archives:
   - formats: [tar.gz]

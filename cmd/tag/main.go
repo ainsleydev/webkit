@@ -8,8 +8,11 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/spf13/afero"
 
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
 func main() {
@@ -111,9 +114,34 @@ func createTag(console *printer.Console, reader *bufio.Reader) {
 		return
 	}
 
+	// Generate version file with new tag
+	console.Printf("\nGenerating version file...\n")
+	if err := generateVersionFile(console, newTag); err != nil {
+		console.Error(fmt.Sprintf("Error generating version file: %s", err))
+		os.Exit(1)
+	}
+	console.Success("Version file generated")
+
+	// Commit the version file
+	console.Printf("Committing version file...\n")
+	if err := gitCommitVersionFile(newTag); err != nil {
+		console.Error(fmt.Sprintf("Error committing version file: %s", err))
+		os.Exit(1)
+	}
+	console.Success("Version file committed")
+
 	// Create and push tag
+	console.Printf("Creating tag...\n")
 	if err := gitCreateTag(newTag); err != nil {
 		console.Error(fmt.Sprintf("Error creating tag: %s", err))
+		os.Exit(1)
+	}
+	console.Success(fmt.Sprintf("Tag %s created", newTag))
+
+	// Push commit and tag
+	console.Printf("Pushing changes...\n")
+	if err := gitPushCommit(); err != nil {
+		console.Error(fmt.Sprintf("Error pushing commit: %s", err))
 		os.Exit(1)
 	}
 
@@ -273,6 +301,48 @@ func gitDeleteLocalTag(tag string) error {
 
 func gitDeleteRemoteTag(tag string) error {
 	cmd := exec.Command("git", "push", "origin", "--delete", tag)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s: %s", err, string(output))
+	}
+	return nil
+}
+
+func generateVersionFile(console *printer.Console, version string) error {
+	fs := afero.NewOsFs()
+	tracker := manifest.NewTracker()
+	gen := scaffold.New(fs, tracker, console)
+
+	// Generate simplified version file content
+	content := fmt.Sprintf(`package version
+
+const Version = %q
+`, version)
+
+	return gen.Code("internal/version/version.go", content)
+}
+
+func gitCommitVersionFile(tag string) error {
+	// Add the version file
+	cmd := exec.Command("git", "add", "internal/version/version.go")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git add failed: %s: %s", err, string(output))
+	}
+
+	// Commit with a message
+	commitMsg := fmt.Sprintf("chore: Updating version to %s", tag)
+	cmd = exec.Command("git", "commit", "-m", commitMsg)
+	output, err = cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git commit failed: %s: %s", err, string(output))
+	}
+
+	return nil
+}
+
+func gitPushCommit() error {
+	cmd := exec.Command("git", "push")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s: %s", err, string(output))

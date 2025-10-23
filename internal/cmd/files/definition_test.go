@@ -26,8 +26,6 @@ func TestDefinition(t *testing.T) {
 	}
 
 	t.Run("Created", func(t *testing.T) {
-		version.Version = "1.2.3"
-
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
 		err := Definition(context.Background(), input)
@@ -42,7 +40,7 @@ func TestDefinition(t *testing.T) {
 
 		t.Log("File Updated")
 		{
-			assert.Equal(t, "1.2.3", updated.WebkitVersion)
+			assert.Equal(t, version.Version, updated.WebkitVersion)
 			assert.Equal(t, "test-project", updated.Project.Name)
 		}
 	})
