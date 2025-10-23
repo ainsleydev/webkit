@@ -3,6 +3,9 @@ repository:
   private: false
   delete_branch_on_merge: true
   allow_merge_commit: false
+teams:
+  - name: core
+    permission: admin
 branches:
   - name: main
     protection:
@@ -12,4 +15,8 @@ branches:
         require_code_owner_reviews: true
       required_status_checks: null
       enforce_admins: true
-      restrictions: null
+      restrictions:
+        apps: []
+        users: []
+        teams:
+          - core

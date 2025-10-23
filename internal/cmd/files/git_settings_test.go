@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -41,7 +40,6 @@ func TestGitSettings(t *testing.T) {
 		}
 
 		got, err := afero.ReadFile(input.FS, ".github/settings.yaml")
-		fmt.Println(string(got))
 		assert.NoError(t, err)
 		assert.NotEmpty(t, got)
 		assert.NoError(t, testutil.ValidateYAML(t, got))
