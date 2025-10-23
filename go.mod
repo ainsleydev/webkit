@@ -12,7 +12,7 @@ require (
 	filippo.io/age v1.2.1
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/PuerkitoBio/goquery v1.10.0
+	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/a-h/templ v0.3.960
 	github.com/ainsleyclark/go-payloadcms v0.0.8
 	github.com/aws/aws-sdk-go-v2 v1.39.3
@@ -50,7 +50,7 @@ require (
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/andybalholm/cascadia v1.3.2 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/atombender/go-jsonschema v0.20.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.2 // indirect
