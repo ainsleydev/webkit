@@ -66,7 +66,11 @@ func (c *CommandInput) AppDef() *appdef.Definition {
 
 	read, err := appdef.Read(c.FS)
 	if err != nil {
-		Exit(err)
+		c.Printer().LineBreak()
+		c.Printer().Error("Could not find app.json in the current directory.")
+		c.Printer().Info("Please run this command from the root of a WebKit project.")
+		c.Printer().LineBreak()
+		os.Exit(1)
 	}
 	c.AppDefCache = read
 

@@ -6,7 +6,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmd/cicd"
 	"github.com/ainsleydev/webkit/internal/cmd/docs"
 	"github.com/ainsleydev/webkit/internal/cmd/env"
@@ -61,13 +60,7 @@ func update(ctx context.Context, input cmdtools.CommandInput) error {
 	printer.LineBreak()
 
 	// 1. Validate app.json exists before proceeding.
-	_, err := appdef.Read(input.FS)
-	if err != nil {
-		printer.LineBreak()
-		printer.Error("Could not find app.json in the current directory.")
-		printer.Info("Please run this command from the root of a WebKit project.")
-		return errors.Wrap(err, "reading app.json")
-	}
+	_ = input.AppDef()
 
 	// 2. Load previous manifest.
 	oldManifest, err := manifest.Load(input.FS)
