@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'packages/**'
+      - '.changeset/**'
 
 # Only allow one publish workflow to run at a time
 concurrency:
@@ -26,6 +29,8 @@ jobs:
 
       - name: Setup CI environment
         uses: ./.github/actions/setup
+        with:
+          integration: false
 
       - name: Install dependencies with pnpm
         run: pnpm install
