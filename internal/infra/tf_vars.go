@@ -68,10 +68,6 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 		return tfVars{}, errors.New("definition cannot be nil")
 	}
 
-	if len(def.Apps) == 0 && len(def.Resources) == 0 {
-		return tfVars{}, errors.New("no app or resources are defined")
-	}
-
 	vars := tfVars{
 		ProjectName: def.Project.Name,
 		Environment: env.String(),

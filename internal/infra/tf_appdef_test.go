@@ -308,7 +308,8 @@ func TestTerraform_DefaultB2Bucket(t *testing.T) {
 				Name:  "project",
 			},
 		},
-		// No resources defined - testing default bucket only
+		Resources: []appdef.Resource{},
+		Apps:      []appdef.App{},
 	}
 
 	tf, teardown := setup(t, appDef)
@@ -336,8 +337,8 @@ func TestTerraform_DefaultB2Bucket(t *testing.T) {
 		assert.Equal(t, "project", b2Bucket["bucket_name"])
 		assert.Equal(t, "allPrivate", b2Bucket["bucket_type"])
 
-		// Verify lifecycle rule for single version
-		lifecycleRules := b2Bucket["lifecycle_rule"].([]any)
+		// Verify lifecycle rules for single version
+		lifecycleRules := b2Bucket["lifecycle_rules"].([]any)
 		require.Len(t, lifecycleRules, 1, "Should have exactly one lifecycle rule")
 
 		rule := lifecycleRules[0].(map[string]any)
