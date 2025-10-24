@@ -12,7 +12,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
-func TestGenerateAgents(t *testing.T) {
+func TestGenerateDocument(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Generates with custom markdown content", func(t *testing.T) {
@@ -27,16 +27,16 @@ func TestGenerateAgents(t *testing.T) {
 		err := afero.WriteFile(fs, "ai/docs/AGENTS.md", []byte(customContent), 0o644)
 		require.NoError(t, err)
 
-		opts := GenerateAgentsOptions{
+		opts := GenerateDocumentOptions{
 			FS:                fs,
 			Generator:         gen,
+			DocumentType:      DocumentTypeAgents,
 			CustomContentPath: "ai/docs",
-			OutputPath:        "AGENTS.md",
-			TemplateData:      nil,
+			Data:              nil,
 			TrackingSource:    manifest.SourceProject(),
 		}
 
-		err = GenerateAgents(opts)
+		err = GenerateDocument(opts)
 		require.NoError(t, err)
 
 		exists, err := afero.Exists(fs, "AGENTS.md")
@@ -49,7 +49,7 @@ func TestGenerateAgents(t *testing.T) {
 		assert.Contains(t, string(content), customContent)
 	})
 
-	t.Run("Generates with custom template content", func(t *testing.T) {
+	t.Run("Generates with custom template content and data", func(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
@@ -57,22 +57,22 @@ func TestGenerateAgents(t *testing.T) {
 		console := printer.NewTest()
 		gen := scaffold.New(fs, tracker, console)
 
-		customTemplate := "# Custom Template\n\nData: {{ .Definition.Name }}"
+		customTemplate := "# Custom Template\n\nData: {{ .Name }}"
 		err := afero.WriteFile(fs, "ai/docs/AGENTS.md.tmpl", []byte(customTemplate), 0o644)
 		require.NoError(t, err)
 
-		templateData := struct{ Name string }{Name: "WebKit"}
-
-		opts := GenerateAgentsOptions{
+		opts := GenerateDocumentOptions{
 			FS:                fs,
 			Generator:         gen,
+			DocumentType:      DocumentTypeAgents,
 			CustomContentPath: "ai/docs",
-			OutputPath:        "AGENTS.md",
-			TemplateData:      templateData,
-			TrackingSource:    manifest.SourceProject(),
+			Data: map[string]any{
+				"Name": "WebKit",
+			},
+			TrackingSource: manifest.SourceProject(),
 		}
 
-		err = GenerateAgents(opts)
+		err = GenerateDocument(opts)
 		require.NoError(t, err)
 
 		content, err := afero.ReadFile(fs, "AGENTS.md")
@@ -89,16 +89,16 @@ func TestGenerateAgents(t *testing.T) {
 		console := printer.NewTest()
 		gen := scaffold.New(fs, tracker, console)
 
-		opts := GenerateAgentsOptions{
+		opts := GenerateDocumentOptions{
 			FS:                fs,
 			Generator:         gen,
+			DocumentType:      DocumentTypeAgents,
 			CustomContentPath: "ai/docs",
-			OutputPath:        "AGENTS.md",
-			TemplateData:      nil,
+			Data:              nil,
 			TrackingSource:    manifest.SourceProject(),
 		}
 
-		err := GenerateAgents(opts)
+		err := GenerateDocument(opts)
 		require.NoError(t, err)
 
 		content, err := afero.ReadFile(fs, "AGENTS.md")
@@ -119,16 +119,16 @@ func TestGenerateAgents(t *testing.T) {
 		err = afero.WriteFile(fs, "ai/docs/AGENTS.md.tmpl", []byte("Template content"), 0o644)
 		require.NoError(t, err)
 
-		opts := GenerateAgentsOptions{
+		opts := GenerateDocumentOptions{
 			FS:                fs,
 			Generator:         gen,
+			DocumentType:      DocumentTypeAgents,
 			CustomContentPath: "ai/docs",
-			OutputPath:        "AGENTS.md",
-			TemplateData:      nil,
+			Data:              nil,
 			TrackingSource:    manifest.SourceProject(),
 		}
 
-		err = GenerateAgents(opts)
+		err = GenerateDocument(opts)
 		require.NoError(t, err)
 
 		content, err := afero.ReadFile(fs, "AGENTS.md")
@@ -136,21 +136,53 @@ func TestGenerateAgents(t *testing.T) {
 		assert.Contains(t, string(content), "Template content")
 		assert.NotContains(t, string(content), "Markdown content")
 	})
+
+	t.Run("Works with service/app repo with Definition data", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		tracker := manifest.NewTracker()
+		console := printer.NewTest()
+		gen := scaffold.New(fs, tracker, console)
+
+		customTemplate := "# App: {{ .Definition.Name }}"
+		err := afero.WriteFile(fs, "docs/AGENTS.md.tmpl", []byte(customTemplate), 0o644)
+		require.NoError(t, err)
+
+		type AppDef struct{ Name string }
+		opts := GenerateDocumentOptions{
+			FS:                fs,
+			Generator:         gen,
+			DocumentType:      DocumentTypeAgents,
+			CustomContentPath: "docs",
+			Data: map[string]any{
+				"Definition": AppDef{Name: "MyApp"},
+			},
+			TrackingSource: manifest.SourceProject(),
+		}
+
+		err = GenerateDocument(opts)
+		require.NoError(t, err)
+
+		content, err := afero.ReadFile(fs, "AGENTS.md")
+		require.NoError(t, err)
+		assert.Contains(t, string(content), "# App: MyApp")
+	})
 }
 
 func TestLoadCustomContent(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Loads template file", func(t *testing.T) {
+	t.Run("Loads template file with data", func(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		customTemplate := "# Template\n\nHello {{ .Definition.Name }}"
+		customTemplate := "# Template\n\nHello {{ .Name }}"
 		err := afero.WriteFile(fs, "custom/AGENTS.md.tmpl", []byte(customTemplate), 0o644)
 		require.NoError(t, err)
 
-		templateData := struct{ Name string }{Name: "Test"}
-		content, err := loadCustomContent(fs, "custom", templateData)
+		data := map[string]any{"Name": "Test"}
+		content, err := loadCustomContent(fs, "custom", DocumentTypeAgents, data)
 		require.NoError(t, err)
 		assert.Contains(t, content, "# Template")
 		assert.Contains(t, content, "Hello Test")
@@ -164,7 +196,7 @@ func TestLoadCustomContent(t *testing.T) {
 		err := afero.WriteFile(fs, "custom/AGENTS.md", []byte(customMarkdown), 0o644)
 		require.NoError(t, err)
 
-		content, err := loadCustomContent(fs, "custom", nil)
+		content, err := loadCustomContent(fs, "custom", DocumentTypeAgents, nil)
 		require.NoError(t, err)
 		assert.Equal(t, customMarkdown, content)
 	})
@@ -173,7 +205,7 @@ func TestLoadCustomContent(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		content, err := loadCustomContent(fs, "custom", nil)
+		content, err := loadCustomContent(fs, "custom", DocumentTypeAgents, nil)
 		require.NoError(t, err)
 		assert.Empty(t, content)
 	})
@@ -186,8 +218,30 @@ func TestLoadCustomContent(t *testing.T) {
 		err := afero.WriteFile(fs, "custom/AGENTS.md.tmpl", []byte(invalidTemplate), 0o644)
 		require.NoError(t, err)
 
-		content, err := loadCustomContent(fs, "custom", nil)
+		content, err := loadCustomContent(fs, "custom", DocumentTypeAgents, nil)
 		assert.Error(t, err)
 		assert.Empty(t, content)
+	})
+}
+
+func TestDocumentType(t *testing.T) {
+	t.Parallel()
+
+	t.Run("String returns correct value", func(t *testing.T) {
+		t.Parallel()
+
+		assert.Equal(t, "AGENTS.md", DocumentTypeAgents.String())
+	})
+
+	t.Run("TemplateName returns correct value", func(t *testing.T) {
+		t.Parallel()
+
+		assert.Equal(t, "AGENTS.md", DocumentTypeAgents.TemplateName())
+	})
+
+	t.Run("CustomTemplateName returns correct value", func(t *testing.T) {
+		t.Parallel()
+
+		assert.Equal(t, "AGENTS.md.tmpl", DocumentTypeAgents.CustomTemplateName())
 	})
 }

@@ -16,9 +16,6 @@ const (
 	// customContentPath defines where webkit-specific injected docs reside.
 	// This can be easily changed if needed.
 	customContentPath = "ai/docs"
-
-	// outputPath is where the generated AGENTS.md file will be written.
-	outputPath = "AGENTS.md"
 )
 
 func main() {
@@ -27,19 +24,19 @@ func main() {
 	tracker := manifest.NewTracker()
 	gen := scaffold.New(fs, tracker, console)
 
-	opts := docs.GenerateAgentsOptions{
+	opts := docs.GenerateDocumentOptions{
 		FS:                fs,
 		Generator:         gen,
+		DocumentType:      docs.DocumentTypeAgents,
 		CustomContentPath: customContentPath,
-		OutputPath:        outputPath,
-		TemplateData:      nil,
+		Data:              nil, // No app.json manifest needed for webkit repo
 		TrackingSource:    manifest.SourceProject(),
 	}
 
-	if err := docs.GenerateAgents(opts); err != nil {
-		console.Error(fmt.Sprintf("Failed to generate AGENTS.md: %s", err))
+	if err := docs.GenerateDocument(opts); err != nil {
+		console.Error(fmt.Sprintf("Failed to generate %s: %s", opts.DocumentType, err))
 		os.Exit(1)
 	}
 
-	console.Success(fmt.Sprintf("Generated %s successfully", outputPath))
+	console.Success(fmt.Sprintf("Generated %s successfully", opts.DocumentType))
 }

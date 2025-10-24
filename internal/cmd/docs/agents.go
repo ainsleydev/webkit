@@ -17,17 +17,20 @@ const (
 
 // Agents creates the AGENTS.md file at the project root by combining
 // the base template with optional custom content from docs/.
+// This is for service/app repos that have an app.json manifest.
 func Agents(_ context.Context, input cmdtools.CommandInput) error {
-	opts := internaldocs.GenerateAgentsOptions{
+	opts := internaldocs.GenerateDocumentOptions{
 		FS:                input.FS,
 		Generator:         input.Generator(),
+		DocumentType:      internaldocs.DocumentTypeAgents,
 		CustomContentPath: customContentPath,
-		OutputPath:        "AGENTS.md",
-		TemplateData:      input.AppDef(),
-		TrackingSource:    manifest.SourceProject(),
+		Data: map[string]any{
+			"Definition": input.AppDef(),
+		},
+		TrackingSource: manifest.SourceProject(),
 	}
 
-	if err := internaldocs.GenerateAgents(opts); err != nil {
+	if err := internaldocs.GenerateDocument(opts); err != nil {
 		return errors.Wrap(err, "generating AGENTS.md")
 	}
 
