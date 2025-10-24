@@ -68,6 +68,16 @@ locals {
 }
 
 #
+# Default B2 Bucket (always provisioned for every project)
+#
+module "default_b2_bucket" {
+  source = "../providers/b2/bucket"
+
+  bucket_name = "${var.project_name}-${var.environment}"
+  acl         = "allPrivate"
+}
+
+#
 # Resources (databases, storage, etc.)
 #
 module "resources" {

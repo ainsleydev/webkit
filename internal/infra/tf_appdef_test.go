@@ -299,6 +299,61 @@ func TestTerraform_Resources(t *testing.T) {
 	})
 }
 
+func TestTerraform_DefaultB2Bucket(t *testing.T) {
+	appDef := &appdef.Definition{
+		Project: appdef.Project{
+			Name: "project",
+			Repo: appdef.GitHubRepo{
+				Owner: "ainsley-dev",
+				Name:  "project",
+			},
+		},
+		// No resources defined - testing default bucket only
+	}
+
+	tf, teardown := setup(t, appDef)
+	defer teardown()
+
+	err := tf.Init(t.Context())
+	require.NoError(t, err)
+
+	got, err := tf.Plan(t.Context(), env.Production)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	require.True(t, got.HasChanges, "Plan should have changes")
+
+	t.Log("Default B2 Bucket Configuration")
+	{
+		var b2Bucket map[string]any
+		for _, rc := range got.Plan.ResourceChanges {
+			if rc.Type == "b2_bucket" && rc.Name == "this" {
+				b2Bucket = rc.Change.After.(map[string]any)
+				break
+			}
+		}
+		require.NotNil(t, b2Bucket, "B2 bucket resource should be planned")
+
+		assert.Equal(t, "project-production", b2Bucket["bucket_name"])
+		assert.Equal(t, "allPrivate", b2Bucket["bucket_type"])
+
+		// Verify lifecycle rule for single version
+		lifecycleRules := b2Bucket["lifecycle_rule"].([]any)
+		require.Len(t, lifecycleRules, 1, "Should have exactly one lifecycle rule")
+
+		rule := lifecycleRules[0].(map[string]any)
+		assert.Equal(t, float64(1), rule["days_from_hiding_to_deleting"], "Should delete old versions after 1 day")
+		assert.Equal(t, float64(0), rule["days_from_uploading_to_hiding"], "Should hide old versions immediately")
+		assert.Equal(t, "", rule["file_name_prefix"], "Should apply to all files")
+	}
+
+	t.Log("Default B2 Bucket Output")
+	{
+		defaultBucket := got.Plan.PlannedValues.Outputs["default_b2_bucket"]
+		require.NotNil(t, defaultBucket, "Default B2 bucket output should exist")
+		assert.True(t, defaultBucket.Sensitive, "Default B2 bucket output should be sensitive")
+	}
+}
+
 func TestTerraform_Apps(t *testing.T) {
 	t.Skip()
 
