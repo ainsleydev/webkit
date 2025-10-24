@@ -56,7 +56,6 @@ locals {
     [for tag in var.tags : lower(tag)]
   )
 
-
   # Shortened environment names.
   environment_short_map = {
     PRODUCTION  = "prod"

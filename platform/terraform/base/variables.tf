@@ -1,12 +1,12 @@
 variable "project_name" {
   type        = string
   description = "Name of the client that will be prefixed on all resources"
-}
 
-# variable "project_title" {
-#   type        = string
-#   description = "Nice name of the client that will appear in project settings"
-# }
+  validation {
+    condition     = length(var.project_name) > 0
+    error_message = "The project_name variable is required and cannot be empty."
+  }
+}
 
 variable "environment" {
   type        = string

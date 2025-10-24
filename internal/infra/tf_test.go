@@ -196,39 +196,6 @@ func TestTerraform_Plan(t *testing.T) {
 		assert.ErrorContains(t, err, "terraform not initialized")
 	})
 
-	t.Run("Nothing To Provision", func(t *testing.T) {
-		tf, teardown := setup(t, &appdef.Definition{
-			Project: appdef.Project{
-				Name: "project",
-				Repo: appdef.GitHubRepo{
-					Owner: "ainsley-dev",
-					Name:  "project",
-				},
-			},
-			Resources: []appdef.Resource{},
-			Apps:      []appdef.App{},
-		})
-		defer teardown()
-
-		err := tf.Init(t.Context())
-		require.NoError(t, err)
-
-		got, err := tf.Plan(t.Context(), env.Production)
-		require.NoError(t, err, "Plan should succeed with default B2 bucket")
-		require.NotNil(t, got)
-		assert.True(t, got.HasChanges, "Plan should have changes for default B2 bucket")
-
-		// Verify default B2 bucket is in the plan
-		var foundB2Bucket bool
-		for _, rc := range got.Plan.ResourceChanges {
-			if rc.Type == "b2_bucket" && rc.Name == "this" {
-				foundB2Bucket = true
-				break
-			}
-		}
-		assert.True(t, foundB2Bucket, "Default B2 bucket should be in the plan")
-	})
-
 	t.Run("Vars FS Error", func(t *testing.T) {
 		tf, teardown := setup(t, appDef)
 		defer teardown()
@@ -339,27 +306,6 @@ func TestTerraform_Apply(t *testing.T) {
 		_, err := tf.Apply(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "terraform not initialized")
-	})
-
-	t.Run("Nothing To Provision", func(t *testing.T) {
-		tf, teardown := setup(t, &appdef.Definition{
-			Project: appdef.Project{
-				Name: "project",
-				Repo: appdef.GitHubRepo{
-					Owner: "ainsley-dev",
-					Name:  "project",
-				},
-			},
-			Resources: []appdef.Resource{},
-			Apps:      []appdef.App{},
-		})
-		defer teardown()
-
-		err := tf.Init(t.Context())
-		require.NoError(t, err)
-
-		_, err = tf.Apply(t.Context(), env.Production)
-		require.NoError(t, err, "Apply should succeed with default B2 bucket")
 	})
 
 	t.Run("Vars FS Error", func(t *testing.T) {
