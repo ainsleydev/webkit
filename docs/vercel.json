@@ -1,8 +1,0 @@
-{
-	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"trailingSlash": true,
-	"buildCommand": "pnpm run build",
-	"outputDirectory": ".vitepress/dist",
-	"cleanUrls": false,
-	"regions": ["lhr1"]
-}
