@@ -1,4 +1,17 @@
 #
+# Default B2 Bucket
+#
+output "default_b2_bucket" {
+  description = "Default B2 bucket details"
+  value = {
+    id   = module.default_b2_bucket.id
+    name = module.default_b2_bucket.name
+    info = module.default_b2_bucket.info
+  }
+  sensitive = true
+}
+
+#
 # Resources (databases, storage, etc.)
 #
 output "resources" {

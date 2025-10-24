@@ -196,18 +196,6 @@ func TestTerraform_Plan(t *testing.T) {
 		assert.ErrorContains(t, err, "terraform not initialized")
 	})
 
-	t.Run("Nothing To Provision", func(t *testing.T) {
-		tf, teardown := setup(t, &appdef.Definition{})
-		defer teardown()
-
-		err := tf.Init(t.Context())
-		require.NoError(t, err)
-
-		_, err = tf.Plan(t.Context(), env.Production)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "no app or resources are defined")
-	})
-
 	t.Run("Vars FS Error", func(t *testing.T) {
 		tf, teardown := setup(t, appDef)
 		defer teardown()
@@ -318,18 +306,6 @@ func TestTerraform_Apply(t *testing.T) {
 		_, err := tf.Apply(t.Context(), env.Production)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "terraform not initialized")
-	})
-
-	t.Run("Nothing To Provision", func(t *testing.T) {
-		tf, teardown := setup(t, &appdef.Definition{})
-		defer teardown()
-
-		err := tf.Init(t.Context())
-		require.NoError(t, err)
-
-		_, err = tf.Apply(t.Context(), env.Production)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "no app or resources are defined")
 	})
 
 	t.Run("Vars FS Error", func(t *testing.T) {

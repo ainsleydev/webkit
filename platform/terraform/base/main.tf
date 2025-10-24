@@ -56,7 +56,6 @@ locals {
     [for tag in var.tags : lower(tag)]
   )
 
-
   # Shortened environment names.
   environment_short_map = {
     PRODUCTION  = "prod"
@@ -65,6 +64,19 @@ locals {
     TEST        = "test"
   }
   environment_short = lookup(local.environment_short_map, upper(var.environment), lower(var.environment))
+}
+
+#
+# Default B2 Bucket (always provisioned for every project)
+#
+module "default_b2_bucket" {
+  source = "../providers/b2/bucket"
+
+  bucket_name                        = var.project_name
+  acl                                = "allPrivate"
+  days_from_hiding_to_deleting       = 1
+  days_from_uploading_to_hiding      = 0
+  lifecycle_rule_file_name_prefix    = ""
 }
 
 #

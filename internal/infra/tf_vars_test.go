@@ -21,14 +21,19 @@ func TestTFVarsFromDefinition(t *testing.T) {
 
 	t.Run("Empty Definition", func(t *testing.T) {
 		input := &appdef.Definition{
-			Project:   appdef.Project{Name: "test"},
+			Project:   appdef.Project{Name: "project"},
 			Apps:      []appdef.App{},
 			Resources: []appdef.Resource{},
 		}
 
-		_, err := tfVarsFromDefinition(env.Development, input)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "no app or resources are defined")
+		got, err := tfVarsFromDefinition(env.Production, input)
+		assert.NoError(t, err)
+
+		t.Log("Metadata")
+		{
+			assert.Equal(t, "project", got.ProjectName)
+			assert.Equal(t, "production", got.Environment)
+		}
 	})
 
 	t.Run("Single Resource", func(t *testing.T) {
