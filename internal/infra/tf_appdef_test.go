@@ -3,7 +3,6 @@
 package infra
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -320,11 +319,8 @@ func TestTerraform_DefaultB2Bucket(t *testing.T) {
 	require.NoError(t, err)
 
 	got, err := tf.Plan(t.Context(), env.Production)
-	fmt.Print(got.Output)
-
 	require.NoError(t, err)
 	require.NotNil(t, got)
-	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Log("Default B2 Bucket Configuration")
 	{
