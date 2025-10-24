@@ -1,4 +1,5 @@
 {
 	"regions": ["lhr1"],
-	"trailingSlash": true
+	"trailingSlash": true,
+	"outputDirectory": ".vitepress/dist"
 }
