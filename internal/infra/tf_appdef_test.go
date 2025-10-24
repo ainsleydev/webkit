@@ -333,7 +333,7 @@ func TestTerraform_DefaultB2Bucket(t *testing.T) {
 		}
 		require.NotNil(t, b2Bucket, "B2 bucket resource should be planned")
 
-		assert.Equal(t, "project-production", b2Bucket["bucket_name"])
+		assert.Equal(t, "project", b2Bucket["bucket_name"])
 		assert.Equal(t, "allPrivate", b2Bucket["bucket_type"])
 
 		// Verify lifecycle rule for single version

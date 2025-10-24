@@ -73,8 +73,11 @@ locals {
 module "default_b2_bucket" {
   source = "../providers/b2/bucket"
 
-  bucket_name = "${var.project_name}-${var.environment}"
-  acl         = "allPrivate"
+  bucket_name                        = var.project_name
+  acl                                = "allPrivate"
+  days_from_hiding_to_deleting       = 1
+  days_from_uploading_to_hiding      = 0
+  lifecycle_rule_file_name_prefix    = ""
 }
 
 #
