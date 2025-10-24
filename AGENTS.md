@@ -474,7 +474,62 @@ Before submitting changes, agents should verify the following:
 
 #### Verification steps
 
-- [ ] All tests pass locally (run `go test ./...`).
+Before committing, **always** run the following checks:
+
+1. **Run all tests**:
+   ```bash
+   go test ./...
+   ```
+
+2. **Run linting and formatting**:
+   ```bash
+   pnpm check
+   ```
+
+If both pass, proceed with the commit. If either fails, fix the issues before committing.
+
+#### Handling network issues during testing
+
+If you encounter network errors when running `go test ./...` or `pnpm check` (e.g., "dial tcp: lookup
+storage.googleapis.com"), follow these steps:
+
+1. **Check the local Go version**:
+   ```bash
+   GOTOOLCHAIN=local go version
+   ```
+
+2. **Temporarily downgrade `go.mod`** to match the local Go version:
+   ```bash
+   # If local version is go1.24.7, change go.mod from:
+   # go 1.25.3
+   # to:
+   # go 1.24.7
+   ```
+
+3. **Run tests with the local toolchain**:
+   ```bash
+   GOTOOLCHAIN=local go test ./... -timeout 5m
+   ```
+
+4. **Verify the code compiles and tests pass** (or skip appropriately).
+
+5. **Restore the original Go version in `go.mod`** before committing:
+   ```bash
+   # Change back to:
+   # go 1.25.3
+   ```
+
+6. **CRITICAL: Never commit the downgraded `go.mod` version**. Always restore it to the original
+   version before staging files.
+
+7. **Alternative formatting check** (if `pnpm check` fails due to network):
+   ```bash
+   GOTOOLCHAIN=local go fmt ./...
+   GOTOOLCHAIN=local go vet ./...
+   ```
+
+#### Additional checks
+
 - [ ] Code is properly formatted with `go fmt`.
 - [ ] Generated files (`.gen.go`, manifest tracked files) were not manually edited.
 - [ ] New exported types, functions, and constants have Go doc comments.
