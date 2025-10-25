@@ -2,9 +2,10 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -13,6 +14,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
 	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
 func main() {
@@ -248,23 +250,40 @@ func deleteTag(console *printer.Console, reader *bufio.Reader) {
 }
 
 func getLatestTag() string {
-	cmd := exec.Command("git", "describe", "--tags", "--abbrev=0")
-	output, err := cmd.Output()
+	runner := executil.DefaultRunner()
+	ctx := context.Background()
+
+	// First, fetch all tags from remote to ensure we have the latest
+	fetchCmd := executil.NewCommand("git", "fetch", "--tags")
+	_, _ = runner.Run(ctx, fetchCmd) // Ignore errors as repo might not have remote
+
+	// Get the latest tag
+	var stdout bytes.Buffer
+	describeCmd := executil.NewCommand("git", "describe", "--tags", "--abbrev=0")
+	describeCmd.Stdout = &stdout
+
+	_, err := runner.Run(ctx, describeCmd)
 	if err != nil {
 		// No tags exist yet, start from v0.0.0
 		return "v0.0.0"
 	}
-	return strings.TrimSpace(string(output))
+	return strings.TrimSpace(stdout.String())
 }
 
 func getAllTags() ([]string, error) {
-	cmd := exec.Command("git", "tag", "--sort=-version:refname")
-	output, err := cmd.Output()
+	runner := executil.DefaultRunner()
+	ctx := context.Background()
+
+	var stdout bytes.Buffer
+	cmd := executil.NewCommand("git", "tag", "--sort=-version:refname")
+	cmd.Stdout = &stdout
+
+	_, err := runner.Run(ctx, cmd)
 	if err != nil {
 		return nil, err
 	}
 
-	tagsStr := strings.TrimSpace(string(output))
+	tagsStr := strings.TrimSpace(stdout.String())
 	if tagsStr == "" {
 		return []string{}, nil
 	}
@@ -273,37 +292,49 @@ func getAllTags() ([]string, error) {
 }
 
 func gitCreateTag(tag string) error {
-	cmd := exec.Command("git", "tag", tag)
-	output, err := cmd.CombinedOutput()
+	runner := executil.DefaultRunner()
+	ctx := context.Background()
+
+	cmd := executil.NewCommand("git", "tag", tag)
+	result, err := runner.Run(ctx, cmd)
 	if err != nil {
-		return fmt.Errorf("%s: %s", err, string(output))
+		return fmt.Errorf("%s: %s", err, result.Output)
 	}
 	return nil
 }
 
 func gitPushTag(tag string) error {
-	cmd := exec.Command("git", "push", "origin", tag)
-	output, err := cmd.CombinedOutput()
+	runner := executil.DefaultRunner()
+	ctx := context.Background()
+
+	cmd := executil.NewCommand("git", "push", "origin", tag)
+	result, err := runner.Run(ctx, cmd)
 	if err != nil {
-		return fmt.Errorf("%s: %s", err, string(output))
+		return fmt.Errorf("%s: %s", err, result.Output)
 	}
 	return nil
 }
 
 func gitDeleteLocalTag(tag string) error {
-	cmd := exec.Command("git", "tag", "-d", tag)
-	output, err := cmd.CombinedOutput()
+	runner := executil.DefaultRunner()
+	ctx := context.Background()
+
+	cmd := executil.NewCommand("git", "tag", "-d", tag)
+	result, err := runner.Run(ctx, cmd)
 	if err != nil {
-		return fmt.Errorf("%s: %s", err, string(output))
+		return fmt.Errorf("%s: %s", err, result.Output)
 	}
 	return nil
 }
 
 func gitDeleteRemoteTag(tag string) error {
-	cmd := exec.Command("git", "push", "origin", "--delete", tag)
-	output, err := cmd.CombinedOutput()
+	runner := executil.DefaultRunner()
+	ctx := context.Background()
+
+	cmd := executil.NewCommand("git", "push", "origin", "--delete", tag)
+	result, err := runner.Run(ctx, cmd)
 	if err != nil {
-		return fmt.Errorf("%s: %s", err, string(output))
+		return fmt.Errorf("%s: %s", err, result.Output)
 	}
 	return nil
 }
@@ -323,29 +354,35 @@ const Version = %q
 }
 
 func gitCommitVersionFile(tag string) error {
+	runner := executil.DefaultRunner()
+	ctx := context.Background()
+
 	// Add the version file
-	cmd := exec.Command("git", "add", "internal/version/version.go")
-	output, err := cmd.CombinedOutput()
+	addCmd := executil.NewCommand("git", "add", "internal/version/version.go")
+	result, err := runner.Run(ctx, addCmd)
 	if err != nil {
-		return fmt.Errorf("git add failed: %s: %s", err, string(output))
+		return fmt.Errorf("git add failed: %s: %s", err, result.Output)
 	}
 
 	// Commit with a message
 	commitMsg := fmt.Sprintf("chore: Updating version to %s", tag)
-	cmd = exec.Command("git", "commit", "-m", commitMsg)
-	output, err = cmd.CombinedOutput()
+	commitCmd := executil.NewCommand("git", "commit", "-m", commitMsg)
+	result, err = runner.Run(ctx, commitCmd)
 	if err != nil {
-		return fmt.Errorf("git commit failed: %s: %s", err, string(output))
+		return fmt.Errorf("git commit failed: %s: %s", err, result.Output)
 	}
 
 	return nil
 }
 
 func gitPushCommit() error {
-	cmd := exec.Command("git", "push")
-	output, err := cmd.CombinedOutput()
+	runner := executil.DefaultRunner()
+	ctx := context.Background()
+
+	cmd := executil.NewCommand("git", "push")
+	result, err := runner.Run(ctx, cmd)
 	if err != nil {
-		return fmt.Errorf("%s: %s", err, string(output))
+		return fmt.Errorf("%s: %s", err, result.Output)
 	}
 	return nil
 }
