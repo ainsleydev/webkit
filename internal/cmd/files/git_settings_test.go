@@ -39,7 +39,7 @@ func TestGitSettings(t *testing.T) {
 			assert.NotEmpty(t, file)
 		}
 
-		got, err := afero.ReadFile(input.FS, ".github/settings.yaml")
+		got, err := afero.ReadFile(input.FS, ".github/settings.yml")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, got)
 		assert.NoError(t, testutil.ValidateYAML(t, got))
