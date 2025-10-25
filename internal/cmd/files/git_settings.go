@@ -33,7 +33,10 @@ func GitSettings(_ context.Context, input cmdtools.CommandInput) error {
 		}
 	}
 
-	return input.Generator().YAML(".github/settings.yml", repoSettings(input))
+	return input.Generator().YAML(".github/settings.yml",
+		repoSettings(input),
+		scaffold.WithTracking(manifest.SourceProject()),
+	)
 }
 
 func repoSettings(input cmdtools.CommandInput) github.RepoSettings {
