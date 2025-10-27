@@ -10,3 +10,4 @@
 ## New
 
 - Email helper or something similar, needs to be language agnostic.
+- Commit Lint? (look at Payload)
