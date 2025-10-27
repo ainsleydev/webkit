@@ -102,7 +102,6 @@
 **/terraform.rc
 **/*backend.hcl
 
-**/secrets/
 **/*.key
 **/*.pem
 **/credentials.*
