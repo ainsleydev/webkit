@@ -54,7 +54,9 @@ jobs:
 
       - name: Test
         # TODO, add race.
-        run: go test ./... -coverprofile=./coverage.out -covermode=atomic
+        run: |
+          export SOPS_AGE_KEY="${{ secrets.ORG_AGE_SECRET }}"
+          go test ./... -coverprofile=./coverage.out -covermode=atomic
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5.5.1
