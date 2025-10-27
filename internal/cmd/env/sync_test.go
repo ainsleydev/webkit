@@ -99,6 +99,38 @@ func TestSync(t *testing.T) {
 		assert.ErrorContains(t, err, "mkdir error")
 	})
 
+	t.Run("Empty environment", func(t *testing.T) {
+		appDefEmpty := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name: "app-empty",
+					Path: "app-empty",
+					Env:  appdef.Environment{}, // no Dev or Production vars
+				},
+			},
+		}
+
+		input := setup(t, appDefEmpty)
+		err = Sync(ctx, input)
+		require.NoError(t, err)
+
+		t.Log("Dev")
+		{
+			devPath := filepath.Join("app-empty", ".env")
+			exists, err := afero.Exists(input.FS, devPath)
+			require.NoError(t, err)
+			assert.False(t, exists)
+		}
+
+		t.Log("Production")
+		{
+			prodPath := filepath.Join("app-empty", ".env.production")
+			exists, err := afero.Exists(input.FS, prodPath)
+			require.NoError(t, err)
+			assert.False(t, exists)
+		}
+	})
+
 	t.Run("Success", func(t *testing.T) {
 		t.Setenv(age.KeyEnvVar, ageIdentity.String())
 

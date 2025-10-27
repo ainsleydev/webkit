@@ -41,6 +41,12 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 			case env.Production:
 				vars = mergedApp.Production
 			}
+
+			// Skip empty environments
+			if len(vars) == 0 {
+				continue
+			}
+
 			err = writeMapToFile(writeArgs{
 				Input:       input,
 				Vars:        vars,
