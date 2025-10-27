@@ -99,7 +99,7 @@ func TestSync(t *testing.T) {
 		assert.ErrorContains(t, err, "mkdir error")
 	})
 
-	t.Run("Empty environment", func(t *testing.T) {
+	t.Run("Empty Environment", func(t *testing.T) {
 		appDefEmpty := &appdef.Definition{
 			Apps: []appdef.App{
 				{
