@@ -13,7 +13,6 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
-	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 func TestSync(t *testing.T) {
@@ -33,6 +32,10 @@ func TestSync(t *testing.T) {
 				Name: "app1",
 				Path: "./app1",
 				Env: appdef.Environment{
+					Dev: appdef.EnvVar{
+						"FOO": {Value: "bar", Source: appdef.EnvSourceValue},
+						"BAZ": {Value: "qux", Source: appdef.EnvSourceValue},
+					},
 					Production: appdef.EnvVar{
 						"FOO": {Value: "bar", Source: appdef.EnvSourceValue},
 						"BAZ": {Value: "qux", Source: appdef.EnvSourceValue},
@@ -43,6 +46,9 @@ func TestSync(t *testing.T) {
 				Name: "app2",
 				Path: "app2/nested",
 				Env: appdef.Environment{
+					Dev: appdef.EnvVar{
+						"HELLO": {Value: "world", Source: appdef.EnvSourceValue},
+					},
 					Production: appdef.EnvVar{
 						"HELLO": {Value: "world", Source: appdef.EnvSourceValue},
 					},
@@ -101,30 +107,45 @@ func TestSync(t *testing.T) {
 		err = Sync(ctx, input)
 		assert.NoError(t, err)
 
-		for _, app := range appDef.Apps {
-			for _, envName := range environmentsWithDotEnv {
-				fileName := ".env"
-				if envName != env.Development {
-					fileName = ".env." + envName.String()
-				}
-				path := filepath.Join(app.Path, fileName)
+		t.Log("Dev")
+		{
+			// App 1
+			path := filepath.Join("app1", ".env")
+			content, err := afero.ReadFile(input.FS, path)
+			require.NoError(t, err)
 
-				exists, err := afero.Exists(input.FS, path)
-				assert.NoError(t, err)
-				assert.Truef(t, exists, "%s should exist", path)
+			got := string(content)
 
-				content, err := afero.ReadFile(input.FS, path)
-				assert.NoError(t, err)
-				assert.NotEmptyf(t, content, "%s should not be empty", path)
+			assert.Contains(t, got, "BAZ=\"qux\"")
+			assert.Contains(t, got, "FOO=\"bar\"")
 
-				// Only check Production env for merged vars
-				if envName == env.Production {
-					for k, v := range app.Env.Production {
-						assert.Contains(t, string(content), k)
-						assert.Contains(t, string(content), v.Value)
-					}
-				}
-			}
+			// App 2
+			path = filepath.Join("app2/nested", ".env")
+			content, err = afero.ReadFile(input.FS, path)
+			require.NoError(t, err)
+
+			got = string(content)
+			assert.Contains(t, got, "HELLO=\"world\"")
+		}
+
+		t.Log("Production")
+		{
+			// App 1
+			path := filepath.Join("app1", ".env.production")
+			content, err := afero.ReadFile(input.FS, path)
+			require.NoError(t, err)
+
+			got := string(content)
+			assert.Contains(t, got, "BAZ=\"qux\"")
+			assert.Contains(t, got, "FOO=\"bar\"")
+
+			// App 2
+			path = filepath.Join("app2/nested", ".env.production")
+			content, err = afero.ReadFile(input.FS, path)
+			require.NoError(t, err)
+
+			got = string(content)
+			assert.Contains(t, got, "HELLO=\"world\"")
 		}
 	})
 

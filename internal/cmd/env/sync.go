@@ -5,8 +5,10 @@ import (
 
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 var SyncCmd = &cli.Command{
@@ -32,9 +34,16 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 		mergedApp := app.MergeEnvironments(appDef.Shared.Env)
 
 		for _, enviro := range environmentsWithDotEnv {
+			var vars appdef.EnvVar
+			switch enviro {
+			case env.Development:
+				vars = mergedApp.Dev
+			case env.Production:
+				vars = mergedApp.Production
+			}
 			err = writeMapToFile(writeArgs{
 				Input:       input,
-				Vars:        mergedApp.Production,
+				Vars:        vars,
 				App:         app,
 				Environment: enviro,
 				IsScaffold:  false,
