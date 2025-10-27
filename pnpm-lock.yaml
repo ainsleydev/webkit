@@ -180,6 +180,8 @@ importers:
         specifier: ^5.5.4
         version: 5.8.2
 
+  packages/sveltekit-helper: {}
+
 packages:
 
   '@ampproject/remapping@2.3.0':

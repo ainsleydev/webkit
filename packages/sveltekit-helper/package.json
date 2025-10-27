@@ -1,0 +1,34 @@
+{
+	"name": "@ainsleydev/sveltekit-helper",
+	"version": "0.0.38",
+	"description": "SvelteKit web utilities, UI components and more for ainsley.dev builds",
+	"license": "MIT",
+	"type": "module",
+	"keywords": ["sveltekit", "typescript", "ui"],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ainsleydev/webkit.git",
+		"directory": "packages/sveltekit-helper"
+	},
+	"author": {
+		"name": "ainsley.dev",
+		"email": "hello@ainsley.dev",
+		"url": "https://ainsley.dev"
+	},
+	"scripts": {
+		"build": "pnpm clean",
+		"format": "biome format --write . --apply-unsafe --organise-imports",
+		"lint": "biome lint --write .",
+		"clean": "rimraf {dist,*.tsbuildinfo}",
+		"test": "jest"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"node": ">=18",
+		"pnpm": ">=9"
+	}
+}
