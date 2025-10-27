@@ -17,16 +17,21 @@
 	},
 	"scripts": {
 		"build": "pnpm clean",
-		"format": "biome format --write . --apply-unsafe --organise-imports",
-		"lint": "biome lint --write .",
+		"format": "prettier --write .",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
 		"clean": "rimraf {dist,*.tsbuildinfo}",
 		"test": "jest"
 	},
 	"publishConfig": {
 		"access": "public"
 	},
-	"dependencies": {},
-	"devDependencies": {},
+	"devDependencies": {
+		"@ainsleydev/eslint-config": "workspace:*",
+		"@ainsleydev/prettier-config": "workspace:*",
+		"eslint": "^9.37.0"
+	},
+	"prettier": "@ainsleydev/prettier-config",
 	"engines": {
 		"node": ">=18",
 		"pnpm": ">=9"
