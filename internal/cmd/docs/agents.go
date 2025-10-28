@@ -41,8 +41,7 @@ func generateRootAgents(input cmdtools.CommandInput) error {
 	}
 
 	// Load generated guidelines
-	codeStyle, _ := docsutil.LoadGenFile(input.FS, "CODE_STYLE.md")
-	git, _ := docsutil.LoadGenFile(input.FS, "GIT.md")
+	codeStyle := docsutil.MustLoadGenFile(input.FS, "CODE_STYLE.md")
 
 	// Try to load manifest, but don't fail if it doesn't exist
 	def, _ := appdef.Read(input.FS)
@@ -51,17 +50,16 @@ func generateRootAgents(input cmdtools.CommandInput) error {
 		"Definition": def,
 		"Content":    customContent,
 		"CodeStyle":  codeStyle,
-		"Git":        git,
 	}
 
 	// Conditionally add app-specific guidelines for root AGENTS.md
-	if docsutil.HasAppType(def, appdef.AppTypePayload) {
-		payload, _ := docsutil.LoadGenFile(input.FS, "PAYLOAD.md")
+	if def != nil && def.HasAppType(appdef.AppTypePayload) {
+		payload := docsutil.MustLoadGenFile(input.FS, "PAYLOAD.md")
 		data["Payload"] = payload
 	}
 
-	if docsutil.HasAppType(def, appdef.AppTypeSvelteKit) {
-		svelteKit, _ := docsutil.LoadGenFile(input.FS, "SVELTEKIT.md")
+	if def != nil && def.HasAppType(appdef.AppTypeSvelteKit) {
+		svelteKit := docsutil.MustLoadGenFile(input.FS, "SVELTEKIT.md")
 		data["SvelteKit"] = svelteKit
 	}
 
@@ -85,7 +83,7 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 	}
 
 	// Generate for Payload apps
-	payloadApps := docsutil.GetAppsByType(def, appdef.AppTypePayload)
+	payloadApps := def.GetAppsByType(appdef.AppTypePayload)
 	for _, app := range payloadApps {
 		if err := generateAppAgentsFile(input, app, "PAYLOAD.md"); err != nil {
 			return errors.Wrap(err, "generating Payload AGENTS.md")
@@ -93,7 +91,7 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 	}
 
 	// Generate for SvelteKit apps
-	svelteKitApps := docsutil.GetAppsByType(def, appdef.AppTypeSvelteKit)
+	svelteKitApps := def.GetAppsByType(appdef.AppTypeSvelteKit)
 	for _, app := range svelteKitApps {
 		if err := generateAppAgentsFile(input, app, "SVELTEKIT.md"); err != nil {
 			return errors.Wrap(err, "generating SvelteKit AGENTS.md")
@@ -105,19 +103,11 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 
 // generateAppAgentsFile creates an AGENTS.md file in the app's directory.
 func generateAppAgentsFile(input cmdtools.CommandInput, app appdef.App, genFile string) error {
-	content, err := docsutil.LoadGenFile(input.FS, genFile)
-	if err != nil {
-		return errors.Wrap(err, "loading generated file")
-	}
-
-	// If no content, skip
-	if content == "" {
-		return nil
-	}
+	content := docsutil.MustLoadGenFile(input.FS, genFile)
 
 	// Write to app directory
 	agentsPath := filepath.Join(app.Path, "AGENTS.md")
-	err = input.Generator().Bytes(
+	err := input.Generator().Bytes(
 		agentsPath,
 		[]byte(content),
 		scaffold.WithTracking(manifest.SourceProject()),

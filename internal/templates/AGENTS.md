@@ -20,8 +20,6 @@ These guidelines are automatically synced from there.
 
 {{ .CodeStyle -}}
 
-{{ .Git -}}
-
 {{ if .Payload }}
 ## Libraries
 

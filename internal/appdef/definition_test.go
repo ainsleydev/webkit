@@ -293,3 +293,115 @@ func TestMergeAllEnvironments(t *testing.T) {
 		})
 	}
 }
+
+func TestDefinition_HasAppType(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		def     *Definition
+		appType AppType
+		want    bool
+	}{
+		"Has Payload app": {
+			def: &Definition{
+				Apps: []App{
+					{Name: "cms", Type: AppTypePayload},
+				},
+			},
+			appType: AppTypePayload,
+			want:    true,
+		},
+		"Has SvelteKit app": {
+			def: &Definition{
+				Apps: []App{
+					{Name: "web", Type: AppTypeSvelteKit},
+				},
+			},
+			appType: AppTypeSvelteKit,
+			want:    true,
+		},
+		"Does not have Payload app": {
+			def: &Definition{
+				Apps: []App{
+					{Name: "api", Type: AppTypeGoLang},
+				},
+			},
+			appType: AppTypePayload,
+			want:    false,
+		},
+		"Nil definition": {
+			def:     nil,
+			appType: AppTypePayload,
+			want:    false,
+		},
+		"Empty apps": {
+			def:     &Definition{Apps: []App{}},
+			appType: AppTypePayload,
+			want:    false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := test.def.HasAppType(test.appType)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestDefinition_GetAppsByType(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		def     *Definition
+		appType AppType
+		want    int
+	}{
+		"Multiple Payload apps": {
+			def: &Definition{
+				Apps: []App{
+					{Name: "cms", Type: AppTypePayload},
+					{Name: "admin", Type: AppTypePayload},
+					{Name: "web", Type: AppTypeSvelteKit},
+				},
+			},
+			appType: AppTypePayload,
+			want:    2,
+		},
+		"Single SvelteKit app": {
+			def: &Definition{
+				Apps: []App{
+					{Name: "web", Type: AppTypeSvelteKit},
+					{Name: "api", Type: AppTypeGoLang},
+				},
+			},
+			appType: AppTypeSvelteKit,
+			want:    1,
+		},
+		"No matching apps": {
+			def: &Definition{
+				Apps: []App{
+					{Name: "api", Type: AppTypeGoLang},
+				},
+			},
+			appType: AppTypePayload,
+			want:    0,
+		},
+		"Nil definition": {
+			def:     nil,
+			appType: AppTypePayload,
+			want:    0,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := test.def.GetAppsByType(test.appType)
+			assert.Len(t, got, test.want)
+		})
+	}
+}

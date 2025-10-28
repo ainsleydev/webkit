@@ -1,12 +1,12 @@
 package docs
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
-
-	"github.com/ainsleydev/webkit/internal/appdef"
 )
 
 const (
@@ -41,6 +41,23 @@ func LoadGenFile(fs afero.Fs, filename string) (string, error) {
 	return string(content), nil
 }
 
+// MustLoadGenFile loads a generated documentation file and exits if it fails.
+func MustLoadGenFile(fs afero.Fs, filename string) string {
+	content, err := LoadGenFile(fs, filename)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading generated file %s: %v\n", filename, err)
+		os.Exit(1)
+	}
+
+	if content == "" {
+		fmt.Fprintf(os.Stderr, "Error: generated file %s does not exist or is empty\n", filename)
+		fmt.Fprintf(os.Stderr, "Please run 'go run cmd/docs/main.go' to generate documentation files\n")
+		os.Exit(1)
+	}
+
+	return content
+}
+
 // LoadCustomContent loads custom documentation content from docs/AGENTS.md.
 func LoadCustomContent(fs afero.Fs) (string, error) {
 	path := filepath.Join(customDocsDir, agentsFilename)
@@ -60,35 +77,4 @@ func LoadCustomContent(fs afero.Fs) (string, error) {
 	}
 
 	return string(content), nil
-}
-
-// HasAppType checks if the definition contains an app of the specified type.
-func HasAppType(def *appdef.Definition, appType appdef.AppType) bool {
-	if def == nil {
-		return false
-	}
-
-	for _, app := range def.Apps {
-		if app.Type == appType {
-			return true
-		}
-	}
-
-	return false
-}
-
-// GetAppsByType returns all apps of the specified type from the definition.
-func GetAppsByType(def *appdef.Definition, appType appdef.AppType) []appdef.App {
-	if def == nil {
-		return nil
-	}
-
-	var apps []appdef.App
-	for _, app := range def.Apps {
-		if app.Type == appType {
-			apps = append(apps, app)
-		}
-	}
-
-	return apps
 }

@@ -143,3 +143,34 @@ func mergeEnvironments(envs ...Environment) Environment {
 
 	return merged
 }
+
+// HasAppType checks if the definition contains an app of the specified type.
+func (d *Definition) HasAppType(appType AppType) bool {
+	if d == nil {
+		return false
+	}
+
+	for _, app := range d.Apps {
+		if app.Type == appType {
+			return true
+		}
+	}
+
+	return false
+}
+
+// GetAppsByType returns all apps of the specified type from the definition.
+func (d *Definition) GetAppsByType(appType AppType) []App {
+	if d == nil {
+		return nil
+	}
+
+	var apps []App
+	for _, app := range d.Apps {
+		if app.Type == appType {
+			apps = append(apps, app)
+		}
+	}
+
+	return apps
+}

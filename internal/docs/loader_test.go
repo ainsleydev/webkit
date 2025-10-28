@@ -7,8 +7,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/ainsleydev/webkit/internal/appdef"
 )
 
 func TestLoadGenFile(t *testing.T) {
@@ -90,118 +88,6 @@ func TestLoadCustomContent(t *testing.T) {
 
 			assert.Equal(t, test.wantErr, err != nil)
 			assert.Equal(t, test.want, got)
-		})
-	}
-}
-
-func TestHasAppType(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		def     *appdef.Definition
-		appType appdef.AppType
-		want    bool
-	}{
-		"Has Payload app": {
-			def: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "cms", Type: appdef.AppTypePayload},
-				},
-			},
-			appType: appdef.AppTypePayload,
-			want:    true,
-		},
-		"Has SvelteKit app": {
-			def: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "web", Type: appdef.AppTypeSvelteKit},
-				},
-			},
-			appType: appdef.AppTypeSvelteKit,
-			want:    true,
-		},
-		"Does not have Payload app": {
-			def: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "api", Type: appdef.AppTypeGoLang},
-				},
-			},
-			appType: appdef.AppTypePayload,
-			want:    false,
-		},
-		"Nil definition": {
-			def:     nil,
-			appType: appdef.AppTypePayload,
-			want:    false,
-		},
-		"Empty apps": {
-			def:     &appdef.Definition{Apps: []appdef.App{}},
-			appType: appdef.AppTypePayload,
-			want:    false,
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got := HasAppType(test.def, test.appType)
-			assert.Equal(t, test.want, got)
-		})
-	}
-}
-
-func TestGetAppsByType(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		def     *appdef.Definition
-		appType appdef.AppType
-		want    int
-	}{
-		"Multiple Payload apps": {
-			def: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "cms", Type: appdef.AppTypePayload},
-					{Name: "admin", Type: appdef.AppTypePayload},
-					{Name: "web", Type: appdef.AppTypeSvelteKit},
-				},
-			},
-			appType: appdef.AppTypePayload,
-			want:    2,
-		},
-		"Single SvelteKit app": {
-			def: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "web", Type: appdef.AppTypeSvelteKit},
-					{Name: "api", Type: appdef.AppTypeGoLang},
-				},
-			},
-			appType: appdef.AppTypeSvelteKit,
-			want:    1,
-		},
-		"No matching apps": {
-			def: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "api", Type: appdef.AppTypeGoLang},
-				},
-			},
-			appType: appdef.AppTypePayload,
-			want:    0,
-		},
-		"Nil definition": {
-			def:     nil,
-			appType: appdef.AppTypePayload,
-			want:    0,
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got := GetAppsByType(test.def, test.appType)
-			assert.Len(t, got, test.want)
 		})
 	}
 }

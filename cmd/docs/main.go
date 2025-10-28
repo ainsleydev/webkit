@@ -76,10 +76,6 @@ func run(ctx context.Context, fs afero.Fs, output string) error {
 		return errors.Wrap(err, "generating CODE_STYLE.md")
 	}
 
-	if err := generateGitFile(fs, output, grouped); err != nil {
-		return errors.Wrap(err, "generating GIT.md")
-	}
-
 	if err := generatePayloadFile(fs, output, grouped); err != nil {
 		return errors.Wrap(err, "generating PAYLOAD.md")
 	}
@@ -132,11 +128,11 @@ func groupBySection(guidelines []Guideline) map[string][]Guideline {
 	return grouped
 }
 
-// generateCodeStyleFile creates CODE_STYLE.md from HTML, SCSS, Go, and JS sections.
+// generateCodeStyleFile creates CODE_STYLE.md from HTML, SCSS, Go, JS, and Git sections.
 func generateCodeStyleFile(fs afero.Fs, output string, grouped map[string][]Guideline) error {
 	var buf bytes.Buffer
 
-	sections := []string{"HTML", "SCSS", "Go", "JS"}
+	sections := []string{"HTML", "SCSS", "Go", "JS", "Git"}
 
 	for _, section := range sections {
 		guidelines, exists := grouped[section]
@@ -154,26 +150,6 @@ func generateCodeStyleFile(fs afero.Fs, output string, grouped map[string][]Guid
 	}
 
 	return writeFile(fs, output, "CODE_STYLE.md", buf.Bytes())
-}
-
-// generateGitFile creates GIT.md from Git section.
-func generateGitFile(fs afero.Fs, output string, grouped map[string][]Guideline) error {
-	var buf bytes.Buffer
-
-	guidelines, exists := grouped["Git"]
-	if !exists {
-		return nil
-	}
-
-	buf.WriteString("## Git\n\n")
-
-	for _, g := range guidelines {
-		adjusted := adjustHeadingLevels(g.Markdown)
-		buf.WriteString(adjusted)
-		buf.WriteString("\n\n")
-	}
-
-	return writeFile(fs, output, "GIT.md", buf.Bytes())
 }
 
 // generatePayloadFile creates PAYLOAD.md from Payload section.

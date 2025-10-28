@@ -186,6 +186,9 @@ func TestGenerateCodeStyleFile(t *testing.T) {
 		"JS": {
 			{Section: "JS", Heading: "General", Markdown: "## Style\n\nUse camelCase."},
 		},
+		"Git": {
+			{Section: "Git", Heading: "Commits", Markdown: "## Format\n\nUse conventional commits."},
+		},
 	}
 
 	err := generateCodeStyleFile(fs, "test-output", grouped)
@@ -201,33 +204,13 @@ func TestGenerateCodeStyleFile(t *testing.T) {
 	assert.Contains(t, contentStr, "## SCSS")
 	assert.Contains(t, contentStr, "## Go")
 	assert.Contains(t, contentStr, "## JS")
+	assert.Contains(t, contentStr, "## Git")
 
 	// Headings should be adjusted
 	assert.Contains(t, contentStr, "### Indentation")
 	assert.Contains(t, contentStr, "### BEM")
 	assert.Contains(t, contentStr, "### Formatting")
 	assert.Contains(t, contentStr, "### Style")
-}
-
-func TestGenerateGitFile(t *testing.T) {
-	t.Parallel()
-
-	fs := afero.NewMemMapFs()
-
-	grouped := map[string][]Guideline{
-		"Git": {
-			{Section: "Git", Heading: "Commits", Markdown: "## Format\n\nUse conventional commits."},
-		},
-	}
-
-	err := generateGitFile(fs, "test-output", grouped)
-	require.NoError(t, err)
-
-	content, err := afero.ReadFile(fs, filepath.Join("test-output", "GIT.md"))
-	require.NoError(t, err)
-
-	contentStr := string(content)
-	assert.Contains(t, contentStr, "## Git")
 	assert.Contains(t, contentStr, "### Format")
 }
 
