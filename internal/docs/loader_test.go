@@ -1,4 +1,4 @@
-package docs
+package docsutil
 
 import (
 	"path/filepath"

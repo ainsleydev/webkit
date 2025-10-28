@@ -40,7 +40,7 @@ func generateRootAgents(input cmdtools.CommandInput) error {
 	}
 
 	// Load generated guidelines
-	codeStyle := docsutil.MustLoadGenFile(input.FS, "CODE_STYLE.md")
+	codeStyle := docsutil.MustLoadGenFile(input.FS, docsutil.CodeStyleTemplate)
 
 	// Try to load manifest, but don't fail if it doesn't exist
 	def, _ := appdef.Read(input.FS)
@@ -53,12 +53,12 @@ func generateRootAgents(input cmdtools.CommandInput) error {
 
 	// Conditionally add app-specific guidelines for root AGENTS.md
 	if def != nil && def.HasAppType(appdef.AppTypePayload) {
-		payload := docsutil.MustLoadGenFile(input.FS, "PAYLOAD.md")
+		payload := docsutil.MustLoadGenFile(input.FS, docsutil.PayloadTemplate)
 		data["Payload"] = payload
 	}
 
 	if def != nil && def.HasAppType(appdef.AppTypeSvelteKit) {
-		svelteKit := docsutil.MustLoadGenFile(input.FS, "SVELTEKIT.md")
+		svelteKit := docsutil.MustLoadGenFile(input.FS, docsutil.SvelteKitTemplate)
 		data["SvelteKit"] = svelteKit
 	}
 
@@ -84,7 +84,7 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 	// Generate for Payload apps
 	payloadApps := def.GetAppsByType(appdef.AppTypePayload)
 	for _, app := range payloadApps {
-		if err := generateAppAgentsFile(input, app, "PAYLOAD.md"); err != nil {
+		if err := generateAppAgentsFile(input, app, docsutil.PayloadTemplate); err != nil {
 			return errors.Wrap(err, "generating Payload AGENTS.md")
 		}
 	}
@@ -92,7 +92,7 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 	// Generate for SvelteKit apps
 	svelteKitApps := def.GetAppsByType(appdef.AppTypeSvelteKit)
 	for _, app := range svelteKitApps {
-		if err := generateAppAgentsFile(input, app, "SVELTEKIT.md"); err != nil {
+		if err := generateAppAgentsFile(input, app, docsutil.SvelteKitTemplate); err != nil {
 			return errors.Wrap(err, "generating SvelteKit AGENTS.md")
 		}
 	}
@@ -101,7 +101,7 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 }
 
 // generateAppAgentsFile creates an AGENTS.md file in the app's directory.
-func generateAppAgentsFile(input cmdtools.CommandInput, app appdef.App, genFile string) error {
+func generateAppAgentsFile(input cmdtools.CommandInput, app appdef.App, genFile docsutil.Template) error {
 	content := docsutil.MustLoadGenFile(input.FS, genFile)
 
 	// Write to app directory

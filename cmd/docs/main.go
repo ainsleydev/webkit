@@ -16,6 +16,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
+
+	docsutil "github.com/ainsleydev/webkit/internal/docs"
 )
 
 const (
@@ -73,15 +75,15 @@ func run(ctx context.Context, fs afero.Fs, output string) error {
 	grouped := groupBySection(guidelines)
 
 	if err = generateCodeStyleFile(fs, output, grouped); err != nil {
-		return errors.Wrap(err, "generating CODE_STYLE.md")
+		return errors.Wrap(err, string("generating "+docsutil.CodeStyleTemplate))
 	}
 
 	if err = generatePayloadFile(fs, output, grouped); err != nil {
-		return errors.Wrap(err, "generating PAYLOAD.md")
+		return errors.Wrap(err, string("generating "+docsutil.PayloadTemplate))
 	}
 
 	if err = generateSvelteKitFile(fs, output, grouped); err != nil {
-		return errors.Wrap(err, "generating SVELTEKIT.md")
+		return errors.Wrap(err, string("generating "+docsutil.SvelteKitTemplate))
 	}
 
 	return nil
@@ -151,7 +153,7 @@ func generateCodeStyleFile(fs afero.Fs, output string, grouped map[string][]Guid
 		}
 	}
 
-	return writeFile(fs, output, "CODE_STYLE.md", buf.Bytes())
+	return writeFile(fs, output, docsutil.CodeStyleTemplate, buf.Bytes())
 }
 
 func generatePayloadFile(fs afero.Fs, output string, grouped map[string][]Guideline) error {
@@ -170,7 +172,7 @@ func generatePayloadFile(fs afero.Fs, output string, grouped map[string][]Guidel
 		buf.WriteString("\n\n")
 	}
 
-	return writeFile(fs, output, "PAYLOAD.md", buf.Bytes())
+	return writeFile(fs, output, docsutil.PayloadTemplate, buf.Bytes())
 }
 
 func generateSvelteKitFile(fs afero.Fs, output string, grouped map[string][]Guideline) error {
@@ -189,16 +191,16 @@ func generateSvelteKitFile(fs afero.Fs, output string, grouped map[string][]Guid
 		buf.WriteString("\n\n")
 	}
 
-	return writeFile(fs, output, "SVELTEKIT.md", buf.Bytes())
+	return writeFile(fs, output, docsutil.SvelteKitTemplate, buf.Bytes())
 }
 
 // writeFile writes content to a file in the specified output directory.
-func writeFile(fs afero.Fs, outputDir, filename string, content []byte) error {
-	if err := fs.MkdirAll(outputDir, 0755); err != nil {
+func writeFile(fs afero.Fs, outputDir string, template docsutil.Template, content []byte) error {
+	if err := fs.MkdirAll(template.String(), 0755); err != nil {
 		return errors.Wrap(err, "creating output directory")
 	}
 
-	path := filepath.Join(outputDir, filename)
+	path := filepath.Join(outputDir, template.String())
 	if err := afero.WriteFile(fs, path, content, 0644); err != nil {
 		return errors.Wrap(err, "writing file")
 	}
