@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/secrets"
@@ -36,7 +37,10 @@ var Command = &cli.Command{
 var newTerraform = infra.NewTerraform
 
 func initTerraform(ctx context.Context, input cmdtools.CommandInput) (infra.Manager, func(), error) {
-	appDef := input.AppDef()
+	return initTerraformWithDefinition(ctx, input, input.AppDef())
+}
+
+func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInput, appDef *appdef.Definition) (infra.Manager, func(), error) {
 	printer := input.Printer()
 	spinner := input.Spinner()
 

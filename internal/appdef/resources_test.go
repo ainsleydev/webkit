@@ -114,3 +114,28 @@ func TestResourceApplyDefaults(t *testing.T) {
 		})
 	}
 }
+
+func TestResource_IsTerraformManaged(t *testing.T) {
+	t.Parallel()
+
+	trueVal := true
+	falseVal := false
+
+	tt := map[string]struct {
+		terraformManaged *bool
+		want             bool
+	}{
+		"Nil defaults to true": {terraformManaged: nil, want: true},
+		"Explicit false":       {terraformManaged: &falseVal, want: false},
+		"Explicit true":        {terraformManaged: &trueVal, want: true},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			resource := Resource{TerraformManaged: test.terraformManaged}
+			got := resource.IsTerraformManaged()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}

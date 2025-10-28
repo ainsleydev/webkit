@@ -11,11 +11,12 @@ type (
 	// Resource represents an infrastructure component that an application
 	// depends on, such as databases, storage buckets or caches.
 	Resource struct {
-		Name     string               `json:"name"`
-		Type     ResourceType         `json:"type"`
-		Provider ResourceProvider     `json:"provider"`
-		Config   map[string]any       `json:"config"` // Conforms to Terraform
-		Backup   ResourceBackupConfig `json:"backup,omitempty"`
+		Name             string               `json:"name"`
+		Type             ResourceType         `json:"type"`
+		Provider         ResourceProvider     `json:"provider"`
+		Config           map[string]any       `json:"config"` // Conforms to Terraform
+		Backup           ResourceBackupConfig `json:"backup,omitempty"`
+		TerraformManaged *bool                `json:"terraformManaged,omitempty"`
 	}
 	// ResourceBackupConfig defines optional backup behavior for a resource.
 	// Backup is enabled by default.
@@ -96,6 +97,15 @@ func (r *Resource) GitHubSecretName(environment env.Environment, output string) 
 		strings.ToUpper(environment.Short()),
 		strings.ToUpper(strings.ReplaceAll(r.Name, "-", "_")),
 		strings.ToUpper(output))
+}
+
+// IsTerraformManaged returns whether this resource should be managed by Terraform.
+// It defaults to true when the field is nil or explicitly set to true.
+func (r *Resource) IsTerraformManaged() bool {
+	if r.TerraformManaged == nil {
+		return true
+	}
+	return *r.TerraformManaged
 }
 
 // applyDefaults applies default values to a Resource.
