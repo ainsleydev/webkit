@@ -38,16 +38,7 @@ const (
 
 // LoadGenFile loads a generated documentation file from internal/gen/docs/.
 func LoadGenFile(fs afero.Fs, tpl Template) (string, error) {
-	path := filepath.Join(genDocsDir, string(tpl))
-
-	content, err := afero.ReadFile(fs, path)
-	if errors.Is(err, afero.ErrFileNotFound) || errors.Is(err, os.ErrNotExist) {
-		return "", fmt.Errorf("doc template does not exist: %s", path)
-	} else if err != nil {
-		return "", errors.Wrap(err, "reading generated file")
-	}
-
-	return string(content), nil
+	return readFile(fs, filepath.Join(genDocsDir, string(tpl)))
 }
 
 // MustLoadGenFile loads a generated documentation file and exits if it fails.
@@ -61,14 +52,15 @@ func MustLoadGenFile(fs afero.Fs, tpl Template) string {
 
 // LoadCustomContent loads custom documentation content from docs/AGENTS.md.
 func LoadCustomContent(fs afero.Fs) (string, error) {
-	path := filepath.Join(customDocsDir, agentsFilename)
+	return readFile(fs, filepath.Join(customDocsDir, agentsFilename))
+}
 
+func readFile(fs afero.Fs, path string) (string, error) {
 	content, err := afero.ReadFile(fs, path)
 	if errors.Is(err, afero.ErrFileNotFound) || errors.Is(err, os.ErrNotExist) {
 		return "", fmt.Errorf("doc template does not exist: %s", path)
 	} else if err != nil {
-		return "", errors.Wrap(err, "reading content file")
+		return "", errors.Wrap(err, "reading file")
 	}
-
 	return string(content), nil
 }

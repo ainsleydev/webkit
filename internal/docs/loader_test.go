@@ -114,7 +114,7 @@ func TestLoadCustomContent(t *testing.T) {
 
 		_, err := LoadCustomContent(mock)
 		assert.Error(t, err)
-		assert.ErrorContains(t, err, "reading content file")
+		assert.ErrorContains(t, err, "read error")
 	})
 
 	t.Run("File does not exist", func(t *testing.T) {
