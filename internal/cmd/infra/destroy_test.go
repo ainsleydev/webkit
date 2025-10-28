@@ -13,7 +13,7 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-func TestPlan(t *testing.T) {
+func TestDestroy(t *testing.T) {
 	t.SkipNow()
 
 	t.Run("Init Error", func(t *testing.T) {
@@ -25,36 +25,37 @@ func TestPlan(t *testing.T) {
 		input, teardown := setup(t, &appdef.Definition{}, mock, true)
 		defer teardown()
 
-		err := Plan(t.Context(), input)
+		err := Destroy(t.Context(), input)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "init error")
 	})
 
-	t.Run("Plan Error", func(t *testing.T) {
+	t.Run("Destroy Error", func(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Plan(gomock.Any(), env.Production).
-			Return(infra.PlanOutput{}, errors.New("plan error"))
+			Destroy(gomock.Any(), env.Production).
+			Return(infra.DestroyOutput{
+				Output: "Error: Failed to destroy resource\nTerraform failed",
+			}, errors.New("terraform destroy failed"))
 		mock.EXPECT().
 			Cleanup().
 			Times(1)
 
-		input, teardown := setup(t, &appdef.Definition{}, mock, false)
+		input, buf, teardown := setupWithPrinter(t, &appdef.Definition{}, mock, false)
 		defer teardown()
 
-		err := Plan(t.Context(), input)
+		err := Destroy(t.Context(), input)
 		assert.Error(t, err)
-		assert.ErrorContains(t, err, "plan error")
+		assert.ErrorContains(t, err, "executing terraform destroy")
+		assert.Contains(t, buf.String(), "Failed to destroy resource")
 	})
 
 	t.Run("Success", func(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Plan(gomock.Any(), env.Production).
-			Return(infra.PlanOutput{
-				HasChanges: true,
-				Output:     "plan output for test",
-				Plan:       nil,
+			Destroy(gomock.Any(), env.Production).
+			Return(infra.DestroyOutput{
+				Output: "Destroy complete! Resources: 2 destroyed.",
 			}, nil)
 		mock.EXPECT().
 			Cleanup().
@@ -63,9 +64,10 @@ func TestPlan(t *testing.T) {
 		input, buf, teardown := setupWithPrinter(t, &appdef.Definition{}, mock, false)
 		defer teardown()
 
-		err := Plan(t.Context(), input)
+		err := Destroy(t.Context(), input)
 		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "plan output for test")
+		assert.Contains(t, buf.String(), "Destroy complete")
+		assert.Contains(t, buf.String(), "Destroy succeeded, see console output")
 	})
 
 	t.Run("Filters Unmanaged Apps And Resources", func(t *testing.T) {
@@ -84,11 +86,9 @@ func TestPlan(t *testing.T) {
 
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Plan(gomock.Any(), env.Production).
-			Return(infra.PlanOutput{
-				HasChanges: true,
-				Output:     "plan output",
-				Plan:       nil,
+			Destroy(gomock.Any(), env.Production).
+			Return(infra.DestroyOutput{
+				Output: "Destroy complete! Resources: 1 destroyed.",
 			}, nil)
 		mock.EXPECT().
 			Cleanup().
@@ -97,7 +97,7 @@ func TestPlan(t *testing.T) {
 		input, buf, teardown := setupWithPrinter(t, def, mock, false)
 		defer teardown()
 
-		err := Plan(t.Context(), input)
+		err := Destroy(t.Context(), input)
 		assert.NoError(t, err)
 
 		output := buf.String()
@@ -123,11 +123,9 @@ func TestPlan(t *testing.T) {
 
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Plan(gomock.Any(), env.Production).
-			Return(infra.PlanOutput{
-				HasChanges: true,
-				Output:     "plan output",
-				Plan:       nil,
+			Destroy(gomock.Any(), env.Production).
+			Return(infra.DestroyOutput{
+				Output: "Destroy complete! Resources: 2 destroyed.",
 			}, nil)
 		mock.EXPECT().
 			Cleanup().
@@ -136,7 +134,7 @@ func TestPlan(t *testing.T) {
 		input, buf, teardown := setupWithPrinter(t, def, mock, false)
 		defer teardown()
 
-		err := Plan(t.Context(), input)
+		err := Destroy(t.Context(), input)
 		assert.NoError(t, err)
 
 		output := buf.String()

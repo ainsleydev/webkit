@@ -26,6 +26,12 @@ type (
 	Shared struct {
 		Env Environment `json:"env"`
 	}
+	// SkippedItems contains information about apps and resources
+	// that were filtered out due to not being Terraform managed.
+	SkippedItems struct {
+		Apps      []string
+		Resources []string
+	}
 )
 
 /************************************
@@ -83,6 +89,45 @@ func (d *Definition) ApplyDefaults() error {
 	}
 
 	return nil
+}
+
+// FilterTerraformManaged creates a filtered copy of the Definition containing
+// only apps and resources that are managed by Terraform.
+//
+// Returns the filtered definition and information about what was skipped.
+func (d *Definition) FilterTerraformManaged() (*Definition, SkippedItems) {
+	filtered := &Definition{
+		WebkitVersion: d.WebkitVersion,
+		Project:       d.Project,
+		Shared:        d.Shared,
+		Apps:          make([]App, 0, len(d.Apps)),
+		Resources:     make([]Resource, 0, len(d.Resources)),
+	}
+
+	skipped := SkippedItems{
+		Apps:      make([]string, 0),
+		Resources: make([]string, 0),
+	}
+
+	// Filter resources.
+	for _, res := range d.Resources {
+		if res.IsTerraformManaged() {
+			filtered.Resources = append(filtered.Resources, res)
+		} else {
+			skipped.Resources = append(skipped.Resources, res.Name)
+		}
+	}
+
+	// Filter apps.
+	for _, app := range d.Apps {
+		if app.IsTerraformManaged() {
+			filtered.Apps = append(filtered.Apps, app)
+		} else {
+			skipped.Apps = append(skipped.Apps, app.Name)
+		}
+	}
+
+	return filtered, skipped
 }
 
 /************************************

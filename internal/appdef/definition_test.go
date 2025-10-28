@@ -293,3 +293,166 @@ func TestMergeAllEnvironments(t *testing.T) {
 		})
 	}
 }
+
+func TestDefinition_FilterTerraformManaged(t *testing.T) {
+	t.Parallel()
+
+	trueVal := true
+	falseVal := false
+
+	tt := map[string]struct {
+		input           Definition
+		wantApps        []string
+		wantResources   []string
+		wantSkippedApps []string
+		wantSkippedRes  []string
+	}{
+		"Empty definition": {
+			input: Definition{
+				Project: Project{Name: "test-project"},
+			},
+			wantApps:        []string{},
+			wantResources:   []string{},
+			wantSkippedApps: []string{},
+			wantSkippedRes:  []string{},
+		},
+		"All managed nil default": {
+			input: Definition{
+				Project: Project{Name: "test-project"},
+				Apps: []App{
+					{Name: "app1", TerraformManaged: nil},
+					{Name: "app2", TerraformManaged: nil},
+				},
+				Resources: []Resource{
+					{Name: "db", TerraformManaged: nil},
+					{Name: "cache", TerraformManaged: nil},
+				},
+			},
+			wantApps:        []string{"app1", "app2"},
+			wantResources:   []string{"db", "cache"},
+			wantSkippedApps: []string{},
+			wantSkippedRes:  []string{},
+		},
+		"All managed explicit true": {
+			input: Definition{
+				Project: Project{Name: "test-project"},
+				Apps: []App{
+					{Name: "app1", TerraformManaged: &trueVal},
+					{Name: "app2", TerraformManaged: &trueVal},
+				},
+				Resources: []Resource{
+					{Name: "db", TerraformManaged: &trueVal},
+					{Name: "cache", TerraformManaged: &trueVal},
+				},
+			},
+			wantApps:        []string{"app1", "app2"},
+			wantResources:   []string{"db", "cache"},
+			wantSkippedApps: []string{},
+			wantSkippedRes:  []string{},
+		},
+		"All unmanaged": {
+			input: Definition{
+				Project: Project{Name: "test-project"},
+				Apps: []App{
+					{Name: "app1", TerraformManaged: &falseVal},
+					{Name: "app2", TerraformManaged: &falseVal},
+				},
+				Resources: []Resource{
+					{Name: "db", TerraformManaged: &falseVal},
+					{Name: "cache", TerraformManaged: &falseVal},
+				},
+			},
+			wantApps:        []string{},
+			wantResources:   []string{},
+			wantSkippedApps: []string{"app1", "app2"},
+			wantSkippedRes:  []string{"db", "cache"},
+		},
+		"Mixed managed and unmanaged apps": {
+			input: Definition{
+				Project: Project{Name: "test-project"},
+				Apps: []App{
+					{Name: "app1", TerraformManaged: nil},
+					{Name: "app2", TerraformManaged: &falseVal},
+					{Name: "app3", TerraformManaged: &trueVal},
+				},
+			},
+			wantApps:        []string{"app1", "app3"},
+			wantResources:   []string{},
+			wantSkippedApps: []string{"app2"},
+			wantSkippedRes:  []string{},
+		},
+		"Mixed managed and unmanaged resources": {
+			input: Definition{
+				Project: Project{Name: "test-project"},
+				Resources: []Resource{
+					{Name: "db", TerraformManaged: nil},
+					{Name: "cache", TerraformManaged: &falseVal},
+					{Name: "storage", TerraformManaged: &trueVal},
+				},
+			},
+			wantApps:        []string{},
+			wantResources:   []string{"db", "storage"},
+			wantSkippedApps: []string{},
+			wantSkippedRes:  []string{"cache"},
+		},
+		"Complex mixed scenario": {
+			input: Definition{
+				Project: Project{Name: "test-project"},
+				Apps: []App{
+					{Name: "frontend", TerraformManaged: &trueVal},
+					{Name: "backend", TerraformManaged: nil},
+					{Name: "worker", TerraformManaged: &falseVal},
+				},
+				Resources: []Resource{
+					{Name: "db", TerraformManaged: &trueVal},
+					{Name: "cache", TerraformManaged: &falseVal},
+					{Name: "queue", TerraformManaged: nil},
+				},
+				Shared: Shared{
+					Env: Environment{
+						Production: EnvVar{
+							"KEY": EnvValue{Source: EnvSourceValue, Value: "value"},
+						},
+					},
+				},
+			},
+			wantApps:        []string{"frontend", "backend"},
+			wantResources:   []string{"db", "queue"},
+			wantSkippedApps: []string{"worker"},
+			wantSkippedRes:  []string{"cache"},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			filtered, skipped := test.input.FilterTerraformManaged()
+
+			// Extract app names from filtered result
+			gotApps := make([]string, 0, len(filtered.Apps))
+			for _, app := range filtered.Apps {
+				gotApps = append(gotApps, app.Name)
+			}
+			assert.ElementsMatch(t, test.wantApps, gotApps, "filtered apps mismatch")
+
+			// Extract resource names from filtered result
+			gotResources := make([]string, 0, len(filtered.Resources))
+			for _, res := range filtered.Resources {
+				gotResources = append(gotResources, res.Name)
+			}
+			assert.ElementsMatch(t, test.wantResources, gotResources, "filtered resources mismatch")
+
+			// Check skipped apps
+			assert.ElementsMatch(t, test.wantSkippedApps, skipped.Apps, "skipped apps mismatch")
+
+			// Check skipped resources
+			assert.ElementsMatch(t, test.wantSkippedRes, skipped.Resources, "skipped resources mismatch")
+
+			// Verify that the filtered definition preserves other fields
+			assert.Equal(t, test.input.Project, filtered.Project, "project should be preserved")
+			assert.Equal(t, test.input.Shared, filtered.Shared, "shared config should be preserved")
+			assert.Equal(t, test.input.WebkitVersion, filtered.WebkitVersion, "webkit version should be preserved")
+		})
+	}
+}
