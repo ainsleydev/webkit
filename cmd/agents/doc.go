@@ -5,19 +5,6 @@
 //   - WebKit-specific content from docs/AGENTS.md (tool description, build commands, etc.)
 //   - Code style guidelines from internal/gen/docs/CODE_STYLE.md (synced from ainsley.dev)
 //
-// # Why separate from the webkit CLI?
-//
-// The webkit CLI (internal/cmd/docs/agents.go) is designed to generate documentation for
-// webkit-enabled repositories that use app.json manifests. Using the webkit CLI to generate
-// WebKit's own documentation would create a circular dependency where WebKit would need to
-// use itself to generate its own docs.
-//
-// This separation ensures:
-//   - No circular dependencies
-//   - Clear separation of concerns
-//   - WebKit can generate its docs independently
-//   - webkit-enabled repos use the webkit CLI for their docs
-//
 // # Usage
 //
 // Generate WebKit's AGENTS.md:
