@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/pkg/errors"
@@ -10,6 +11,7 @@ import (
 
 	docsutil "github.com/ainsleydev/webkit/internal/docs"
 	"github.com/ainsleydev/webkit/internal/printer"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
@@ -60,5 +62,9 @@ func run(fs afero.Fs, output string) error {
 		return errors.Wrap(err, "executing template")
 	}
 
-	return afero.WriteFile(fs, output, buf.Bytes(), 0644)
+	// Prepend WebKit notice as HTML comment
+	notice := fmt.Sprintf("<!-- %s -->\n", scaffold.WebKitNotice)
+	finalContent := append([]byte(notice), buf.Bytes()...)
+
+	return afero.WriteFile(fs, output, finalContent, 0644)
 }
