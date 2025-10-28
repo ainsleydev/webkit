@@ -1,13 +1,117 @@
 ## SvelteKit
 
-### Routing
 
-Follow SvelteKit's file-based routing conventions.
+### Component Naming
 
-Use `+page.svelte` for page components and `+page.server.ts` for server-side logic.
+- Use **PascalCase** for component file names -> `ButtonCard.svelte` or `Modal.svelte`
+- Group related components in feature directories -> `/components/Form/` or `/components/Graphics/`
+- Use flat structure for stand alone reusable components -> `/components/Button.svelte`
 
-### General
+### Svelte 5 Patterns
 
-Keep components small and focused on a single responsibility.
+Use Svelte 5's runes for reactivity:
 
-Use stores for shared state management across components.
+```svelte
+<script lang="ts">
+	import type { Snippet } from 'svelte'
+
+	let {
+		onclick,
+		darkMode = false,
+		children,
+	}: { onclick?: () => void; darkMode?: boolean; children?: Snippet } = $props()
+</script>
+
+<button class="btn-card" {onclick} class:btn-card--dark-mode={darkMode}>
+	{@render children?.()}
+</button>
+
+<style lang="scss">
+	.btn-card {
+		// Styles
+	}
+</style>
+```
+
+### Context
+
+Use context for sharing data across components:
+
+```typescript
+// +layout.svelte
+import { setContext } from 'svelte'
+
+const { settings, navigation } = data
+setContext(SETTINGS, settings)
+setContext(NAVIGATION, navigation)
+setContext(USER, data.user)
+```
+
+```typescript
+// Child component
+import { getContext } from 'svelte'
+
+const settings = getContext<Settings>(SETTINGS)
+```
+
+### Component Organisation
+
+```txt
+src/lib/
+├── components/        # Reusable UI components
+├── blocks/            # Page block components
+├── templates/         # Page templates
+├── forms/             # Form handling
+├── data/              # Data services
+└── util/              # Utility functions
+```
+
+### Accessibility
+
+- Use semantic HTML elements.
+- Include ARIA attributes for custom components (e.g., `aria-modal`, `aria-label`).
+- Ensure keyboard navigation works correctly.
+
+
+
+SvelteKit uses file-based routing where the file structure in the `routes` directory determines the URL structure.
+
+### Special Files
+
+- `+layout.svelte` - Root layout component
+- `+layout.server.ts` - Server-side layout data
+- `+layout.ts` - Client-side layout data
+- `+page.svelte` - Page component
+- `+page.server.ts` - Server-side page load
+- `+server.ts` - API routes
+- `+error.svelte` - Error page
+
+### Route Organisation
+
+```txt
+routes/
+├── (auth)/           # Layout group (not in URL)
+│   ├── login/
+│   │   └── +page.svelte
+│   ├── sign-up/
+│   │   └── +page.svelte
+│   └── reset-password/
+│       └── +page.svelte
+├── (web)/            # Web pages layout group
+│   ├── [blog]/    	  # Dynamic route parameter
+│   │   └── +page.svelte
+│   ├── [...page]/    # Catch-all dynamic route
+│   │   └── +page.svelte
+│   └── search/
+│       └── +page.svelte
+├── (server)/         # Server routes
+│   ├── robots.txt/
+│   │   └── +server.ts
+│   └── sitemap.xml/
+│       └── +server.ts
+└── api/              # API endpoints
+    └── forms/
+        └── +server.ts
+```
+
+
