@@ -429,30 +429,23 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 
 			filtered, skipped := test.input.FilterTerraformManaged()
 
-			// Extract app names from filtered result
 			gotApps := make([]string, 0, len(filtered.Apps))
 			for _, app := range filtered.Apps {
 				gotApps = append(gotApps, app.Name)
 			}
 			assert.ElementsMatch(t, test.wantApps, gotApps, "filtered apps mismatch")
 
-			// Extract resource names from filtered result
 			gotResources := make([]string, 0, len(filtered.Resources))
 			for _, res := range filtered.Resources {
 				gotResources = append(gotResources, res.Name)
 			}
-			assert.ElementsMatch(t, test.wantResources, gotResources, "filtered resources mismatch")
 
-			// Check skipped apps
-			assert.ElementsMatch(t, test.wantSkippedApps, skipped.Apps, "skipped apps mismatch")
-
-			// Check skipped resources
-			assert.ElementsMatch(t, test.wantSkippedRes, skipped.Resources, "skipped resources mismatch")
-
-			// Verify that the filtered definition preserves other fields
-			assert.Equal(t, test.input.Project, filtered.Project, "project should be preserved")
-			assert.Equal(t, test.input.Shared, filtered.Shared, "shared config should be preserved")
-			assert.Equal(t, test.input.WebkitVersion, filtered.WebkitVersion, "webkit version should be preserved")
+			assert.ElementsMatch(t, test.wantResources, gotResources)
+			assert.ElementsMatch(t, test.wantSkippedApps, skipped.Apps)
+			assert.ElementsMatch(t, test.wantSkippedRes, skipped.Resources)
+			assert.Equal(t, test.input.Project, filtered.Project)
+			assert.Equal(t, test.input.Shared, filtered.Shared)
+			assert.Equal(t, test.input.WebkitVersion, filtered.WebkitVersion)
 		})
 	}
 }
