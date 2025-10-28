@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -71,23 +72,24 @@ func run(ctx context.Context, fs afero.Fs, output string) error {
 	// Group guidelines by section
 	grouped := groupBySection(guidelines)
 
-	// Generate files
-	if err := generateCodeStyleFile(fs, output, grouped); err != nil {
+	if err = generateCodeStyleFile(fs, output, grouped); err != nil {
 		return errors.Wrap(err, "generating CODE_STYLE.md")
 	}
 
-	if err := generatePayloadFile(fs, output, grouped); err != nil {
+	if err = generatePayloadFile(fs, output, grouped); err != nil {
 		return errors.Wrap(err, "generating PAYLOAD.md")
 	}
 
-	if err := generateSvelteKitFile(fs, output, grouped); err != nil {
+	if err = generateSvelteKitFile(fs, output, grouped); err != nil {
 		return errors.Wrap(err, "generating SVELTEKIT.md")
 	}
 
 	return nil
 }
 
-// fetchGuidelines retrieves guidelines from ainsley.dev.
+// fetchGuidelines retrieves guidelines from the ainsley.dev site.
+// The site is built with Hugo so it outputs a nice index.json
+// file that can be latched on to.
 func fetchGuidelines(ctx context.Context) ([]Guideline, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, guidelinesURL, nil)
 	if err != nil {
@@ -110,7 +112,7 @@ func fetchGuidelines(ctx context.Context) ([]Guideline, error) {
 	}
 
 	var guidelines []Guideline
-	if err := json.NewDecoder(resp.Body).Decode(&guidelines); err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&guidelines); err != nil {
 		return nil, errors.Wrap(err, "decoding guidelines")
 	}
 
@@ -152,7 +154,6 @@ func generateCodeStyleFile(fs afero.Fs, output string, grouped map[string][]Guid
 	return writeFile(fs, output, "CODE_STYLE.md", buf.Bytes())
 }
 
-// generatePayloadFile creates PAYLOAD.md from Payload section.
 func generatePayloadFile(fs afero.Fs, output string, grouped map[string][]Guideline) error {
 	var buf bytes.Buffer
 
@@ -172,7 +173,6 @@ func generatePayloadFile(fs afero.Fs, output string, grouped map[string][]Guidel
 	return writeFile(fs, output, "PAYLOAD.md", buf.Bytes())
 }
 
-// generateSvelteKitFile creates SVELTEKIT.md from SvelteKit section.
 func generateSvelteKitFile(fs afero.Fs, output string, grouped map[string][]Guideline) error {
 	var buf bytes.Buffer
 
@@ -198,7 +198,7 @@ func writeFile(fs afero.Fs, outputDir, filename string, content []byte) error {
 		return errors.Wrap(err, "creating output directory")
 	}
 
-	path := fmt.Sprintf("%s/%s", outputDir, filename)
+	path := filepath.Join(outputDir, filename)
 	if err := afero.WriteFile(fs, path, content, 0644); err != nil {
 		return errors.Wrap(err, "writing file")
 	}

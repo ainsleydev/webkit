@@ -1,8 +1,6 @@
 package docs
 
 import (
-	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -45,16 +43,8 @@ func LoadGenFile(fs afero.Fs, filename string) (string, error) {
 func MustLoadGenFile(fs afero.Fs, filename string) string {
 	content, err := LoadGenFile(fs, filename)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading generated file %s: %v\n", filename, err)
-		os.Exit(1)
+		panic(err)
 	}
-
-	if content == "" {
-		fmt.Fprintf(os.Stderr, "Error: generated file %s does not exist or is empty\n", filename)
-		fmt.Fprintf(os.Stderr, "Please run 'go run cmd/docs/main.go' to generate documentation files\n")
-		os.Exit(1)
-	}
-
 	return content
 }
 

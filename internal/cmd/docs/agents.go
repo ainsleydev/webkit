@@ -17,12 +17,12 @@ import (
 // Agents creates the AGENTS.md file at the project root by combining
 // the base template with generated guidelines from internal/gen/docs/.
 func Agents(_ context.Context, input cmdtools.CommandInput) error {
-	// Generate root AGENTS.md
+	// Generate root AGENTS.md.
 	if err := generateRootAgents(input); err != nil {
 		return errors.Wrap(err, "generating root AGENTS.md")
 	}
 
-	// Generate app-specific AGENTS.md files for Payload and SvelteKit apps
+	// Generate app-specific AGENTS.md files for Payload and SvelteKit apps.
 	if err := generateAppSpecificAgents(input); err != nil {
 		return errors.Wrap(err, "generating app-specific AGENTS.md")
 	}
@@ -30,7 +30,6 @@ func Agents(_ context.Context, input cmdtools.CommandInput) error {
 	return nil
 }
 
-// generateRootAgents creates the root AGENTS.md file.
 func generateRootAgents(input cmdtools.CommandInput) error {
 	baseTemplate := templates.MustLoadTemplate("AGENTS.md")
 
