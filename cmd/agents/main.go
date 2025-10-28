@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"os"
 
 	"github.com/pkg/errors"
@@ -43,37 +42,23 @@ func main() {
 	p.LineBreak()
 }
 
-// run executes the main AGENTS.md generation logic.
 func run(fs afero.Fs, output string) error {
 	// Load WebKit-specific content from docs/AGENTS.md
 	contentBytes, err := afero.ReadFile(fs, docsContentPath)
 	if err != nil {
 		return errors.Wrap(err, "reading docs/AGENTS.md")
 	}
-	content := string(contentBytes)
 
-	// Load generated CODE_STYLE.md from internal/gen/docs
-	codeStyle := docsutil.MustLoadGenFile(fs, docsutil.CodeStyleTemplate)
-
-	// Load the AGENTS.md template
-	tmpl := templates.MustLoadTemplate("AGENTS.md")
-
-	// Prepare template data
 	data := map[string]any{
-		"Content":   content,
-		"CodeStyle": codeStyle,
+		"Content": string(contentBytes),
+		// Load generated CODE_STYLE.md from internal/gen/docs
+		"CodeStyle": docsutil.MustLoadGenFile(fs, docsutil.CodeStyleTemplate),
 	}
 
-	// Execute template
 	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, data); err != nil {
+	if err = templates.MustLoadTemplate("AGENTS.md").Execute(&buf, data); err != nil {
 		return errors.Wrap(err, "executing template")
 	}
 
-	// Write to output file
-	if err := afero.WriteFile(fs, output, buf.Bytes(), 0644); err != nil {
-		return errors.Wrap(err, fmt.Sprintf("writing %s", output))
-	}
-
-	return nil
+	return afero.WriteFile(fs, output, buf.Bytes(), 0644)
 }
