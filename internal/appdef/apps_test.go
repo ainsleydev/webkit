@@ -227,9 +227,9 @@ func TestApp_IsTerraformManaged(t *testing.T) {
 		terraformManaged *bool
 		want             bool
 	}{
-		"Nil defaults to true":     {terraformManaged: nil, want: true},
-		"Explicit false":            {terraformManaged: ptr.BoolPtr(false), want: false},
-		"Explicit true":             {terraformManaged: ptr.BoolPtr(true), want: true},
+		"Nil defaults to true": {terraformManaged: nil, want: true},
+		"Explicit false":       {terraformManaged: ptr.BoolPtr(false), want: false},
+		"Explicit true":        {terraformManaged: ptr.BoolPtr(true), want: true},
 	}
 
 	for name, test := range tt {

@@ -126,8 +126,8 @@ func TestResource_IsTerraformManaged(t *testing.T) {
 		want             bool
 	}{
 		"Nil defaults to true": {terraformManaged: nil, want: true},
-		"Explicit false":        {terraformManaged: &falseVal, want: false},
-		"Explicit true":         {terraformManaged: &trueVal, want: true},
+		"Explicit false":       {terraformManaged: &falseVal, want: false},
+		"Explicit true":        {terraformManaged: &trueVal, want: true},
 	}
 
 	for name, test := range tt {

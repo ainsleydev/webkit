@@ -301,18 +301,18 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 	falseVal := false
 
 	tt := map[string]struct {
-		input            Definition
-		wantAppsCount    int
-		wantResCount     int
-		wantSkippedApps  []string
-		wantSkippedRes   []string
+		input           Definition
+		wantApps        []string
+		wantResources   []string
+		wantSkippedApps []string
+		wantSkippedRes  []string
 	}{
 		"Empty definition": {
 			input: Definition{
 				Project: Project{Name: "test-project"},
 			},
-			wantAppsCount:   0,
-			wantResCount:    0,
+			wantApps:        []string{},
+			wantResources:   []string{},
 			wantSkippedApps: []string{},
 			wantSkippedRes:  []string{},
 		},
@@ -328,8 +328,8 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 					{Name: "cache", TerraformManaged: nil},
 				},
 			},
-			wantAppsCount:   2,
-			wantResCount:    2,
+			wantApps:        []string{"app1", "app2"},
+			wantResources:   []string{"db", "cache"},
 			wantSkippedApps: []string{},
 			wantSkippedRes:  []string{},
 		},
@@ -345,8 +345,8 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 					{Name: "cache", TerraformManaged: &trueVal},
 				},
 			},
-			wantAppsCount:   2,
-			wantResCount:    2,
+			wantApps:        []string{"app1", "app2"},
+			wantResources:   []string{"db", "cache"},
 			wantSkippedApps: []string{},
 			wantSkippedRes:  []string{},
 		},
@@ -362,8 +362,8 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 					{Name: "cache", TerraformManaged: &falseVal},
 				},
 			},
-			wantAppsCount:   0,
-			wantResCount:    0,
+			wantApps:        []string{},
+			wantResources:   []string{},
 			wantSkippedApps: []string{"app1", "app2"},
 			wantSkippedRes:  []string{"db", "cache"},
 		},
@@ -376,8 +376,8 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 					{Name: "app3", TerraformManaged: &trueVal},
 				},
 			},
-			wantAppsCount:   2,
-			wantResCount:    0,
+			wantApps:        []string{"app1", "app3"},
+			wantResources:   []string{},
 			wantSkippedApps: []string{"app2"},
 			wantSkippedRes:  []string{},
 		},
@@ -390,8 +390,8 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 					{Name: "storage", TerraformManaged: &trueVal},
 				},
 			},
-			wantAppsCount:   0,
-			wantResCount:    2,
+			wantApps:        []string{},
+			wantResources:   []string{"db", "storage"},
 			wantSkippedApps: []string{},
 			wantSkippedRes:  []string{"cache"},
 		},
@@ -416,8 +416,8 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 					},
 				},
 			},
-			wantAppsCount:   2,
-			wantResCount:    2,
+			wantApps:        []string{"frontend", "backend"},
+			wantResources:   []string{"db", "queue"},
 			wantSkippedApps: []string{"worker"},
 			wantSkippedRes:  []string{"cache"},
 		},
@@ -429,11 +429,19 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 
 			filtered, skipped := test.input.FilterTerraformManaged()
 
-			// Check filtered apps count
-			assert.Len(t, filtered.Apps, test.wantAppsCount, "filtered apps count mismatch")
+			// Extract app names from filtered result
+			gotApps := make([]string, 0, len(filtered.Apps))
+			for _, app := range filtered.Apps {
+				gotApps = append(gotApps, app.Name)
+			}
+			assert.ElementsMatch(t, test.wantApps, gotApps, "filtered apps mismatch")
 
-			// Check filtered resources count
-			assert.Len(t, filtered.Resources, test.wantResCount, "filtered resources count mismatch")
+			// Extract resource names from filtered result
+			gotResources := make([]string, 0, len(filtered.Resources))
+			for _, res := range filtered.Resources {
+				gotResources = append(gotResources, res.Name)
+			}
+			assert.ElementsMatch(t, test.wantResources, gotResources, "filtered resources mismatch")
 
 			// Check skipped apps
 			assert.ElementsMatch(t, test.wantSkippedApps, skipped.Apps, "skipped apps mismatch")
