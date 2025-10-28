@@ -1,12 +1,16 @@
 package docsutil
 
 import (
+	"errors"
 	"path/filepath"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
+
+	"github.com/ainsleydev/webkit/internal/mocks"
 )
 
 func TestTemplate_String(t *testing.T) {
@@ -20,82 +24,126 @@ func TestTemplate_String(t *testing.T) {
 func TestLoadGenFile(t *testing.T) {
 	t.Parallel()
 
-	tt := map[string]struct {
-		setup   func(fs afero.Fs)
-		file    string
-		want    string
-		wantErr bool
-	}{
-		"File exists": {
-			setup: func(fs afero.Fs) {
-				err := fs.MkdirAll(genDocsDir, 0755)
-				require.NoError(t, err)
-				err = afero.WriteFile(fs, filepath.Join(genDocsDir, "CODE_STYLE.md"), []byte("# Code Style"), 0644)
-				require.NoError(t, err)
-			},
-			file:    "CODE_STYLE.md",
-			want:    "# Code Style",
-			wantErr: false,
-		},
-		"File does not exist": {
-			setup:   func(fs afero.Fs) {},
-			file:    "MISSING.md",
-			want:    "",
-			wantErr: false,
-		},
-	}
+	t.Run("FS Error", func(t *testing.T) {
+		t.Parallel()
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+		ctrl := gomock.NewController(t)
+		mock := mocks.NewMockFS(ctrl)
+		mock.EXPECT().
+			Open(gomock.Any()).
+			Return(nil, errors.New("open error"))
 
-			fs := afero.NewMemMapFs()
-			test.setup(fs)
+		_, err := LoadGenFile(mock, CodeStyleTemplate)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "open error")
+	})
 
-			got, err := LoadGenFile(fs, Template(test.file))
+	t.Run("File does not exist", func(t *testing.T) {
+		t.Parallel()
 
-			assert.Equal(t, test.wantErr, err != nil)
-			assert.Equal(t, test.want, got)
+		fs := afero.NewMemMapFs()
+
+		_, err := LoadGenFile(fs, "MISSING.md")
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "doc template does not exist")
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		err := fs.MkdirAll(genDocsDir, 0755)
+		require.NoError(t, err)
+
+		err = afero.WriteFile(fs,
+			filepath.Join(genDocsDir, CodeStyleTemplate.String()),
+			[]byte("# Code Style"),
+			0644,
+		)
+		require.NoError(t, err)
+
+		got, err := LoadGenFile(fs, CodeStyleTemplate)
+		assert.NoError(t, err)
+		assert.Equal(t, "# Code Style", got)
+	})
+}
+
+func TestMustLoadGenFile(t *testing.T) {
+	t.Parallel()
+
+	t.Run("File does not exist panics", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+
+		assert.Panics(t, func() {
+			MustLoadGenFile(fs, "MISSING.md")
 		})
-	}
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		err := fs.MkdirAll(genDocsDir, 0755)
+		require.NoError(t, err)
+
+		err = afero.WriteFile(fs,
+			filepath.Join(genDocsDir, CodeStyleTemplate.String()),
+			[]byte("# Code Style"),
+			0644,
+		)
+		require.NoError(t, err)
+
+		got := MustLoadGenFile(fs, "CODE_STYLE.md")
+		assert.Equal(t, "# Code Style", got)
+	})
 }
 
 func TestLoadCustomContent(t *testing.T) {
 	t.Parallel()
 
-	tt := map[string]struct {
-		setup   func(fs afero.Fs)
-		want    string
-		wantErr bool
-	}{
-		"Custom content exists": {
-			setup: func(fs afero.Fs) {
-				err := fs.MkdirAll(customDocsDir, 0755)
-				require.NoError(t, err)
-				err = afero.WriteFile(fs, filepath.Join(customDocsDir, agentsFilename), []byte("## WebKit\n\nCustom content."), 0644)
-				require.NoError(t, err)
-			},
-			want:    "## WebKit\n\nCustom content.",
-			wantErr: false,
-		},
-		"Custom content does not exist": {
-			setup:   func(fs afero.Fs) {},
-			want:    "",
-			wantErr: false,
-		},
-	}
+	t.Run("FS Error", func(t *testing.T) {
+		t.Parallel()
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+		ctrl := gomock.NewController(t)
+		mock := mocks.NewMockFS(ctrl)
+		mock.EXPECT().
+			Open(gomock.Any()).
+			Return(nil, errors.New("read error"))
 
-			fs := afero.NewMemMapFs()
-			test.setup(fs)
+		_, err := LoadCustomContent(mock)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "reading content file")
+	})
 
-			got, err := LoadCustomContent(fs)
+	t.Run("File does not exist", func(t *testing.T) {
+		t.Parallel()
 
-			assert.Equal(t, test.wantErr, err != nil)
-			assert.Equal(t, test.want, got)
-		})
-	}
+		fs := afero.NewMemMapFs()
+
+		_, err := LoadCustomContent(fs)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "doc template does not exist")
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		err := fs.MkdirAll(customDocsDir, 0755)
+		require.NoError(t, err)
+
+		err = afero.WriteFile(fs,
+			filepath.Join(customDocsDir, agentsFilename),
+			[]byte("## WebKit\n\nCustom content."),
+			0644,
+		)
+		require.NoError(t, err)
+
+		got, err := LoadCustomContent(fs)
+		assert.NoError(t, err)
+		assert.Equal(t, "## WebKit\n\nCustom content.", got)
+	})
+
 }

@@ -1,6 +1,8 @@
 package docsutil
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -38,17 +40,10 @@ const (
 func LoadGenFile(fs afero.Fs, tpl Template) (string, error) {
 	path := filepath.Join(genDocsDir, string(tpl))
 
-	exists, err := afero.Exists(fs, path)
-	if err != nil {
-		return "", errors.Wrap(err, "checking file existence")
-	}
-
-	if !exists {
-		return "", nil
-	}
-
 	content, err := afero.ReadFile(fs, path)
-	if err != nil {
+	if errors.Is(err, afero.ErrFileNotFound) || errors.Is(err, os.ErrNotExist) {
+		return "", fmt.Errorf("doc template does not exist: %s", path)
+	} else if err != nil {
 		return "", errors.Wrap(err, "reading generated file")
 	}
 
@@ -68,18 +63,11 @@ func MustLoadGenFile(fs afero.Fs, tpl Template) string {
 func LoadCustomContent(fs afero.Fs) (string, error) {
 	path := filepath.Join(customDocsDir, agentsFilename)
 
-	exists, err := afero.Exists(fs, path)
-	if err != nil {
-		return "", errors.Wrap(err, "checking file existence")
-	}
-
-	if !exists {
-		return "", nil
-	}
-
 	content, err := afero.ReadFile(fs, path)
-	if err != nil {
-		return "", errors.Wrap(err, "reading custom content")
+	if errors.Is(err, afero.ErrFileNotFound) || errors.Is(err, os.ErrNotExist) {
+		return "", fmt.Errorf("doc template does not exist: %s", path)
+	} else if err != nil {
+		return "", errors.Wrap(err, "reading content file")
 	}
 
 	return string(content), nil
