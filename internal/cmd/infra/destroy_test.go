@@ -101,7 +101,7 @@ func TestDestroy(t *testing.T) {
 		assert.NoError(t, err)
 
 		output := buf.String()
-		// Verify skipped items are displayed
+
 		assert.Contains(t, output, "The following items are not managed by Terraform:")
 		assert.Contains(t, output, "unmanaged-app")
 		assert.Contains(t, output, "unmanaged-cache")
