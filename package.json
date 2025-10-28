@@ -25,6 +25,8 @@
 		"webkit": "APP_ENV=development go run main.go ${npm_config_argv[@]}",
 		"build": "go build -o webkit && go install",
 		"check": "pnpm format && pnpm lint && pnpm test",
+		"docs:gen": "go run cmd/docs/main.go",
+		"agents:gen": "go run cmd/agents/main.go",
 		"format": "pnpm format:go && biome check --write .",
 		"format:go": "go fmt ./...",
 		"format:js": "biome format --write .",
