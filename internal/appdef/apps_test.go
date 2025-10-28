@@ -219,3 +219,25 @@ func TestApp_MergeEnvironments(t *testing.T) {
 		})
 	}
 }
+
+func TestApp_IsTerraformManaged(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		terraformManaged *bool
+		want             bool
+	}{
+		"Nil defaults to true":     {terraformManaged: nil, want: true},
+		"Explicit false":            {terraformManaged: ptr.BoolPtr(false), want: false},
+		"Explicit true":             {terraformManaged: ptr.BoolPtr(true), want: true},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			app := App{TerraformManaged: test.terraformManaged}
+			got := app.IsTerraformManaged()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}

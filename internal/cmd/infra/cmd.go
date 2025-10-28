@@ -36,7 +36,10 @@ var Command = &cli.Command{
 var newTerraform = infra.NewTerraform
 
 func initTerraform(ctx context.Context, input cmdtools.CommandInput) (infra.Manager, func(), error) {
-	appDef := input.AppDef()
+	return initTerraformWithDefinition(ctx, input, input.AppDef())
+}
+
+func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInput, appDef *appdef.Definition) (infra.Manager, func(), error) {
 	printer := input.Printer()
 	spinner := input.Spinner()
 
