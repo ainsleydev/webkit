@@ -18,6 +18,7 @@ const (
 	SvelteKitTemplate Template = "SVELTEKIT.md"
 )
 
+// String implements fmt.Stringer on the Template.
 func (t Template) String() string {
 	return string(t)
 }

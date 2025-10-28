@@ -9,6 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestTemplate_String(t *testing.T) {
+	t.Parallel()
+
+	got := CodeStyleTemplate.String()
+	assert.Equal(t, "CODE_STYLE.md", got)
+	assert.IsType(t, "", got)
+}
+
 func TestLoadGenFile(t *testing.T) {
 	t.Parallel()
 
@@ -44,7 +52,7 @@ func TestLoadGenFile(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			test.setup(fs)
 
-			got, err := LoadGenFile(fs, test.file)
+			got, err := LoadGenFile(fs, Template(test.file))
 
 			assert.Equal(t, test.wantErr, err != nil)
 			assert.Equal(t, test.want, got)
