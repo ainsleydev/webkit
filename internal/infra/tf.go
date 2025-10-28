@@ -144,6 +144,10 @@ type PlanOutput struct {
 	// The JSON contents of the plan for more of a
 	// detailed look.
 	Plan *tfjson.Plan
+
+	// Information about apps and resources that were skipped
+	// because they are not managed by Terraform.
+	Skipped SkippedItems
 }
 
 // Plan generates a Terraform execution plan showing what actions Terraform
@@ -151,7 +155,8 @@ type PlanOutput struct {
 //
 // Must be called after Init().
 func (t *Terraform) Plan(ctx context.Context, env env.Environment) (PlanOutput, error) {
-	if err := t.prepareVars(env); err != nil {
+	skipped, err := t.prepareVars(env)
+	if err != nil {
 		return PlanOutput{}, err
 	}
 
@@ -184,6 +189,7 @@ func (t *Terraform) Plan(ctx context.Context, env env.Environment) (PlanOutput, 
 		HasChanges: changes,
 		Output:     output,
 		Plan:       file,
+		Skipped:    skipped,
 	}, nil
 }
 
@@ -199,7 +205,8 @@ type ApplyOutput struct {
 //
 // Must be called after Init().
 func (t *Terraform) Apply(ctx context.Context, env env.Environment) (ApplyOutput, error) {
-	if err := t.prepareVars(env); err != nil {
+	_, err := t.prepareVars(env)
+	if err != nil {
 		return ApplyOutput{}, err
 	}
 
@@ -235,7 +242,8 @@ type DestroyOutput struct {
 //
 // Must be called after Init().
 func (t *Terraform) Destroy(ctx context.Context, env env.Environment) (DestroyOutput, error) {
-	if err := t.prepareVars(env); err != nil {
+	_, err := t.prepareVars(env)
+	if err != nil {
 		return DestroyOutput{}, err
 	}
 
@@ -289,7 +297,8 @@ type OutputResult struct {
 //
 // Must be called after Init().
 func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResult, error) {
-	if err := t.prepareVars(env); err != nil {
+	_, err := t.prepareVars(env)
+	if err != nil {
 		return OutputResult{}, err
 	}
 
@@ -350,21 +359,21 @@ func (t *Terraform) hasInitialised() error {
 	return nil
 }
 
-func (t *Terraform) prepareVars(env env.Environment) error {
+func (t *Terraform) prepareVars(env env.Environment) (SkippedItems, error) {
 	if err := t.hasInitialised(); err != nil {
-		return err
+		return SkippedItems{}, err
 	}
 
-	vars, err := tfVarsFromDefinition(env, t.appDef)
+	vars, skipped, err := tfVarsFromDefinition(env, t.appDef)
 	if err != nil {
-		return errors.Wrap(err, "generating terraform variables")
+		return SkippedItems{}, errors.Wrap(err, "generating terraform variables")
 	}
 
 	if err = t.writeTFVarsFile(vars); err != nil {
-		return errors.Wrap(err, "writing tfvars file")
+		return SkippedItems{}, errors.Wrap(err, "writing tfvars file")
 	}
 
-	return nil
+	return skipped, nil
 }
 
 func getTerraformPath(ctx context.Context) (string, error) {

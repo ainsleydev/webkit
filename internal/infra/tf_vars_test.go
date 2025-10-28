@@ -14,7 +14,7 @@ import (
 
 func TestTFVarsFromDefinition(t *testing.T) {
 	t.Run("Nil Definition", func(t *testing.T) {
-		_, err := tfVarsFromDefinition(env.Development, nil)
+		_, _, err := tfVarsFromDefinition(env.Development, nil)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "definition cannot be nil")
 	})
@@ -26,8 +26,10 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			Resources: []appdef.Resource{},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, skipped, err := tfVarsFromDefinition(env.Production, input)
 		assert.NoError(t, err)
+		assert.Len(t, skipped.Apps, 0)
+		assert.Len(t, skipped.Resources, 0)
 
 		t.Log("Metadata")
 		{
@@ -66,8 +68,10 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, skipped, err := tfVarsFromDefinition(env.Production, input)
 		assert.NoError(t, err)
+		assert.Len(t, skipped.Apps, 0)
+		assert.Len(t, skipped.Resources, 0)
 
 		t.Log("Metadata")
 		{
@@ -127,8 +131,10 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, skipped, err := tfVarsFromDefinition(env.Production, input)
 		assert.NoError(t, err)
+		assert.Len(t, skipped.Apps, 0)
+		assert.Len(t, skipped.Resources, 0)
 
 		t.Log("Metadata")
 		{
@@ -233,8 +239,10 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, skipped, err := tfVarsFromDefinition(env.Production, input)
 		assert.NoError(t, err)
+		assert.Len(t, skipped.Apps, 0)
+		assert.Len(t, skipped.Resources, 0)
 
 		t.Log("Metadata")
 		{

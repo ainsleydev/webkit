@@ -7,17 +7,18 @@ import (
 
 type (
 	App struct {
-		Name        string                  `json:"name"`
-		Title       string                  `json:"title"`
-		Type        AppType                 `json:"type"`
-		Description string                  `json:"description,omitempty"`
-		Path        string                  `json:"path"`
-		Build       Build                   `json:"build"`
-		Infra       Infra                   `json:"infra"`
-		Env         Environment             `json:"env"`
-		UsesNPM     *bool                   `json:"usesNPM"`
-		Domains     []Domain                `json:"domains,omitzero"`
-		Commands    map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string"`
+		Name             string                  `json:"name"`
+		Title            string                  `json:"title"`
+		Type             AppType                 `json:"type"`
+		Description      string                  `json:"description,omitempty"`
+		Path             string                  `json:"path"`
+		Build            Build                   `json:"build"`
+		Infra            Infra                   `json:"infra"`
+		Env              Environment             `json:"env"`
+		UsesNPM          *bool                   `json:"usesNPM"`
+		TerraformManaged *bool                   `json:"terraformManaged,omitempty"`
+		Domains          []Domain                `json:"domains,omitzero"`
+		Commands         map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string"`
 	}
 	Build struct {
 		Dockerfile string `json:"dockerfile"`
@@ -110,6 +111,15 @@ func (a *App) ShouldUseNPM() bool {
 		return *a.UsesNPM
 	}
 	return a.Language() == "js"
+}
+
+// IsTerraformManaged returns whether this app should be managed by Terraform.
+// It defaults to true when the field is nil or explicitly set to true.
+func (a *App) IsTerraformManaged() bool {
+	if a.TerraformManaged == nil {
+		return true
+	}
+	return *a.TerraformManaged
 }
 
 func (a *App) applyDefaults() error {

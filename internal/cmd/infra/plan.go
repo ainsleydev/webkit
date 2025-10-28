@@ -37,6 +37,25 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 
 	spinner.Stop()
 
+	// Show skipped items if any.
+	if len(plan.Skipped.Apps) > 0 || len(plan.Skipped.Resources) > 0 {
+		printer.Print("")
+		printer.Info("The following items are not managed by Terraform:")
+		if len(plan.Skipped.Apps) > 0 {
+			printer.Print("  Apps:")
+			for _, app := range plan.Skipped.Apps {
+				printer.Print("    - " + app)
+			}
+		}
+		if len(plan.Skipped.Resources) > 0 {
+			printer.Print("  Resources:")
+			for _, resource := range plan.Skipped.Resources {
+				printer.Print("    - " + resource)
+			}
+		}
+		printer.Print("")
+	}
+
 	printer.Print(plan.Output)
 	printer.Success("Plan generated, see console output")
 

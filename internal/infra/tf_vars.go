@@ -28,6 +28,12 @@ type (
 		Apps         []tfApp        `json:"apps"`
 		Resources    []tfResource   `json:"resources"`
 	}
+	// SkippedItems contains information about apps and resources
+	// that were not included in Terraform variables.
+	SkippedItems struct {
+		Apps      []string
+		Resources []string
+	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
 		Name             string         `json:"name"`
@@ -63,9 +69,12 @@ type (
 // tfVarsFromDefinition transforms an appdef.Definition into Terraform variables.
 // It should directly map what's defined in /platform/base/variables.tf, if it
 // doesn't, then provisioning probably won't work.
-func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, error) {
+//
+// Returns the generated Terraform variables, information about skipped items,
+// and an error if any occurred.
+func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, SkippedItems, error) {
 	if def == nil {
-		return tfVars{}, errors.New("definition cannot be nil")
+		return tfVars{}, SkippedItems{}, errors.New("definition cannot be nil")
 	}
 
 	vars := tfVars{
@@ -79,7 +88,18 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 		},
 	}
 
+	skipped := SkippedItems{
+		Apps:      make([]string, 0),
+		Resources: make([]string, 0),
+	}
+
 	for _, res := range def.Resources {
+		// Skip resources that are not managed by Terraform.
+		if !res.IsTerraformManaged() {
+			skipped.Resources = append(skipped.Resources, res.Name)
+			continue
+		}
+
 		vars.Resources = append(vars.Resources, tfResource{
 			Name:             res.Name,
 			PlatformType:     res.Type.String(),
@@ -89,6 +109,12 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 	}
 
 	for _, app := range def.Apps {
+		// Skip apps that are not managed by Terraform.
+		if !app.IsTerraformManaged() {
+			skipped.Apps = append(skipped.Apps, app.Name)
+			continue
+		}
+
 		tfA := tfApp{
 			Name:             app.Name,
 			PlatformType:     app.Infra.Type,
@@ -118,7 +144,7 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 		vars.Apps = append(vars.Apps, tfA)
 	}
 
-	return vars, nil
+	return vars, skipped, nil
 }
 
 // writeTFVarsFile writes Terraform variables to a JSON file.
