@@ -16,6 +16,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
+
+	"github.com/ainsleydev/webkit/internal/printer"
 )
 
 const (
@@ -52,13 +54,19 @@ func main() {
 
 	ctx := context.Background()
 	fs := afero.NewOsFs()
+	p := printer.New(os.Stdout)
+
+	p.Info("Fetching guidelines from ainsley.dev...")
+	p.LineBreak()
 
 	if err := run(ctx, fs, output); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		p.Error(err.Error())
+		p.LineBreak()
 		os.Exit(1)
 	}
 
-	fmt.Println("Documentation files generated successfully")
+	p.Success("Documentation files generated successfully")
+	p.LineBreak()
 }
 
 // run executes the main documentation generation logic.

@@ -19,15 +19,3 @@ These guidelines are automatically synced from there.
 {{ .Content -}}
 
 {{ .CodeStyle -}}
-
-{{ if .Payload }}
-## Libraries
-
-{{ .Payload -}}
-{{ end }}
-
-{{ if .SvelteKit }}
-{{ if not .Payload }}## Libraries
-
-{{ end }}{{ .SvelteKit -}}
-{{ end }}
