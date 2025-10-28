@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -265,8 +266,35 @@ func TestRun(t *testing.T) {
 	t.Run("Generates all files", func(t *testing.T) {
 		t.Parallel()
 
-		// This would require mocking the HTTP call
-		// We've tested individual components above
-		t.Skip("Integration test - requires HTTP mocking")
+		ctx := context.Background()
+		fs := afero.NewMemMapFs()
+
+		err := run(ctx, fs, "test-output")
+
+		// Skip test if endpoint is not accessible (e.g., environment restrictions)
+		if err != nil && strings.Contains(err.Error(), "unexpected status code 403") {
+			t.Skip("Skipping integration test: ainsley.dev endpoint returned 403 (likely environment restrictions)")
+		}
+
+		require.NoError(t, err)
+
+		// Verify CODE_STYLE.md was generated
+		exists, err := afero.Exists(fs, "test-output/CODE_STYLE.md")
+		require.NoError(t, err)
+		assert.True(t, exists, "CODE_STYLE.md should be generated")
+
+		content, err := afero.ReadFile(fs, "test-output/CODE_STYLE.md")
+		require.NoError(t, err)
+		assert.NotEmpty(t, content, "CODE_STYLE.md should not be empty")
+
+		// Verify PAYLOAD.md was generated
+		exists, err = afero.Exists(fs, "test-output/PAYLOAD.md")
+		require.NoError(t, err)
+		assert.True(t, exists, "PAYLOAD.md should be generated")
+
+		// Verify SVELTEKIT.md was generated
+		exists, err = afero.Exists(fs, "test-output/SVELTEKIT.md")
+		require.NoError(t, err)
+		assert.True(t, exists, "SVELTEKIT.md should be generated")
 	})
 }

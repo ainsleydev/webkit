@@ -8,7 +8,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	docsutil "github.com/ainsleydev/webkit/internal/docs"
+	"github.com/ainsleydev/webkit/internal/docs"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
@@ -104,11 +104,34 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 func generateAppAgentsFile(input cmdtools.CommandInput, app appdef.App, genFile docsutil.Template) error {
 	content := docsutil.MustLoadGenFile(input.FS, genFile)
 
-	// Write to app directory
+	// Determine which template to use based on the app type
+	var templateName string
+	var dataKey string
+	switch genFile {
+	case docsutil.PayloadTemplate:
+		templateName = "AGENTS.PAYLOAD.md"
+		dataKey = "Payload"
+	case docsutil.SvelteKitTemplate:
+		templateName = "AGENTS.SVELTEKIT.md"
+		dataKey = "SvelteKit"
+	default:
+		return errors.New("unknown app type for template")
+	}
+
+	// Load the app-specific template
+	tmpl := templates.MustLoadTemplate(templateName)
+
+	// Prepare data for template
+	data := map[string]any{
+		dataKey: content,
+	}
+
+	// Write to app directory using template
 	agentsPath := filepath.Join(app.Path, "AGENTS.md")
-	err := input.Generator().Bytes(
+	err := input.Generator().Template(
 		agentsPath,
-		[]byte(content),
+		tmpl,
+		data,
 		scaffold.WithTracking(manifest.SourceProject()),
 	)
 
