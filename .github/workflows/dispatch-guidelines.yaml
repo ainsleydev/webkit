@@ -1,0 +1,17 @@
+name: Dispatch Guidelines Update
+
+on:
+  repository_dispatch:
+    types: [ guidelines-updated ]
+
+jobs:
+  dispatch:
+    name: Send repository dispatch event
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.ref }}
+      - run: echo ${{ github.event.client_payload.sha }}
