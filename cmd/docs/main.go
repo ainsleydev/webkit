@@ -203,12 +203,12 @@ func generateSvelteKitFile(fs afero.Fs, output string, grouped map[string][]Guid
 
 // writeFile writes content to a file in the specified output directory.
 func writeFile(fs afero.Fs, outputDir string, template docsutil.Template, content []byte) error {
-	if err := fs.MkdirAll(template.String(), 0755); err != nil {
+	if err := fs.MkdirAll(outputDir, 0o755); err != nil {
 		return errors.Wrap(err, "creating output directory")
 	}
 
 	path := filepath.Join(outputDir, template.String())
-	if err := afero.WriteFile(fs, path, content, 0644); err != nil {
+	if err := afero.WriteFile(fs, path, content, 0o644); err != nil {
 		return errors.Wrap(err, "writing file")
 	}
 

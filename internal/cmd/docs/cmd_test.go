@@ -11,7 +11,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/manifest"
 )
 
-func setup(t *testing.T, fs afero.Fs, appDef *appdef.Definition) cmdtools.CommandInput {
+func setup(t *testing.T, fs afero.Fs, appDef *appdef.Definition) cmdtools.CommandInput { //nolint
 	t.Helper()
 
 	input := cmdtools.CommandInput{

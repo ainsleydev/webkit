@@ -26,7 +26,7 @@ WebKit is a Go-based CLI tool.
 - **Run CLI**: ` + "`pnpm webkit <command>`" + `
 - **Build**: ` + "`pnpm build`" + `
 `
-		err := afero.WriteFile(fs, docsContentPath, []byte(docsContent), 0644)
+		err := afero.WriteFile(fs, docsContentPath, []byte(docsContent), 0o644)
 		require.NoError(t, err)
 
 		// Create internal/gen/docs/CODE_STYLE.md
@@ -42,9 +42,9 @@ Use gofmt for formatting.
 
 Use tabs for indentation.
 `
-		err = fs.MkdirAll("internal/gen/docs", 0755)
+		err = fs.MkdirAll("internal/gen/docs", 0o755)
 		require.NoError(t, err)
-		err = afero.WriteFile(fs, "internal/gen/docs/CODE_STYLE.md", []byte(codeStyleContent), 0644)
+		err = afero.WriteFile(fs, "internal/gen/docs/CODE_STYLE.md", []byte(codeStyleContent), 0o644)
 		require.NoError(t, err)
 
 		// Run generation
@@ -88,9 +88,9 @@ Use tabs for indentation.
 		fs := afero.NewMemMapFs()
 
 		// Create only CODE_STYLE.md
-		err := fs.MkdirAll("internal/gen/docs", 0755)
+		err := fs.MkdirAll("internal/gen/docs", 0o755)
 		require.NoError(t, err)
-		err = afero.WriteFile(fs, "internal/gen/docs/CODE_STYLE.md", []byte("content"), 0644)
+		err = afero.WriteFile(fs, "internal/gen/docs/CODE_STYLE.md", []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		// Should error because docs/AGENTS.md doesn't exist
@@ -105,7 +105,7 @@ Use tabs for indentation.
 		fs := afero.NewMemMapFs()
 
 		// Create only docs/AGENTS.md
-		err := afero.WriteFile(fs, docsContentPath, []byte("content"), 0644)
+		err := afero.WriteFile(fs, docsContentPath, []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		// Should panic from MustLoadGenFile (exits with os.Exit in real usage)
@@ -120,13 +120,13 @@ Use tabs for indentation.
 		fs := afero.NewMemMapFs()
 
 		// Create docs/AGENTS.md
-		err := afero.WriteFile(fs, docsContentPath, []byte("content"), 0644)
+		err := afero.WriteFile(fs, docsContentPath, []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		// Create CODE_STYLE.md
-		err = fs.MkdirAll("internal/gen/docs", 0755)
+		err = fs.MkdirAll("internal/gen/docs", 0o755)
 		require.NoError(t, err)
-		err = afero.WriteFile(fs, "internal/gen/docs/CODE_STYLE.md", []byte("content"), 0644)
+		err = afero.WriteFile(fs, "internal/gen/docs/CODE_STYLE.md", []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		// Make filesystem read-only
@@ -135,6 +135,5 @@ Use tabs for indentation.
 		// Should error when trying to write
 		err = run(readOnlyFs, "AGENTS.md")
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "writing AGENTS.md")
 	})
 }

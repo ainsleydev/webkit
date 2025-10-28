@@ -52,13 +52,13 @@ func TestLoadGenFile(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := fs.MkdirAll(genDocsDir, 0755)
+		err := fs.MkdirAll(genDocsDir, 0o755)
 		require.NoError(t, err)
 
 		err = afero.WriteFile(fs,
 			filepath.Join(genDocsDir, CodeStyleTemplate.String()),
 			[]byte("# Code Style"),
-			0644,
+			0o644,
 		)
 		require.NoError(t, err)
 
@@ -85,13 +85,13 @@ func TestMustLoadGenFile(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := fs.MkdirAll(genDocsDir, 0755)
+		err := fs.MkdirAll(genDocsDir, 0o755)
 		require.NoError(t, err)
 
 		err = afero.WriteFile(fs,
 			filepath.Join(genDocsDir, CodeStyleTemplate.String()),
 			[]byte("# Code Style"),
-			0644,
+			0o644,
 		)
 		require.NoError(t, err)
 
@@ -131,13 +131,13 @@ func TestLoadCustomContent(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		err := fs.MkdirAll(customDocsDir, 0755)
+		err := fs.MkdirAll(customDocsDir, 0o755)
 		require.NoError(t, err)
 
 		err = afero.WriteFile(fs,
 			filepath.Join(customDocsDir, agentsFilename),
 			[]byte("## WebKit\n\nCustom content."),
-			0644,
+			0o644,
 		)
 		require.NoError(t, err)
 
@@ -145,5 +145,4 @@ func TestLoadCustomContent(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "## WebKit\n\nCustom content.", got)
 	})
-
 }

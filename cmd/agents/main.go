@@ -66,5 +66,5 @@ func run(fs afero.Fs, output string) error {
 	notice := fmt.Sprintf("<!-- %s -->\n", scaffold.WebKitNotice)
 	finalContent := append([]byte(notice), buf.Bytes()...)
 
-	return afero.WriteFile(fs, output, finalContent, 0644)
+	return afero.WriteFile(fs, output, finalContent, 0o644)
 }
