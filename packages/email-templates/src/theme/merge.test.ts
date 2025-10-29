@@ -50,7 +50,7 @@ describe('mergeTheme', () => {
 					action: '#00ff00',
 				},
 				background: {
-					red: '#ff00ff',
+					dark: '#ff00ff',
 				},
 			},
 		});
@@ -59,7 +59,7 @@ describe('mergeTheme', () => {
 		expect(result.branding.logoUrl).toBe(defaultTheme.branding.logoUrl);
 		expect(result.colours.text.action).toBe('#00ff00');
 		expect(result.colours.text.heading).toBe(defaultTheme.colours.text.heading);
-		expect(result.colours.background.red).toBe('#ff00ff');
+		expect(result.colours.background.dark).toBe('#ff00ff');
 		expect(result.colours.background.white).toBe(defaultTheme.colours.background.white);
 	});
 });
