@@ -1,7 +1,6 @@
 package fsext
 
 import (
-	"embed"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,9 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-//go:embed testdata/*
-var testFS embed.FS
 
 func TestCopyAllEmbed(t *testing.T) {
 	t.Parallel()
