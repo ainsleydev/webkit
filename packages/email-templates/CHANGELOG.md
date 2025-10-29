@@ -1,5 +1,11 @@
 # @ainsleydev/email-templates
 
+## 0.0.2
+
+### Patch Changes
+
+- e5aa225: Initial Release
+
 ## 0.0.1
 
 ### Patch Changes
