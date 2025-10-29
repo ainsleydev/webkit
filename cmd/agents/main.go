@@ -56,7 +56,7 @@ func run(fs afero.Fs, output string) error {
 	}
 
 	var buf bytes.Buffer
-	if err = templates.MustLoadTemplate("AGENTS.md").Execute(&buf, data); err != nil {
+	if err = templates.MustLoadTemplate("docs/AGENTS.md").Execute(&buf, data); err != nil {
 		return errors.Wrap(err, "executing template")
 	}
 
