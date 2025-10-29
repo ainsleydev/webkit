@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
-	docsutil "github.com/ainsleydev/webkit/internal/docs"
+	"github.com/ainsleydev/webkit/internal/gen"
 	"github.com/ainsleydev/webkit/internal/printer"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
@@ -28,20 +28,18 @@ func main() {
 	flag.StringVar(&output, "output", outputFile, "Output file path for generated AGENTS.md")
 	flag.Parse()
 
-	fs := afero.NewOsFs()
 	p := printer.New(os.Stdout)
 
 	p.Info("Generating WebKit AGENTS.md...")
 	p.LineBreak()
 
-	if err := run(fs, output); err != nil {
+	if err := run(afero.NewOsFs(), output); err != nil {
 		p.Error(err.Error())
 		p.LineBreak()
 		os.Exit(1)
 	}
 
 	p.Success("AGENTS.md generated successfully")
-	p.LineBreak()
 }
 
 func run(fs afero.Fs, output string) error {
@@ -52,9 +50,8 @@ func run(fs afero.Fs, output string) error {
 	}
 
 	data := map[string]any{
-		"Content": string(contentBytes),
-		// Load generated CODE_STYLE.md from internal/gen/docs
-		"CodeStyle": docsutil.MustLoadGenFile(fs, docsutil.CodeStyleTemplate),
+		"Content":   string(contentBytes),
+		"CodeStyle": gen.CodeStyle,
 	}
 
 	var buf bytes.Buffer

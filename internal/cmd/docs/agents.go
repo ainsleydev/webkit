@@ -8,7 +8,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/docs"
+	"github.com/ainsleydev/webkit/internal/gen"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
@@ -33,107 +33,57 @@ func Agents(_ context.Context, input cmdtools.CommandInput) error {
 func generateRootAgents(input cmdtools.CommandInput) error {
 	baseTemplate := templates.MustLoadTemplate("AGENTS.md")
 
-	// Load custom content
-	customContent, err := docsutil.LoadCustomContent(input.FS)
-	if err != nil {
-		return errors.Wrap(err, "loading custom content")
-	}
-
-	// Load generated guidelines
-	codeStyle := docsutil.MustLoadGenFile(input.FS, docsutil.CodeStyleTemplate)
-
-	// Try to load manifest, but don't fail if it doesn't exist
-	def, _ := appdef.Read(input.FS)
-
 	data := map[string]any{
-		"Definition": def,
-		"Content":    customContent,
-		"CodeStyle":  codeStyle,
+		"Definition": input.AppDef(),
+		"Content":    mustLoadCustomContent(input.FS, "AGENTS.md"),
+		"CodeStyle":  gen.CodeStyle,
 	}
 
-	// Conditionally add app-specific guidelines for root AGENTS.md
-	if def != nil && def.HasAppType(appdef.AppTypePayload) {
-		payload := docsutil.MustLoadGenFile(input.FS, docsutil.PayloadTemplate)
-		data["Payload"] = payload
-	}
-
-	if def != nil && def.HasAppType(appdef.AppTypeSvelteKit) {
-		svelteKit := docsutil.MustLoadGenFile(input.FS, docsutil.SvelteKitTemplate)
-		data["SvelteKit"] = svelteKit
-	}
-
-	err = input.Generator().Template(
+	err := input.Generator().Template(
 		"AGENTS.md",
 		baseTemplate,
 		data,
 		scaffold.WithTracking(manifest.SourceProject()),
 	)
-
-	return errors.Wrap(err, "generating AGENTS.md")
-}
-
-// generateAppSpecificAgents creates AGENTS.md files in app subdirectories
-// for Payload and SvelteKit apps.
-func generateAppSpecificAgents(input cmdtools.CommandInput) error {
-	// Try to load manifest, but don't fail if it doesn't exist
-	def, _ := appdef.Read(input.FS)
-	if def == nil {
-		return nil
-	}
-
-	// Generate for Payload apps
-	payloadApps := def.GetAppsByType(appdef.AppTypePayload)
-	for _, app := range payloadApps {
-		if err := generateAppAgentsFile(input, app, docsutil.PayloadTemplate); err != nil {
-			return errors.Wrap(err, "generating Payload AGENTS.md")
-		}
-	}
-
-	// Generate for SvelteKit apps
-	svelteKitApps := def.GetAppsByType(appdef.AppTypeSvelteKit)
-	for _, app := range svelteKitApps {
-		if err := generateAppAgentsFile(input, app, docsutil.SvelteKitTemplate); err != nil {
-			return errors.Wrap(err, "generating SvelteKit AGENTS.md")
-		}
+	if err != nil {
+		return errors.Wrap(err, "generating AGENTS.md")
 	}
 
 	return nil
 }
 
-// generateAppAgentsFile creates an AGENTS.md file in the app's directory.
-func generateAppAgentsFile(input cmdtools.CommandInput, app appdef.App, genFile docsutil.Template) error {
-	content := docsutil.MustLoadGenFile(input.FS, genFile)
+// generateAppSpecificAgents creates AGENTS.md files in app subdirectories
+// for Payload and SvelteKit apps.
+func generateAppSpecificAgents(input cmdtools.CommandInput) error {
+	appDef := input.AppDef()
 
-	// Determine which template to use based on the app type
-	var templateName string
-	var dataKey string
-	switch genFile {
-	case docsutil.PayloadTemplate:
-		templateName = "AGENTS.PAYLOAD.md"
-		dataKey = "Payload"
-	case docsutil.SvelteKitTemplate:
-		templateName = "AGENTS.SVELTEKIT.md"
-		dataKey = "SvelteKit"
-	default:
-		return errors.New("unknown app type for template")
+	// Generate for Payload apps
+	payloadApps := appDef.GetAppsByType(appdef.AppTypePayload)
+	for _, app := range payloadApps {
+		err := input.Generator().Template(
+			filepath.Join(app.Path, "AGENTS.md"),
+			templates.MustLoadTemplate("AGENTS.PAYLOAD.md"),
+			map[string]any{"Payload": gen.Payload},
+			scaffold.WithTracking(manifest.SourceProject()),
+		)
+		if err != nil {
+			return errors.Wrap(err, "generating Payload AGENTS.md")
+		}
 	}
 
-	// Load the app-specific template
-	tmpl := templates.MustLoadTemplate(templateName)
-
-	// Prepare data for template
-	data := map[string]any{
-		dataKey: content,
+	// Generate for SvelteKit apps
+	svelteKitApps := appDef.GetAppsByType(appdef.AppTypeSvelteKit)
+	for _, app := range svelteKitApps {
+		err := input.Generator().Template(
+			filepath.Join(app.Path, "AGENTS.md"),
+			templates.MustLoadTemplate("AGENTS.SVELTEKIT.md"),
+			map[string]any{"SvelteKit": gen.SvelteKit},
+			scaffold.WithTracking(manifest.SourceProject()),
+		)
+		if err != nil {
+			return errors.Wrap(err, "generating SvelteKit AGENTS.md")
+		}
 	}
 
-	// Write to app directory using template
-	agentsPath := filepath.Join(app.Path, "AGENTS.md")
-	err := input.Generator().Template(
-		agentsPath,
-		tmpl,
-		data,
-		scaffold.WithTracking(manifest.SourceProject()),
-	)
-
-	return errors.Wrap(err, "writing app AGENTS.md")
+	return nil
 }
