@@ -1,0 +1,58 @@
+{
+	"name": "@ainsleydev/email-templates",
+	"version": "0.0.1",
+	"description": "Composable email template building blocks with theme system for React Email",
+	"license": "MIT",
+	"type": "module",
+	"keywords": ["email", "templates", "react-email", "transactional", "typescript", "theme"],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ainsleydev/webkit.git",
+		"directory": "packages/email-templates"
+	},
+	"author": {
+		"name": "ainsley.dev",
+		"email": "hello@ainsley.dev",
+		"url": "https://ainsley.dev"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
+		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+		"build:types": "tsc --emitDeclarationOnly --outDir dist",
+		"format": "biome format --write .",
+		"lint": "biome lint --write .",
+		"clean": "rimraf {dist,*.tsbuildinfo}",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"files": ["dist", "README.md", "CHANGELOG.md"],
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"@react-email/components": "^0.0.31",
+		"@react-email/render": "^1.0.1"
+	},
+	"devDependencies": {
+		"@ainsleydev/prettier-config": "workspace:*",
+		"@ainsleydev/eslint-config": "workspace:*",
+		"@swc/cli": "^0.4.0",
+		"@swc/core": "^1.7.2",
+		"@types/react": "^18.3.3",
+		"@types/react-dom": "^18.3.0",
+		"rimraf": "6.0.1",
+		"typescript": "^5.5.4",
+		"vitest": "^2.0.5"
+	},
+	"peerDependencies": {
+		"@react-email/components": "^0.0.0",
+		"react": "^18.0.0",
+		"react-dom": "^18.0.0"
+	},
+	"engines": {
+		"node": ">=18",
+		"pnpm": ">=9"
+	}
+}
