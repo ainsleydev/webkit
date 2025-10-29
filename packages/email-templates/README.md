@@ -23,7 +23,7 @@ pnpm add @ainsleydev/email-templates
 
 ```typescript
 // emails/ForgotPassword.tsx
-import { BaseEmail, components, generateStyles } from '@ainsleydev/email-templates'
+import { BaseEmail, Heading, Text, Section, Button, generateStyles } from '@ainsleydev/email-templates'
 import type { EmailTheme } from '@ainsleydev/email-templates'
 
 interface ForgotPasswordProps {
@@ -37,17 +37,17 @@ export const ForgotPasswordEmail = ({ theme, user, resetUrl }: ForgotPasswordPro
 
   return (
     <BaseEmail theme={theme} previewText="Reset your password">
-      <components.Heading style={styles.heading}>
+      <Heading style={styles.heading}>
         Hello, {user.firstName}!
-      </components.Heading>
-      <components.Text style={styles.text}>
+      </Heading>
+      <Text style={styles.text}>
         We received a request to reset your password. Click the button below to continue.
-      </components.Text>
-      <components.Section style={{ textAlign: 'center' }}>
-        <components.Button href={resetUrl} style={styles.button}>
+      </Text>
+      <Section style={{ textAlign: 'center' }}>
+        <Button href={resetUrl} style={styles.button}>
           Reset Password
-        </components.Button>
-      </components.Section>
+        </Button>
+      </Section>
     </BaseEmail>
   )
 }
@@ -190,27 +190,19 @@ export default buildConfig({
 
 ## React Email components
 
-The package re-exports all React Email components via the `components` namespace:
+All React Email components are re-exported for convenience:
 
 ```typescript
-import { components } from '@ainsleydev/email-templates'
+import {
+  Html, Head, Preview, Body, Container, Section, Row, Column,
+  Heading, Text, Button, Link, Img, Hr,
+  // ...and more
+} from '@ainsleydev/email-templates'
 
-// Available components:
-<components.Html />
-<components.Head />
-<components.Preview />
-<components.Body />
-<components.Container />
-<components.Section />
-<components.Row />
-<components.Column />
-<components.Heading />
-<components.Text />
-<components.Button />
-<components.Link />
-<components.Img />
-<components.Hr />
-// ...and more
+// Use them directly in your templates:
+<Heading>Welcome</Heading>
+<Text>Hello world</Text>
+<Button href="...">Click here</Button>
 ```
 
 See [React Email documentation](https://react.email/docs/components/html) for full component API.
@@ -274,6 +266,10 @@ pnpm format
 # Lint code.
 pnpm lint
 ```
+
+## TODO
+
+- **Go CLI support** - Add CLI command for rendering templates from Go via `exec.Command`. This would allow Go applications to use the same email templates without needing a Node.js runtime dependency.
 
 ## Licence
 

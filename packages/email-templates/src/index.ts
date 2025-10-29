@@ -17,5 +17,5 @@ export type { EmailTheme, EmailColours, EmailBranding, PartialEmailTheme } from 
 // Base email component for building templates.
 export { BaseEmail } from './templates/index.js';
 
-// Re-exported React Email components.
-export { components } from './components.js';
+// Re-exported React Email components for convenience.
+export * from '@react-email/components';
