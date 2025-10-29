@@ -1,5 +1,5 @@
-import type { EmailTheme, PartialEmailTheme } from './types.js';
 import { defaultTheme } from './default.js';
+import type { EmailTheme, PartialEmailTheme } from './types.js';
 
 /**
  * Deep merges a partial theme with the default theme.

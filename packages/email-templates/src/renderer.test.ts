@@ -1,9 +1,9 @@
-import { describe, test, expect } from 'vitest';
+import * as React from 'react';
+import { describe, expect, test } from 'vitest';
 import { renderEmail } from './renderer.js';
 import { BaseEmail } from './templates/Base.js';
-import type { EmailTheme } from './theme/types.js';
 import { generateStyles } from './theme/styles.js';
-import * as React from 'react';
+import type { EmailTheme } from './theme/types.js';
 
 // Example email template for testing.
 interface ForgotPasswordProps {

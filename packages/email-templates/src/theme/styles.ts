@@ -32,7 +32,7 @@ export function generateStyles(theme: EmailTheme) {
 			marginTop: 0,
 		},
 		button: {
-			backgroundColor: theme.colours.background.black,
+			backgroundColor: theme.colours.background.dark,
 			color: theme.colours.text.negative,
 			padding: '10px 0',
 			borderRadius: '6px',
@@ -42,11 +42,11 @@ export function generateStyles(theme: EmailTheme) {
 			width: '100%',
 		},
 		hr: {
-			borderColor: '#e6ebf1',
+			borderColor: theme.colours.border.light,
 			margin: '23px 0',
 		},
 		main: {
-			backgroundColor: theme.colours.background.greyLight,
+			backgroundColor: theme.colours.background.highlight,
 			fontFamily: 'Arial, sans-serif',
 		},
 		container: {

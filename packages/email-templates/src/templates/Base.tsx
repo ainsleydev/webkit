@@ -1,21 +1,21 @@
 import {
-	Html,
-	Head,
-	Preview,
 	Body,
-	Container,
-	Section,
-	Img,
-	Text,
-	Hr,
-	Link,
-	Row,
 	Column,
+	Container,
+	Head,
+	Hr,
+	Html,
+	Img,
+	Link,
+	Preview,
+	Row,
+	Section,
+	Text,
 } from '@react-email/components';
 // biome-ignore lint/style/useImportType: React is needed for JSX
 import * as React from 'react';
-import type { EmailTheme } from '../theme/types.js';
 import { generateStyles } from '../theme/styles.js';
+import type { EmailTheme } from '../theme/types.js';
 
 interface BaseEmailProps {
 	theme: EmailTheme;

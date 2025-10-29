@@ -11,16 +11,16 @@ export interface EmailColours {
 	};
 	background: {
 		white: string;
-		grey: string;
-		greyLight: string;
-		red: string;
-		black: string;
+		dark: string;
+		darker: string;
+		highlight: string;
+		accent: string;
 	};
 	border: {
-		grey: string;
-		black: string;
-		white: string;
-		darkMode?: string;
+		light: string;
+		medium: string;
+		dark: string;
+		inverse: string;
 	};
 }
 
@@ -48,7 +48,7 @@ export interface EmailTheme {
  * Partial theme configuration allowing selective overrides.
  */
 export type PartialEmailTheme = {
-	colours?: Partial<EmailColours> & {
+	colours?: {
 		text?: Partial<EmailColours['text']>;
 		background?: Partial<EmailColours['background']>;
 		border?: Partial<EmailColours['border']>;

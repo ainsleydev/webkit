@@ -8,5 +8,6 @@
 - Theme system with customisable colours and branding.
 - BaseEmail component for consistent layout.
 - Generic renderEmail() function accepting any React component.
-- Re-exported React Email components via `components` namespace.
+- Direct re-export of React Email components (no namespace).
 - Full TypeScript support with comprehensive types.
+- Generic colour naming (dark, darker, highlight, accent vs company-specific names).

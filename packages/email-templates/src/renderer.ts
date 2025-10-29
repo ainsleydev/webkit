@@ -1,7 +1,7 @@
 import { render } from '@react-email/render';
 import * as React from 'react';
-import type { EmailTheme, PartialEmailTheme } from './theme/types.js';
 import { mergeTheme } from './theme/merge.js';
+import type { EmailTheme, PartialEmailTheme } from './theme/types.js';
 
 /**
  * Options for rendering an email template.

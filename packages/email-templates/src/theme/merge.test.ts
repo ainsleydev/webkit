@@ -1,6 +1,6 @@
-import { describe, test, expect } from 'vitest';
-import { mergeTheme } from './merge.js';
+import { describe, expect, test } from 'vitest';
 import { defaultTheme } from './default.js';
+import { mergeTheme } from './merge.js';
 
 describe('mergeTheme', () => {
 	test('returns default theme when no partial provided', () => {
