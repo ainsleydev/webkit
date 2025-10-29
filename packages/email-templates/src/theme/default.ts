@@ -5,30 +5,31 @@ import type { EmailTheme } from './types.js';
  * Based on ainsley.dev design system with Search Spares colour palette.
  */
 export const defaultTheme: EmailTheme = {
+	// Taken from: https://github.com/ainsleydev/website/blob/main/assets/scss/abstracts/_variables.scss
 	colours: {
 		text: {
-			heading: '#1c1c1c', // $text-heading: $colour-greyscale-900
-			body: '#7f7f7f', // $text-body: $colour-greyscale-500
-			action: '#ff0000', // $text-action: $colour-racing-red-500
-			negative: '#ffffff', // $text-negative: $colour-base-white
-			darkMode: '#999999', // $text-dark-mode: $colour-greyscale-400
+			heading: '#0a0a0a', // $black / --colour-black
+			body: '#9a9a9a', // $copy-dark-bg / --colour-paragraph
+			action: '#ff5043', // $orange / --colour-orange
+			negative: '#ffffff', // $white / --colour-white
+			darkMode: '#595959', // $copy-light-bg / --colour-copy-light
 		},
 		background: {
-			white: '#ffffff', // $surface-white
-			grey: '#b0b0b0', // $surface-grey / $colour-greyscale-300
-			greyLight: '#f2f2f2', // $surface-grey-light / $colour-lights-500
-			red: '#ff0000', // $surface-red / $colour-racing-red-500
-			black: '#1c1c1c', // $surface-black / $colour-greyscale-900
+			white: '#ffffff', // $white / --colour-white
+			dark: '#0a0a0a', // $black / --colour-black
+			darker: '#0f0f0f', // $grey-dark / --colour-grey-dark
+			highlight: '#171717', // $grey-light / --colour-grey-light
+			accent: '#ff5043', // $orange / --colour-orange
 		},
 		border: {
-			grey: '#d0d0d0', // $border-grey / $colour-greyscale-200
-			black: '#1c1c1c', // $border-black / $colour-greyscale-900
-			white: '#ffffff', // $border-white / $colour-base-white
-			darkMode: '#333333', // $border-dark-mode / $colour-greyscale-800
+			light: '#2b2b2b', // --table-border-colour
+			medium: 'rgba(10, 10, 10, 0.15)', // rgba($black, $alpha-standard)
+			dark: '#0a0a0a', // $black / --colour-black
+			inverse: '#ffffff', // $white / --colour-white
 		},
 	},
 	branding: {
-		companyName: 'Search Spares',
+		companyName: 'ainsley.dev',
 		logoUrl: '/logo.png',
 		logoWidth: 120,
 		footerText: 'All rights reserved.',
