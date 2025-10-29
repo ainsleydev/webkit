@@ -17,7 +17,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
-	"github.com/ainsleydev/webkit/internal/docs"
 	"github.com/ainsleydev/webkit/internal/printer"
 )
 
@@ -27,6 +26,10 @@ const (
 
 	// outputDir is the directory where generated files are written.
 	outputDir = "internal/gen/docs"
+
+	codeStyleTemplate = "CODE_STYLE.md"
+	payloadTemplate   = "PAYLOAD.md"
+	svelteKitTemplate = "SVELTEKIT.md"
 )
 
 // Guideline represents a single guideline entry from ainsley.dev.
@@ -82,15 +85,15 @@ func run(ctx context.Context, fs afero.Fs, output string) error {
 	grouped := groupBySection(guidelines)
 
 	if err = generateCodeStyleFile(fs, output, grouped); err != nil {
-		return errors.Wrap(err, string("generating "+docsutil.CodeStyleTemplate))
+		return errors.Wrap(err, string("generating "+codeStyleTemplate))
 	}
 
 	if err = generatePayloadFile(fs, output, grouped); err != nil {
-		return errors.Wrap(err, string("generating "+docsutil.PayloadTemplate))
+		return errors.Wrap(err, string("generating "+payloadTemplate))
 	}
 
 	if err = generateSvelteKitFile(fs, output, grouped); err != nil {
-		return errors.Wrap(err, string("generating "+docsutil.SvelteKitTemplate))
+		return errors.Wrap(err, string("generating "+svelteKitTemplate))
 	}
 
 	return nil
@@ -160,7 +163,7 @@ func generateCodeStyleFile(fs afero.Fs, output string, grouped map[string][]Guid
 		}
 	}
 
-	return writeFile(fs, output, docsutil.CodeStyleTemplate, buf.Bytes())
+	return writeFile(fs, output, codeStyleTemplate, buf.Bytes())
 }
 
 func generatePayloadFile(fs afero.Fs, output string, grouped map[string][]Guideline) error {
@@ -179,7 +182,7 @@ func generatePayloadFile(fs afero.Fs, output string, grouped map[string][]Guidel
 		buf.WriteString("\n\n")
 	}
 
-	return writeFile(fs, output, docsutil.PayloadTemplate, buf.Bytes())
+	return writeFile(fs, output, payloadTemplate, buf.Bytes())
 }
 
 func generateSvelteKitFile(fs afero.Fs, output string, grouped map[string][]Guideline) error {
@@ -198,16 +201,16 @@ func generateSvelteKitFile(fs afero.Fs, output string, grouped map[string][]Guid
 		buf.WriteString("\n\n")
 	}
 
-	return writeFile(fs, output, docsutil.SvelteKitTemplate, buf.Bytes())
+	return writeFile(fs, output, svelteKitTemplate, buf.Bytes())
 }
 
 // writeFile writes content to a file in the specified output directory.
-func writeFile(fs afero.Fs, outputDir string, template docsutil.Template, content []byte) error {
+func writeFile(fs afero.Fs, outputDir string, template string, content []byte) error {
 	if err := fs.MkdirAll(outputDir, 0o755); err != nil {
 		return errors.Wrap(err, "creating output directory")
 	}
 
-	path := filepath.Join(outputDir, template.String())
+	path := filepath.Join(outputDir, template)
 	if err := afero.WriteFile(fs, path, content, 0o644); err != nil {
 		return errors.Wrap(err, "writing file")
 	}

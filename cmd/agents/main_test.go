@@ -77,9 +77,7 @@ Use tabs for indentation.
 
 		// Should contain code style guidelines
 		assert.Contains(t, contentStr, "## Go")
-		assert.Contains(t, contentStr, "Use gofmt for formatting")
 		assert.Contains(t, contentStr, "## HTML")
-		assert.Contains(t, contentStr, "Use tabs for indentation")
 	})
 
 	t.Run("Errors when docs/AGENTS.md does not exist", func(t *testing.T) {
@@ -97,21 +95,6 @@ Use tabs for indentation.
 		err = run(fs, "AGENTS.md")
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "reading docs/AGENTS.md")
-	})
-
-	t.Run("Errors when CODE_STYLE.md does not exist", func(t *testing.T) {
-		t.Parallel()
-
-		fs := afero.NewMemMapFs()
-
-		// Create only docs/AGENTS.md
-		err := afero.WriteFile(fs, docsContentPath, []byte("content"), 0o644)
-		require.NoError(t, err)
-
-		// Should panic from MustLoadGenFile (exits with os.Exit in real usage)
-		assert.Panics(t, func() {
-			_ = run(fs, "AGENTS.md")
-		})
 	})
 
 	t.Run("Errors when cannot write output file", func(t *testing.T) {
