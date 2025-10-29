@@ -2,8 +2,8 @@ import { createServer } from 'node:http';
 import { render } from '@react-email/render';
 import React from 'react';
 import { defaultTheme } from '../src/theme/default.js';
-import { WelcomeEmail } from './examples/Welcome.js';
 import { PasswordResetEmail } from './examples/PasswordReset.js';
+import { WelcomeEmail } from './examples/Welcome.js';
 
 const PORT = 3000;
 

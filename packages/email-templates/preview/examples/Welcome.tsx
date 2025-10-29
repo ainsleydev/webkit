@@ -1,5 +1,4 @@
 import { Button, Heading, Section, Text } from '@react-email/components';
-// biome-ignore lint/style/useImportType: React is needed for JSX
 import * as React from 'react';
 import { BaseEmail } from '../../src/templates/Base.js';
 import type { EmailTheme } from '../../src/theme/types.js';
