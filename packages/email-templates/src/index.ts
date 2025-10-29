@@ -1,8 +1,8 @@
 /**
  * @ainsleydev/email-templates
  *
- * Composable, reusable email templates built with React Email.
- * Works with JavaScript (primary) and Go (via CLI).
+ * Composable email template building blocks with theme system for React Email.
+ * Create your own email templates using the BaseEmail component and theme system.
  */
 
 // Main rendering function.
@@ -11,13 +11,11 @@ export type { RenderEmailOptions } from './renderer.js';
 
 // Theme system.
 export { defaultTheme, mergeTheme } from './theme/index.js';
+export { generateStyles } from './theme/styles.js';
 export type { EmailTheme, EmailColours, EmailBranding, PartialEmailTheme } from './theme/index.js';
 
-// Templates.
-export { ForgotPasswordEmail, VerifyAccountEmail } from './templates/index.js';
-export type {
-	TemplateName,
-	TemplateProps,
-	ForgotPasswordProps,
-	VerifyAccountProps,
-} from './templates/index.js';
+// Base email component for building templates.
+export { BaseEmail } from './templates/index.js';
+
+// Re-exported React Email components.
+export { components } from './components.js';

@@ -1,10 +1,10 @@
 {
 	"name": "@ainsleydev/email-templates",
 	"version": "0.0.1",
-	"description": "Composable, reusable email templates built with React Email for JavaScript and Go",
+	"description": "Composable email template building blocks with theme system for React Email",
 	"license": "MIT",
 	"type": "module",
-	"keywords": ["email", "templates", "react-email", "transactional", "typescript"],
+	"keywords": ["email", "templates", "react-email", "transactional", "typescript", "theme"],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ainsleydev/webkit.git",
@@ -17,9 +17,6 @@
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
-	"bin": {
-		"email-templates": "./dist/cli.js"
-	},
 	"scripts": {
 		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
 		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
@@ -36,10 +33,7 @@
 	},
 	"dependencies": {
 		"@react-email/components": "^0.0.31",
-		"@react-email/render": "^1.0.1",
-		"commander": "^12.1.0",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1"
+		"@react-email/render": "^1.0.1"
 	},
 	"devDependencies": {
 		"@ainsleydev/prettier-config": "workspace:*",
@@ -53,6 +47,7 @@
 		"vitest": "^2.0.5"
 	},
 	"peerDependencies": {
+		"@react-email/components": "^0.0.0",
 		"react": "^18.0.0",
 		"react-dom": "^18.0.0"
 	},

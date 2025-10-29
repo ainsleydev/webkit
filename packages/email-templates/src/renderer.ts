@@ -1,21 +1,20 @@
 import { render } from '@react-email/render';
 import * as React from 'react';
-import type { PartialEmailTheme } from './theme/types.js';
+import type { EmailTheme, PartialEmailTheme } from './theme/types.js';
 import { mergeTheme } from './theme/merge.js';
-import { getTemplate, type TemplateName, type TemplateProps } from './templates/index.js';
 
 /**
  * Options for rendering an email template.
  */
-export interface RenderEmailOptions<T extends TemplateName> {
+export interface RenderEmailOptions<P = Record<string, unknown>> {
 	/**
-	 * The name of the template to render.
+	 * The React component to render.
 	 */
-	template: T;
+	component: React.ComponentType<P & { theme: EmailTheme }>;
 	/**
-	 * Props specific to the template being rendered.
+	 * Props to pass to the component (excluding theme).
 	 */
-	props: Omit<TemplateProps[T], 'theme'>;
+	props: Omit<P, 'theme'>;
 	/**
 	 * Optional theme overrides. Will be merged with default theme.
 	 */
@@ -28,18 +27,21 @@ export interface RenderEmailOptions<T extends TemplateName> {
 }
 
 /**
- * Renders an email template to HTML string.
+ * Renders an email template component to HTML string.
  *
- * @param options - Rendering options including template name, props, and theme
+ * @param options - Rendering options including component, props, and theme
  * @returns HTML string ready to be sent via email service
  *
  * @example
  * ```typescript
+ * import { renderEmail } from '@ainsleydev/email-templates'
+ * import { MyEmailTemplate } from './emails/MyTemplate'
+ *
  * const html = await renderEmail({
- *   template: 'forgot-password',
+ *   component: MyEmailTemplate,
  *   props: {
  *     user: { firstName: 'John' },
- *     resetUrl: 'https://example.com/reset/token123'
+ *     actionUrl: 'https://example.com/action'
  *   },
  *   theme: {
  *     branding: {
@@ -50,22 +52,19 @@ export interface RenderEmailOptions<T extends TemplateName> {
  * })
  * ```
  */
-export async function renderEmail<T extends TemplateName>(
-	options: RenderEmailOptions<T>,
+export async function renderEmail<P = Record<string, unknown>>(
+	options: RenderEmailOptions<P>,
 ): Promise<string> {
-	const { template, props, theme: partialTheme, plainText = false } = options;
+	const { component: Component, props, theme: partialTheme, plainText = false } = options;
 
 	// Merge partial theme with defaults.
 	const theme = mergeTheme(partialTheme);
 
-	// Get the template component.
-	const TemplateComponent = getTemplate(template);
-
 	// Create the React element with merged theme.
-	const element = React.createElement(TemplateComponent, {
+	const element = React.createElement(Component, {
 		...props,
 		theme,
-	});
+	} as P & { theme: EmailTheme });
 
 	// Render to HTML or plain text.
 	return render(element, { plainText });
