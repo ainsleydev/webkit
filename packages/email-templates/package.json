@@ -25,7 +25,8 @@
 		"lint": "biome lint --write .",
 		"clean": "rimraf {dist,*.tsbuildinfo}",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"preview": "vite --config preview/vite.config.ts"
 	},
 	"files": ["dist", "README.md", "CHANGELOG.md"],
 	"publishConfig": {
@@ -42,8 +43,12 @@
 		"@swc/core": "^1.7.2",
 		"@types/react": "^18.3.3",
 		"@types/react-dom": "^18.3.0",
+		"@vitejs/plugin-react": "^4.3.4",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
 		"rimraf": "6.0.1",
 		"typescript": "^5.5.4",
+		"vite": "^6.0.3",
 		"vitest": "^2.0.5"
 	},
 	"peerDependencies": {
