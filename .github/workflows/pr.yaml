@@ -52,11 +52,14 @@ jobs:
       - name: Setup CI environment
         uses: ./.github/actions/setup
 
-      - name: Test
+      - name: Test Go
         # TODO, add race.
         run: |
           export SOPS_AGE_KEY="${{ secrets.ORG_AGE_SECRET }}"
           go test ./... -coverprofile=./coverage.out -covermode=atomic
+
+      - name: Test JS
+        run: pnpm test
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5.5.1
