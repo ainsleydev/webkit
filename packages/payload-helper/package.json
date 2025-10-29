@@ -24,7 +24,7 @@
 		"format": "biome format --write . --apply-unsafe --organise-imports",
 		"lint": "biome lint --write .",
 		"clean": "rimraf {dist,*.tsbuildinfo}",
-		"test": "jest"
+		"test": "jest --passWithNoTests"
 	},
 	"bin": {
 		"payload-helper": "bin.js"
