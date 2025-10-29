@@ -59,7 +59,7 @@ jobs:
           go test ./... -coverprofile=./coverage.out -covermode=atomic
 
       - name: Test JS
-        run: pnpm test
+        run: pnpm test:js
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5.5.1
