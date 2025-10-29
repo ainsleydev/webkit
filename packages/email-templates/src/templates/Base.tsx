@@ -12,7 +12,8 @@ import {
 	Row,
 	Column,
 } from '@react-email/components';
-import type * as React from 'react';
+// biome-ignore lint/style/useImportType: React is needed for JSX
+import * as React from 'react';
 import type { EmailTheme } from '../theme/types.js';
 import { generateStyles } from '../theme/styles.js';
 
