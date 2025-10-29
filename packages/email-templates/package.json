@@ -25,7 +25,8 @@
 		"lint": "biome lint --write .",
 		"clean": "rimraf {dist,*.tsbuildinfo}",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"preview": "tsx preview/server.ts"
 	},
 	"files": ["dist", "README.md", "CHANGELOG.md"],
 	"publishConfig": {
@@ -43,6 +44,7 @@
 		"@types/react": "^18.3.3",
 		"@types/react-dom": "^18.3.0",
 		"rimraf": "6.0.1",
+		"tsx": "^4.19.0",
 		"typescript": "^5.5.4",
 		"vitest": "^2.0.5"
 	},
