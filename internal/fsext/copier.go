@@ -15,8 +15,8 @@ func CopyAllEmbed(efs embed.FS, destDir string) error {
 
 // CopyFromEmbed recursively copies all files from an embed.FS
 // directory to a destination.
-func CopyFromEmbed(efs embed.FS, srcDir, destDir string) error {
-	return fs.WalkDir(efs, srcDir, func(path string, d fs.DirEntry, err error) error {
+func CopyFromEmbed(fsx fs.FS, srcDir, destDir string) error {
+	return fs.WalkDir(fsx, srcDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -32,7 +32,7 @@ func CopyFromEmbed(efs embed.FS, srcDir, destDir string) error {
 			return os.MkdirAll(target, os.ModePerm)
 		}
 
-		data, err := efs.ReadFile(path)
+		data, err := fs.ReadFile(fsx, path)
 		if err != nil {
 			return err
 		}

@@ -1,42 +1,46 @@
 package docs
 
 import (
-	"bytes"
 	"context"
+	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/fsext"
+	"github.com/ainsleydev/webkit/internal/gen"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
-const (
-	// agentsPathTpl is the path for custom template content
-	agentsPathTpl = "docs/AGENTS.md.tmpl"
-
-	// agentsPath is the path for custom static content
-	agentsPath = "docs/AGENTS.md"
-)
-
 // Agents creates the AGENTS.md file at the project root by combining
-// the base template with optional custom content from docs/.
+// the base template with generated guidelines from internal/gen/docs/.
 func Agents(_ context.Context, input cmdtools.CommandInput) error {
-	baseTemplate := templates.MustLoadTemplate("AGENTS.md")
-
-	customContent, err := loadCustomContent(input.FS, input.AppDef())
-	if err != nil {
-		return errors.Wrap(err, "loading custom content")
+	// Generate root AGENTS.md.
+	if err := generateRootAgents(input); err != nil {
+		return errors.Wrap(err, "generating root AGENTS.md")
 	}
+
+	// Generate app-specific AGENTS.md files for Payload and SvelteKit apps.
+	if err := generateAppSpecificAgents(input); err != nil {
+		return errors.Wrap(err, "generating app-specific AGENTS.md")
+	}
+
+	return nil
+}
+
+func generateRootAgents(input cmdtools.CommandInput) error {
+	baseTemplate := templates.MustLoadTemplate("docs/AGENTS.md")
 
 	data := map[string]any{
 		"Definition": input.AppDef(),
-		"Content":    customContent,
+		"Content":    mustLoadCustomContent(input.FS, "AGENTS.md"),
+		"CodeStyle":  fsext.MustReadFromEmbed(gen.Embed, "docs/CODE_STYLE.md"),
 	}
 
-	err = input.Generator().Template(
+	err := input.Generator().Template(
 		"AGENTS.md",
 		baseTemplate,
 		data,
@@ -49,36 +53,42 @@ func Agents(_ context.Context, input cmdtools.CommandInput) error {
 	return nil
 }
 
-// loadCustomContent attempts to load custom content from docs/ directory.
-// It tries docs/AGENTS.md.tmpl first, then docs/AGENTS.md, and returns
-// an empty string if neither exists.
-func loadCustomContent(fs afero.Fs, appDef any) (string, error) {
-	// Try loading the template file first,
-	if exists, _ := afero.Exists(fs, agentsPathTpl); exists {
-		tmpl, err := templates.LoadTemplateFromFS(fs, agentsPathTpl)
+// generateAppSpecificAgents creates AGENTS.md files in app subdirectories
+// for Payload and SvelteKit apps.
+func generateAppSpecificAgents(input cmdtools.CommandInput) error {
+	appDef := input.AppDef()
+
+	// Generate for Payload apps
+	payloadApps := appDef.GetAppsByType(appdef.AppTypePayload)
+	for _, app := range payloadApps {
+		err := input.Generator().Template(
+			filepath.Join(app.Path, "AGENTS.md"),
+			templates.MustLoadTemplate("docs/AGENTS.PAYLOAD.md"),
+			map[string]any{
+				"Payload": fsext.MustReadFromEmbed(gen.Embed, "docs/PAYLOAD.md"),
+			},
+			scaffold.WithTracking(manifest.SourceProject()),
+		)
 		if err != nil {
-			return "", errors.Wrap(err, "loading custom agents content")
+			return errors.Wrap(err, "generating Payload AGENTS.md")
 		}
-
-		buf := &bytes.Buffer{}
-		data := map[string]any{
-			"Definition": appDef,
-		}
-		if err = tmpl.Execute(buf, data); err != nil {
-			return "", errors.Wrap(err, "executing custom template")
-		}
-
-		return buf.String(), nil
 	}
 
-	// Fallback to a static markdown file,
-	if exists, _ := afero.Exists(fs, agentsPath); exists {
-		content, err := afero.ReadFile(fs, agentsPath)
+	// Generate for SvelteKit apps
+	svelteKitApps := appDef.GetAppsByType(appdef.AppTypeSvelteKit)
+	for _, app := range svelteKitApps {
+		err := input.Generator().Template(
+			filepath.Join(app.Path, "AGENTS.md"),
+			templates.MustLoadTemplate("docs/AGENTS.SVELTEKIT.md"),
+			map[string]any{
+				"SvelteKit": fsext.MustReadFromEmbed(gen.Embed, "docs/SVELTEKIT.md"),
+			},
+			scaffold.WithTracking(manifest.SourceProject()),
+		)
 		if err != nil {
-			return "", errors.Wrap(err, "reading custom content")
+			return errors.Wrap(err, "generating SvelteKit AGENTS.md")
 		}
-		return string(content), nil
 	}
 
-	return "", nil
+	return nil
 }

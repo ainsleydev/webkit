@@ -6,14 +6,15 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 )
 
-// Command is the sub-command for managing AI assistant documentation.
+// Command defines the docs commands for creating WebKit documentation
+// from Webkit enabled projects such as AGENTS.md
 var Command = &cli.Command{
-	Name:        "agents",
-	Usage:       "Manage AI assistant documentation",
-	Description: "Agents and manage documentation files for AI coding assistants",
+	Name:        "docs",
+	Usage:       "Manage Webkit documentation",
+	Description: "TODO",
 	Commands: []*cli.Command{
 		{
-			Name:        "generate",
+			Name:        "agents",
 			Usage:       "Agents AGENTS.md file",
 			Description: "Generates AGENTS.md file from base template and optional custom content",
 			Action:      cmdtools.Wrap(Agents),

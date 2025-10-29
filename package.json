@@ -33,6 +33,8 @@
 		"lint:js": "biome lint --write .",
 		"test": "pnpm test:go",
 		"test:go": "go test ./...",
+		"generate:docs": "go run cmd/docs/main.go",
+		"generate:agents": "go run cmd/agents/main.go",
 		"changeset": "changeset",
 		"changeset:version": "changeset version",
 		"changeset:publish": "pnpm turbo run build && changeset publish",

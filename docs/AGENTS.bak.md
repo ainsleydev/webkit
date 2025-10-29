@@ -8,10 +8,35 @@ This is a living document that will improve as more people/agents use it over ti
 been made to keep the guidance in here as generic and reusable as possible. Please keep this in mind
 with any future edits.
 
-**Note**: Investigation summaries and debugging analysis should be displayed via UI only, not
-committed to the repository.
+## WebKit
 
-{{ .Content -}}
+WebKit is a Go-based CLI tool designed to streamline the lifecycle of web projects. It centralises
+configuration in a single manifest file (`app.json`) and automatically generates surrounding
+infrastructure, CI/CD pipelines, and environment scaffolding.
+
+WebKit helps reduce repetitive setup work, improves consistency across deployments, and provides a
+reliable foundation for infrastructure management.
+
+**Key features**:
+
+- Single source of truth via `app.json` manifest.
+- Automatic generation of Docker configurations, GitHub workflows, and environment files.
+- Infrastructure provisioning through Terraform.
+- Secret management via SOPS.
+- Template-based file generation with tracking.
+
+## Build & Commands
+
+Essential pnpm scripts for development are listed below.
+
+- **Run CLI**: `pnpm webkit <command>`
+- **Build**: `pnpm build`
+- **Check all**: `pnpm check`
+- **Format**: `pnpm format`
+- **Format Go**: `pnpm format:go`
+- **Lint**: `pnpm lint`
+- **Lint Go**: `pnpm lint:go`
+- **Test**: `pnpm test`
 
 ## Content
 
@@ -54,12 +79,12 @@ Use `context.Context` as the first parameter for functions that perform I/O or c
 
 ```go
     func Run(ctx context.Context, cmd Command) (Result, error) {
-	select {
-		case <-ctx.Done():
-			return Result{}, ctx.Err()
-		default:
-			// Execute command
-	}
+		select {
+			case <-ctx.Done():
+				return Result{}, ctx.Err()
+			default: 
+				// Execute command
+		}
 }
 ```
 
@@ -67,12 +92,7 @@ Use `context.Context` as the first parameter for functions that perform I/O or c
 
 - Document all exported types, functions, and constants with Go doc comments.
 - Ensure that the comments convey the meaning behind the code, not just the what.
-- Within function bodies, only keep comments that explain _why_ something is done, not _what_ is
-  done. The code itself should be clear enough to show what it does.
-- Keep high-level comments that explain the flow or purpose of a section (e.g., "Try loading
-  template file first", "Fallback to static markdown file").
-- Remove obvious comments that just restate the code (e.g., "Load base template" before a
-  `LoadTemplate()` call).
+- All comments must end with a full stop, including inline comments and multi-line comments.
 
 **Example:**
 
@@ -85,6 +105,56 @@ type Generator interface {
 	Bytes(path string, data []byte, opts ...Option) error
 }
 ```
+
+### Control flow
+
+#### Maps over switch statements
+
+Prefer using maps with function values over switch statements when dispatching based on string or
+integer keys. This approach is more maintainable, extensible, and testable.
+
+**Prefer:**
+
+```go
+type handlerFunc func(input Request) (Response, error)
+
+var handlers = map[string]handlerFunc{
+	"create": handleCreate,
+	"update": handleUpdate,
+	"delete": handleDelete,
+}
+
+func dispatch(action string, req Request) (Response, error) {
+	handler, exists := handlers[action]
+	if !exists {
+		return Response{}, fmt.Errorf("unknown action: %s", action)
+	}
+	return handler(req)
+}
+```
+
+**Avoid:**
+
+```go
+func dispatch(action string, req Request) (Response, error) {
+	switch action {
+	case "create":
+		return handleCreate(req)
+	case "update":
+		return handleUpdate(req)
+	case "delete":
+		return handleDelete(req)
+	default:
+		return Response{}, fmt.Errorf("unknown action: %s", action)
+	}
+}
+```
+
+**Exceptions:**
+
+- Type switches (`switch v := value.(type)`) are appropriate for type assertions.
+- Switch statements are acceptable when matching on complex conditions or ranges.
+- Small, simple switches (2-3 cases) where a map would add unnecessary complexity.
 
 ### Constructors
 
@@ -159,9 +229,7 @@ All Go tests should be written in one of two ways:
    Use [**`t.Run`**](http://t.Run) **subtests** when:
 
 - The number of input arguments in the test table exceeds **3**, or
-- The complexity of assertions increases (we should **never** use `if` statements in test tables), or
-- Individual test cases require unique setup logic that would need a setup function in the test
-  table.
+- The complexity of assertions increases (we should **never** use `if` statements in test tables).
 
 #### General Rules
 
@@ -175,7 +243,6 @@ All Go tests should be written in one of two ways:
 - Prefer one assertion per test when possible.
 - Never use `else` blocks — use assert logic instead.
 - Never redeclare variables like `test := test` (variable shadowing).
-- Use `got` as the variable name for actual results when comparing against expected values.
 - Test names should:
 	- Start with a capitalised first word,
 	- Use spaces between words,
@@ -183,6 +250,18 @@ All Go tests should be written in one of two ways:
 - Always include all relevant test cases, even edge or error conditions.
 - If 100% coverage is not possible, explain _why_ in a brief note above the test function (no inline
   comments).
+
+#### Test Organisation
+
+- **One test function per exported function/method** — add new test cases as subtests within the
+  existing test function rather than creating separate test functions.
+- Only create a new test function if:
+	- Testing a distinctly different aspect that warrants complete separation (e.g.,
+	  `TestTracker_Add` vs `TestTracker_Save`).
+	- The original test function would become unwieldy (>200 lines) with the addition.
+- Group related test cases using descriptive subtest names that explain what's being tested.
+- Aim for comprehensive coverage within each test function rather than fragmenting tests across
+  multiple functions.
 
 #### Test Tables
 
@@ -252,11 +331,11 @@ func TestApp_OrderedCommands(t *testing.T) {
 
 	t.Run("Default Populated", func (t *testing.T) {
 		t.Parallel()
-
+		
 		app := &App{}
 		err := app.applyDefaults()
 		require.NoError(t, err)
-
+		
 		commands := app.OrderedCommands()
 		require.Len(t, commands, 4)
 		assert.Equal(t, "format", commands[0].Name)
@@ -300,20 +379,20 @@ go tool go.uber.org/mock/mockgen -source=gen.go -destination ../mocks/fs.go -pac
 ```go
 func setup(t *testing.T) *App {
 	t.Helper()
-
+	
 	app := &App{Name: "web", Type: AppTypeGoLang, Path: "./"}
 	err := app.applyDefaults()
 	require.NoError(t, err)
-
+	
 	return app
 }
-
+	
 func TestApp_OrderedCommands(t *testing.T) {
 	t.Parallel()
-
+	
 	t.Run("Default Populated", func (t *testing.T) {
 		t.Parallel()
-
+	
 		app := setup(t)
 		commands := app.OrderedCommands()
 		require.Len(t, commands, 4)
@@ -395,7 +474,62 @@ Before submitting changes, agents should verify the following:
 
 #### Verification steps
 
-- [ ] All tests pass locally (run `go test ./...`).
+Before committing, **always** run the following checks:
+
+1. **Run all tests**:
+   ```bash
+   go test ./...
+   ```
+
+2. **Run linting and formatting**:
+   ```bash
+   pnpm check
+   ```
+
+If both pass, proceed with the commit. If either fails, fix the issues before committing.
+
+#### Handling network issues during testing
+
+If you encounter network errors when running `go test ./...` or `pnpm check` (e.g., "dial tcp: lookup
+storage.googleapis.com"), follow these steps:
+
+1. **Check the local Go version**:
+   ```bash
+   GOTOOLCHAIN=local go version
+   ```
+
+2. **Temporarily downgrade `go.mod`** to match the local Go version:
+   ```bash
+   # If local version is go1.24.7, change go.mod from:
+   # go 1.25.3
+   # to:
+   # go 1.24.7
+   ```
+
+3. **Run tests with the local toolchain**:
+   ```bash
+   GOTOOLCHAIN=local go test ./... -timeout 5m
+   ```
+
+4. **Verify the code compiles and tests pass** (or skip appropriately).
+
+5. **Restore the original Go version in `go.mod`** before committing:
+   ```bash
+   # Change back to:
+   # go 1.25.3
+   ```
+
+6. **CRITICAL: Never commit the downgraded `go.mod` version**. Always restore it to the original
+   version before staging files.
+
+7. **Alternative formatting check** (if `pnpm check` fails due to network):
+   ```bash
+   GOTOOLCHAIN=local go fmt ./...
+   GOTOOLCHAIN=local go vet ./...
+   ```
+
+#### Additional checks
+
 - [ ] Code is properly formatted with `go fmt`.
 - [ ] Generated files (`.gen.go`, manifest tracked files) were not manually edited.
 - [ ] New exported types, functions, and constants have Go doc comments.

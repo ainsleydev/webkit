@@ -5,7 +5,8 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
-	"github.com/spf13/afero"
+
+	"github.com/ainsleydev/webkit/internal/fsext"
 )
 
 //go:embed *
@@ -13,20 +14,11 @@ var Embed embed.FS
 
 // LoadTemplate returns a parsed template from the embedded FS.
 func LoadTemplate(name string) (*template.Template, error) {
-	content, err := Embed.ReadFile(name)
+	content, err := fsext.ReadFromEmbed(Embed, name)
 	if err != nil {
 		return nil, err
 	}
-	return template.New(name).Funcs(templateFuncs()).Parse(string(content))
-}
-
-// LoadTemplateFromFS returns a parsed template from an afero filesystem.
-func LoadTemplateFromFS(fs afero.Fs, name string) (*template.Template, error) {
-	content, err := afero.ReadFile(fs, name)
-	if err != nil {
-		return nil, err
-	}
-	return template.New(name).Funcs(templateFuncs()).Parse(string(content))
+	return template.New(name).Funcs(templateFuncs()).Parse(content)
 }
 
 // MustLoadTemplate calls LoadTemplate but panics if parsing fails.
