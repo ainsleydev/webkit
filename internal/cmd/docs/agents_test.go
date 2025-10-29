@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/gen"
 )
 
@@ -78,7 +79,7 @@ func TestAgents(t *testing.T) {
 		appAgents, err := afero.ReadFile(fs, filepath.Join("cms", "AGENTS.md"))
 		require.NoError(t, err)
 		assert.NotEmpty(t, appAgents)
-		assert.Contains(t, string(appAgents), gen.Payload)
+		assert.Contains(t, string(appAgents), fsext.MustReadFromEmbed(gen.Embed, "docs/PAYLOAD.md"))
 	})
 
 	t.Run("With SvelteKit App", func(t *testing.T) {
@@ -104,6 +105,6 @@ func TestAgents(t *testing.T) {
 		appAgents, err := afero.ReadFile(fs, filepath.Join("web", "AGENTS.md"))
 		require.NoError(t, err)
 		assert.NotEmpty(t, appAgents)
-		assert.Contains(t, string(appAgents), gen.SvelteKit)
+		assert.Contains(t, string(appAgents), fsext.MustReadFromEmbed(gen.Embed, "docs/SVELTEKIT.md"))
 	})
 }

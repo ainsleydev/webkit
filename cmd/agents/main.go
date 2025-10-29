@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
+	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/gen"
 	"github.com/ainsleydev/webkit/internal/printer"
 	"github.com/ainsleydev/webkit/internal/scaffold"
@@ -51,7 +52,7 @@ func run(fs afero.Fs, output string) error {
 
 	data := map[string]any{
 		"Content":   string(contentBytes),
-		"CodeStyle": gen.CodeStyle,
+		"CodeStyle": fsext.MustReadFromEmbed(gen.Embed, "docs/CODE_STYLE.md"),
 	}
 
 	var buf bytes.Buffer

@@ -8,6 +8,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/gen"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
@@ -36,7 +37,7 @@ func generateRootAgents(input cmdtools.CommandInput) error {
 	data := map[string]any{
 		"Definition": input.AppDef(),
 		"Content":    mustLoadCustomContent(input.FS, "AGENTS.md"),
-		"CodeStyle":  gen.CodeStyle,
+		"CodeStyle":  fsext.MustReadFromEmbed(gen.Embed, "docs/CODE_STYLE.md"),
 	}
 
 	err := input.Generator().Template(
@@ -63,7 +64,9 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 		err := input.Generator().Template(
 			filepath.Join(app.Path, "AGENTS.md"),
 			templates.MustLoadTemplate("AGENTS.PAYLOAD.md"),
-			map[string]any{"Payload": gen.Payload},
+			map[string]any{
+				"Payload": fsext.MustReadFromEmbed(gen.Embed, "docs/PAYLOAD.md"),
+			},
 			scaffold.WithTracking(manifest.SourceProject()),
 		)
 		if err != nil {
@@ -77,7 +80,9 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 		err := input.Generator().Template(
 			filepath.Join(app.Path, "AGENTS.md"),
 			templates.MustLoadTemplate("AGENTS.SVELTEKIT.md"),
-			map[string]any{"SvelteKit": gen.SvelteKit},
+			map[string]any{
+				"SvelteKit": fsext.MustReadFromEmbed(gen.Embed, "docs/SVELTEKIT.md"),
+			},
 			scaffold.WithTracking(manifest.SourceProject()),
 		)
 		if err != nil {
