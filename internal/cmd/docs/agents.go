@@ -32,7 +32,7 @@ func Agents(_ context.Context, input cmdtools.CommandInput) error {
 }
 
 func generateRootAgents(input cmdtools.CommandInput) error {
-	baseTemplate := templates.MustLoadTemplate("AGENTS.md")
+	baseTemplate := templates.MustLoadTemplate("docs/AGENTS.md")
 
 	data := map[string]any{
 		"Definition": input.AppDef(),
@@ -63,7 +63,7 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 	for _, app := range payloadApps {
 		err := input.Generator().Template(
 			filepath.Join(app.Path, "AGENTS.md"),
-			templates.MustLoadTemplate("AGENTS.PAYLOAD.md"),
+			templates.MustLoadTemplate("docs/AGENTS.PAYLOAD.md"),
 			map[string]any{
 				"Payload": fsext.MustReadFromEmbed(gen.Embed, "docs/PAYLOAD.md"),
 			},
@@ -79,7 +79,7 @@ func generateAppSpecificAgents(input cmdtools.CommandInput) error {
 	for _, app := range svelteKitApps {
 		err := input.Generator().Template(
 			filepath.Join(app.Path, "AGENTS.md"),
-			templates.MustLoadTemplate("AGENTS.SVELTEKIT.md"),
+			templates.MustLoadTemplate("docs/AGENTS.SVELTEKIT.md"),
 			map[string]any{
 				"SvelteKit": fsext.MustReadFromEmbed(gen.Embed, "docs/SVELTEKIT.md"),
 			},
