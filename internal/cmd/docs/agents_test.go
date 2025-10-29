@@ -107,4 +107,13 @@ func TestAgents(t *testing.T) {
 		assert.NotEmpty(t, appAgents)
 		assert.Contains(t, string(appAgents), fsext.MustReadFromEmbed(gen.Embed, "docs/SVELTEKIT.md"))
 	})
+
+	t.Run("FS Failure", func(t *testing.T) {
+		t.Parallel()
+
+		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), &appdef.Definition{})
+
+		got := Agents(t.Context(), input)
+		assert.Error(t, got)
+	})
 }
