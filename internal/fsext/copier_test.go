@@ -85,5 +85,4 @@ func TestCopyFromEmbed(t *testing.T) {
 		err = CopyFromEmbed(testFS, "testdata", dest)
 		assert.NoError(t, err)
 	})
-
 }
