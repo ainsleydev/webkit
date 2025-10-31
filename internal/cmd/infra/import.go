@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
@@ -55,12 +54,7 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 
 	resourceName := input.Command.String("resource")
 	resourceID := input.Command.String("id")
-	envStr := input.Command.String("env")
-
-	environment, err := env.Parse(envStr)
-	if err != nil {
-		return errors.Wrap(err, "parsing environment")
-	}
+	environment := env.Environment(input.Command.String("env"))
 
 	printer.Info(fmt.Sprintf("Importing resource %q with ID %q into %s environment",
 		resourceName, resourceID, environment))
@@ -87,20 +81,16 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 	if err != nil {
 		printer.Error("Import failed")
 		if result.Output != "" {
-			printer.Print("")
 			printer.Print(result.Output)
 		}
-		return errors.Wrap(err, "executing terraform import")
+		return nil
 	}
 
-	printer.Print("")
 	printer.Success(fmt.Sprintf("Successfully imported %d resource(s)", len(result.ImportedResources)))
-	printer.Print("")
 	printer.Info("Imported Terraform resources:")
 	for _, addr := range result.ImportedResources {
 		printer.Print("  - " + addr)
 	}
-	printer.Print("")
 
 	printer.Info("Next steps:")
 	printer.Print("  1. Run 'webkit infra plan' to verify the import")

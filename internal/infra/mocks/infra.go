@@ -43,18 +43,18 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 }
 
 // Apply mocks base method.
-func (m *MockManager) Apply(ctx context.Context, env env.Environment) (infra.ApplyOutput, error) {
+func (m *MockManager) Apply(ctx context.Context, arg1 env.Environment) (infra.ApplyOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Apply", ctx, env)
+	ret := m.ctrl.Call(m, "Apply", ctx, arg1)
 	ret0, _ := ret[0].(infra.ApplyOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Apply indicates an expected call of Apply.
-func (mr *MockManagerMockRecorder) Apply(ctx, env any) *gomock.Call {
+func (mr *MockManagerMockRecorder) Apply(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockManager)(nil).Apply), ctx, env)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockManager)(nil).Apply), ctx, arg1)
 }
 
 // Cleanup mocks base method.
@@ -70,47 +70,18 @@ func (mr *MockManagerMockRecorder) Cleanup() *gomock.Call {
 }
 
 // Destroy mocks base method.
-func (m *MockManager) Destroy(ctx context.Context, env env.Environment) (infra.DestroyOutput, error) {
+func (m *MockManager) Destroy(ctx context.Context, arg1 env.Environment) (infra.DestroyOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Destroy", ctx, env)
+	ret := m.ctrl.Call(m, "Destroy", ctx, arg1)
 	ret0, _ := ret[0].(infra.DestroyOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Destroy indicates an expected call of Destroy.
-func (mr *MockManagerMockRecorder) Destroy(ctx, env any) *gomock.Call {
+func (mr *MockManagerMockRecorder) Destroy(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destroy", reflect.TypeOf((*MockManager)(nil).Destroy), ctx, env)
-}
-
-// Init mocks base method.
-func (m *MockManager) Init(ctx context.Context) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Init", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Init indicates an expected call of Init.
-func (mr *MockManagerMockRecorder) Init(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*MockManager)(nil).Init), ctx)
-}
-
-// Output mocks base method.
-func (m *MockManager) Output(ctx context.Context, env env.Environment) (infra.OutputResult, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Output", ctx, env)
-	ret0, _ := ret[0].(infra.OutputResult)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Output indicates an expected call of Output.
-func (mr *MockManagerMockRecorder) Output(ctx, env any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Output", reflect.TypeOf((*MockManager)(nil).Output), ctx, env)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destroy", reflect.TypeOf((*MockManager)(nil).Destroy), ctx, arg1)
 }
 
 // Import mocks base method.
@@ -128,17 +99,46 @@ func (mr *MockManagerMockRecorder) Import(ctx, input any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Import", reflect.TypeOf((*MockManager)(nil).Import), ctx, input)
 }
 
-// Plan mocks base method.
-func (m *MockManager) Plan(ctx context.Context, env env.Environment) (infra.PlanOutput, error) {
+// Init mocks base method.
+func (m *MockManager) Init(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Plan", ctx, env)
+	ret := m.ctrl.Call(m, "Init", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Init indicates an expected call of Init.
+func (mr *MockManagerMockRecorder) Init(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*MockManager)(nil).Init), ctx)
+}
+
+// Output mocks base method.
+func (m *MockManager) Output(ctx context.Context, arg1 env.Environment) (infra.OutputResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Output", ctx, arg1)
+	ret0, _ := ret[0].(infra.OutputResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Output indicates an expected call of Output.
+func (mr *MockManagerMockRecorder) Output(ctx, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Output", reflect.TypeOf((*MockManager)(nil).Output), ctx, arg1)
+}
+
+// Plan mocks base method.
+func (m *MockManager) Plan(ctx context.Context, arg1 env.Environment) (infra.PlanOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Plan", ctx, arg1)
 	ret0, _ := ret[0].(infra.PlanOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Plan indicates an expected call of Plan.
-func (mr *MockManagerMockRecorder) Plan(ctx, env any) *gomock.Call {
+func (mr *MockManagerMockRecorder) Plan(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Plan", reflect.TypeOf((*MockManager)(nil).Plan), ctx, env)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Plan", reflect.TypeOf((*MockManager)(nil).Plan), ctx, arg1)
 }

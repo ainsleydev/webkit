@@ -334,6 +334,33 @@ func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResu
 	return result, nil
 }
 
+type (
+	// ImportInput contains the configuration for importing existing resources.
+	ImportInput struct {
+		// ResourceName is the name of the resource
+		// in app.json.
+		ResourceName string
+
+		// ResourceID is the provider-specific ID
+		// (e.g., DigitalOcean cluster ID).
+		ResourceID string
+
+		// Environment specifies which environment
+		// to import into.
+		Environment env.Environment
+	}
+	// ImportOutput contains the results of an import operation.
+	ImportOutput struct {
+		// ImportedResources lists the Terraform
+		// addresses that were imported.
+		ImportedResources []string
+
+		// Output contains the human-readable output
+		// from the import operations.
+		Output string
+	}
+)
+
 // Import imports an existing infrastructure resource into the Terraform state.
 // This allows webkit to manage resources that were created manually or outside of Terraform.
 //
