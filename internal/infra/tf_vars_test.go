@@ -357,14 +357,14 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			assert.Equal(t, map[string]any{}, web.Config) // Empty should stay {}
 		}
 
-		t.Log("Resources with normalized arrays")
+		t.Log("Resources with JSON-encoded arrays")
 		{
 			require.Len(t, got.Resources, 2)
 
 			db := got.Resources[0]
 			assert.Equal(t, "db", db.Name)
-			// Arrays should be properly typed
-			assert.Equal(t, []string{"185.16.161.205", "159.65.87.97"}, db.Config["allowed_ips_addr"])
+			// Arrays should be JSON-encoded as strings for Terraform's jsondecode()
+			assert.Equal(t, `["185.16.161.205","159.65.87.97"]`, db.Config["allowed_ips_addr"])
 			assert.Equal(t, "17", db.Config["engine_version"])
 
 			store := got.Resources[1]
@@ -372,4 +372,148 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			assert.Equal(t, "private", store.Config["acl"])
 		}
 	})
+}
+
+func TestEncodeConfigForTerraform(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input map[string]any
+		want  map[string]any
+	}{
+		"Nil config returns empty map": {
+			input: nil,
+			want:  map[string]any{},
+		},
+		"Empty config": {
+			input: map[string]any{},
+			want:  map[string]any{},
+		},
+		"String array gets JSON encoded": {
+			input: map[string]any{
+				"allowed_ips_addr": []any{"185.16.161.205", "159.65.87.97"},
+				"engine_version":   "17",
+			},
+			want: map[string]any{
+				"allowed_ips_addr": `["185.16.161.205","159.65.87.97"]`,
+				"engine_version":   "17",
+			},
+		},
+		"Typed string slice gets JSON encoded": {
+			input: map[string]any{
+				"allowed_droplet_ips": []string{"192.168.1.1", "192.168.1.2"},
+				"size":                "db-s-1vcpu-1gb",
+			},
+			want: map[string]any{
+				"allowed_droplet_ips": `["192.168.1.1","192.168.1.2"]`,
+				"size":                "db-s-1vcpu-1gb",
+			},
+		},
+		"Primitives pass through unchanged": {
+			input: map[string]any{
+				"string": "value",
+				"number": 42,
+				"bool":   true,
+				"null":   nil,
+			},
+			want: map[string]any{
+				"string": "value",
+				"number": 42,
+				"bool":   true,
+				"null":   nil,
+			},
+		},
+		"Mixed primitives and arrays": {
+			input: map[string]any{
+				"acl":   "private",
+				"ports": []int{8080, 443, 3000},
+			},
+			want: map[string]any{
+				"acl":   "private",
+				"ports": `[8080,443,3000]`,
+			},
+		},
+		"Real-world Postgres config": {
+			input: map[string]any{
+				"allowed_ips_addr":    []string{"185.16.161.205", "159.65.87.97"},
+				"allowed_droplet_ips": []string{"droplet-123"},
+				"engine_version":      "17",
+				"size":                "db-s-1vcpu-1gb",
+			},
+			want: map[string]any{
+				"allowed_ips_addr":    `["185.16.161.205","159.65.87.97"]`,
+				"allowed_droplet_ips": `["droplet-123"]`,
+				"engine_version":      "17",
+				"size":                "db-s-1vcpu-1gb",
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := encodeConfigForTerraform(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestEncodeConfigValue(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input any
+		want  any
+	}{
+		"Nil value": {
+			input: nil,
+			want:  nil,
+		},
+		"String value": {
+			input: "test",
+			want:  "test",
+		},
+		"Number value": {
+			input: 42,
+			want:  42,
+		},
+		"Bool value": {
+			input: true,
+			want:  true,
+		},
+		"Interface slice with strings": {
+			input: []any{"a", "b", "c"},
+			want:  `["a","b","c"]`,
+		},
+		"Typed string slice": {
+			input: []string{"x", "y", "z"},
+			want:  `["x","y","z"]`,
+		},
+		"Int slice": {
+			input: []int{1, 2, 3},
+			want:  `[1,2,3]`,
+		},
+		"Float slice": {
+			input: []float64{1.5, 2.5},
+			want:  `[1.5,2.5]`,
+		},
+		"Bool slice": {
+			input: []bool{true, false},
+			want:  `[true,false]`,
+		},
+		"Empty slice": {
+			input: []string{},
+			want:  `[]`,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := encodeConfigValue(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
 }
