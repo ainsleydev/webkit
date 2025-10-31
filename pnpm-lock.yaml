@@ -119,6 +119,9 @@ importers:
       '@swc/core':
         specifier: ^1.7.2
         version: 1.11.11(@swc/helpers@0.5.15)
+      '@types/node':
+        specifier: ^24.9.1
+        version: 24.9.1
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.26
