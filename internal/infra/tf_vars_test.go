@@ -288,6 +288,90 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			assert.Equal(t, map[string]any{"acl": "private"}, cache.Config)
 		}
 	})
+
+	t.Run("Mixed null and empty configs with arrays", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "mixed-config-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "mixed-config-project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "cms",
+					Infra: appdef.Infra{
+						Type:     "vm",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   nil, // Null config
+					},
+				},
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "web",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{}, // Empty config
+					},
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:     "db",
+					Type:     appdef.ResourceTypePostgres,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Config: map[string]any{
+						"allowed_ips_addr": []any{"185.16.161.205", "159.65.87.97"},
+						"engine_version":   "17",
+					},
+				},
+				{
+					Name:     "store",
+					Type:     appdef.ResourceTypeS3,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Config: map[string]any{
+						"acl": "private",
+					},
+				},
+			},
+		}
+
+		got, err := tfVarsFromDefinition(env.Production, input)
+		assert.NoError(t, err)
+
+		t.Log("Apps with consistent config types")
+		{
+			require.Len(t, got.Apps, 2)
+
+			cms := got.Apps[0]
+			assert.Equal(t, "cms", cms.Name)
+			assert.Equal(t, map[string]any{}, cms.Config) // Nil should become {}
+
+			web := got.Apps[1]
+			assert.Equal(t, "web", web.Name)
+			assert.Equal(t, map[string]any{}, web.Config) // Empty should stay {}
+		}
+
+		t.Log("Resources with normalized arrays")
+		{
+			require.Len(t, got.Resources, 2)
+
+			db := got.Resources[0]
+			assert.Equal(t, "db", db.Name)
+			// Arrays should be properly typed
+			assert.Equal(t, []string{"185.16.161.205", "159.65.87.97"}, db.Config["allowed_ips_addr"])
+			assert.Equal(t, "17", db.Config["engine_version"])
+
+			store := got.Resources[1]
+			assert.Equal(t, "store", store.Name)
+			assert.Equal(t, "private", store.Config["acl"])
+		}
+	})
 }
 
 func TestNormalizeConfig(t *testing.T) {
@@ -297,9 +381,9 @@ func TestNormalizeConfig(t *testing.T) {
 		input map[string]any
 		want  map[string]any
 	}{
-		"Nil config": {
+		"Nil config returns empty map": {
 			input: nil,
-			want:  nil,
+			want:  map[string]any{},
 		},
 		"Empty config": {
 			input: map[string]any{},

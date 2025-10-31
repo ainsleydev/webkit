@@ -125,10 +125,11 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 //
 // This is necessary because JSON unmarshaling creates []any for arrays,
 // which can cause Terraform type inference issues when passed as
-// the 'any' type.
+// the 'any' type. Additionally, nil configs are converted to empty maps
+// to ensure consistent typing across all elements in Terraform lists.
 func normalizeConfig(config map[string]any) map[string]any {
 	if config == nil {
-		return nil
+		return map[string]any{}
 	}
 
 	normalized := make(map[string]any, len(config))
