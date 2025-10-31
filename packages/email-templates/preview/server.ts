@@ -1,5 +1,5 @@
-import path from 'node:path';
-import process from 'node:process';
+import * as path from 'node:path';
+import * as process from 'node:process';
 import { previewCommand } from '../src/cli/preview.js';
 
 const __dirname = path.resolve(path.dirname(process.argv[1]));
