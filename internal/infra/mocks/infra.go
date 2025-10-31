@@ -113,6 +113,21 @@ func (mr *MockManagerMockRecorder) Output(ctx, env any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Output", reflect.TypeOf((*MockManager)(nil).Output), ctx, env)
 }
 
+// Import mocks base method.
+func (m *MockManager) Import(ctx context.Context, input infra.ImportInput) (infra.ImportOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Import", ctx, input)
+	ret0, _ := ret[0].(infra.ImportOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Import indicates an expected call of Import.
+func (mr *MockManagerMockRecorder) Import(ctx, input any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Import", reflect.TypeOf((*MockManager)(nil).Import), ctx, input)
+}
+
 // Plan mocks base method.
 func (m *MockManager) Plan(ctx context.Context, env env.Environment) (infra.PlanOutput, error) {
 	m.ctrl.T.Helper()

@@ -48,6 +48,7 @@ type terraformExecutor interface {
 	Apply(ctx context.Context, opts ...tfexec.ApplyOption) error
 	Destroy(ctx context.Context, opts ...tfexec.DestroyOption) error
 	Output(ctx context.Context, opts ...tfexec.OutputOption) (map[string]tfexec.OutputMeta, error)
+	Import(ctx context.Context, address string, id string, opts ...tfexec.ImportOption) error
 	ShowPlanFileRaw(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (string, error)
 	ShowPlanFile(ctx context.Context, planPath string, opts ...tfexec.ShowOption) (*tfjson.Plan, error)
 }
@@ -331,6 +332,54 @@ func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResu
 	}
 
 	return result, nil
+}
+
+// Import imports an existing infrastructure resource into the Terraform state.
+// This allows webkit to manage resources that were created manually or outside of Terraform.
+//
+// Must be called after Init().
+func (t *Terraform) Import(ctx context.Context, input ImportInput) (ImportOutput, error) {
+	if err := t.prepareVars(input.Environment); err != nil {
+		return ImportOutput{}, err
+	}
+
+	// Find the resource in the definition.
+	var resource *appdef.Resource
+	for i := range t.appDef.Resources {
+		if t.appDef.Resources[i].Name == input.ResourceName {
+			resource = &t.appDef.Resources[i]
+			break
+		}
+	}
+	if resource == nil {
+		return ImportOutput{}, fmt.Errorf("resource %q not found in app.json", input.ResourceName)
+	}
+
+	var outputBuf strings.Builder
+	t.tf.SetStdout(&outputBuf)
+	t.tf.SetStderr(&outputBuf)
+
+	// Build import addresses based on resource type and provider.
+	addresses, err := buildImportAddresses(resource, input.ResourceID)
+	if err != nil {
+		return ImportOutput{}, err
+	}
+
+	imported := make([]string, 0, len(addresses))
+	for _, addr := range addresses {
+		if err := t.tf.Import(ctx, addr.Address, addr.ID); err != nil {
+			return ImportOutput{
+				ImportedResources: imported,
+				Output:            outputBuf.String(),
+			}, fmt.Errorf("importing %s: %w", addr.Address, err)
+		}
+		imported = append(imported, addr.Address)
+	}
+
+	return ImportOutput{
+		ImportedResources: imported,
+		Output:            outputBuf.String(),
+	}, nil
 }
 
 // Cleanup removes all the temporary directories that we're
