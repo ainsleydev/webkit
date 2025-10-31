@@ -2,12 +2,12 @@
 
 The majority of web facing applications built with webkit will be SvelteKit with a PayloadCMS
 (Next.JS) backend. I want to create a helper npm package for applications using SvelteKit under
-packages/sveltekit-helper.
+packages/svelte-helper.
 
 ## Requirements
 
 - We should use the latest version of Svelte with runes.
-- Applications should be able to run `pnpm add @ainsleydev/sveltekit-helper` and import commonly
+- Applications should be able to run `pnpm add @ainsleydev/svelte-helper` and import commonly
   used functions such as `grid/Container.svelte`
 - There should be two ways of importing commonly used code (please review this).
 	- Via a simple JS import, this would be useful for things like containers, rows or grid elements
@@ -27,15 +27,12 @@ packages/sveltekit-helper.
 
 - Plan and architect this, answering any of the questions below.
 - Do not write any files, just come back with architectural design.
-- I don't know how it would work for `PayloadForm` as apps may want to define their own `Form` or
-  `FormGroup`. Come up with a viable solution.
 - Consider a `peerDependencies` approach for SvelteKit to avoid conflicts within the plan.
 
 ## Questions
 
 - Should we use https://github.com/shinokada/svelte-lib-helpers as a utility package? What benefit
   would this provide?
-- Should we call it `sveltekit-helper` or `svelte-helper`?
 
 ## Examples
 
