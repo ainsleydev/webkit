@@ -1,6 +1,6 @@
-import { previewCommand } from '../src/cli/preview.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { previewCommand } from '../src/cli/preview.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

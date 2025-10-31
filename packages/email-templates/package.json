@@ -40,10 +40,11 @@
 		"@react-email/render": "^1.0.1"
 	},
 	"devDependencies": {
-		"@ainsleydev/prettier-config": "workspace:*",
 		"@ainsleydev/eslint-config": "workspace:*",
+		"@ainsleydev/prettier-config": "workspace:*",
 		"@swc/cli": "^0.4.0",
 		"@swc/core": "^1.7.2",
+		"@types/node": "^24.9.1",
 		"@types/react": "^18.3.3",
 		"@types/react-dom": "^18.3.0",
 		"rimraf": "6.0.1",
