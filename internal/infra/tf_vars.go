@@ -122,8 +122,10 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 }
 
 // normalizeConfig recursively normalizes config values to ensure proper typing for Terraform.
-// This is necessary because JSON unmarshaling creates []interface{} for arrays, which can cause
-// Terraform type inference issues when passed as the 'any' type.
+//
+// This is necessary because JSON unmarshaling creates []any for arrays,
+// which can cause Terraform type inference issues when passed as
+// the 'any' type.
 func normalizeConfig(config map[string]any) map[string]any {
 	if config == nil {
 		return nil
@@ -133,6 +135,7 @@ func normalizeConfig(config map[string]any) map[string]any {
 	for key, value := range config {
 		normalized[key] = normalizeValue(value)
 	}
+
 	return normalized
 }
 
@@ -143,12 +146,9 @@ func normalizeValue(value any) any {
 	}
 
 	switch v := value.(type) {
-	case []interface{}:
+	case []any:
 		// Convert []interface{} to a properly typed slice.
 		return normalizeSlice(v)
-	case map[string]interface{}:
-		// Recursively normalize nested maps.
-		return normalizeConfig(v)
 	case map[string]any:
 		// Recursively normalize nested maps.
 		return normalizeConfig(v)
@@ -220,6 +220,7 @@ func normalizeSlice(slice []interface{}) any {
 	for i, elem := range slice {
 		result[i] = normalizeValue(elem)
 	}
+
 	return result
 }
 

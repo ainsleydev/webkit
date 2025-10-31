@@ -10,7 +10,8 @@ import (
 type (
 	// importAddress represents a single Terraform resource to import.
 	importAddress struct {
-		// Address is the Terraform resource address (e.g., "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_cluster.this").
+		// Address is the Terraform resource address
+		// (e.g., "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_cluster.this").
 		Address string
 		// ID is the provider-specific resource identifier.
 		ID string

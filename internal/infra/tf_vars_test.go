@@ -307,7 +307,7 @@ func TestNormalizeConfig(t *testing.T) {
 		},
 		"String array from JSON unmarshal": {
 			input: map[string]any{
-				"allowed_ips_addr": []interface{}{"185.16.161.205", "159.65.87.97"},
+				"allowed_ips_addr": []any{"185.16.161.205", "159.65.87.97"},
 				"engine_version":   "17",
 			},
 			want: map[string]any{
@@ -317,7 +317,7 @@ func TestNormalizeConfig(t *testing.T) {
 		},
 		"Number array from JSON unmarshal": {
 			input: map[string]any{
-				"ports": []interface{}{8080.0, 443.0, 3000.0},
+				"ports": []any{8080.0, 443.0, 3000.0},
 			},
 			want: map[string]any{
 				"ports": []float64{8080.0, 443.0, 3000.0},
@@ -325,7 +325,7 @@ func TestNormalizeConfig(t *testing.T) {
 		},
 		"Bool array from JSON unmarshal": {
 			input: map[string]any{
-				"flags": []interface{}{true, false, true},
+				"flags": []any{true, false, true},
 			},
 			want: map[string]any{
 				"flags": []bool{true, false, true},
@@ -333,7 +333,7 @@ func TestNormalizeConfig(t *testing.T) {
 		},
 		"Empty array defaults to string slice": {
 			input: map[string]any{
-				"empty": []interface{}{},
+				"empty": []any{},
 			},
 			want: map[string]any{
 				"empty": []string{},
@@ -342,7 +342,7 @@ func TestNormalizeConfig(t *testing.T) {
 		"Nested map": {
 			input: map[string]any{
 				"nested": map[string]interface{}{
-					"items": []interface{}{"a", "b", "c"},
+					"items": []any{"a", "b", "c"},
 				},
 			},
 			want: map[string]any{
@@ -367,7 +367,7 @@ func TestNormalizeConfig(t *testing.T) {
 		},
 		"Real-world Postgres config": {
 			input: map[string]any{
-				"allowed_ips_addr": []interface{}{"185.16.161.205", "159.65.87.97"},
+				"allowed_ips_addr": []any{"185.16.161.205", "159.65.87.97"},
 				"engine_version":   "17",
 				"size":             "db-s-1vcpu-1gb",
 			},
@@ -413,19 +413,19 @@ func TestNormalizeValue(t *testing.T) {
 			want:  true,
 		},
 		"String array interface slice": {
-			input: []interface{}{"a", "b", "c"},
+			input: []any{"a", "b", "c"},
 			want:  []string{"a", "b", "c"},
 		},
 		"Number array interface slice": {
-			input: []interface{}{1.0, 2.0, 3.0},
+			input: []any{1.0, 2.0, 3.0},
 			want:  []float64{1.0, 2.0, 3.0},
 		},
 		"Bool array interface slice": {
-			input: []interface{}{true, false},
+			input: []any{true, false},
 			want:  []bool{true, false},
 		},
 		"Mixed type array stays as interface": {
-			input: []interface{}{"string", 42.0, true},
+			input: []any{"string", 42.0, true},
 			want:  []any{"string", 42.0, true},
 		},
 	}
@@ -444,39 +444,39 @@ func TestNormalizeSlice(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		input []interface{}
+		input []any
 		want  any
 	}{
 		"Empty slice": {
-			input: []interface{}{},
+			input: []any{},
 			want:  []string{},
 		},
 		"String slice": {
-			input: []interface{}{"alpha", "beta", "gamma"},
+			input: []any{"alpha", "beta", "gamma"},
 			want:  []string{"alpha", "beta", "gamma"},
 		},
 		"Number slice": {
-			input: []interface{}{1.5, 2.5, 3.5},
+			input: []any{1.5, 2.5, 3.5},
 			want:  []float64{1.5, 2.5, 3.5},
 		},
 		"Bool slice": {
-			input: []interface{}{true, false, true, true},
+			input: []any{true, false, true, true},
 			want:  []bool{true, false, true, true},
 		},
 		"Mixed type slice": {
-			input: []interface{}{"text", 123.0, false},
+			input: []any{"text", 123.0, false},
 			want:  []any{"text", 123.0, false},
 		},
 		"Single element string": {
-			input: []interface{}{"solo"},
+			input: []any{"solo"},
 			want:  []string{"solo"},
 		},
 		"Single element number": {
-			input: []interface{}{999.0},
+			input: []any{999.0},
 			want:  []float64{999.0},
 		},
 		"Single element bool": {
-			input: []interface{}{false},
+			input: []any{false},
 			want:  []bool{false},
 		},
 	}
