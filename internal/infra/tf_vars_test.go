@@ -289,3 +289,204 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 }
+
+func TestNormalizeConfig(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input map[string]any
+		want  map[string]any
+	}{
+		"Nil config": {
+			input: nil,
+			want:  nil,
+		},
+		"Empty config": {
+			input: map[string]any{},
+			want:  map[string]any{},
+		},
+		"String array from JSON unmarshal": {
+			input: map[string]any{
+				"allowed_ips_addr": []interface{}{"185.16.161.205", "159.65.87.97"},
+				"engine_version":   "17",
+			},
+			want: map[string]any{
+				"allowed_ips_addr": []string{"185.16.161.205", "159.65.87.97"},
+				"engine_version":   "17",
+			},
+		},
+		"Number array from JSON unmarshal": {
+			input: map[string]any{
+				"ports": []interface{}{8080.0, 443.0, 3000.0},
+			},
+			want: map[string]any{
+				"ports": []float64{8080.0, 443.0, 3000.0},
+			},
+		},
+		"Bool array from JSON unmarshal": {
+			input: map[string]any{
+				"flags": []interface{}{true, false, true},
+			},
+			want: map[string]any{
+				"flags": []bool{true, false, true},
+			},
+		},
+		"Empty array defaults to string slice": {
+			input: map[string]any{
+				"empty": []interface{}{},
+			},
+			want: map[string]any{
+				"empty": []string{},
+			},
+		},
+		"Nested map": {
+			input: map[string]any{
+				"nested": map[string]interface{}{
+					"items": []interface{}{"a", "b", "c"},
+				},
+			},
+			want: map[string]any{
+				"nested": map[string]any{
+					"items": []string{"a", "b", "c"},
+				},
+			},
+		},
+		"Mixed types remain primitive": {
+			input: map[string]any{
+				"string": "value",
+				"number": 42.0,
+				"bool":   true,
+				"null":   nil,
+			},
+			want: map[string]any{
+				"string": "value",
+				"number": 42.0,
+				"bool":   true,
+				"null":   nil,
+			},
+		},
+		"Real-world Postgres config": {
+			input: map[string]any{
+				"allowed_ips_addr": []interface{}{"185.16.161.205", "159.65.87.97"},
+				"engine_version":   "17",
+				"size":             "db-s-1vcpu-1gb",
+			},
+			want: map[string]any{
+				"allowed_ips_addr": []string{"185.16.161.205", "159.65.87.97"},
+				"engine_version":   "17",
+				"size":             "db-s-1vcpu-1gb",
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := normalizeConfig(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestNormalizeValue(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input any
+		want  any
+	}{
+		"Nil value": {
+			input: nil,
+			want:  nil,
+		},
+		"String value": {
+			input: "test",
+			want:  "test",
+		},
+		"Number value": {
+			input: 42.0,
+			want:  42.0,
+		},
+		"Bool value": {
+			input: true,
+			want:  true,
+		},
+		"String array interface slice": {
+			input: []interface{}{"a", "b", "c"},
+			want:  []string{"a", "b", "c"},
+		},
+		"Number array interface slice": {
+			input: []interface{}{1.0, 2.0, 3.0},
+			want:  []float64{1.0, 2.0, 3.0},
+		},
+		"Bool array interface slice": {
+			input: []interface{}{true, false},
+			want:  []bool{true, false},
+		},
+		"Mixed type array stays as interface": {
+			input: []interface{}{"string", 42.0, true},
+			want:  []any{"string", 42.0, true},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := normalizeValue(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestNormalizeSlice(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input []interface{}
+		want  any
+	}{
+		"Empty slice": {
+			input: []interface{}{},
+			want:  []string{},
+		},
+		"String slice": {
+			input: []interface{}{"alpha", "beta", "gamma"},
+			want:  []string{"alpha", "beta", "gamma"},
+		},
+		"Number slice": {
+			input: []interface{}{1.5, 2.5, 3.5},
+			want:  []float64{1.5, 2.5, 3.5},
+		},
+		"Bool slice": {
+			input: []interface{}{true, false, true, true},
+			want:  []bool{true, false, true, true},
+		},
+		"Mixed type slice": {
+			input: []interface{}{"text", 123.0, false},
+			want:  []any{"text", 123.0, false},
+		},
+		"Single element string": {
+			input: []interface{}{"solo"},
+			want:  []string{"solo"},
+		},
+		"Single element number": {
+			input: []interface{}{999.0},
+			want:  []float64{999.0},
+		},
+		"Single element bool": {
+			input: []interface{}{false},
+			want:  []bool{false},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := normalizeSlice(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}

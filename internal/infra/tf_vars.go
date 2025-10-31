@@ -84,7 +84,7 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 			Name:             res.Name,
 			PlatformType:     res.Type.String(),
 			PlatformProvider: res.Provider.String(),
-			Config:           res.Config,
+			Config:           normalizeConfig(res.Config),
 		})
 	}
 
@@ -94,7 +94,7 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 			PlatformType:     app.Infra.Type,
 			PlatformProvider: app.Infra.Provider.String(),
 			AppType:          app.Type.String(),
-			Config:           app.Infra.Config,
+			Config:           normalizeConfig(app.Infra.Config),
 			Path:             app.Path,
 		}
 
@@ -119,6 +119,108 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 	}
 
 	return vars, nil
+}
+
+// normalizeConfig recursively normalizes config values to ensure proper typing for Terraform.
+// This is necessary because JSON unmarshaling creates []interface{} for arrays, which can cause
+// Terraform type inference issues when passed as the 'any' type.
+func normalizeConfig(config map[string]any) map[string]any {
+	if config == nil {
+		return nil
+	}
+
+	normalized := make(map[string]any, len(config))
+	for key, value := range config {
+		normalized[key] = normalizeValue(value)
+	}
+	return normalized
+}
+
+// normalizeValue recursively normalizes a single config value.
+func normalizeValue(value any) any {
+	if value == nil {
+		return nil
+	}
+
+	switch v := value.(type) {
+	case []interface{}:
+		// Convert []interface{} to a properly typed slice.
+		return normalizeSlice(v)
+	case map[string]interface{}:
+		// Recursively normalize nested maps.
+		return normalizeConfig(v)
+	case map[string]any:
+		// Recursively normalize nested maps.
+		return normalizeConfig(v)
+	default:
+		// Return primitive types as-is.
+		return value
+	}
+}
+
+// normalizeSlice converts []interface{} to a typed slice based on the element types.
+func normalizeSlice(slice []interface{}) any {
+	if len(slice) == 0 {
+		return []string{} // Empty slices default to []string for Terraform compatibility.
+	}
+
+	// Check if all elements are strings.
+	allStrings := true
+	for _, elem := range slice {
+		if _, ok := elem.(string); !ok {
+			allStrings = false
+			break
+		}
+	}
+
+	if allStrings {
+		result := make([]string, len(slice))
+		for i, elem := range slice {
+			result[i] = elem.(string)
+		}
+		return result
+	}
+
+	// Check if all elements are numbers (float64 in JSON).
+	allNumbers := true
+	for _, elem := range slice {
+		if _, ok := elem.(float64); !ok {
+			allNumbers = false
+			break
+		}
+	}
+
+	if allNumbers {
+		result := make([]float64, len(slice))
+		for i, elem := range slice {
+			result[i] = elem.(float64)
+		}
+		return result
+	}
+
+	// Check if all elements are bools.
+	allBools := true
+	for _, elem := range slice {
+		if _, ok := elem.(bool); !ok {
+			allBools = false
+			break
+		}
+	}
+
+	if allBools {
+		result := make([]bool, len(slice))
+		for i, elem := range slice {
+			result[i] = elem.(bool)
+		}
+		return result
+	}
+
+	// For mixed or complex types, recursively normalize each element.
+	result := make([]any, len(slice))
+	for i, elem := range slice {
+		result[i] = normalizeValue(elem)
+	}
+	return result
 }
 
 // writeTFVarsFile writes Terraform variables to a JSON file.
