@@ -1,14 +1,14 @@
 {
-	"name": "@ainsleydev/sveltekit-helper",
-	"version": "0.0.38",
-	"description": "SvelteKit web utilities, UI components and more for ainsley.dev builds",
+	"name": "@ainsleydev/svelte-helper",
+	"version": "0.0.1",
+	"description": "Svelte web utilities, UI components and more for ainsley.dev builds",
 	"license": "MIT",
 	"type": "module",
 	"keywords": ["sveltekit", "typescript", "ui"],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ainsleydev/webkit.git",
-		"directory": "packages/sveltekit-helper"
+		"directory": "packages/svelte-helper"
 	},
 	"author": {
 		"name": "ainsley.dev",
