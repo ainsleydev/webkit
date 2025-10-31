@@ -162,7 +162,7 @@ func encodeConfigValue(value any) any {
 
 	// Check if the value is a slice/array (regardless of element type).
 	switch v := value.(type) {
-	case []any, []interface{}, []string, []int, []float64, []bool:
+	case []any, []string, []int, []float64, []bool:
 		// Encode arrays as JSON strings for Terraform's jsondecode().
 		jsonBytes, err := json.Marshal(v)
 		if err != nil {
