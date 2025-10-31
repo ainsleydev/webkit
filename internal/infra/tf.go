@@ -378,7 +378,8 @@ func (t *Terraform) Import(ctx context.Context, input ImportInput) (ImportOutput
 	}
 
 	// Build import addresses based on resource type and provider.
-	addresses, err := buildImportAddresses(resource, input.ResourceID)
+	// Pass project name to build full resource names matching Terraform's naming convention.
+	addresses, err := buildImportAddresses(t.appDef.Project.Name, resource, input.ResourceID)
 	if err != nil {
 		return ImportOutput{}, err
 	}

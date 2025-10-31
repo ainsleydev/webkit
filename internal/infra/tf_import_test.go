@@ -12,12 +12,14 @@ func TestBuildImportAddresses(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		resource *appdef.Resource
-		baseID   string
-		want     []importAddress
-		wantErr  bool
+		projectName string
+		resource    *appdef.Resource
+		baseID      string
+		want        []importAddress
+		wantErr     bool
 	}{
 		"DigitalOcean Postgres without firewall": {
+			projectName: "test-project",
 			resource: &appdef.Resource{
 				Name:     "db",
 				Type:     appdef.ResourceTypePostgres,
@@ -32,22 +34,23 @@ func TestBuildImportAddresses(t *testing.T) {
 				},
 				{
 					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_user.this",
-					ID:      "cluster-123,db_admin",
+					ID:      "cluster-123,test_project_db_admin",
 				},
 				{
 					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_db.this",
-					ID:      "cluster-123,db",
+					ID:      "cluster-123,test_project_db",
 				},
 				{
 					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_connection_pool.this",
-					ID:      "cluster-123,db_pool",
+					ID:      "cluster-123,test_project_db_pool",
 				},
 			},
 			wantErr: false,
 		},
-		"DigitalOcean Postgres with firewall": {
+		"DigitalOcean Postgres with firewall (search-spares example)": {
+			projectName: "search-spares",
 			resource: &appdef.Resource{
-				Name:     "search-spares-db",
+				Name:     "db",
 				Type:     appdef.ResourceTypePostgres,
 				Provider: appdef.ResourceProviderDigitalOcean,
 				Config: map[string]any{
@@ -57,29 +60,30 @@ func TestBuildImportAddresses(t *testing.T) {
 			baseID: "cluster-456",
 			want: []importAddress{
 				{
-					Address: "module.resources[\"search-spares-db\"].module.do_postgres[0].digitalocean_database_cluster.this",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_cluster.this",
 					ID:      "cluster-456",
 				},
 				{
-					Address: "module.resources[\"search-spares-db\"].module.do_postgres[0].digitalocean_database_user.this",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_user.this",
 					ID:      "cluster-456,search_spares_db_admin",
 				},
 				{
-					Address: "module.resources[\"search-spares-db\"].module.do_postgres[0].digitalocean_database_db.this",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_db.this",
 					ID:      "cluster-456,search_spares_db",
 				},
 				{
-					Address: "module.resources[\"search-spares-db\"].module.do_postgres[0].digitalocean_database_connection_pool.this",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_connection_pool.this",
 					ID:      "cluster-456,search_spares_db_pool",
 				},
 				{
-					Address: "module.resources[\"search-spares-db\"].module.do_postgres[0].digitalocean_database_firewall.this[0]",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_firewall.this[0]",
 					ID:      "cluster-456",
 				},
 			},
 			wantErr: false,
 		},
 		"DigitalOcean S3 bucket": {
+			projectName: "test-project",
 			resource: &appdef.Resource{
 				Name:     "media-bucket",
 				Type:     appdef.ResourceTypeS3,
@@ -96,6 +100,7 @@ func TestBuildImportAddresses(t *testing.T) {
 			wantErr: false,
 		},
 		"Unsupported provider": {
+			projectName: "test-project",
 			resource: &appdef.Resource{
 				Name:     "cache",
 				Type:     appdef.ResourceTypePostgres,
@@ -107,6 +112,7 @@ func TestBuildImportAddresses(t *testing.T) {
 			wantErr: true,
 		},
 		"Unsupported resource type": {
+			projectName: "test-project",
 			resource: &appdef.Resource{
 				Name:     "unknown",
 				Type:     "redis",
@@ -123,7 +129,7 @@ func TestBuildImportAddresses(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := buildImportAddresses(test.resource, test.baseID)
+			got, err := buildImportAddresses(test.projectName, test.resource, test.baseID)
 			assert.Equal(t, test.wantErr, err != nil)
 
 			if !test.wantErr {
@@ -137,11 +143,13 @@ func TestBuildPostgresImports(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		resource  *appdef.Resource
-		clusterID string
-		want      []importAddress
+		projectName string
+		resource    *appdef.Resource
+		clusterID   string
+		want        []importAddress
 	}{
 		"Simple database name": {
+			projectName: "my-project",
 			resource: &appdef.Resource{
 				Name:   "db",
 				Config: map[string]any{},
@@ -154,46 +162,48 @@ func TestBuildPostgresImports(t *testing.T) {
 				},
 				{
 					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_user.this",
-					ID:      "abc123,db_admin",
+					ID:      "abc123,my_project_db_admin",
 				},
 				{
 					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_db.this",
-					ID:      "abc123,db",
+					ID:      "abc123,my_project_db",
 				},
 				{
 					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_connection_pool.this",
-					ID:      "abc123,db_pool",
+					ID:      "abc123,my_project_db_pool",
 				},
 			},
 		},
 		"Hyphenated database name": {
+			projectName: "my-company",
 			resource: &appdef.Resource{
-				Name:   "my-prod-db",
+				Name:   "prod-db",
 				Config: map[string]any{},
 			},
 			clusterID: "xyz789",
 			want: []importAddress{
 				{
-					Address: "module.resources[\"my-prod-db\"].module.do_postgres[0].digitalocean_database_cluster.this",
+					Address: "module.resources[\"prod-db\"].module.do_postgres[0].digitalocean_database_cluster.this",
 					ID:      "xyz789",
 				},
 				{
-					Address: "module.resources[\"my-prod-db\"].module.do_postgres[0].digitalocean_database_user.this",
-					ID:      "xyz789,my_prod_db_admin",
+					Address: "module.resources[\"prod-db\"].module.do_postgres[0].digitalocean_database_user.this",
+					ID:      "xyz789,my_company_prod_db_admin",
 				},
 				{
-					Address: "module.resources[\"my-prod-db\"].module.do_postgres[0].digitalocean_database_db.this",
-					ID:      "xyz789,my_prod_db",
+					Address: "module.resources[\"prod-db\"].module.do_postgres[0].digitalocean_database_db.this",
+					ID:      "xyz789,my_company_prod_db",
 				},
 				{
-					Address: "module.resources[\"my-prod-db\"].module.do_postgres[0].digitalocean_database_connection_pool.this",
-					ID:      "xyz789,my_prod_db_pool",
+					Address: "module.resources[\"prod-db\"].module.do_postgres[0].digitalocean_database_connection_pool.this",
+					ID:      "xyz789,my_company_prod_db_pool",
 				},
 			},
 		},
 		"With firewall rules": {
+			projectName: "secure-app",
 			resource: &appdef.Resource{
-				Name: "secure-db",
+				Name: "db",
 				Config: map[string]any{
 					"allowed_ips_addr": []any{"192.168.1.1"},
 				},
@@ -201,23 +211,23 @@ func TestBuildPostgresImports(t *testing.T) {
 			clusterID: "secure123",
 			want: []importAddress{
 				{
-					Address: "module.resources[\"secure-db\"].module.do_postgres[0].digitalocean_database_cluster.this",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_cluster.this",
 					ID:      "secure123",
 				},
 				{
-					Address: "module.resources[\"secure-db\"].module.do_postgres[0].digitalocean_database_user.this",
-					ID:      "secure123,secure_db_admin",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_user.this",
+					ID:      "secure123,secure_app_db_admin",
 				},
 				{
-					Address: "module.resources[\"secure-db\"].module.do_postgres[0].digitalocean_database_db.this",
-					ID:      "secure123,secure_db",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_db.this",
+					ID:      "secure123,secure_app_db",
 				},
 				{
-					Address: "module.resources[\"secure-db\"].module.do_postgres[0].digitalocean_database_connection_pool.this",
-					ID:      "secure123,secure_db_pool",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_connection_pool.this",
+					ID:      "secure123,secure_app_db_pool",
 				},
 				{
-					Address: "module.resources[\"secure-db\"].module.do_postgres[0].digitalocean_database_firewall.this[0]",
+					Address: "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_firewall.this[0]",
 					ID:      "secure123",
 				},
 			},
@@ -228,7 +238,7 @@ func TestBuildPostgresImports(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got := buildPostgresImports(test.resource, test.clusterID)
+			got := buildPostgresImports(test.projectName, test.resource, test.clusterID)
 			assert.Equal(t, test.want, got)
 		})
 	}
