@@ -1,12 +1,9 @@
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import process from 'node:process';
 import { previewCommand } from '../src/cli/preview.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Use the CLI preview command with the examples directory.
-const examplesDir = join(__dirname, 'examples');
+const __dirname = path.resolve(path.dirname(process.argv[1]));
+const examplesDir = path.join(__dirname, 'examples');
 
 previewCommand({
 	directory: examplesDir,
