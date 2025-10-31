@@ -41,7 +41,7 @@ Example:
 			Name:    "env",
 			Aliases: []string{"e"},
 			Usage:   "Environment to import into (development, staging, production)",
-			Value:   "production",
+			Value:   env.Production.String(),
 		},
 	},
 	Action: cmdtools.Wrap(Import),

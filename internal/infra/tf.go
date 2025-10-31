@@ -337,26 +337,21 @@ func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResu
 type (
 	// ImportInput contains the configuration for importing existing resources.
 	ImportInput struct {
-		// ResourceName is the name of the resource
-		// in app.json.
+		// ResourceName is the name of the resource in app.json.
 		ResourceName string
 
-		// ResourceID is the provider-specific ID
-		// (e.g., DigitalOcean cluster ID).
+		// ResourceID is the provider-specific ID (e.g., DigitalOcean cluster ID).
 		ResourceID string
 
-		// Environment specifies which environment
-		// to import into.
+		// Environment specifies which environment to import into.
 		Environment env.Environment
 	}
 	// ImportOutput contains the results of an import operation.
 	ImportOutput struct {
-		// ImportedResources lists the Terraform
-		// addresses that were imported.
+		// ImportedResources lists the Terraform addresses that were imported.
 		ImportedResources []string
 
-		// Output contains the human-readable output
-		// from the import operations.
+		// Output contains the human-readable output from the import operations.
 		Output string
 	}
 )
@@ -382,19 +377,24 @@ func (t *Terraform) Import(ctx context.Context, input ImportInput) (ImportOutput
 		return ImportOutput{}, fmt.Errorf("resource %q not found in app.json", input.ResourceName)
 	}
 
-	var outputBuf strings.Builder
-	t.tf.SetStdout(&outputBuf)
-	t.tf.SetStderr(&outputBuf)
-
 	// Build import addresses based on resource type and provider.
 	addresses, err := buildImportAddresses(resource, input.ResourceID)
 	if err != nil {
 		return ImportOutput{}, err
 	}
 
+	var outputBuf strings.Builder
+	t.tf.SetStdout(&outputBuf)
+	t.tf.SetStderr(&outputBuf)
+
+	var vars []tfexec.ImportOption
+	for _, v := range t.env.varStrings() {
+		vars = append(vars, tfexec.Var(v))
+	}
+
 	imported := make([]string, 0, len(addresses))
 	for _, addr := range addresses {
-		if err := t.tf.Import(ctx, addr.Address, addr.ID); err != nil {
+		if err = t.tf.Import(ctx, addr.Address, addr.ID, vars...); err != nil {
 			return ImportOutput{
 				ImportedResources: imported,
 				Output:            outputBuf.String(),
