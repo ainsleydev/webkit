@@ -17,6 +17,9 @@
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
+	"bin": {
+		"email-templates": "./bin.js"
+	},
 	"scripts": {
 		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
 		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
@@ -28,7 +31,7 @@
 		"test:watch": "vitest",
 		"preview": "tsx preview/server.ts"
 	},
-	"files": ["dist", "README.md", "CHANGELOG.md"],
+	"files": ["dist", "bin.js", "src", "README.md", "CHANGELOG.md"],
 	"publishConfig": {
 		"access": "public"
 	},
@@ -37,10 +40,11 @@
 		"@react-email/render": "^1.0.1"
 	},
 	"devDependencies": {
-		"@ainsleydev/prettier-config": "workspace:*",
 		"@ainsleydev/eslint-config": "workspace:*",
+		"@ainsleydev/prettier-config": "workspace:*",
 		"@swc/cli": "^0.4.0",
 		"@swc/core": "^1.7.2",
+		"@types/node": "^24.9.1",
 		"@types/react": "^18.3.3",
 		"@types/react-dom": "^18.3.0",
 		"rimraf": "6.0.1",

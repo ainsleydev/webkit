@@ -17,6 +17,28 @@ Composable email template building blocks with theme system for React Email.
 pnpm add @ainsleydev/email-templates
 ```
 
+## Preview server
+
+Preview your email templates in a local development server:
+
+```bash
+# Preview templates in current directory
+npx @ainsleydev/email-templates preview
+
+# Preview templates in a specific directory
+npx @ainsleydev/email-templates preview ./emails
+
+# Use a custom port
+npx @ainsleydev/email-templates preview ./emails --port=3001
+```
+
+The preview server will:
+- Automatically discover all `.tsx` and `.jsx` files in the specified directory
+- Render them with the default theme
+- Serve them at `http://localhost:3000/<template-name>`
+
+**Note:** Your template files must export a React component that accepts a `theme` prop.
+
 ## Quick start
 
 ### 1. Create your email template
