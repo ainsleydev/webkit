@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.3",
-	"generated_at": "2025-10-23T14:29:04.753694+01:00",
+	"version": "v0.0.8",
+	"generated_at": "2025-11-01T09:20:58.780773Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -42,13 +42,21 @@
 			"scaffolded": false,
 			"generated_at": "2025-10-23T14:29:04.750083+01:00"
 		},
+		".github/settings.yml": {
+			"path": ".github/settings.yml",
+			"generator": "files:GitSettings",
+			"source": "project",
+			"hash": "cf0313986c9f8a8464d2cb29ef222c27d537d879c791960a47679b7e86c65c2e",
+			"scaffolded": false,
+			"generated_at": "2025-11-01T09:15:31.197651Z"
+		},
 		".github/workflows/backup.yaml": {
 			"path": ".github/workflows/backup.yaml",
 			"generator": "cicd:BackupWorkflow",
 			"source": "resource:store",
-			"hash": "aa7a2b6378703f847b1ac6053ec80783b47d0a2cff3a2c0848cc73d2cb90f9fb",
+			"hash": "98a77fdc8e4bd13480c5c45e66ad21578cdea063693df2575c6ed7687f43c24a",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.751602+01:00"
+			"generated_at": "2025-11-01T09:20:58.779235Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
@@ -62,9 +70,9 @@
 			"path": ".gitignore",
 			"generator": "files:GitSettings",
 			"source": "project",
-			"hash": "041bebf80d9016ba2e4f2fe85d4df89dd11bc8d42c23ed8cf7d97fb2744408a8",
+			"hash": "933bae0470e0614ed3aa5f4f8d20e00bb87098f061c06b45348aa4f560cc6d08",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.749812+01:00"
+			"generated_at": "2025-11-01T09:15:31.197223Z"
 		},
 		".prettierignore": {
 			"path": ".prettierignore",
@@ -86,9 +94,9 @@
 			"path": "AGENTS.md",
 			"generator": "docs:Agents",
 			"source": "project",
-			"hash": "7478d236fbfd2fc8570d3a1d234cf0b3784b5ec68b0c6930cc1d49c9b2745bed",
+			"hash": "6411c7c0d3b83e06a09d2bc67410b517370fdb88aec63cdc9ef3b453b90d70d8",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.752343+01:00"
+			"generated_at": "2025-11-01T09:15:31.200048Z"
 		},
 		"api/.env": {
 			"path": "api/.env",
@@ -122,6 +130,14 @@
 			"scaffolded": true,
 			"generated_at": "2025-10-23T14:29:04.752873+01:00"
 		},
+		"cms/AGENTS.md": {
+			"path": "cms/AGENTS.md",
+			"generator": "docs:Agents",
+			"source": "project",
+			"hash": "0411575a13dbe2a9f197e7ab29c039d6cc2015623ca68f1d9fc3b6342251c53c",
+			"scaffolded": false,
+			"generated_at": "2025-11-01T09:15:31.200363Z"
+		},
 		"eslint.config.js": {
 			"path": "eslint.config.js",
 			"generator": "files:CodeStyle",
@@ -153,6 +169,14 @@
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
 			"generated_at": "2025-10-23T14:29:04.752891+01:00"
+		},
+		"web/AGENTS.md": {
+			"path": "web/AGENTS.md",
+			"generator": "docs:Agents",
+			"source": "project",
+			"hash": "30663fc31dc7ea8320822b056f0657ed6cd518c869908c3f350d9ecbd97e36b6",
+			"scaffolded": false,
+			"generated_at": "2025-11-01T09:15:31.200597Z"
 		}
 	}
 }

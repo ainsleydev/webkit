@@ -12,6 +12,7 @@ jobs:
     name: Backup {{ .Name }} Database to BackBlaze
     runs-on: ubuntu-latest
     env:
+      BUCKET_NAME: '{{ $.BucketName }}'
       BACKUP_PATH: '/backups/{{ .Name }}/'
       DO_ACCESS_TOKEN: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
 
@@ -32,46 +33,62 @@ jobs:
           database-id: {{ ghSecret (index $.Data .Name "DatabaseID") }}
           doctl-token: {{ ghSecret "DO_ACCESS_TOKEN" }}
 
+      - name: Install PG Dump
+        run: |
+          sudo apt-get install -y wget gnupg
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+          echo "/usr/lib/postgresql/17/bin" >> $GITHUB_PATH
+
+      - name: Verify pg_dump version
+        run: |
+          pg_dump --version  # Should be 17
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone for BackBlaze B2
+        run: |
+          rclone config create b2_backup b2 \
+            account {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }} \
+            key {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+
       - name: Dump and Compress PostgreSQL Database
         env:
           DATABASE_URL: {{ ghSecret (index $.Data .Name "DatabaseURL") }}
         run: |
-          # Install PostgreSQL client
-          sudo apt-get update && sudo apt-get install -y postgresql-client
+          # Fail on errors, undefined vars, and fail if any part of a pipe fails
+          set -euo pipefail
 
-          # Generate timestamp
+          # Create vars
           TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          BACKUP_FILE="backup-$TIMESTAMP.sql.gz"
 
-          # Dump and compress in one step
-          pg_dump "$DATABASE_URL" -O | gzip > backup-$TIMESTAMP.sql.gz
+          # Dump and compress
+          pg_dump "$DATABASE_URL" -O | gzip > "$BACKUP_FILE"
+
+          # Verify file
+          ls -lh "$BACKUP_FILE"
+          gzip -l "$BACKUP_FILE"
 
           # Make the backup filename available to next steps
-          echo "BACKUP_FILE=backup-$TIMESTAMP.sql.gz" >> $GITHUB_ENV
+          echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
 
-      - name: Install s3cmd
-        run: sudo apt-get update && sudo apt-get install -y s3cmd
-
-      - name: Configure s3cmd for Backblaze B2
-        run: |
-          echo "[default]" > $HOME/.s3cfg
-          echo "access_key = {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }}" >> $HOME/.s3cfg
-          echo "secret_key = {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}" >> $HOME/.s3cfg
-          echo "host_base = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
-          echo "host_bucket = s3.eu-central-003.backblazeb2.com" >> $HOME/.s3cfg
-
-      - name: Upload Backup to S3
+      - name: Upload Backup to B2
         run: |
           # TODO: The name of the bucket needs to somehow be dynamic, how can we tell what bucket to use and where? Do we do a global one?
-          s3cmd put --acl-private $BACKUP_FILE s3://{{ $.BucketName }}${BACKUP_PATH}
+          # Upload backup file to B2
+          rclone copy $BACKUP_FILE b2_backup:${BUCKET_NAME}${BACKUP_PATH} \
+            --progress
 
       - name: Retain only 30 latest backups
         run: |
-          # List backups, skip newest 30, delete the rest
-          s3cmd ls s3://{{ $.BucketName }}${BACKUP_PATH} \
-          | sort -k1,2 \
-          | head -n -30 \
-          | awk '{print $4}' \
-          | xargs -r s3cmd del
+          # Delete backups older than 30 days
+          rclone delete b2_backup:${BUCKET_NAME}{BACKUP_PATH} --min-age 30d
 
       - name: Remove Runner IP from Database
         if: always()
@@ -96,7 +113,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60 # 1 Hour
     env:
-      BACKUP_PATH: '/backups/bucket/{{ .Name }}/'
+      BUCKET_NAME: '{{ $.BucketName }}'
+      BACKUP_PATH: '/backups/{{ .Name }}/'
 
     steps:
       - name: Checkout Repository
@@ -111,14 +129,14 @@ jobs:
       - name: Configure rclone for DigitalOcean Spaces
         run: |
           rclone config create do_spaces s3 \
-            env_auth true \
+            env_auth false \
             provider DigitalOcean \
-            access_key_id {{ ghSecret (index $.Data .Name "AccessKey") }} \
-            secret_access_key {{ ghSecret (index $.Data .Name "SecretKey") }} \
+            access_key_id {{ ghSecret "ORG_DO_SPACES_ACCESS_KEY" }} \
+            secret_access_key {{ ghSecret "ORG_DO_SPACES_SECRET_KEY" }} \
             region {{ ghSecret (index $.Data .Name "Region") }} \
             endpoint https://{{ ghSecret (index $.Data .Name "Region") }}.digitaloceanspaces.com
 
-      - name: Configure rclone for Backblaze B2
+      - name: Configure rclone for BackBlaze B2
         run: |
           rclone config create b2_backup b2 \
             account {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }} \
@@ -127,7 +145,7 @@ jobs:
       - name: Sync Bucket to B2
         run: |
           # Sync entire DO Spaces bucket to B2, deleting extraneous files
-          rclone sync do_spaces:{{ ghSecret (index $.Data .Name "BucketName") }} b2_backup:{{ ghSecret "ORG_BACK_BLAZE_BUCKET" }} \
+          rclone sync do_spaces:{{ ghSecret (index $.Data .Name "BucketName") }} b2_backup:${BUCKET_NAME}${BACKUP_PATH} \
             --progress --transfers=16 --checkers=16 --delete-excluded
 
       - name: Verify Backup
