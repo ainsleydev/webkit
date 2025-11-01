@@ -252,6 +252,7 @@ func TestApp_DefaultPort(t *testing.T) {
 		"Payload":   {appType: AppTypePayload, want: 3000},
 		"SvelteKit": {appType: AppTypeSvelteKit, want: 3001},
 		"GoLang":    {appType: AppTypeGoLang, want: 8080},
+		"Default":   {appType: "", want: 3000},
 	}
 
 	for name, test := range tt {
@@ -267,50 +268,41 @@ func TestApp_DefaultPort(t *testing.T) {
 func TestApp_ApplyDefaults_Port(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Port set to default", func(t *testing.T) {
-		t.Parallel()
+	tt := map[string]struct {
+		app  App
+		want int
+	}{
+		"Default SvelteKit app gets 3001": {
+			app:  App{Name: "web", Type: AppTypeSvelteKit, Path: "./"},
+			want: 3001,
+		},
+		"Explicit port is preserved": {
+			app:  App{Name: "web", Type: AppTypeSvelteKit, Path: "./", Build: Build{Port: 4000}},
+			want: 4000,
+		},
+		"Payload app gets 3000": {
+			app:  App{Name: "cms", Type: AppTypePayload, Path: "./"},
+			want: 3000,
+		},
+		"SvelteKit app gets 3001": {
+			app:  App{Name: "web", Type: AppTypeSvelteKit, Path: "./"},
+			want: 3001,
+		},
+		"GoLang app gets 8080": {
+			app:  App{Name: "api", Type: AppTypeGoLang, Path: "./"},
+			want: 8080,
+		},
+	}
 
-		app := &App{
-			Name: "web",
-			Type: AppTypeSvelteKit,
-			Path: "./",
-		}
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		err := app.applyDefaults()
-		require.NoError(t, err)
-		assert.Equal(t, 3001, app.Build.Port)
-	})
+			app := test.app
 
-	t.Run("Explicit port preserved", func(t *testing.T) {
-		t.Parallel()
-
-		app := &App{
-			Name: "web",
-			Type: AppTypeSvelteKit,
-			Path: "./",
-			Build: Build{
-				Port: 4000,
-			},
-		}
-
-		err := app.applyDefaults()
-		require.NoError(t, err)
-		assert.Equal(t, 4000, app.Build.Port)
-	})
-
-	t.Run("Different app types get different ports", func(t *testing.T) {
-		t.Parallel()
-
-		payloadApp := &App{Name: "cms", Type: AppTypePayload, Path: "./"}
-		svelteApp := &App{Name: "web", Type: AppTypeSvelteKit, Path: "./"}
-		goApp := &App{Name: "api", Type: AppTypeGoLang, Path: "./"}
-
-		require.NoError(t, payloadApp.applyDefaults())
-		require.NoError(t, svelteApp.applyDefaults())
-		require.NoError(t, goApp.applyDefaults())
-
-		assert.Equal(t, 3000, payloadApp.Build.Port)
-		assert.Equal(t, 3001, svelteApp.Build.Port)
-		assert.Equal(t, 8080, goApp.Build.Port)
-	})
+			err := app.applyDefaults()
+			require.NoError(t, err)
+			assert.Equal(t, test.want, app.Build.Port)
+		})
+	}
 }

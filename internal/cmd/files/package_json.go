@@ -96,41 +96,34 @@ type (
 	}
 )
 
-// PackageJSONApp manipulates each app's package.json file for apps that use NPM.
-// Currently adds Docker-related scripts while preserving existing scripts and other package.json fields.
+// PackageJSONApp manipulates each app's package.json file for
+// apps that use NPM. Currently, adds Docker-related scripts
+// while preserving existing scripts.
 func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 
 	for _, app := range appDef.Apps {
-		// Skip apps that don't use NPM.
 		if !app.ShouldUseNPM() {
 			continue
 		}
 
-		// Construct the path to the app's package.json.
 		pkgPath := filepath.Join(app.Path, "package.json")
 
-		// Check if package.json exists.
 		exists, err := afero.Exists(input.FS, pkgPath)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("checking if %s exists", pkgPath))
-		}
-
-		// Skip if package.json doesn't exist.
-		if !exists {
+		} else if !exists {
 			input.Printer().Println(fmt.Sprintf("• skipping %s - package.json not found", app.Name))
 			continue
 		}
 
-		// Read existing package.json.
 		data, err := afero.ReadFile(input.FS, pkgPath)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("reading %s", pkgPath))
 		}
 
-		// Parse the existing package.json.
 		var pkg map[string]any
-		if err := json.Unmarshal(data, &pkg); err != nil {
+		if err = json.Unmarshal(data, &pkg); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("parsing %s", pkgPath))
 		}
 
@@ -150,11 +143,16 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 		scripts["docker:remove"] = fmt.Sprintf("docker image rm %s", imageName)
 
 		// Write back the modified package.json.
-		if err := input.Generator().JSON(pkgPath, pkg, scaffold.WithTracking(manifest.SourceApp(app.Name))); err != nil {
+		err = input.Generator().JSON(
+			pkgPath,
+			pkg,
+			scaffold.WithTracking(manifest.SourceApp(app.Name)),
+		)
+		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("writing %s", pkgPath))
 		}
 
-		input.Printer().Println(fmt.Sprintf("• added Docker scripts to %s", pkgPath))
+		input.Printer().Success("Added scripts to app package.json files")
 	}
 
 	return nil
