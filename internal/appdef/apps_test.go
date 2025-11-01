@@ -241,3 +241,76 @@ func TestApp_IsTerraformManaged(t *testing.T) {
 		})
 	}
 }
+
+func TestApp_defaultPort(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		appType AppType
+		want    int
+	}{
+		"Payload":   {appType: AppTypePayload, want: 3000},
+		"SvelteKit": {appType: AppTypeSvelteKit, want: 3001},
+		"GoLang":    {appType: AppTypeGoLang, want: 8080},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			app := App{Type: test.appType}
+			got := app.defaultPort()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestApp_applyDefaults_Port(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Port set to default", func(t *testing.T) {
+		t.Parallel()
+
+		app := &App{
+			Name: "web",
+			Type: AppTypeSvelteKit,
+			Path: "./",
+		}
+
+		err := app.applyDefaults()
+		require.NoError(t, err)
+		assert.Equal(t, 3001, app.Build.Port)
+	})
+
+	t.Run("Explicit port preserved", func(t *testing.T) {
+		t.Parallel()
+
+		app := &App{
+			Name: "web",
+			Type: AppTypeSvelteKit,
+			Path: "./",
+			Build: Build{
+				Port: 4000,
+			},
+		}
+
+		err := app.applyDefaults()
+		require.NoError(t, err)
+		assert.Equal(t, 4000, app.Build.Port)
+	})
+
+	t.Run("Different app types get different ports", func(t *testing.T) {
+		t.Parallel()
+
+		payloadApp := &App{Name: "cms", Type: AppTypePayload, Path: "./"}
+		svelteApp := &App{Name: "web", Type: AppTypeSvelteKit, Path: "./"}
+		goApp := &App{Name: "api", Type: AppTypeGoLang, Path: "./"}
+
+		require.NoError(t, payloadApp.applyDefaults())
+		require.NoError(t, svelteApp.applyDefaults())
+		require.NoError(t, goApp.applyDefaults())
+
+		assert.Equal(t, 3000, payloadApp.Build.Port)
+		assert.Equal(t, 3001, svelteApp.Build.Port)
+		assert.Equal(t, 8080, goApp.Build.Port)
+	})
+}
