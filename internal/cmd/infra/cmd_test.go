@@ -22,7 +22,6 @@ var mtx sync.Mutex
 
 func setup(t *testing.T, appDef *appdef.Definition, mock *mockinfra.MockManager, initErr bool) (cmdtools.CommandInput, func()) {
 	t.Helper()
-	t.Skip("Need better DI")
 
 	mtx.Lock()
 	defer mtx.Unlock()
@@ -51,9 +50,9 @@ func setup(t *testing.T, appDef *appdef.Definition, mock *mockinfra.MockManager,
 	input.Printer().SetWriter(io.Discard)
 
 	orig := newTerraform
-	//newTerraform = func(_ context.Context, _ *appdef.Definition, _ *manifest.Tracker) (infra.Manager, error) {
-	//	return mock, nil
-	//}
+	newTerraform = func(_ context.Context, _ *appdef.Definition, _ *manifest.Tracker) (infra.Manager, error) {
+		return mock, nil
+	}
 
 	return input, func() {
 		newTerraform = orig
@@ -62,7 +61,6 @@ func setup(t *testing.T, appDef *appdef.Definition, mock *mockinfra.MockManager,
 
 func setupWithPrinter(t *testing.T, def *appdef.Definition, manager *mockinfra.MockManager, initError bool) (cmdtools.CommandInput, *bytes.Buffer, func()) { //nolint
 	t.Helper()
-	t.Skip("Need better DI")
 
 	input, teardown := setup(t, def, manager, initError)
 	buf := &bytes.Buffer{}

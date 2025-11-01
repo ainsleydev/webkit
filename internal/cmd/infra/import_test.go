@@ -14,8 +14,6 @@ import (
 )
 
 func TestImport(t *testing.T) {
-	t.SkipNow()
-
 	t.Run("Init Error", func(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().

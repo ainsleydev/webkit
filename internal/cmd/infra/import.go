@@ -83,7 +83,7 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 		if result.Output != "" {
 			printer.Print(result.Output)
 		}
-		return nil
+		return fmt.Errorf("executing terraform import: %w", err)
 	}
 
 	printer.Success(fmt.Sprintf("Successfully imported %d resource(s)", len(result.ImportedResources)))
