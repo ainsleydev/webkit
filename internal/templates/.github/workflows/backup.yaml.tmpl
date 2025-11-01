@@ -221,3 +221,91 @@ jobs:
           commit_sha: ${{"{{"}} github.sha }}
           slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
           channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
+
+  sync-to-gdrive:
+    name: Sync Backblaze B2 to Google Drive
+    runs-on: ubuntu-latest
+    timeout-minutes: 120 # 2 Hours
+    needs:
+      - backup-codebase
+{{- range .Resources }}
+      - backup-{{ .Name }}
+{{- end }}
+    env:
+      BUCKET_NAME: '{{ $.BucketName }}'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone for Backblaze B2
+        run: |
+          rclone config create b2_backup b2 \
+            account {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }} \
+            key {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+
+      - name: Configure rclone for Google Drive
+        env:
+          GDRIVE_SA_JSON: {{ ghSecret "ORG_GOOGLE_DRIVE_SA_JSON" }}
+        run: |
+          # Create service account credentials file
+          echo "$GDRIVE_SA_JSON" > /tmp/gdrive-sa.json
+
+          # Configure Google Drive remote using service account
+          rclone config create gdrive drive \
+            scope drive \
+            service_account_file /tmp/gdrive-sa.json \
+            team_drive ""
+
+      - name: Sync B2 to Google Drive
+        env:
+          GDRIVE_FOLDER_ID: {{ ghSecret "ORG_GOOGLE_DRIVE_FOLDER_ID" }}
+        run: |
+          # Fail on errors, undefined vars, and fail if any part of a pipe fails
+          set -euo pipefail
+
+          # Sync entire B2 bucket to Google Drive folder
+          # Structure: {gdrive-folder}/{project-name}/backups/...
+          rclone sync b2_backup:${BUCKET_NAME} gdrive:${GDRIVE_FOLDER_ID}/${BUCKET_NAME} \
+            --progress \
+            --transfers=8 \
+            --checkers=8 \
+            --drive-chunk-size=64M \
+            --exclude ".DS_Store" \
+            --exclude "Thumbs.db" \
+            --stats=1m \
+            --stats-one-line
+
+      - name: Verify Sync
+        env:
+          GDRIVE_FOLDER_ID: {{ ghSecret "ORG_GOOGLE_DRIVE_FOLDER_ID" }}
+        run: |
+          echo "Verifying sync to Google Drive..."
+
+          # List files in Google Drive to verify
+          rclone lsd gdrive:${GDRIVE_FOLDER_ID}/${BUCKET_NAME} --max-depth 2
+
+          echo "Google Drive sync completed successfully!"
+
+      - name: Cleanup Credentials
+        if: always()
+        run: |
+          # Remove service account credentials file
+          rm -f /tmp/gdrive-sa.json
+
+      - name: Notify Slack of Sync Failure
+        if: failure()
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Google Drive Sync Failed'
+          message: 'The backup synchronisation to Google Drive has failed.'
+          status: 'failure'
+          commit_sha: ${{"{{"}} github.sha }}
+          slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
+          channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
