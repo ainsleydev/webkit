@@ -12,34 +12,260 @@ with any future edits.
 **Note**: Investigation summaries and debugging analysis should be displayed via UI only, not
 committed to the repository.
 
-## Content
+## Updating Documentation
 
-### Language and style
+If you need to update developer guidelines, clone and edit the [ainsley.dev/website](https://github.com/ainsleydev/website) repository.
+These guidelines are automatically synced from there.
 
-Write all content in British English. Use British spellings and punctuation throughout the codebase:
+## HTML
 
-- "colour" not "color"
-- "organised" not "organized"
-- "centre" not "center"
 
-### Heading style
+### Validity
 
-Headings should use sentence case (only the first word capitalised):
+All HTML should be using the [Markup Validation Service](https://validator.w3.org/) before creating a pull request or
+pushing to production. This will help avoid common mistakes such as closing tags, wrong attributes and many more.
 
-- Correct: "Setting up webhooks"
-- Incorrect: "Setting Up Webhooks"
-- Incorrect: "Setting up Webhooks"
+By validating HTML it ensures that web pages are consistent across multiple devices and platforms and increases the
+chance of search engines to properly pass markup.
 
-## Markdown
+### Indentation
 
-- Use `-` for lists, not `*`.
-- End list points with a full stop.
+Use tabs instead of spaces for markup. Do not mix tabs with spaces, ensure it is probably formatted.
+
+**Avoid**
+
+```html
+<ul>
+	<li>List Item</li>
+</ul>
+```
+
+**Prefer**
+
+```html
+<ul>
+	<li>List Item</li>
+</ul>
+```
+
+### Quotes
+
+Always use double quotes around attribute values. Emitting quotes can avoid to bad readability, despite HTML allowing
+for attributes without quotes.
+
+**Avoid**
+
+```html
+<button class="button button-grey">My Button</button>
+```
+
+**Prefer**
+
+```html
+<button class=button disabled>My Button</button>
+```
+
+### Line breaking
+
+Break long lines when it exceeds the amount of characters within the editor.
+
+It is also recommended to ensure that the closing tag is one a new line. This helps to locate the closing tag and
+improves readability.
+
+**Avoid**
+
+```html
+<p>I'm baby blue bottle tilde godard, blog ennui pour-over craft beer. Pabst chartreuse iceland, bespoke next level
+	migas hoodie lyft flannel. Kale chips literally chillwave, cred occupy tofu photo booth kitsch marxism before they
+	sold out unicorn bicycle rights roof party. </p>
+```
+
+**Prefer**
+
+```html
+<p>
+	I'm baby blue bottle tilde godard, blog ennui pour-over craft beer. Pabst chartreuse iceland, bespoke next level
+	migas hoodie lyft flannel. Kale chips literally chillwave, cred occupy tofu photo booth kitsch marxism before they
+	sold out unicorn bicycle rights roof party.
+</p>
+```
+
+### Letter-casing
+
+All attribute names, classes, IDs should be lower case and with a hyphen between two words (kebab case).
+
+**Avoid**
+
+```html
+<h1 class="heading_Test"></h1>
+<P Class="LEAD"></P>
+```
+
+**Prefer**
+
+```html
+<h1 class="hero-heading"></h1>
+<p class="lead"></P>
+```
+
+### Self closing
+
+All self closing elements should contain `/` at the end of the tag. Please
+see [this](https://www.scaler.com/topics/self-closing-tags-in-html/) article for a definition of all HTML elements with
+self closing elements.
+
+**Avoid**
+
+```html
+<img src="my-image.jpg">
+```
+
+**Prefer**
+
+```html
+<img src="my-image.jpg"/>
+```
+
+
+## SCSS
+
+
+### Directory Structure
+
+Organise SCSS files into a clear hierarchy:
+
+```text
+scss/
+├── abstracts/        # Variables, functions, mixins
+│   ├── _colours.scss
+│   ├── _breakpoints.scss
+│   ├── _sizes.scss
+│   ├── _tokens.scss
+│   ├── _mixins.scss
+│   └── _functions.scss
+├── base/             # Global styles
+│   ├── _reset.scss
+│   ├── _root.scss
+│   ├── _fonts.scss
+│   ├── _global.scss
+│   └── _typography.scss
+├── components/       # Component styles
+└── util/             # Utility styles
+└── app.scss          # Entry point
+```
+
+### Key Patterns
+
+- **Use `@use` instead of `@import`**: Import abstracts with aliases (e.g., `@use '../scss/abstracts' as a;`).
+- **Variable naming**: Use kebab-case (e.g., `$section-75`, `$border-radius-4`).
+- **CSS variable naming**: Use `--kebab-case` (e.g., `--token-text-heading`).
+- **Parent selector**: Use `$self: &;` for compound selectors.
+- **Nesting**: Nest related modifiers but avoid deep nesting (max 3 levels).
+
+### Breakpoint Mixin
+
+Use breakpoint mixins for responsive design:
+
+```scss
+@use '../abstracts' as a;
+
+.component {
+	font-size: 16px;
+
+	@include a.mq(tab) {
+		font-size: 18px;
+	}
+
+	@include a.mq(desk) {
+		font-size: 20px;
+	}
+}
+```
+
+### Colour System
+
+Define colours as maps and generate CSS variables:
+
+```scss
+$colours: (
+	'red': (
+		'50': #fef2f2,
+		'500': #ef4444,
+		'900': #7f1d1d,
+	),
+	'blue': (
+		'50': #eff6ff,
+		'500': #3b82f6,
+		'900': #1e3a8a,
+	),
+)
+
+// Used in :root as CSS variables
+--colour-red-50: #fef2f2;
+--colour-blue-500: #3b82f6;
+```
+
+### Scoped Component Styles
+
+When using component-scoped SCSS in Svelte:
+
+```svelte
+<style lang="scss">
+	@use '../scss/abstracts' as a;
+
+	.btn-card {
+		padding: a.$spacing-4;
+		border-radius: a.$border-radius-2;
+
+		&--dark-mode {
+			background: var(--colour-grey-900);
+			color: var(--colour-white);
+		}
+	}
+</style>
+```
+
+
+
+### Component Styling Pattern
+
+Use BEM-inspired modifiers with parent selector:
+
+```scss
+@use '../scss/abstracts' as a;
+
+.section {
+	$self: &;
+	position: relative;
+
+	&-padding {
+		padding-block: a.$section-75;
+
+		&#{$self}-small {
+			padding-block: a.$section-50;
+		}
+
+		&#{$self}-large {
+			padding-block: a.$section-100;
+		}
+	}
+
+	&-padding-top {
+		padding-top: a.$section-75;
+
+		&#{$self}-small {
+			padding-top: a.$section-50;
+		}
+	}
+}
+```
+
 
 ## Go
 
+
 ### Code Style
 
-- **Language**: Go 1.25.3
 - **Formatting**: Use `gofmt` for standard Go formatting.
 - **File naming**: snake_case for files, test files end with `_test.go`.
 	- Integration tests use `_integration_test.go`
@@ -47,25 +273,50 @@ Headings should use sentence case (only the first word capitalised):
 - **Error handling**: Always check and handle errors appropriately.
 - **Imports**: Standard library, third-party, then internal imports.
 
-### Context
+### Interfaces and Abstraction
 
-Use `context.Context` as the first parameter for functions that perform I/O or can be cancelled.
+- Keep interfaces small and focused (single responsibility).
+- Prefer returning concrete types unless abstraction is required for testing or swapping implementations.
+- Document interface expectations explicitly (e.g. "implementations must be thread-safe").
+
+### Defining Types
+
+- Keep structs small and cohesive; split if too many responsibilities.
+- Prefer to use the `type` keyword once for multiple type declarations.
+
+**Example**
 
 ```go
-    func Run(ctx context.Context, cmd Command) (Result, error) {
-	select {
-		case <-ctx.Done():
-			return Result{}, ctx.Err()
-		default:
-			// Execute command
+type (
+	// Environment contains env-specific variable configurations.
+	Environment struct {
+		Dev        EnvVar `json:"dev,omitempty"`
+		Staging    EnvVar `json:"staging,omitempty"`
+		Production EnvVar `json:"production,omitempty"`
 	}
-}
+	// EnvVar is a map of variable names to their configurations.
+	EnvVar map[string]EnvValue
+	// EnvValue represents a single env variable configuration
+	EnvValue struct {
+		Source EnvSource `json:"source"`          // See below
+		Value  any       `json:"value,omitempty"` // Used for "value" and "resource" sources
+		Path   string    `json:"path,omitempty"`  // Used for "sops" source (format: "key")
+	}
+)
 ```
 
-### Commentary
+### Naming Conventions
+
+- **Integration tests**: End with `_integration_test.go`.
+- **Generated files**: `*.gen.go` files are auto-generated - do not edit.
+- **Interfaces**: Often end in `-er` suffix (e.g., `Reader`, `Writer`, `Store`).
+- **Package names**: Short, lowercase, single-word names when possible.
+
+
 
 - Document all exported types, functions, and constants with Go doc comments.
 - Ensure that the comments convey the meaning behind the code, not just the what.
+- All comments must end with a full stop, including inline comments and multi-line comments.
 - Within function bodies, only keep comments that explain _why_ something is done, not _what_ is
   done. The code itself should be clear enough to show what it does.
 - Keep high-level comments that explain the flow or purpose of a section (e.g., "Try loading
@@ -85,18 +336,45 @@ type Generator interface {
 }
 ```
 
-### Constructors
+
+
+### Context
+
+Use `context.Context` as the first parameter for functions that perform I/O or can be cancelled.
+
+**Example:**
+
+```go
+    func Run(ctx context.Context, cmd Command) (Result, error) {
+	select {
+		case <-ctx.Done():
+			return Result{}, ctx.Err()
+		default:
+			// Execute command
+	}
+}
+```
+
+
 
 Constructors must validate all required dependencies using `enforce` helpers and return pointer
 types. Only to be used in the context of when being called from a `cmd` package.
+ ### New
 
-- Not nil values -> `enforce.NotNil()`
-- Boolean conditions -> `enforce.True()`
-- Equality / inequality -> `enforce.Equal()` or `enforce.NotEqual()`
-- Absence of error -> `enforce.NoError()`
+- Prefer `NewX()` constructors over global initialisation unless it's the only constructor in the package then it will
+  be written as `New()`.
+
+### Enforce
+
+- Not nil values → `enforce.NotNil()`
+- Boolean conditions → `enforce.True()`
+- Equality / inequality → `enforce.Equal()` or `enforce.NotEqual()`
+- Absence of error → `enforce.NoError()`
 
 These helpers provide simple runtime guarantees and will exit the program with a helpful message if
 a condition fails.
+
+This package can be found in `github.com/ainsleydev/webkit/pkg`.
 
 **Example:**
 
@@ -114,15 +392,103 @@ func NewGenerator(fs afero.Fs, manifest *manifest.Tracker, printer *printer.Cons
 }
 ```
 
-### Errors
+### Context
+
+Use `context.Context` as the first parameter for functions that perform I/O or can be cancelled.
+
+**Example:**
+
+```go
+    func Run(ctx context.Context, cmd Command) (Result, error) {
+	select {
+		case <-ctx.Done():
+			return Result{}, ctx.Err()
+		default:
+			// Execute command
+	}
+}
+```
+
+
+
+### Maps Over Switch
+
+Prefer using maps with function values over switch statements when dispatching based on string or integer keys. This
+approach is more maintainable, extensible, and testable.
+
+**Prefer**
+
+```go
+type handlerFunc func (input Request) (Response, error)
+
+var handlers = map[string]handlerFunc{
+	"create": handleCreate,
+	"update": handleUpdate,
+	"delete": handleDelete,
+}
+
+func dispatch(action string, req Request) (Response, error) {
+	handler, exists := handlers[action]
+	if !exists {
+		return Response{}, fmt.Errorf("unknown action: %s", action)
+	}
+	return handler(req)
+}
+```
+
+**Avoid**
+
+```go
+func dispatch(action string, req Request) (Response, error) {
+	switch action {
+		case "create":
+			return handleCreate(req)
+		case "update":
+			return handleUpdate(req)
+		case "delete":
+			return handleDelete(req)
+		default:
+			return Response{}, fmt.Errorf("unknown action: %s", action)
+	}
+}
+```
+
+### Exceptions
+
+- Type switches (`switch v := value.(type)`) are appropriate for type assertions.
+- Switch statements are acceptable when matching on complex conditions or ranges.
+- Small, simple switches (2-3 cases) where a map would add unnecessary complexity.
+
+
 
 - Always check errors, never ignore them with `_` unless absolutely necessary.
 - If ignoring an error, add a comment explaining why.
 - Return errors up the stack; don't just log and continue unless appropriate.
-- Aways prioritise clarity over depth of stack trace — add context that helps debugging, not
-  repetition.
+- Always prioritise clarity over depth of stack trace — add context that helps debugging, not repetition
 
-#### Using `errors.Wrap`
+### Domain Error Types
+
+Define custom errors to give context and allow type-based handling, rather than using generic `fmt.Errorf`. Use custom
+errors only when it makes sense—for domain-specific cases where inspecting or handling by type is useful.
+
+**Example:**
+
+```go
+type ErrInsufficientBalance struct {
+    Amount float64
+}
+
+func (e ErrInsufficientBalance) Error() string {
+    return fmt.Sprintf("insufficient balance: need %.2f", e.Amount)
+}
+
+// Usage
+if balance < withdrawAmount {
+    return ErrInsufficientBalance{Amount: withdrawAmount}
+}
+```
+
+### Using errors.Wrap
 
 Always use `errors.Wrap` from `github.com/pkg/errors` for adding context to errors. Use `fmt.Errorf`
 if there are more than one argument that's not an error.
@@ -148,7 +514,7 @@ func ValidatePort(port int) error {
 }
 ```
 
-### Tests
+
 
 All Go tests should be written in one of two ways:
 
@@ -162,7 +528,7 @@ All Go tests should be written in one of two ways:
 - Individual test cases require unique setup logic that would need a setup function in the test
   table.
 
-#### General Rules
+### General Rules
 
 - Always call `t.Parallel()` at the top of every test function and within each subtest, unless:
 	- It's an integration test (files ending in `_integration_test.go`).
@@ -183,7 +549,19 @@ All Go tests should be written in one of two ways:
 - If 100% coverage is not possible, explain _why_ in a brief note above the test function (no inline
   comments).
 
-#### Test Tables
+### Test Organisation
+
+- **One test function per exported function/method** — add new test cases as subtests within the
+  existing test function rather than creating separate test functions.
+- Only create a new test function if:
+	- Testing a distinctly different aspect that warrants complete separation (e.g.,
+	  `TestTracker_Add` vs `TestTracker_Save`).
+	- The original test function would become unwieldy (>200 lines) with the addition.
+- Group related test cases using descriptive subtest names that explain what's being tested.
+- Aim for comprehensive coverage within each test function rather than fragmenting tests across
+  multiple functions.
+
+### Test Tables
 
 The test should be:
 
@@ -226,7 +604,7 @@ func TestExample(t *testing.T) {
 }
 ```
 
-#### Subtests with `t.Run`
+### Subtests with `t.Run`
 
 - Use `require` for preconditions (e.g. setup or function calls that must not fail).
 - Use `assert` for validation of expected outputs.
@@ -272,9 +650,6 @@ boundary — for example, Terraform execution, encryption providers, or file I/O
 - Place generated mocks under `internal/mocks/` and prefix them with `Mock` (e.g.
   `MockInfraManager`).
 - Clean up with `defer ctrl.Finish()` and avoid over-mocking.
-
-#### General Rules
-
 - Use [`gomock`](https://pkg.go.dev/go.uber.org/mock/gomock) for creating mocks.
 - Generate mocks into the `internal/mocks/` directory using below's example.
 
@@ -284,7 +659,7 @@ boundary — for example, Terraform execution, encryption providers, or file I/O
 go tool go.uber.org/mock/mockgen -source=gen.go -destination ../mocks/fs.go -package=mocks
 ```
 
-#### Setup Functions
+### Setup Functions
 
 - If a test contains repeated setup logic (e.g., creating `App` instances, default values, or common
   test data), scan for a `setup(t)` function.
@@ -319,32 +694,150 @@ func TestApp_OrderedCommands(t *testing.T) {
 		assert.Equal(t, "format", commands[0].Name)
 	})
 }
-```
 
-## Typescript
+
+## JS
+
+
+### Code Style
 
 - Use `camelCase` for all field names and variables.
 - Prefer named exports over default exports.
 - Use TypeScript's strict mode.
 - Place types co-located with implementation files.
 
-## Libraries
+### Naming Conventions
 
-### Payload
+- **Types/Interfaces**: Use `PascalCase` (e.g., `UserService`, `ClientForm`).
+- **Variables/Functions**: Use `camelCase` (e.g., `userService`, `getConfig`).
+- **Constants**: Use `UPPER_SNAKE_CASE` or `camelCase` depending on export type.
+- **Files**: Use `kebab-case` for directories, `PascalCase` for components/classes, `camelCase` for utilities.
+- **React Components**: Use `PascalCase` (e.g., `ButtonCard.tsx`).
+- **Test files**: End with `.test.ts` for unit tests, `.int.spec.ts` for integration tests.
 
-- Use `camelCase` for all field names.
-- Always include `admin.description` for Payload collections and fields.
-- Collection slugs should be lowercase with hyphens (e.g., `'media'`, `'form-submissions'`).
-- Use `type: 'point'` for focal point fields on images.
-- Leverage helper functions from `payload-helper` package for common patterns.
+### Type Imports
 
-### SvelteKit
+Use the `type` keyword for type-only imports to clearly distinguish types from values:
 
-- Follow SvelteKit's file-based routing conventions.
+```typescript
+import type { CollectionConfig, Config } from 'payload'
+import { cacheHookCollections } from './plugin/hooks.js'
+import type { PayloadHelperPluginConfig } from './types.js'
+```
+
+### Documentation
+
+- Document all exported functions with JSDoc comments.
+- Explain the purpose and parameters of functions.
+- Use `@param` and `@returns` tags for clarity.
+
+**Example:**
+
+```typescript
+/**
+ * Generates an alphanumeric random string.
+ * @param {number} length - The length of the string to generate
+ * @returns {string} The generated random string
+ */
+export const generateRandomString = (length: number): string => {
+	let result = ''
+	while (result.length < length) {
+		result += (Math.random() + 1).toString(36).substring(2)
+	}
+	return result.substring(0, length)
+}
+```
+
+### Utility Functions
+
+- Write pure functions with no side effects.
+- Follow single responsibility principle.
+- Always provide type annotations on parameters and return types.
+
+
+
+### Test Framework
+
+- Use **Vitest** for unit and integration tests.
+- Use **Playwright** for end-to-end tests.
+- Use **Testing Library** for component testing.
+
+### Test Organisation
+
+- Use `describe` blocks for test suites.
+- Use descriptive test names that explain what's being tested.
+- Follow Arrange-Act-Assert pattern.
+- Group related tests together.
+
+### Test Naming Convention
+
+- `*.test.ts` - Unit tests
+- `*.int.spec.ts` - Integration tests
+- `*.e2e.spec.ts` - End-to-end tests
+
+### Writing Tests
+
+**Example:**
+
+```typescript
+import { describe, test, expect } from 'vitest'
+import { ListingParams, SKIP_FILTER } from './ListingParams'
+
+describe('ListingParams', () => {
+	const params: ListingParamArgs = {
+		manufacturers: [1],
+		models: [10],
+		parts: [99],
+		eras: [2010],
+		searchTerm: 'test-search',
+	}
+
+	test('serialises params to query string', () => {
+		const qs = ListingParams.toSearchParams(params).toString()
+		expect(qs).toContain('manufacturers=1')
+		expect(qs).toContain('models=10')
+	})
+
+	test('parses query string back to params', () => {
+		const qs = 'manufacturers=1&models=10&parts=99'
+		const parsed = ListingParams.fromQueryString(qs)
+		expect(parsed.manufacturers).toEqual([1])
+	})
+
+	test('round-trip with SKIP_FILTER values', () => {
+		const original: ListingParamArgs = {
+			manufacturers: [5],
+			models: [SKIP_FILTER],
+		}
+
+		const qs = ListingParams.toSearchParams(original).toString()
+		const parsed = ListingParams.fromQueryString(qs)
+
+		expect(parsed.manufacturers).toEqual([5])
+		expect(parsed.models).toEqual([SKIP_FILTER])
+	})
+
+	test('handles missing params gracefully', () => {
+		const minimal: ListingParamArgs = { vehicleId: 1 }
+		const qs = ListingParams.toSearchParams(minimal).toString()
+		expect(qs).toContain('vehicle=1')
+		expect(qs).not.toContain('models=')
+	})
+})
+```
+
+### Best Practices
+
+- Test behaviour, not implementation details.
+- Use meaningful test names.
+- Keep tests simple and focused.
+- Avoid test interdependencies.
+- Test edge cases and error conditions.
+- Use round-trip testing for serialisation/deserialisation logic.
+
 
 ## Git
 
-### Commit Messages
 
 Follow a conventional commit format with a type prefix and present tense gerund (doing words):
 
@@ -365,7 +858,7 @@ Follow a conventional commit format with a type prefix and present tense gerund 
 
 #### Examples
 
-```
+```txt
 feat: Adding SOPS encryption support
 fix: Resolving Terraform state lock issue
 chore: Updating Go dependencies
@@ -374,29 +867,54 @@ test: Adding integration tests for scaffold command
 docs: Updating README with installation steps
 ```
 
-#### Guidelines
 
-- Use present tense gerunds: "Adding", "Fixing", "Updating" (not "Add", "Fixed", "Updates").
-- Keep the description concise and descriptive.
-- Start the description with a capital letter.
-- No full stop at the end of the message.
-- Focus on what the commit does, not how it does it.
 
-### Pre-Commit Checklist
+Before submitting changes, verify the following:
 
-Before submitting changes, agents should verify the following:
-
-#### Branch workflow
+### Branch Workflow
 
 - [ ] Never push directly to `main` - always create a new branch.
-- [ ] Branch names should be descriptive (e.g., `feature/add-sops-validation`,
-  `fix/terraform-state-bug`).
+- [ ] Branch names should be descriptive (e.g., `feature/add-sops-validation`, `fix/terraform-state-bug`).
 
-#### Verification steps
+### Verification Steps
 
-- [ ] All tests pass locally (run `go test ./...`).
-- [ ] Code is properly formatted with `go fmt`.
-- [ ] Generated files (`.gen.go`, manifest tracked files) were not manually edited.
-- [ ] New exported types, functions, and constants have Go doc comments.
-- [ ] Tests follow the test table or `t.Run` patterns described above.
-- [ ] If adding new dependencies, ensure they're necessary and well-maintained.
+Before committing, **always** run the following checks:
+
+#### For Go Projects
+
+**Run all tests**:
+
+```bash
+go test ./...
+```
+
+**Run linting and formatting**:
+
+```bash
+go fmt ./...
+```
+
+If both pass, proceed with the commit. If either fails, fix the issues before committing.
+
+#### For JS Projects
+
+**Run all tests**:
+
+```bash
+pnpm test
+```
+
+**Run linting and formatting**:
+
+```bash
+pnpm format && pnpm lint:fix
+```
+
+### General Checks
+
+- [ ] Commit message follows the conventional commit format.
+- [ ] No sensitive information (passwords, API keys, etc.) in the commit history.
+- [ ] No large files accidentally committed (+50 mb)
+- [ ] All new files have appropriate copyright/licence headers (if required).
+
+

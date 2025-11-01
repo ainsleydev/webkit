@@ -89,6 +89,33 @@
 **/*.tsbuildinfo
 **/next-env.d.ts
 
+# Jest, Vitest, Mocha, etc.
+**/test-results/
+**/test-output/
+**/reports/
+
+# Playwright
+**/playwright-report/
+**/playwright/.cache/
+**/trace.zip
+**/*.trace.zip
+**/videos/
+**/screenshots/
+**/traces/
+**/.playwright-cache/
+
+# Cypress
+**/cypress/screenshots/
+**/cypress/videos/
+**/cypress/results/
+
+# Miscellaneous
+**/*.spec.ts.snap
+**/*.test.ts.snap
+**/__snapshots__/
+**/.nyc_output/
+**/.eslintcache
+
 # ----------------------------------------- Infrastructure -----------------------------------------
 
 **/*.tfvars
@@ -103,7 +130,6 @@
 **/terraform.rc
 **/*backend.hcl
 
-**/secrets/
 **/*.key
 **/*.pem
 **/credentials.*
