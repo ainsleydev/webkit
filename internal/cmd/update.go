@@ -45,6 +45,7 @@ var updateOps = []runner{
 	{files.PackageJSONApp, "Files: Manipulate app package.json files"},
 	{files.TurboJSON, "Files: Create turbo.json"},
 	{cicd.PR, "CICD: Create PR workflows"},
+	//{cicd.ReleaseWorkflow, "CICD: Create release workflow"},
 	{cicd.BackupWorkflow, "CICD: Create backup workflows"},
 	{cicd.ActionTemplates, "CICD: Create action templates"},
 	{docs.Agents, "Docs: Agents AGENTS.md"},
