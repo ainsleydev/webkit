@@ -178,9 +178,9 @@ func TestPackageJSONApp(t *testing.T) {
 			require.True(t, ok)
 
 			assert.Equal(t, "pnpm docker:build && pnpm docker:run", scripts["docker"])
-			assert.Equal(t, "docker build . -t cms-web --progress plain --no-cache", scripts["docker:build"])
-			assert.Equal(t, "docker run -it --init --env-file .env -p 3000:3000 --rm -ti cms-web", scripts["docker:run"])
-			assert.Equal(t, "docker image rm cms-web", scripts["docker:remove"])
+			assert.Equal(t, "docker build . -t my-website-cms --progress plain --no-cache", scripts["docker:build"])
+			assert.Equal(t, "docker run -it --init --env-file .env -p 3000:3000 --rm -ti my-website-cms", scripts["docker:run"])
+			assert.Equal(t, "docker image rm my-website-cms", scripts["docker:remove"])
 		}
 
 		t.Log("Existing scripts preserved")
@@ -357,7 +357,7 @@ func TestPackageJSONApp(t *testing.T) {
 
 			scripts := pkg["scripts"].(map[string]any)
 			assert.Contains(t, scripts["docker:run"], "3000:3000")
-			assert.Contains(t, scripts["docker:build"], "cms-web")
+			assert.Contains(t, scripts["docker:build"], "my-website-cms")
 		}
 
 		t.Log("Web has port 3001")
@@ -370,7 +370,7 @@ func TestPackageJSONApp(t *testing.T) {
 
 			scripts := pkg["scripts"].(map[string]any)
 			assert.Contains(t, scripts["docker:run"], "3001:3001")
-			assert.Contains(t, scripts["docker:build"], "web-web")
+			assert.Contains(t, scripts["docker:build"], "my-website-web")
 		}
 	})
 

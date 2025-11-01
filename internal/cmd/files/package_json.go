@@ -154,7 +154,7 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 		}
 
 		// Add Docker scripts with app name substitution.
-		imageName := fmt.Sprintf("%s-web", app.Name)
+		imageName := fmt.Sprintf("%s-%s", appDef.Project.Name, app.Name)
 		pkg.Scripts["docker"] = "pnpm docker:build && pnpm docker:run"
 		pkg.Scripts["docker:build"] = fmt.Sprintf("docker build . -t %s --progress plain --no-cache", imageName)
 		pkg.Scripts["docker:run"] = fmt.Sprintf("docker run -it --init --env-file .env -p %d:%d --rm -ti %s",
@@ -165,7 +165,6 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 		err = input.Generator().JSON(
 			pkgPath,
 			pkg,
-			scaffold.WithTracking(manifest.SourceApp(app.Name)),
 		)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("writing %s", pkgPath))
