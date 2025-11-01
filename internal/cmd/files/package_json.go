@@ -26,14 +26,14 @@ func PackageJSON(_ context.Context, input cmdtools.CommandInput) error {
 		Private:     "false",
 		License:     "BSD-3-Clause",
 		Type:        "module",
-		Scripts: map[string]string{
+		Scripts: map[string]any{
 			"preinstall": "npx only-allow pnpm",
 			"test":       "turbo test",
 			"lint":       "eslint .",
 			"lint:fix":   "eslint . --fix",
 			"format":     "prettier --write .",
 		},
-		DevDependencies: map[string]string{
+		DevDependencies: map[string]any{
 			"@ainsleydev/eslint-config":   "^0.0.6",
 			"@ainsleydev/prettier-config": "^0.0.2",
 			"@eslint/compat":              "^1.4.0",
@@ -48,7 +48,6 @@ func PackageJSON(_ context.Context, input cmdtools.CommandInput) error {
 			"typescript":                  "5.8.2",
 		},
 		PackageManager: "pnpm@10.15.0",
-		Engines:        nil,
 		Pnpm:           packagePnpm{},
 		Author: packageAuthor{
 			Name:  "ainsley.dev LTD",
@@ -71,55 +70,40 @@ func PackageJSON(_ context.Context, input cmdtools.CommandInput) error {
 }
 
 type (
+	// packageJSON represents a package.json file with proper field ordering.
+	// Used by both root package.json creation and app package.json modification.
+	// Fields are ordered to match npm conventions: name, description, license, private, type, version first.
 	packageJSON struct {
-		Name            string            `json:"name"`
-		Description     string            `json:"description,omitempty"`
-		License         string            `json:"license"`
-		Private         string            `json:"private"`
-		Type            string            `json:"type"`
-		Version         string            `json:"version"`
-		Scripts         map[string]string `json:"scripts"`
-		DevDependencies map[string]string `json:"devDependencies"`
-		PackageManager  string            `json:"packageManager"`
-		Engines         map[string]string `json:"engines,omitempty"`
-		Pnpm            packagePnpm       `json:"pnpm,omitzero"`
-		Author          packageAuthor     `json:"author"`
-		Maintainers     []packageAuthor   `json:"maintainers"`
-	}
-	// appPackageJSON represents an app's package.json with proper field ordering.
-	// Uses pointers to distinguish between absent fields and zero values.
-	appPackageJSON struct {
-		Name             *string        `json:"name,omitempty"`
-		Description      *string        `json:"description,omitempty"`
-		License          *string        `json:"license,omitempty"`
-		Private          *bool          `json:"private,omitempty"`
-		Type             *string        `json:"type,omitempty"`
-		Version          *string        `json:"version,omitempty"`
+		Name             string         `json:"name,omitempty"`
+		Description      string         `json:"description,omitempty"`
+		License          string         `json:"license,omitempty"`
+		Private          any            `json:"private,omitempty"` // Can be string or bool
+		Type             string         `json:"type,omitempty"`
+		Version          string         `json:"version,omitempty"`
 		Scripts          map[string]any `json:"scripts,omitempty"`
 		Dependencies     map[string]any `json:"dependencies,omitempty"`
 		DevDependencies  map[string]any `json:"devDependencies,omitempty"`
 		PeerDependencies map[string]any `json:"peerDependencies,omitempty"`
-		PackageManager   *string        `json:"packageManager,omitempty"`
+		PackageManager   string         `json:"packageManager,omitempty"`
 		Engines          map[string]any `json:"engines,omitempty"`
 		Workspaces       any            `json:"workspaces,omitempty"`
 		Repository       any            `json:"repository,omitempty"`
 		Keywords         []string       `json:"keywords,omitempty"`
-		Author           any            `json:"author,omitempty"`
+		Author           any            `json:"author,omitempty"` // Can be string or packageAuthor
 		Contributors     any            `json:"contributors,omitempty"`
-		Maintainers      any            `json:"maintainers,omitempty"`
-		License2         *string        `json:"licence,omitempty"` // British spelling variant
-		Homepage         *string        `json:"homepage,omitempty"`
+		Maintainers      any            `json:"maintainers,omitempty"` // Can be []packageAuthor
+		Homepage         string         `json:"homepage,omitempty"`
 		Bugs             any            `json:"bugs,omitempty"`
 		Funding          any            `json:"funding,omitempty"`
 		Files            []string       `json:"files,omitempty"`
-		Main             *string        `json:"main,omitempty"`
-		Module           *string        `json:"module,omitempty"`
+		Main             string         `json:"main,omitempty"`
+		Module           string         `json:"module,omitempty"`
 		Browser          any            `json:"browser,omitempty"`
 		Bin              any            `json:"bin,omitempty"`
 		Man              any            `json:"man,omitempty"`
 		Directories      any            `json:"directories,omitempty"`
 		Config           any            `json:"config,omitempty"`
-		Pnpm             any            `json:"pnpm,omitempty"`
+		Pnpm             any            `json:"pnpm,omitempty"` // Can be packagePnpm or map
 		Overrides        any            `json:"overrides,omitempty"`
 		Resolutions      any            `json:"resolutions,omitempty"`
 	}
@@ -159,7 +143,7 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 			return errors.Wrap(err, fmt.Sprintf("reading %s", pkgPath))
 		}
 
-		var pkg appPackageJSON
+		var pkg packageJSON
 		if err = json.Unmarshal(data, &pkg); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("parsing %s", pkgPath))
 		}
