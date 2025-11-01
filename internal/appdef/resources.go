@@ -45,7 +45,7 @@ type ResourceProvider string
 // ResourceProvider constants.
 const (
 	ResourceProviderDigitalOcean ResourceProvider = "digitalocean"
-	ResourceProviderBackBlaze    ResourceProvider = "backblaze"
+	ResourceProviderBackBlaze    ResourceProvider = "b2"
 )
 
 // String implements fmt.Stringer on the ResourceProvider.
