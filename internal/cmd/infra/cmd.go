@@ -50,10 +50,15 @@ func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInpu
 
 	// Resolve all secrets from SOPS so we can pass them
 	// to Terraform unmasked.
-	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
+	resolveConfig := secrets.ResolveConfig{
 		SOPSClient: input.SOPSClient(),
 		BaseDir:    input.BaseDir,
-	})
+	}
+
+	// Ensure secrets are always re-encrypted, even if there's a panic or error
+	defer secrets.EnsureEncrypted(resolveConfig)
+
+	err := secrets.Resolve(ctx, appDef, resolveConfig)
 	if err != nil {
 		return nil, func() {}, err
 	}
@@ -65,7 +70,6 @@ func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInpu
 	tf, err := newTerraform(ctx, appDef, input.Manifest)
 	teardown := func() {
 		tf.Cleanup()
-		secrets.Clear(appDef)
 	}
 	if err != nil {
 		return nil, teardown, err

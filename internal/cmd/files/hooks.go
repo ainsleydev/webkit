@@ -17,8 +17,8 @@ func Hooks(_ context.Context, input cmdtools.CommandInput) error {
 	app := input.AppDef()
 
 	return input.Generator().Template(
-		"lefthook.yml",
-		templates.MustLoadTemplate("lefthook.yml"),
+		"lefthook.yaml",
+		templates.MustLoadTemplate("lefthook.yaml"),
 		app,
 		scaffold.WithTracking(manifest.SourceProject()),
 	)

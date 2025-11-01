@@ -105,28 +105,21 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 	},
 }
 
-// Clear zeros out all decrypted secrets from memory.
-// This should be called after secrets are no longer needed
-// to prevent them from persisting in memory.
-func Clear(def *appdef.Definition) {
-	clearEnvs(&def.Shared.Env)
-	for i := range def.Apps {
-		clearEnvs(&def.Apps[i].Env)
+// EnsureEncrypted ensures all SOPS secret files are encrypted.
+// This should be called as a deferred function to guarantee that
+// secret files are never left unencrypted on disk, even if there's
+// a panic or error during secret resolution.
+func EnsureEncrypted(cfg ResolveConfig) {
+	// Encrypt all environment files (dev, staging, production)
+	environments := []env.Environment{
+		env.Development,
+		env.Staging,
+		env.Production,
 	}
-}
 
-// clearEnvs zeros out all SOPS-sourced environment variables.
-func clearEnvs(enviro *appdef.Environment) {
-	_ = enviro.WalkE(func(entry appdef.EnvWalkEntry) error {
-		for key, config := range entry.Map {
-			if config.Source == appdef.EnvSourceSOPS {
-				entry.Map[key] = appdef.EnvValue{
-					Source: config.Source,
-					Value:  "", // Zero out the secret value
-					Path:   config.Path,
-				}
-			}
-		}
-		return nil
-	})
+	for _, e := range environments {
+		filePath := filepath.Join(cfg.BaseDir, FilePathFromEnv(e))
+		// Ignore errors - file might not exist or already be encrypted
+		_ = cfg.SOPSClient.Encrypt(filePath)
+	}
 }

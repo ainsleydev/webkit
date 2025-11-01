@@ -1,5 +1,18 @@
 # Lefthook configuration for {{ .Project.Name }}
 # See: https://github.com/evilmartians/lefthook
+#
+# Installation:
+#   1. Install lefthook:
+#      npm install lefthook --save-dev
+#      OR
+#      go install github.com/evilmartians/lefthook@latest
+#
+#   2. Install git hooks:
+#      npx lefthook install
+#      OR
+#      lefthook install
+#
+# This will create git hooks in .git/hooks/ that run before commits and pushes.
 
 pre-commit:
   parallel: true

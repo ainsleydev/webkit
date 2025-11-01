@@ -24,7 +24,7 @@ func TestHooks(t *testing.T) {
 		got := Hooks(t.Context(), input)
 		assert.NoError(t, got)
 
-		file, err := afero.ReadFile(input.FS, "lefthook.yml")
+		file, err := afero.ReadFile(input.FS, "lefthook.yaml")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, file)
 		assert.Contains(t, string(file), "test-project")
