@@ -87,3 +87,124 @@ jobs:
           package-type: 'container'
           min-versions-to-keep: 5
           delete-only-untagged-versions: false
+
+{{- range .Apps }}
+{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "container") }}
+
+  # Deploy {{ .Title }} to DigitalOcean App Platform
+  deploy-{{ .Name }}:
+    name: Deploy {{ .Title }}
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: production-{{ .Name }}
+      {{- if index .Infra.Config "domain" }}
+      url: https://{{ index .Infra.Config "domain" }}
+      {{- end }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: {{ ghSecret "DO_ACCESS_TOKEN" }}
+
+      - name: Update App Environment Variables
+        env:
+          APP_NAME: '{{ ghVar "github.event.repository.name" }}-{{ .Name }}'
+          APP_SECRETS: {{ ghSecret (printf "TF_DO_APP_PLATFORM_%s_SECRETS" (upper .Name)) }}
+        run: |
+          set -euo pipefail
+
+          # This step updates sensitive environment variables from GitHub Secrets.
+          # Non-sensitive vars should be managed via Terraform.
+          # Note: Updating env vars here may cause Terraform to detect changes due to
+          # DigitalOcean's encryption. Consider using lifecycle ignore_changes in Terraform
+          # for env vars managed here, or manage all secrets exclusively via Terraform.
+
+          echo "Updating environment variables for app: $APP_NAME"
+
+          # Get the app ID from the app name
+          APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | grep "$APP_NAME" | awk '{print $1}')
+
+          if [ -z "$APP_ID" ]; then
+            echo "Error: App '$APP_NAME' not found in DigitalOcean"
+            exit 1
+          fi
+
+          echo "Found app ID: $APP_ID"
+
+          # Check if secrets are provided
+          if [ -z "$APP_SECRETS" ] || [ "$APP_SECRETS" = "null" ] || [ "$APP_SECRETS" = '""' ]; then
+            echo "No secrets provided for {{ .Name }}, skipping env var update"
+          else
+            echo "Parsing secrets JSON and updating app configuration"
+
+            # Install yq for YAML manipulation
+            sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+            sudo chmod +x /usr/local/bin/yq
+
+            # Get current app spec
+            doctl apps spec get "$APP_ID" > app-spec.yaml
+
+            echo "Current app spec retrieved"
+
+            # Parse secrets and update app spec
+            # We need to find the service/worker component and update its env vars
+            SERVICE_INDEX=$(yq eval '.services | length' app-spec.yaml)
+            if [ "$SERVICE_INDEX" -gt 0 ]; then
+              SERVICE_INDEX=0  # Use first service for now
+
+              echo "Updating environment variables for service at index $SERVICE_INDEX"
+
+              # For each secret in the JSON, add or update the env var
+              echo "$APP_SECRETS" | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while IFS='=' read -r key value; do
+                echo "Setting env var: $key"
+
+                # Check if env var already exists
+                EXISTING_INDEX=$(yq eval ".services[$SERVICE_INDEX].envs[] | select(.key == \"$key\") | key" app-spec.yaml | head -n 1)
+
+                if [ -z "$EXISTING_INDEX" ]; then
+                  # Add new env var
+                  yq eval -i ".services[$SERVICE_INDEX].envs += [{\"key\": \"$key\", \"value\": \"$value\", \"scope\": \"RUN_TIME\", \"type\": \"SECRET\"}]" app-spec.yaml
+                else
+                  # Update existing env var
+                  yq eval -i "(.services[$SERVICE_INDEX].envs[] | select(.key == \"$key\").value) = \"$value\"" app-spec.yaml
+                  yq eval -i "(.services[$SERVICE_INDEX].envs[] | select(.key == \"$key\").type) = \"SECRET\"" app-spec.yaml
+                fi
+              done
+
+              echo "App spec updated with new environment variables"
+
+              # Update the app with the modified spec
+              doctl apps update "$APP_ID" --spec app-spec.yaml
+
+              echo "App configuration updated successfully"
+            else
+              echo "Warning: No services found in app spec, skipping env var update"
+            fi
+          fi
+
+      - name: Deploy to DigitalOcean App Platform
+        run: |
+          set -euo pipefail
+
+          APP_NAME='{{ ghVar "github.event.repository.name" }}-{{ .Name }}'
+          APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | grep "$APP_NAME" | awk '{print $1}')
+
+          if [ -z "$APP_ID" ]; then
+            echo "Error: App '$APP_NAME' not found in DigitalOcean"
+            exit 1
+          fi
+
+          echo "Triggering deployment for app: $APP_NAME (ID: $APP_ID)"
+
+          # Create a new deployment and wait for it to complete
+          doctl apps create-deployment "$APP_ID" --wait
+
+          echo "Deployment completed successfully for {{ .Title }}"
+{{- end }}
+{{- end }}
