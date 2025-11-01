@@ -7,6 +7,7 @@ import (
 type (
 	// Environment contains env-specific variable configurations.
 	Environment struct {
+		Default    EnvVar `json:"default,omitempty"`
 		Dev        EnvVar `json:"dev,omitempty"`
 		Staging    EnvVar `json:"staging,omitempty"`
 		Production EnvVar `json:"production,omitempty"`
@@ -97,7 +98,20 @@ func (e Environment) WalkE(fn EnvironmentWalkerE) error {
 }
 
 // walkEnvs is the internal helper that iterates over environments.
+// It walks over Default vars first (for each environment), then environment-specific vars.
+// This ensures defaults apply to all environments, with environment-specific values overriding.
+// The original maps are passed to the walker, allowing mutations.
 func (e Environment) walkEnvs(fn func(envName env.Environment, vars EnvVar) error) error {
+	// First, walk over default vars for each environment.
+	if len(e.Default) > 0 {
+		for _, envName := range []env.Environment{env.Development, env.Staging, env.Production} {
+			if err := fn(envName, e.Default); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Then walk over environment-specific vars.
 	envs := []struct {
 		name env.Environment
 		vars EnvVar
@@ -108,7 +122,7 @@ func (e Environment) walkEnvs(fn func(envName env.Environment, vars EnvVar) erro
 	}
 
 	for _, envData := range envs {
-		if envData.vars == nil {
+		if envData.vars == nil || len(envData.vars) == 0 {
 			continue
 		}
 		if err := fn(envData.name, envData.vars); err != nil {
@@ -121,15 +135,19 @@ func (e Environment) walkEnvs(fn func(envName env.Environment, vars EnvVar) erro
 
 // mergeVars merges `override` into `base`, with `override`
 // taking precedence (usually app/shared).
+// Returns a new map without mutating the inputs.
 func mergeVars(base, override EnvVar) EnvVar {
-	if base == nil {
-		base = make(EnvVar)
+	result := make(EnvVar)
+
+	// Copy base first.
+	for k, v := range base {
+		result[k] = v
 	}
-	if override == nil {
-		override = make(EnvVar)
-	}
+
+	// Apply overrides.
 	for k, v := range override {
-		base[k] = v
+		result[k] = v
 	}
-	return base
+
+	return result
 }

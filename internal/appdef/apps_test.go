@@ -209,6 +209,85 @@ func TestApp_MergeEnvironments(t *testing.T) {
 				Production: EnvVar{},
 			},
 		},
+		"Shared Default Only": {
+			app: App{
+				Name: "app1",
+				Env:  Environment{},
+			},
+			shared: Environment{
+				Default: EnvVar{"API_KEY": EnvValue{Source: EnvSourceSOPS}},
+			},
+			want: Environment{
+				Dev:        EnvVar{"API_KEY": EnvValue{Source: EnvSourceSOPS}},
+				Staging:    EnvVar{"API_KEY": EnvValue{Source: EnvSourceSOPS}},
+				Production: EnvVar{"API_KEY": EnvValue{Source: EnvSourceSOPS}},
+			},
+		},
+		"App Default Overrides Shared Default": {
+			app: App{
+				Name: "app1",
+				Env: Environment{
+					Default: EnvVar{"API_KEY": EnvValue{Source: EnvSourceValue, Value: "app-key"}},
+				},
+			},
+			shared: Environment{
+				Default: EnvVar{"API_KEY": EnvValue{Source: EnvSourceSOPS}},
+			},
+			want: Environment{
+				Dev:        EnvVar{"API_KEY": EnvValue{Source: EnvSourceValue, Value: "app-key"}},
+				Staging:    EnvVar{"API_KEY": EnvValue{Source: EnvSourceValue, Value: "app-key"}},
+				Production: EnvVar{"API_KEY": EnvValue{Source: EnvSourceValue, Value: "app-key"}},
+			},
+		},
+		"Shared Default With App Specific Override": {
+			app: App{
+				Name: "app1",
+				Env: Environment{
+					Production: EnvVar{"API_KEY": EnvValue{Source: EnvSourceValue, Value: "prod-key"}},
+				},
+			},
+			shared: Environment{
+				Default: EnvVar{"API_KEY": EnvValue{Source: EnvSourceSOPS}},
+			},
+			want: Environment{
+				Dev:        EnvVar{"API_KEY": EnvValue{Source: EnvSourceSOPS}},
+				Staging:    EnvVar{"API_KEY": EnvValue{Source: EnvSourceSOPS}},
+				Production: EnvVar{"API_KEY": EnvValue{Source: EnvSourceValue, Value: "prod-key"}},
+			},
+		},
+		"Complex Default Merging": {
+			app: App{
+				Name: "app1",
+				Env: Environment{
+					Default:    EnvVar{"VAR1": EnvValue{Source: EnvSourceValue, Value: "app-default"}},
+					Dev:        EnvVar{"VAR2": EnvValue{Source: EnvSourceValue, Value: "dev-specific"}},
+					Production: EnvVar{"VAR1": EnvValue{Source: EnvSourceValue, Value: "prod-override"}},
+				},
+			},
+			shared: Environment{
+				Default: EnvVar{
+					"VAR1": EnvValue{Source: EnvSourceSOPS},
+					"VAR3": EnvValue{Source: EnvSourceValue, Value: "shared-default"},
+				},
+				Staging: EnvVar{"VAR4": EnvValue{Source: EnvSourceValue, Value: "staging-shared"}},
+			},
+			want: Environment{
+				Dev: EnvVar{
+					"VAR1": EnvValue{Source: EnvSourceValue, Value: "app-default"},
+					"VAR2": EnvValue{Source: EnvSourceValue, Value: "dev-specific"},
+					"VAR3": EnvValue{Source: EnvSourceValue, Value: "shared-default"},
+				},
+				Staging: EnvVar{
+					"VAR1": EnvValue{Source: EnvSourceValue, Value: "app-default"},
+					"VAR3": EnvValue{Source: EnvSourceValue, Value: "shared-default"},
+					"VAR4": EnvValue{Source: EnvSourceValue, Value: "staging-shared"},
+				},
+				Production: EnvVar{
+					"VAR1": EnvValue{Source: EnvSourceValue, Value: "prod-override"},
+					"VAR3": EnvValue{Source: EnvSourceValue, Value: "shared-default"},
+				},
+			},
+		},
 	}
 
 	for name, tc := range tests {
