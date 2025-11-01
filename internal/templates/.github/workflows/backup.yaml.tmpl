@@ -88,7 +88,7 @@ jobs:
       - name: Retain only 30 latest backups
         run: |
           # Delete backups older than 30 days
-          rclone delete b2_backup:${BUCKET_NAME}{BACKUP_PATH} --min-age 30d
+          rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
 
       - name: Remove Runner IP from Database
         if: always()
