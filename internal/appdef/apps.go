@@ -22,6 +22,7 @@ type (
 	}
 	Build struct {
 		Dockerfile string `json:"dockerfile"`
+		Port       int    `json:"port,omitempty"`
 	}
 	Infra struct {
 		Provider ResourceProvider `json:"provider"`
@@ -151,9 +152,30 @@ func (a *App) applyDefaults() error {
 		a.Build.Dockerfile = "Dockerfile"
 	}
 
+	if a.Build.Port == 0 {
+		a.Build.Port = a.defaultPort()
+	}
+
 	if a.Path != "" {
 		a.Path = filepath.Clean(a.Path)
 	}
 
 	return nil
+}
+
+// defaultPort returns the default port for the app based on its type.
+// - Payload CMS: 3000
+// - SvelteKit: 3001
+// - GoLang: 8080
+func (a *App) defaultPort() int {
+	switch a.Type {
+	case AppTypePayload:
+		return 3000
+	case AppTypeSvelteKit:
+		return 3001
+	case AppTypeGoLang:
+		return 8080
+	default:
+		return 3000
+	}
 }
