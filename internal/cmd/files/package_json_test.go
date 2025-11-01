@@ -482,4 +482,107 @@ func TestPackageJSONApp(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "writing")
 	})
+
+	t.Run("Field ordering preserved", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{Name: "my-website"},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "cms",
+					Build: appdef.Build{
+						Port: 3000,
+					},
+				},
+			},
+		}
+		require.NoError(t, appDef.ApplyDefaults())
+
+		input := setup(t, fs, appDef)
+
+		require.NoError(t, afero.WriteFile(fs, "cms/package.json", []byte(`{
+	"name": "cms",
+	"description": "My CMS app",
+	"license": "MIT",
+	"private": true,
+	"type": "module",
+	"version": "1.0.0",
+	"scripts": {
+		"dev": "payload dev",
+		"build": "payload build"
+	}
+}`), 0o644))
+
+		err := PackageJSONApp(t.Context(), input)
+		assert.NoError(t, err)
+
+		t.Log("Verify field order preserved")
+		{
+			data, err := afero.ReadFile(fs, "cms/package.json")
+			require.NoError(t, err)
+
+			nameIdx := bytes.Index(data, []byte(`"name"`))
+			descIdx := bytes.Index(data, []byte(`"description"`))
+			licenseIdx := bytes.Index(data, []byte(`"license"`))
+			privateIdx := bytes.Index(data, []byte(`"private"`))
+			typeIdx := bytes.Index(data, []byte(`"type"`))
+			versionIdx := bytes.Index(data, []byte(`"version"`))
+			scriptsIdx := bytes.Index(data, []byte(`"scripts"`))
+
+			assert.Greater(t, descIdx, nameIdx, "description should come after name")
+			assert.Greater(t, licenseIdx, descIdx, "license should come after description")
+			assert.Greater(t, privateIdx, licenseIdx, "private should come after license")
+			assert.Greater(t, typeIdx, privateIdx, "type should come after private")
+			assert.Greater(t, versionIdx, typeIdx, "version should come after type")
+			assert.Greater(t, scriptsIdx, versionIdx, "scripts should come after version")
+		}
+	})
+
+	t.Run("HTML characters not escaped in engines", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{Name: "my-website"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "web",
+					Build: appdef.Build{
+						Port: 3001,
+					},
+				},
+			},
+		}
+		require.NoError(t, appDef.ApplyDefaults())
+
+		input := setup(t, fs, appDef)
+
+		require.NoError(t, afero.WriteFile(fs, "web/package.json", []byte(`{
+	"name": "web",
+	"version": "1.0.0",
+	"engines": {
+		"node": "^18.20.2 || >=20.9.0"
+	}
+}`), 0o644))
+
+		err := PackageJSONApp(t.Context(), input)
+		assert.NoError(t, err)
+
+		t.Log("Verify HTML characters not escaped")
+		{
+			data, err := afero.ReadFile(fs, "web/package.json")
+			require.NoError(t, err)
+
+			fileContent := string(data)
+			assert.Contains(t, fileContent, "^18.20.2 || >=20.9.0", "Engine constraint should not be escaped")
+			assert.NotContains(t, fileContent, "\\u003e", "Should not contain escaped >")
+			assert.NotContains(t, fileContent, "\\u003c", "Should not contain escaped <")
+		}
+	})
 }

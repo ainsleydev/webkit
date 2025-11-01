@@ -86,6 +86,43 @@ type (
 		Author          packageAuthor     `json:"author"`
 		Maintainers     []packageAuthor   `json:"maintainers"`
 	}
+	// appPackageJSON represents an app's package.json with proper field ordering.
+	// Uses pointers to distinguish between absent fields and zero values.
+	appPackageJSON struct {
+		Name             *string        `json:"name,omitempty"`
+		Description      *string        `json:"description,omitempty"`
+		License          *string        `json:"license,omitempty"`
+		Private          *bool          `json:"private,omitempty"`
+		Type             *string        `json:"type,omitempty"`
+		Version          *string        `json:"version,omitempty"`
+		Scripts          map[string]any `json:"scripts,omitempty"`
+		Dependencies     map[string]any `json:"dependencies,omitempty"`
+		DevDependencies  map[string]any `json:"devDependencies,omitempty"`
+		PeerDependencies map[string]any `json:"peerDependencies,omitempty"`
+		PackageManager   *string        `json:"packageManager,omitempty"`
+		Engines          map[string]any `json:"engines,omitempty"`
+		Workspaces       any            `json:"workspaces,omitempty"`
+		Repository       any            `json:"repository,omitempty"`
+		Keywords         []string       `json:"keywords,omitempty"`
+		Author           any            `json:"author,omitempty"`
+		Contributors     any            `json:"contributors,omitempty"`
+		Maintainers      any            `json:"maintainers,omitempty"`
+		License2         *string        `json:"licence,omitempty"` // British spelling variant
+		Homepage         *string        `json:"homepage,omitempty"`
+		Bugs             any            `json:"bugs,omitempty"`
+		Funding          any            `json:"funding,omitempty"`
+		Files            []string       `json:"files,omitempty"`
+		Main             *string        `json:"main,omitempty"`
+		Module           *string        `json:"module,omitempty"`
+		Browser          any            `json:"browser,omitempty"`
+		Bin              any            `json:"bin,omitempty"`
+		Man              any            `json:"man,omitempty"`
+		Directories      any            `json:"directories,omitempty"`
+		Config           any            `json:"config,omitempty"`
+		Pnpm             any            `json:"pnpm,omitempty"`
+		Overrides        any            `json:"overrides,omitempty"`
+		Resolutions      any            `json:"resolutions,omitempty"`
+	}
 	packageAuthor struct {
 		Name  string `json:"name"`
 		Email string `json:"email"`
@@ -122,25 +159,23 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 			return errors.Wrap(err, fmt.Sprintf("reading %s", pkgPath))
 		}
 
-		var pkg map[string]any
+		var pkg appPackageJSON
 		if err = json.Unmarshal(data, &pkg); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("parsing %s", pkgPath))
 		}
 
 		// Get or create the scripts section.
-		scripts, ok := pkg["scripts"].(map[string]any)
-		if !ok {
-			scripts = make(map[string]any)
-			pkg["scripts"] = scripts
+		if pkg.Scripts == nil {
+			pkg.Scripts = make(map[string]any)
 		}
 
 		// Add Docker scripts with app name substitution.
 		imageName := fmt.Sprintf("%s-web", app.Name)
-		scripts["docker"] = "pnpm docker:build && pnpm docker:run"
-		scripts["docker:build"] = fmt.Sprintf("docker build . -t %s --progress plain --no-cache", imageName)
-		scripts["docker:run"] = fmt.Sprintf("docker run -it --init --env-file .env -p %d:%d --rm -ti %s",
+		pkg.Scripts["docker"] = "pnpm docker:build && pnpm docker:run"
+		pkg.Scripts["docker:build"] = fmt.Sprintf("docker build . -t %s --progress plain --no-cache", imageName)
+		pkg.Scripts["docker:run"] = fmt.Sprintf("docker run -it --init --env-file .env -p %d:%d --rm -ti %s",
 			app.Build.Port, app.Build.Port, imageName)
-		scripts["docker:remove"] = fmt.Sprintf("docker image rm %s", imageName)
+		pkg.Scripts["docker:remove"] = fmt.Sprintf("docker image rm %s", imageName)
 
 		// Write back the modified package.json.
 		err = input.Generator().JSON(
