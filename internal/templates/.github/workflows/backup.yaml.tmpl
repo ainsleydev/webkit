@@ -253,26 +253,26 @@ jobs:
       - name: Configure rclone for Google Drive
         env:
           GDRIVE_SA_JSON: {{ ghSecret "ORG_GOOGLE_DRIVE_SA_JSON" }}
+          GDRIVE_SHARED_DRIVE_ID: {{ ghSecret "ORG_GOOGLE_DRIVE_FOLDER_ID" }}
         run: |
           # Create service account credentials file
           echo "$GDRIVE_SA_JSON" > /tmp/gdrive-sa.json
 
-          # Configure Google Drive remote using service account
+          # Configure Google Drive remote using service account with Shared Drive
           rclone config create gdrive drive \
             scope drive \
             service_account_file /tmp/gdrive-sa.json \
-            team_drive ""
+            team_drive "$GDRIVE_SHARED_DRIVE_ID"
 
       - name: Sync B2 to Google Drive
-        env:
-          GDRIVE_FOLDER_ID: {{ ghSecret "ORG_GOOGLE_DRIVE_FOLDER_ID" }}
         run: |
           # Fail on errors, undefined vars, and fail if any part of a pipe fails
           set -euo pipefail
 
-          # Sync entire B2 bucket to Google Drive folder
-          # Structure: {gdrive-folder}/{project-name}/backups/...
-          rclone sync b2_backup:${BUCKET_NAME} gdrive:${GDRIVE_FOLDER_ID}/${BUCKET_NAME} \
+          # Sync entire B2 bucket to Google Drive Shared Drive
+          # Structure: {shared-drive}/{project-name}/backups/...
+          # The bucket name folder (e.g., search-spares) will be created automatically
+          rclone sync b2_backup:${BUCKET_NAME} gdrive:${BUCKET_NAME} \
             --progress \
             --transfers=8 \
             --checkers=8 \
@@ -283,13 +283,11 @@ jobs:
             --stats-one-line
 
       - name: Verify Sync
-        env:
-          GDRIVE_FOLDER_ID: {{ ghSecret "ORG_GOOGLE_DRIVE_FOLDER_ID" }}
         run: |
-          echo "Verifying sync to Google Drive..."
+          echo "Verifying sync to Google Drive Shared Drive..."
 
-          # List files in Google Drive to verify
-          rclone lsd gdrive:${GDRIVE_FOLDER_ID}/${BUCKET_NAME} --max-depth 2
+          # List files in Google Drive Shared Drive to verify
+          rclone lsd gdrive:${BUCKET_NAME} --max-depth 2
 
           echo "Google Drive sync completed successfully!"
 
