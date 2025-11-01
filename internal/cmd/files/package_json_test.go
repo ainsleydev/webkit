@@ -2,13 +2,16 @@ package files
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
 
@@ -304,5 +307,114 @@ func TestPackageJSONApp(t *testing.T) {
 			assert.Contains(t, scripts["docker:run"], "3001:3001")
 			assert.Contains(t, scripts["docker:build"], "web-web")
 		}
+	})
+
+	t.Run("Exists check error", func(t *testing.T) {
+		mock := mocks.NewMockFS(gomock.NewController(t))
+		mock.EXPECT().Stat(gomock.Any()).Return(nil, errors.New("stat error"))
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{Name: "my-website"},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "cms",
+					Build: appdef.Build{
+						Port: 3000,
+					},
+				},
+			},
+		}
+		require.NoError(t, appDef.ApplyDefaults())
+
+		input := setup(t, mock, appDef)
+
+		err := PackageJSONApp(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "checking if")
+	})
+
+	t.Run("Read file error", func(t *testing.T) {
+		mock := mocks.NewMockFS(gomock.NewController(t))
+		mock.EXPECT().Stat(gomock.Any()).Return(nil, nil)
+		mock.EXPECT().Open(gomock.Any()).Return(nil, errors.New("read error"))
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{Name: "my-website"},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "cms",
+					Build: appdef.Build{
+						Port: 3000,
+					},
+				},
+			},
+		}
+		require.NoError(t, appDef.ApplyDefaults())
+
+		input := setup(t, mock, appDef)
+
+		err := PackageJSONApp(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "reading")
+	})
+
+	t.Run("Invalid JSON error", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{Name: "my-website"},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "cms",
+					Build: appdef.Build{
+						Port: 3000,
+					},
+				},
+			},
+		}
+		require.NoError(t, appDef.ApplyDefaults())
+
+		input := setup(t, fs, appDef)
+
+		require.NoError(t, afero.WriteFile(fs, "cms/package.json", []byte(`{invalid json`), 0o644))
+
+		err := PackageJSONApp(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "parsing")
+	})
+
+	t.Run("Write error", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{Name: "my-website"},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "cms",
+					Build: appdef.Build{
+						Port: 3000,
+					},
+				},
+			},
+		}
+		require.NoError(t, appDef.ApplyDefaults())
+
+		require.NoError(t, afero.WriteFile(fs, "cms/package.json", []byte(`{"name": "cms"}`), 0o644))
+
+		input := setup(t, afero.NewReadOnlyFs(fs), appDef)
+
+		err := PackageJSONApp(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "writing")
 	})
 }

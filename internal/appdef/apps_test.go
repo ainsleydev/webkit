@@ -264,7 +264,7 @@ func TestApp_DefaultPort(t *testing.T) {
 	}
 }
 
-func TestApp_applyDefaults_Port(t *testing.T) {
+func TestApp_ApplyDefaults_Port(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Port set to default", func(t *testing.T) {
