@@ -96,11 +96,24 @@ func buildPostgresImports(projectName string, resource *appdef.Resource, cluster
 // buildS3Imports creates the import addresses for a DigitalOcean Spaces bucket.
 func buildS3Imports(resource *appdef.Resource, bucketID string) []importAddress {
 	baseModule := fmt.Sprintf("module.resources[\"%s\"].module.do_bucket[0]", resource.Name)
+	region, ok := resource.Config["region"].(string)
+	if !ok {
+		region = "ams3"
+	}
+	id := fmt.Sprintf("%s,%s", bucketID, region)
 
 	return []importAddress{
 		{
 			Address: fmt.Sprintf("%s.digitalocean_spaces_bucket.this", baseModule),
-			ID:      bucketID,
+			ID:      id,
+		},
+		{
+			Address: fmt.Sprintf("%s.digitalocean_spaces_bucket_cors_configuration.this", baseModule),
+			ID:      id,
+		},
+		{
+			Address: fmt.Sprintf("%s.digitalocean_cdn.this", baseModule),
+			ID:      id,
 		},
 	}
 }
