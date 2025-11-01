@@ -1,6 +1,6 @@
 {
 	"version": "v0.0.8",
-	"generated_at": "2025-11-01T09:20:58.780773Z",
+	"generated_at": "2025-11-01T09:55:59.197379Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -54,9 +54,9 @@
 			"path": ".github/workflows/backup.yaml",
 			"generator": "cicd:BackupWorkflow",
 			"source": "resource:store",
-			"hash": "98a77fdc8e4bd13480c5c45e66ad21578cdea063693df2575c6ed7687f43c24a",
+			"hash": "29e64ab530170e154607ad49ba2d01514efdb9c96a67503b9104ad44e570f1df",
 			"scaffolded": false,
-			"generated_at": "2025-11-01T09:20:58.779235Z"
+			"generated_at": "2025-11-01T09:55:59.195685Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",

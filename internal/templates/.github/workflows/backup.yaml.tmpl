@@ -1,4 +1,4 @@
-name: Backup Resources
+name: Backup
 
 on:
   workflow_dispatch:
@@ -178,7 +178,7 @@ jobs:
           BACKUP_FILE="codebase-backup-$TIMESTAMP.tar.gz"
 
           # Create compressed archive of entire repository (including .git)
-          tar -czf "$BACKUP_FILE" .
+           git archive --format=tar.gz -o "$BACKUP_FILE" HEAD
 
           # Verify file
           ls -lh "$BACKUP_FILE"
