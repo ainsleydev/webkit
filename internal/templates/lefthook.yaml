@@ -1,0 +1,58 @@
+# Lefthook configuration for {{ .Project.Name }}
+# See: https://github.com/evilmartians/lefthook
+#
+# Installation:
+#   1. Install lefthook:
+#      npm install lefthook --save-dev
+#      OR
+#      go install github.com/evilmartians/lefthook@latest
+#
+#   2. Install git hooks:
+#      npx lefthook install
+#      OR
+#      lefthook install
+#
+# This will create git hooks in .git/hooks/ that run before commits and pushes.
+
+pre-commit:
+  parallel: true
+  commands:
+    # Check that SOPS secrets are encrypted
+    secrets:
+      glob: "resources/secrets/*.yaml"
+      run: |
+        set -e
+        for file in resources/secrets/*.yaml; do
+          if [ -f "$file" ]; then
+            # Check if file starts with "sops:" which indicates it's encrypted
+            if ! head -n 1 "$file" | grep -q "^sops:"; then
+              echo "❌ ERROR: Unencrypted SOPS file detected: $file"
+              echo "   Run: webkit secrets encrypt"
+              exit 1
+            fi
+          fi
+        done
+        echo "✅ All SOPS files are encrypted"
+
+    # Run format command
+    format:
+      glob: "*.{js,ts,go,yaml,yml,json,md}"
+      run: pnpm format
+      stage_fixed: true
+
+pre-push:
+  commands:
+    # Double-check secrets before push
+    secrets-final:
+      glob: "resources/secrets/*.yaml"
+      run: |
+        set -e
+        for file in resources/secrets/*.yaml; do
+          if [ -f "$file" ]; then
+            if ! head -n 1 "$file" | grep -q "^sops:"; then
+              echo "❌ ERROR: Unencrypted SOPS file detected before push: $file"
+              exit 1
+            fi
+          fi
+        done
+        echo "✅ Secrets check passed"
