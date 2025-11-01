@@ -98,15 +98,27 @@ func (e Environment) WalkE(fn EnvironmentWalkerE) error {
 }
 
 // walkEnvs is the internal helper that iterates over environments.
-// Default values are merged into each environment before iteration.
+// It walks over Default vars first (for each environment), then environment-specific vars.
+// This ensures defaults apply to all environments, with environment-specific values overriding.
+// The original maps are passed to the walker, allowing mutations.
 func (e Environment) walkEnvs(fn func(envName env.Environment, vars EnvVar) error) error {
+	// First, walk over default vars for each environment.
+	if len(e.Default) > 0 {
+		for _, envName := range []env.Environment{env.Development, env.Staging, env.Production} {
+			if err := fn(envName, e.Default); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Then walk over environment-specific vars.
 	envs := []struct {
 		name env.Environment
 		vars EnvVar
 	}{
-		{env.Development, mergeVars(e.Default, e.Dev)},
-		{env.Staging, mergeVars(e.Default, e.Staging)},
-		{env.Production, mergeVars(e.Default, e.Production)},
+		{env.Development, e.Dev},
+		{env.Staging, e.Staging},
+		{env.Production, e.Production},
 	}
 
 	for _, envData := range envs {
@@ -123,15 +135,19 @@ func (e Environment) walkEnvs(fn func(envName env.Environment, vars EnvVar) erro
 
 // mergeVars merges `override` into `base`, with `override`
 // taking precedence (usually app/shared).
+// Returns a new map without mutating the inputs.
 func mergeVars(base, override EnvVar) EnvVar {
-	if base == nil {
-		base = make(EnvVar)
+	result := make(EnvVar)
+
+	// Copy base first.
+	for k, v := range base {
+		result[k] = v
 	}
-	if override == nil {
-		override = make(EnvVar)
-	}
+
+	// Apply overrides.
 	for k, v := range override {
-		base[k] = v
+		result[k] = v
 	}
-	return base
+
+	return result
 }

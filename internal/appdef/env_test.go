@@ -91,9 +91,10 @@ func TestEnvironment_Walk_WithDefaults(t *testing.T) {
 				Production: EnvVar{"API_KEY": {Source: EnvSourceValue, Value: "prod-key"}},
 			},
 			want: []string{
-				"development:API_KEY=<nil>",
-				"staging:API_KEY=<nil>",
-				"production:API_KEY=prod-key",
+				"development:API_KEY=<nil>",  // from Default
+				"staging:API_KEY=<nil>",      // from Default
+				"production:API_KEY=<nil>",   // from Default
+				"production:API_KEY=prod-key", // from Production (overrides)
 			},
 		},
 		"Default Plus Specific": {
@@ -122,11 +123,15 @@ func TestEnvironment_Walk_WithDefaults(t *testing.T) {
 				},
 			},
 			want: []string{
-				"development:VAR1=dev-override",
+				// Defaults applied to all environments
+				"development:VAR1=default1",
 				"development:VAR2=default2",
 				"staging:VAR1=default1",
 				"staging:VAR2=default2",
 				"production:VAR1=default1",
+				"production:VAR2=default2",
+				// Environment-specific overrides
+				"development:VAR1=dev-override",
 				"production:VAR2=prod-override",
 			},
 		},
