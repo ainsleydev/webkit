@@ -67,7 +67,13 @@ func (c *CommandInput) AppDef() *appdef.Definition {
 	read, err := appdef.Read(c.FS)
 	if err != nil {
 		c.Printer().LineBreak()
-		c.Printer().Error("Could not find app.json in the current directory.")
+		// Check if it's a file not found error
+		if os.IsNotExist(err) {
+			c.Printer().Error("Could not find app.json in the current directory.")
+		} else {
+			// Any other error (including parsing errors)
+			c.Printer().Error("Failed to parse app.json: " + err.Error())
+		}
 		c.Printer().LineBreak()
 		os.Exit(1)
 	}
