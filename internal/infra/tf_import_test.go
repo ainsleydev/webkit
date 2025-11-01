@@ -255,26 +255,86 @@ func TestBuildPostgresImports(t *testing.T) {
 func TestBuildS3Imports(t *testing.T) {
 	t.Parallel()
 
-	resource := &appdef.Resource{
-		Name: "media",
+	tt := map[string]struct {
+		resource *appdef.Resource
+		bucketID string
+		want     []importAddress
+	}{
+		"Default region (ams3)": {
+			resource: &appdef.Resource{
+				Name:   "media",
+				Config: map[string]any{},
+			},
+			bucketID: "bucket-123",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "bucket-123,ams3",
+				},
+				{
+					Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "bucket-123,ams3",
+				},
+				{
+					Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_cdn.this",
+					ID:      "bucket-123,ams3",
+				},
+			},
+		},
+		"Custom region (nyc3)": {
+			resource: &appdef.Resource{
+				Name: "assets",
+				Config: map[string]any{
+					"region": "nyc3",
+				},
+			},
+			bucketID: "bucket-456",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"assets\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "bucket-456,nyc3",
+				},
+				{
+					Address: "module.resources[\"assets\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "bucket-456,nyc3",
+				},
+				{
+					Address: "module.resources[\"assets\"].module.do_bucket[0].digitalocean_cdn.this",
+					ID:      "bucket-456,nyc3",
+				},
+			},
+		},
+		"Hyphenated bucket name": {
+			resource: &appdef.Resource{
+				Name: "user-uploads",
+				Config: map[string]any{
+					"region": "sfo3",
+				},
+			},
+			bucketID: "uploads-789",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"user-uploads\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "uploads-789,sfo3",
+				},
+				{
+					Address: "module.resources[\"user-uploads\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "uploads-789,sfo3",
+				},
+				{
+					Address: "module.resources[\"user-uploads\"].module.do_bucket[0].digitalocean_cdn.this",
+					ID:      "uploads-789,sfo3",
+				},
+			},
+		},
 	}
-	bucketID := "bucket-123"
 
-	want := []importAddress{
-		{
-			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
-			ID:      "bucket-123,ams3",
-		},
-		{
-			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
-			ID:      "bucket-123,ams3",
-		},
-		{
-			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_cdn.this",
-			ID:      "bucket-123,ams3",
-		},
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := buildS3Imports(test.resource, test.bucketID)
+			assert.Equal(t, test.want, got)
+		})
 	}
-
-	got := buildS3Imports(resource, bucketID)
-	assert.Equal(t, want, got)
 }
