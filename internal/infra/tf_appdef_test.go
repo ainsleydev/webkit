@@ -32,7 +32,7 @@ func TestTerraform_Resources(t *testing.T) {
 					Config: map[string]any{
 						"pg_version": "18",
 						"size":       "db-s-1vcpu-2gb",
-						"region":     "nyc3",
+						"region":     "ams3",
 						"node_count": 2,
 					},
 					Backup: appdef.ResourceBackupConfig{},
@@ -70,7 +70,7 @@ func TestTerraform_Resources(t *testing.T) {
 			assert.Equal(t, "pg", dbCluster["engine"])
 			assert.Equal(t, "project-db", dbCluster["name"])
 			assert.Equal(t, float64(2), dbCluster["node_count"])
-			assert.Equal(t, "nyc3", dbCluster["region"])
+			assert.Equal(t, "ams3", dbCluster["region"])
 			assert.Equal(t, "db-s-1vcpu-2gb", dbCluster["size"])
 			assert.Equal(t, "18", dbCluster["version"])
 
@@ -210,7 +210,7 @@ func TestTerraform_Resources(t *testing.T) {
 
 			assert.Equal(t, "private", bucket["acl"])
 			assert.Equal(t, "project-storage", bucket["name"])
-			assert.Equal(t, "nyc3", bucket["region"])
+			assert.Equal(t, "ams3", bucket["region"])
 			assert.Equal(t, false, bucket["force_destroy"])
 		}
 
@@ -238,7 +238,7 @@ func TestTerraform_Resources(t *testing.T) {
 			}
 			require.NotNil(t, cors, "CORS configuration should be planned")
 
-			assert.Equal(t, "nyc3", cors["region"])
+			assert.Equal(t, "ams3", cors["region"])
 
 			corsRules := cors["cors_rule"].([]any)
 			assert.Len(t, corsRules, 1)
@@ -291,7 +291,7 @@ func TestTerraform_Resources(t *testing.T) {
 						assert.Equal(t, "project-storage", after["plaintext_value"])
 					}
 					if secretName == "TF_PROD_STORAGE_REGION" {
-						assert.Equal(t, "nyc3", after["plaintext_value"])
+						assert.Equal(t, "ams3", after["plaintext_value"])
 					}
 				}
 			}

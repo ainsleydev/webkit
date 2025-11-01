@@ -181,7 +181,7 @@ Every app defines a Dockerfile so it can be ran in many different environments.
                 "type": "vm",
                 "config": {
                     "size": "s-2vcpu-4gb",
-                    "region": "nyc3",
+                    "region": "ams3",
                     "domain": "cms.my-website.com",
                     "ssh_keys": [
                         "your-ssh-key-id"
@@ -311,7 +311,7 @@ Only needed if your app requires a dependency for local development that isn't r
         "type": "vm",
         "config": {
             "size": "s-2vcpu-4gb",
-            "region": "nyc3",
+            "region": "ams3",
             "domain": "cms.my-website.com",
             "ssh_keys": [
                 "your-ssh-key-id"
@@ -503,7 +503,7 @@ Below is an example of a fully fledged `app.json` manifest.
             "config": {
                 "size": "db-s-1vcpu-1gb",
                 "engine_version": "17",
-                "region": "nyc3"
+                "region": "ams3"
             },
             "outputs": [
                 "connection_url",
@@ -541,7 +541,7 @@ Below is an example of a fully fledged `app.json` manifest.
                 "type": "vm",
                 "config": {
                     "size": "s-2vcpu-4gb",
-                    "region": "nyc3",
+                    "region": "ams3",
                     "domain": "cms.my-website.com",
                     "ssh_keys": [
                         "your-ssh-key-id"
@@ -694,7 +694,7 @@ done.
             "config": {
                 "size": "db-s-1vcpu-1gb",
                 "engine_version": "17",
-                "region": "nyc3"
+                "region": "ams3"
             },
             "outputs": [
                 "connection_url",

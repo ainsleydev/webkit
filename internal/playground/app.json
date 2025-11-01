@@ -46,7 +46,7 @@
 			"provider": "digitalocean",
 			"config": {
 				"engine_version": "17",
-				"region": "nyc3",
+				"region": "ams3",
 				"size": "db-s-1vcpu-1gb"
 			},
 			"backup": {
@@ -81,7 +81,7 @@
 				"type": "vm",
 				"config": {
 					"domain": "cms.my-website.com",
-					"region": "nyc3",
+					"region": "ams3",
 					"size": "s-2vcpu-4gb"
 				}
 			},

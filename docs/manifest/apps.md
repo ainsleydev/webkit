@@ -33,7 +33,7 @@ Every app defines a Dockerfile so it can be ran in many different environments.
                 "type": "vm",
                 "config": {
                     "size": "s-2vcpu-4gb",
-                    "region": "nyc3",
+                    "region": "ams3",
                     "domain": "cms.my-website.com",
                     "ssh_keys": [
                         "your-ssh-key-id"
@@ -163,7 +163,7 @@ Only needed if your app requires a dependency for local development that isn't r
         "type": "vm",
         "config": {
             "size": "s-2vcpu-4gb",
-            "region": "nyc3",
+            "region": "ams3",
             "domain": "cms.my-website.com",
             "ssh_keys": [
                 "your-ssh-key-id"
