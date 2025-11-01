@@ -14,8 +14,6 @@ import (
 
 func TestTerraform_Resources(t *testing.T) {
 	t.Run("Digital Ocean - Postgres - Basic", func(t *testing.T) {
-		t.Skip("Skipping due to CI timeout issues")
-
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "project",
@@ -40,10 +38,13 @@ func TestTerraform_Resources(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -182,10 +183,13 @@ func TestTerraform_Resources(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -235,10 +239,13 @@ func TestTerraform_Resources(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -275,8 +282,6 @@ func TestTerraform_Resources(t *testing.T) {
 	})
 
 	t.Run("Digital Ocean - Spaces - Basic", func(t *testing.T) {
-		t.Skip("Skipping due to CI issues")
-
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "project",
@@ -297,10 +302,13 @@ func TestTerraform_Resources(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -436,10 +444,13 @@ func TestTerraform_Resources(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -496,10 +507,13 @@ func TestTerraform_Resources(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -567,10 +581,13 @@ func TestTerraform_Resources(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -624,10 +641,13 @@ func TestTerraform_Resources(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -670,7 +690,7 @@ func TestTerraform_DefaultB2Bucket(t *testing.T) {
 	tf, teardown := setup(t, appDef)
 	defer teardown()
 
-	err := tf.Init(t.Context())
+	err = tf.Init(t.Context())
 	require.NoError(t, err)
 
 	got, err := tf.Plan(t.Context(), env.Production)
@@ -711,8 +731,6 @@ func TestTerraform_DefaultB2Bucket(t *testing.T) {
 
 func TestTerraform_Apps(t *testing.T) {
 	t.Run("Digital Ocean - SvelteKit App", func(t *testing.T) {
-		t.Skip("Skipping due to CI issues")
-
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "project",
@@ -746,10 +764,13 @@ func TestTerraform_Apps(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -923,10 +944,13 @@ func TestTerraform_Apps(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -983,10 +1007,13 @@ func TestTerraform_Apps(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -1047,10 +1074,13 @@ func TestTerraform_Apps(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -1113,10 +1143,13 @@ func TestTerraform_Apps(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -1180,10 +1213,13 @@ func TestTerraform_Integration(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
@@ -1284,10 +1320,13 @@ func TestTerraform_Integration(t *testing.T) {
 			},
 		}
 
+		err := appDef.ApplyDefaults()
+		require.NoError(t, err)
+
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		err := tf.Init(t.Context())
+		err = tf.Init(t.Context())
 		require.NoError(t, err)
 
 		got, err := tf.Plan(t.Context(), env.Production)
