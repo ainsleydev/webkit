@@ -104,3 +104,29 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 		return nil
 	},
 }
+
+// Clear zeros out all decrypted secrets from memory.
+// This should be called after secrets are no longer needed
+// to prevent them from persisting in memory.
+func Clear(def *appdef.Definition) {
+	clearEnvs(&def.Shared.Env)
+	for i := range def.Apps {
+		clearEnvs(&def.Apps[i].Env)
+	}
+}
+
+// clearEnvs zeros out all SOPS-sourced environment variables.
+func clearEnvs(enviro *appdef.Environment) {
+	_ = enviro.WalkE(func(entry appdef.EnvWalkEntry) error {
+		for key, config := range entry.Map {
+			if config.Source == appdef.EnvSourceSOPS {
+				entry.Map[key] = appdef.EnvValue{
+					Source: config.Source,
+					Value:  "", // Zero out the secret value
+					Path:   config.Path,
+				}
+			}
+		}
+		return nil
+	})
+}

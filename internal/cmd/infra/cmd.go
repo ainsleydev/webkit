@@ -65,6 +65,7 @@ func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInpu
 	tf, err := newTerraform(ctx, appDef, input.Manifest)
 	teardown := func() {
 		tf.Cleanup()
+		secrets.Clear(appDef)
 	}
 	if err != nil {
 		return nil, teardown, err
