@@ -9,7 +9,29 @@ import (
 func TestExitError_Error(t *testing.T) {
 	t.Parallel()
 
+	tt := map[string]struct {
+		code int
+	}{
+		"Code 0": {code: 0},
+		"Code 1": {code: 1},
+		"Code 2": {code: 2},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			err := ExitWithCode(test.code)
+			assert.Equal(t, test.code, err.Code)
+			assert.Equal(t, "", err.Error())
+		})
+	}
+}
+
+func TestExitError_Type(t *testing.T) {
+	t.Parallel()
+
 	err := ExitWithCode(1)
-	assert.Equal(t, err.Code, 1)
-	assert.Equal(t, err.Error(), "")
+	_, ok := err.(*ExitError)
+	assert.True(t, ok)
 }

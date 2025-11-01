@@ -59,7 +59,7 @@ jobs:
         # TODO, add race.
         run: |
           export SOPS_AGE_KEY="${{ secrets.ORG_AGE_SECRET }}"
-          go test ./... -coverprofile=./coverage.out -covermode=atomic
+          go test $(go list ./... | grep -v '/internal/mocks') -coverprofile=./coverage.out -covermode=atomic
 
       - name: Test JS
         run: pnpm test:js
