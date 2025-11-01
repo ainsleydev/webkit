@@ -10,9 +10,6 @@ import (
 )
 
 // Hooks scaffolds lefthook configuration for git hooks.
-// This includes pre-commit and pre-push hooks for:
-// - Checking SOPS secrets are encrypted
-// - Running format commands
 func Hooks(_ context.Context, input cmdtools.CommandInput) error {
 	app := input.AppDef()
 

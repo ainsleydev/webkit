@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
@@ -10,6 +11,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/secrets"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 // Command defines the infra commands for provisioning and managing
@@ -56,7 +58,11 @@ func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInpu
 	}
 
 	// Ensure secrets are always re-encrypted, even if there's a panic or error
-	defer secrets.EnsureEncrypted(resolveConfig)
+	defer func() {
+		for _, e := range []env.Environment{env.Development, env.Staging, env.Production} {
+			_ = resolveConfig.SOPSClient.Encrypt(filepath.Join(resolveConfig.BaseDir, secrets.FilePathFromEnv(e)))
+		}
+	}()
 
 	err := secrets.Resolve(ctx, appDef, resolveConfig)
 	if err != nil {

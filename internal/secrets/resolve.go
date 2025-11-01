@@ -104,22 +104,3 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 		return nil
 	},
 }
-
-// EnsureEncrypted ensures all SOPS secret files are encrypted.
-// This should be called as a deferred function to guarantee that
-// secret files are never left unencrypted on disk, even if there's
-// a panic or error during secret resolution.
-func EnsureEncrypted(cfg ResolveConfig) {
-	// Encrypt all environment files (dev, staging, production)
-	environments := []env.Environment{
-		env.Development,
-		env.Staging,
-		env.Production,
-	}
-
-	for _, e := range environments {
-		filePath := filepath.Join(cfg.BaseDir, FilePathFromEnv(e))
-		// Ignore errors - file might not exist or already be encrypted
-		_ = cfg.SOPSClient.Encrypt(filePath)
-	}
-}
