@@ -84,7 +84,7 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 			Name:             res.Name,
 			PlatformType:     res.Type.String(),
 			PlatformProvider: res.Provider.String(),
-			Config:           res.Config,
+			Config:           encodeConfigForTerraform(res.Config),
 		})
 	}
 
@@ -94,7 +94,7 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 			PlatformType:     app.Infra.Type,
 			PlatformProvider: app.Infra.Provider.String(),
 			AppType:          app.Type.String(),
-			Config:           app.Infra.Config,
+			Config:           encodeConfigForTerraform(app.Infra.Config),
 			Path:             app.Path,
 		}
 
@@ -119,6 +119,61 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 	}
 
 	return vars, nil
+}
+
+// encodeConfigForTerraform prepares configuration maps for Terraform consumption.
+//
+// This function solves two critical issues with Terraform's type system:
+//
+//  1. Type Consistency: Terraform requires all elements in a list to have the same type.
+//     When some configs are nil and others are {}, Terraform sees incompatible types.
+//     Solution: Convert nil configs to empty maps for consistency.
+//
+//  2. Array Encoding: Terraform's 'any' type has trouble with heterogeneous structures
+//     when resources have different config shapes (e.g., one has arrays, another doesn't).
+//     The webkit Terraform modules work around this by expecting arrays as JSON strings
+//     and using jsondecode() to parse them back.
+//
+//     Example in platform/terraform/modules/resources/main.tf:
+//     allowed_ips_addr = try(jsondecode(var.platform_config.allowed_ips_addr), [])
+//
+//     This pattern allows all config values to be strings/primitives, avoiding type
+//     inference issues across list elements.
+//
+// Returns an empty map for nil input to ensure type consistency.
+func encodeConfigForTerraform(config map[string]any) map[string]any {
+	if config == nil {
+		return map[string]any{}
+	}
+
+	encoded := make(map[string]any, len(config))
+	for key, value := range config {
+		encoded[key] = encodeConfigValue(value)
+	}
+	return encoded
+}
+
+// encodeConfigValue encodes a single config value for Terraform.
+// Arrays/slices are JSON-encoded as strings. Other types pass through unchanged.
+func encodeConfigValue(value any) any {
+	if value == nil {
+		return nil
+	}
+
+	// Check if the value is a slice/array (regardless of element type).
+	switch v := value.(type) {
+	case []any, []string, []int, []float64, []bool:
+		// Encode arrays as JSON strings for Terraform's jsondecode().
+		jsonBytes, err := json.Marshal(v)
+		if err != nil {
+			// If marshaling fails, return as-is (shouldn't happen with standard types).
+			return value
+		}
+		return string(jsonBytes)
+	default:
+		// Primitives (strings, numbers, bools) and other types pass through.
+		return value
+	}
 }
 
 // writeTFVarsFile writes Terraform variables to a JSON file.

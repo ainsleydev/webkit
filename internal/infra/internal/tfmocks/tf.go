@@ -81,6 +81,25 @@ func (mr *MockterraformExecutorMockRecorder) Destroy(ctx any, opts ...any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destroy", reflect.TypeOf((*MockterraformExecutor)(nil).Destroy), varargs...)
 }
 
+// Import mocks base method.
+func (m *MockterraformExecutor) Import(ctx context.Context, address, id string, opts ...tfexec.ImportOption) error {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, address, id}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Import", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Import indicates an expected call of Import.
+func (mr *MockterraformExecutorMockRecorder) Import(ctx, address, id any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, address, id}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Import", reflect.TypeOf((*MockterraformExecutor)(nil).Import), varargs...)
+}
+
 // Init mocks base method.
 func (m *MockterraformExecutor) Init(ctx context.Context, opts ...tfexec.InitOption) error {
 	m.ctrl.T.Helper()

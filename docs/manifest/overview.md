@@ -65,7 +65,7 @@ Below is an example of a fully fledged `app.json` manifest.
             "config": {
                 "size": "db-s-1vcpu-1gb",
                 "engine_version": "17",
-                "region": "nyc3"
+                "region": "ams3"
             },
             "outputs": [
                 "connection_url",
@@ -103,7 +103,7 @@ Below is an example of a fully fledged `app.json` manifest.
                 "type": "vm",
                 "config": {
                     "size": "s-2vcpu-4gb",
-                    "region": "nyc3",
+                    "region": "ams3",
                     "domain": "cms.my-website.com",
                     "ssh_keys": [
                         "your-ssh-key-id"

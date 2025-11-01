@@ -31,8 +31,8 @@ module "do_bucket" {
   source = "../../providers/digital_ocean/bucket"
 
   name   = "${var.project_name}-${var.name}"
-  region = try(var.platform_config.region, null)
-  acl    = try(var.platform_config.acl, null)
+  region = try(var.platform_config.region, "ams3")
+  acl    = try(var.platform_config.acl, "public-read")
 }
 
 # B2 S3 Bucket

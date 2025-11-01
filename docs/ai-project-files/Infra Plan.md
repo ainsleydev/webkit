@@ -300,7 +300,7 @@ The transformation from `app.json` to Terraform variables is the core of the sys
 			"config": {
 				"size": "db-s-1vcpu-1gb",
 				"engine_version": "17",
-				"region": "nyc3"
+				"region": "ams3"
 			}
 		}
 	],
@@ -314,7 +314,7 @@ The transformation from `app.json` to Terraform variables is the core of the sys
 				"type": "vm",
 				"config": {
 					"size": "s-2vcpu-4gb",
-					"region": "nyc3"
+					"region": "ams3"
 				}
 			},
 			"env": {
@@ -345,7 +345,7 @@ The transformation from `app.json` to Terraform variables is the core of the sys
 			"config": {
 				"size": "db-s-1vcpu-1gb",
 				"engine_version": "17",
-				"region": "nyc3"
+				"region": "ams3"
 			},
 			"outputs": [
 				"connection_url",
@@ -363,7 +363,7 @@ The transformation from `app.json` to Terraform variables is the core of the sys
 			"path": "services/cms",
 			"config": {
 				"size": "s-2vcpu-4gb",
-				"region": "nyc3"
+				"region": "ams3"
 			},
 			"environment_variables": {
 				"production": [

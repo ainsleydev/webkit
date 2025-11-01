@@ -31,7 +31,7 @@ done.
             "config": {
                 "size": "db-s-1vcpu-1gb",
                 "engine_version": "17",
-                "region": "nyc3"
+                "region": "ams3"
             },
             "outputs": [
                 "connection_url",
