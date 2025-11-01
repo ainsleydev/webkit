@@ -1,6 +1,7 @@
 package files
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"testing"
@@ -62,6 +63,70 @@ func TestPackageJSON(t *testing.T) {
 
 		got := PackageJSON(t.Context(), input)
 		assert.Error(t, got)
+	})
+
+	t.Run("HTML characters not escaped", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{Name: "my-website", Description: "Test with > and < characters"},
+			Apps:    []appdef.App{},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PackageJSON(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, "package.json")
+		require.NoError(t, err)
+
+		fileContent := string(file)
+		assert.Contains(t, fileContent, "Test with > and < characters", "HTML characters should not be escaped")
+		assert.NotContains(t, fileContent, "\\u003e", "Should not contain escaped >")
+		assert.NotContains(t, fileContent, "\\u003c", "Should not contain escaped <")
+	})
+
+	t.Run("Field ordering correct", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name:        "my-website",
+				Description: "My project description",
+			},
+			Apps: []appdef.App{},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PackageJSON(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, "package.json")
+		require.NoError(t, err)
+
+		var pkg map[string]any
+		require.NoError(t, json.Unmarshal(file, &pkg))
+
+		t.Log("Verify field order in raw JSON")
+		{
+			fileContent := string(file)
+			nameIdx := bytes.Index(file, []byte(`"name"`))
+			descIdx := bytes.Index(file, []byte(`"description"`))
+			licenseIdx := bytes.Index(file, []byte(`"license"`))
+			privateIdx := bytes.Index(file, []byte(`"private"`))
+			typeIdx := bytes.Index(file, []byte(`"type"`))
+			versionIdx := bytes.Index(file, []byte(`"version"`))
+
+			assert.Greater(t, descIdx, nameIdx, "description should come after name")
+			assert.Greater(t, licenseIdx, descIdx, "license should come after description")
+			assert.Greater(t, privateIdx, licenseIdx, "private should come after license")
+			assert.Greater(t, typeIdx, privateIdx, "type should come after private")
+			assert.Greater(t, versionIdx, typeIdx, "version should come after type")
+
+			_ = fileContent
+		}
 	})
 }
 

@@ -73,11 +73,11 @@ func PackageJSON(_ context.Context, input cmdtools.CommandInput) error {
 type (
 	packageJSON struct {
 		Name            string            `json:"name"`
-		Version         string            `json:"version"`
 		Description     string            `json:"description,omitempty"`
-		Private         string            `json:"private"`
 		License         string            `json:"license"`
+		Private         string            `json:"private"`
 		Type            string            `json:"type"`
+		Version         string            `json:"version"`
 		Scripts         map[string]string `json:"scripts"`
 		DevDependencies map[string]string `json:"devDependencies"`
 		PackageManager  string            `json:"packageManager"`

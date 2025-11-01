@@ -149,6 +149,7 @@ func (f FileGenerator) JSON(path string, content any, opts ...Option) error {
 
 	encoder := json.NewEncoder(buf)
 	encoder.SetIndent("", "\t")
+	encoder.SetEscapeHTML(false)
 	if err := encoder.Encode(content); err != nil {
 		return fmt.Errorf("encoding %s: %w", path, err)
 	}
