@@ -687,6 +687,9 @@ func TestTerraform_DefaultB2Bucket(t *testing.T) {
 		Apps:      []appdef.App{},
 	}
 
+	err := appDef.ApplyDefaults()
+	require.NoError(t, err)
+
 	tf, teardown := setup(t, appDef)
 	defer teardown()
 
