@@ -335,16 +335,19 @@ func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResu
 }
 
 type (
-	// ImportInput contains the configuration for importing existing resources.
+	// ImportInput contains the configuration for importing existing resources or apps.
 	ImportInput struct {
-		// ResourceName is the name of the resource in app.json.
+		// ResourceName is the name of the resource or app in app.json.
 		ResourceName string
 
-		// ResourceID is the provider-specific ID (e.g., DigitalOcean cluster ID).
+		// ResourceID is the provider-specific ID (e.g., DigitalOcean cluster ID or app ID).
 		ResourceID string
 
 		// Environment specifies which environment to import into.
 		Environment env.Environment
+
+		// IsApp indicates whether we're importing an app (true) or a resource (false).
+		IsApp bool
 	}
 	// ImportOutput contains the results of an import operation.
 	ImportOutput struct {
@@ -356,8 +359,8 @@ type (
 	}
 )
 
-// Import imports an existing infrastructure resource into the Terraform state.
-// This allows webkit to manage resources that were created manually or outside of Terraform.
+// Import imports an existing infrastructure resource or app into the Terraform state.
+// This allows webkit to manage resources/apps that were created manually or outside of Terraform.
 //
 // Must be called after Init().
 func (t *Terraform) Import(ctx context.Context, input ImportInput) (ImportOutput, error) {
@@ -365,23 +368,46 @@ func (t *Terraform) Import(ctx context.Context, input ImportInput) (ImportOutput
 		return ImportOutput{}, err
 	}
 
-	// Find the resource in the definition.
-	var resource *appdef.Resource
-	for i := range t.appDef.Resources {
-		if t.appDef.Resources[i].Name == input.ResourceName {
-			resource = &t.appDef.Resources[i]
-			break
-		}
-	}
-	if resource == nil {
-		return ImportOutput{}, fmt.Errorf("resource %q not found in app.json", input.ResourceName)
-	}
+	var addresses []importAddress
+	var err error
 
-	// Build import addresses based on resource type and provider.
-	// Pass project name to build full resource names matching Terraform's naming convention.
-	addresses, err := buildImportAddresses(t.appDef.Project.Name, resource, input.ResourceID)
-	if err != nil {
-		return ImportOutput{}, err
+	if input.IsApp {
+		// Find the app in the definition.
+		var app *appdef.App
+		for i := range t.appDef.Apps {
+			if t.appDef.Apps[i].Name == input.ResourceName {
+				app = &t.appDef.Apps[i]
+				break
+			}
+		}
+		if app == nil {
+			return ImportOutput{}, fmt.Errorf("app %q not found in app.json", input.ResourceName)
+		}
+
+		// Build import addresses based on app type and provider.
+		addresses, err = buildAppImportAddresses(t.appDef.Project.Name, app, input.ResourceID)
+		if err != nil {
+			return ImportOutput{}, err
+		}
+	} else {
+		// Find the resource in the definition.
+		var resource *appdef.Resource
+		for i := range t.appDef.Resources {
+			if t.appDef.Resources[i].Name == input.ResourceName {
+				resource = &t.appDef.Resources[i]
+				break
+			}
+		}
+		if resource == nil {
+			return ImportOutput{}, fmt.Errorf("resource %q not found in app.json", input.ResourceName)
+		}
+
+		// Build import addresses based on resource type and provider.
+		// Pass project name to build full resource names matching Terraform's naming convention.
+		addresses, err = buildImportAddresses(t.appDef.Project.Name, resource, input.ResourceID)
+		if err != nil {
+			return ImportOutput{}, err
+		}
 	}
 
 	var outputBuf strings.Builder
