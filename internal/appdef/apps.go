@@ -23,6 +23,7 @@ type (
 	Build struct {
 		Dockerfile string `json:"dockerfile"`
 		Port       int    `json:"port,omitempty"`
+		Release    *bool  `json:"release,omitempty"`
 	}
 	Infra struct {
 		Provider ResourceProvider `json:"provider"`
@@ -121,6 +122,15 @@ func (a *App) IsTerraformManaged() bool {
 		return true
 	}
 	return *a.TerraformManaged
+}
+
+// ShouldRelease returns whether this app should be built and released in CI/CD.
+// It defaults to true when the field is nil or explicitly set to true.
+func (a *App) ShouldRelease() bool {
+	if a.Build.Release == nil {
+		return true
+	}
+	return *a.Build.Release
 }
 
 func (a *App) applyDefaults() error {
