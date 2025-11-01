@@ -561,3 +561,111 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 		})
 	}
 }
+
+func TestDefinition_ApplyDefaults(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Applies defaults to all apps", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Apps: []App{
+				{Name: "cms", Type: AppTypePayload, Path: "./cms"},
+				{Name: "web", Type: AppTypeSvelteKit, Path: "./web"},
+				{Name: "api", Type: AppTypeGoLang, Path: "./api"},
+			},
+		}
+
+		err := def.ApplyDefaults()
+		assert.NoError(t, err)
+
+		t.Log("Ports assigned based on type")
+		{
+			assert.Equal(t, 3000, def.Apps[0].Build.Port)
+			assert.Equal(t, 3001, def.Apps[1].Build.Port)
+			assert.Equal(t, 8080, def.Apps[2].Build.Port)
+		}
+
+		t.Log("Dockerfiles set to default")
+		{
+			assert.Equal(t, "Dockerfile", def.Apps[0].Build.Dockerfile)
+			assert.Equal(t, "Dockerfile", def.Apps[1].Build.Dockerfile)
+			assert.Equal(t, "Dockerfile", def.Apps[2].Build.Dockerfile)
+		}
+
+		t.Log("Paths cleaned")
+		{
+			assert.Equal(t, "cms", def.Apps[0].Path)
+			assert.Equal(t, "web", def.Apps[1].Path)
+			assert.Equal(t, "api", def.Apps[2].Path)
+		}
+
+		t.Log("Commands populated")
+		{
+			assert.NotEmpty(t, def.Apps[0].Commands)
+			assert.NotEmpty(t, def.Apps[1].Commands)
+			assert.NotEmpty(t, def.Apps[2].Commands)
+		}
+	})
+
+	t.Run("Preserves explicit values", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Apps: []App{
+				{
+					Name: "cms",
+					Type: AppTypePayload,
+					Path: "./cms",
+					Build: Build{
+						Port:       4000,
+						Dockerfile: "Dockerfile.prod",
+					},
+				},
+			},
+		}
+
+		err := def.ApplyDefaults()
+		assert.NoError(t, err)
+
+		assert.Equal(t, 4000, def.Apps[0].Build.Port)
+		assert.Equal(t, "Dockerfile.prod", def.Apps[0].Build.Dockerfile)
+	})
+
+	t.Run("Returns error for invalid app type", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Apps: []App{
+				{Name: "unknown", Type: AppType("invalid"), Path: "./unknown"},
+			},
+		}
+
+		err := def.ApplyDefaults()
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "applying defaults to app")
+		assert.ErrorContains(t, err, "unknown")
+	})
+
+	t.Run("Applies defaults to resources", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Resources: []Resource{
+				{Name: "db", Type: ResourceTypePostgres, Provider: ResourceProviderDigitalOcean},
+			},
+		}
+
+		err := def.ApplyDefaults()
+		assert.NoError(t, err)
+	})
+
+	t.Run("Empty definition succeeds", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{}
+
+		err := def.ApplyDefaults()
+		assert.NoError(t, err)
+	})
+}

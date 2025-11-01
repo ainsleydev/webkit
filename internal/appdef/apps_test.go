@@ -241,3 +241,68 @@ func TestApp_IsTerraformManaged(t *testing.T) {
 		})
 	}
 }
+
+func TestApp_DefaultPort(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		appType AppType
+		want    int
+	}{
+		"Payload":   {appType: AppTypePayload, want: 3000},
+		"SvelteKit": {appType: AppTypeSvelteKit, want: 3001},
+		"GoLang":    {appType: AppTypeGoLang, want: 8080},
+		"Default":   {appType: "", want: 3000},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			app := App{Type: test.appType}
+			got := app.defaultPort()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestApp_ApplyDefaults_Port(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		app  App
+		want int
+	}{
+		"Default SvelteKit app gets 3001": {
+			app:  App{Name: "web", Type: AppTypeSvelteKit, Path: "./"},
+			want: 3001,
+		},
+		"Explicit port is preserved": {
+			app:  App{Name: "web", Type: AppTypeSvelteKit, Path: "./", Build: Build{Port: 4000}},
+			want: 4000,
+		},
+		"Payload app gets 3000": {
+			app:  App{Name: "cms", Type: AppTypePayload, Path: "./"},
+			want: 3000,
+		},
+		"SvelteKit app gets 3001": {
+			app:  App{Name: "web", Type: AppTypeSvelteKit, Path: "./"},
+			want: 3001,
+		},
+		"GoLang app gets 8080": {
+			app:  App{Name: "api", Type: AppTypeGoLang, Path: "./"},
+			want: 8080,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			app := test.app
+
+			err := app.applyDefaults()
+			require.NoError(t, err)
+			assert.Equal(t, test.want, app.Build.Port)
+		})
+	}
+}
