@@ -16,6 +16,7 @@ var Command = &cli.Command{
 		ActionsCmd,
 		BackupCmd,
 		PRCmd,
+		ReleaseCmd,
 	},
 }
 

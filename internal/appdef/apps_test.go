@@ -242,6 +242,28 @@ func TestApp_IsTerraformManaged(t *testing.T) {
 	}
 }
 
+func TestApp_ShouldRelease(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		release *bool
+		want    bool
+	}{
+		"Nil defaults to true": {release: nil, want: true},
+		"Explicit false":       {release: ptr.BoolPtr(false), want: false},
+		"Explicit true":        {release: ptr.BoolPtr(true), want: true},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			app := App{Build: Build{Release: test.release}}
+			got := app.ShouldRelease()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestApp_DefaultPort(t *testing.T) {
 	t.Parallel()
 

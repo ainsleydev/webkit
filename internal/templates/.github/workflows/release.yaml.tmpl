@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+# Prevent concurrent deployments.
+concurrency:
+  group: {{ ghVar "github.workflow" }}-{{ ghVar "github.ref" }}
+  cancel-in-progress: true
+
+jobs:
+  # Build Containers
+  build-and-push:
+    name: Build and Push to GHCR
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+{{- range .Apps }}
+          - name: {{ .Name }}
+            context: ./{{ .Path }}
+            dockerfile: ./{{ .Path }}/{{ .Build.Dockerfile }}
+{{- end }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: {{ ghVar "github.actor" }}
+          password: {{ ghSecret "GITHUB_TOKEN" }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/{{ ghVar "github.repository_owner" }}/{{ ghVar "github.event.repository.name" }}-{{ ghVar "matrix.service.name" }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=long
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: {{ ghVar "matrix.service.context" }}
+          file: {{ ghVar "matrix.service.dockerfile" }}
+          push: true
+          platforms: linux/amd64
+          tags: {{ ghVar "steps.meta.outputs.tags" }}
+          labels: {{ ghVar "steps.meta.outputs.labels" }}
+          cache-from: type=registry,ref=ghcr.io/{{ ghVar "github.repository_owner" }}/{{ ghVar "github.event.repository.name" }}-{{ ghVar "matrix.service.name" }}:cache
+          cache-to: type=registry,ref=ghcr.io/{{ ghVar "github.repository_owner" }}/{{ ghVar "github.event.repository.name" }}-{{ ghVar "matrix.service.name" }}:cache,mode=max
+
+  # Remove Unwanted Containers
+  cleanup:
+    name: Cleanup Containers
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        service: [{{ range $i, $app := .Apps }}{{ if $i }}, {{ end }}{{ $app.Name }}{{ end }}]
+    steps:
+      - name: Delete old images from GHCR
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: '{{ ghVar "github.event.repository.name" }}-{{ ghVar "matrix.service" }}'
+          package-type: 'container'
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: false
