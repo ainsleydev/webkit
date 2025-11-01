@@ -153,3 +153,71 @@ jobs:
           echo "Backup completed successfully!"
 {{- end }}
 {{- end }}
+
+  backup-codebase:
+    name: Backup GitHub Repository to Backblaze B2
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BUCKET_NAME: '{{ $.BucketName }}'
+      BACKUP_PATH: '/backups/codebase/'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Full git history
+
+      - name: Create Compressed Archive
+        run: |
+          # Fail on errors, undefined vars, and fail if any part of a pipe fails
+          set -euo pipefail
+
+          # Create vars
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          BACKUP_FILE="codebase-backup-$TIMESTAMP.tar.gz"
+
+          # Create compressed archive of entire repository (including .git)
+          tar -czf "$BACKUP_FILE" .
+
+          # Verify file
+          ls -lh "$BACKUP_FILE"
+
+          # Make the backup filename available to next steps
+          echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone for BackBlaze B2
+        run: |
+          rclone config create b2_backup b2 \
+            account {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }} \
+            key {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+
+      - name: Upload Backup to B2
+        run: |
+          # Upload backup file to B2
+          rclone copy $BACKUP_FILE b2_backup:${BUCKET_NAME}${BACKUP_PATH} \
+            --progress
+
+      - name: Retain only 30 latest backups
+        run: |
+          # Delete backups older than 30 days
+          rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
+
+      - name: Verify Backup
+        run: |
+          echo "Codebase backup completed successfully!"
+
+      - name: Notify Slack of Backup Failure
+        if: failure()
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Codebase Backup Failed'
+          message: 'The scheduled GitHub repository backup has failed.'
+          status: 'failure'
+          commit_sha: ${{"{{"}} github.sha }}
+          slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
+          channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
