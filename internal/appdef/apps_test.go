@@ -242,7 +242,7 @@ func TestApp_IsTerraformManaged(t *testing.T) {
 	}
 }
 
-func TestApp_defaultPort(t *testing.T) {
+func TestApp_DefaultPort(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {

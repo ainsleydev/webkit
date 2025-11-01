@@ -31,9 +31,9 @@ var scaffoldCmd = &cli.Command{
 			Action: cmdtools.Wrap(files.PackageJSON),
 		},
 		{
-			Name:   "app-package-json-docker",
-			Usage:  "Add Docker scripts to each app's package.json file",
-			Action: cmdtools.Wrap(files.AppPackageJSONDockerScripts),
+			Name:   "app-package-json",
+			Usage:  "Manipulate each app's package.json file (adds Docker scripts)",
+			Action: cmdtools.Wrap(files.PackageJSONApp),
 		},
 		{
 			Name:   "pr",

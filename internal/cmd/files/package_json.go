@@ -96,9 +96,9 @@ type (
 	}
 )
 
-// AppPackageJSONDockerScripts adds Docker-related scripts to each app's package.json
-// file for apps that use NPM. It preserves existing scripts and other package.json fields.
-func AppPackageJSONDockerScripts(_ context.Context, input cmdtools.CommandInput) error {
+// PackageJSONApp manipulates each app's package.json file for apps that use NPM.
+// Currently adds Docker-related scripts while preserving existing scripts and other package.json fields.
+func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 
 	for _, app := range appDef.Apps {

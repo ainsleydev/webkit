@@ -62,7 +62,7 @@ func TestPackageJSON(t *testing.T) {
 	})
 }
 
-func TestAppPackageJSONDockerScripts(t *testing.T) {
+func TestPackageJSONApp(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Adds scripts to NPM app", func(t *testing.T) {
@@ -95,7 +95,7 @@ func TestAppPackageJSONDockerScripts(t *testing.T) {
 	}
 }`), 0o644))
 
-		err := AppPackageJSONDockerScripts(t.Context(), input)
+		err := PackageJSONApp(t.Context(), input)
 		assert.NoError(t, err)
 
 		t.Log("File exists and contains Docker scripts")
@@ -157,7 +157,7 @@ func TestAppPackageJSONDockerScripts(t *testing.T) {
 	"version": "1.0.0"
 }`), 0o644))
 
-		err := AppPackageJSONDockerScripts(t.Context(), input)
+		err := PackageJSONApp(t.Context(), input)
 		assert.NoError(t, err)
 
 		t.Log("Package.json unchanged")
@@ -194,7 +194,7 @@ func TestAppPackageJSONDockerScripts(t *testing.T) {
 
 		input := setup(t, fs, appDef)
 
-		err := AppPackageJSONDockerScripts(t.Context(), input)
+		err := PackageJSONApp(t.Context(), input)
 		assert.NoError(t, err)
 
 		exists, _ := afero.Exists(fs, "web/package.json")
@@ -227,7 +227,7 @@ func TestAppPackageJSONDockerScripts(t *testing.T) {
 	"version": "1.0.0"
 }`), 0o644))
 
-		err := AppPackageJSONDockerScripts(t.Context(), input)
+		err := PackageJSONApp(t.Context(), input)
 		assert.NoError(t, err)
 
 		t.Log("Scripts section created with Docker scripts")
@@ -276,7 +276,7 @@ func TestAppPackageJSONDockerScripts(t *testing.T) {
 		require.NoError(t, afero.WriteFile(fs, "cms/package.json", []byte(`{"name": "cms"}`), 0o644))
 		require.NoError(t, afero.WriteFile(fs, "web/package.json", []byte(`{"name": "web"}`), 0o644))
 
-		err := AppPackageJSONDockerScripts(t.Context(), input)
+		err := PackageJSONApp(t.Context(), input)
 		assert.NoError(t, err)
 
 		t.Log("CMS has port 3000")

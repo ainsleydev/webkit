@@ -42,7 +42,7 @@ var updateOps = []runner{
 	{files.CodeStyle, "Files: Create code style files"},
 	{files.GitSettings, "Files: Create git settings"},
 	{files.PackageJSON, "Files: Create package.json"},
-	{files.AppPackageJSONDockerScripts, "Files: Add Docker scripts to app package.json files"},
+	{files.PackageJSONApp, "Files: Manipulate app package.json files"},
 	{files.TurboJSON, "Files: Create turbo.json"},
 	{cicd.PR, "CICD: Create PR workflows"},
 	{cicd.BackupWorkflow, "CICD: Create backup workflows"},
