@@ -15,12 +15,11 @@ import (
 
 var ReleaseCmd = &cli.Command{
 	Name:   "release",
-	Usage:  "Generate release workflow for building and pushing Docker containers",
+	Usage:  "Generate release workflow for apps",
 	Action: cmdtools.Wrap(ReleaseWorkflow),
 }
 
-// ReleaseWorkflow creates a release workflow that builds and pushes
-// Docker containers for all apps with builds enabled.
+// ReleaseWorkflow creates a release workflow for all apps with builds enabled.
 func ReleaseWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 
