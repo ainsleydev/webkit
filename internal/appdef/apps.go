@@ -32,7 +32,8 @@ type (
 		Config map[string]any `json:"config"`
 	}
 	Domain struct {
-		Name     string `json:"name"`
+		Name string `json:"name"`
+		// TODO: Needs to be AppDomainType constant
 		Type     string `json:"type"`
 		Zone     string `json:"zone,omitempty"`
 		Wildcard bool   `json:"wildcard,omitempty"`
