@@ -43,7 +43,7 @@ type (
 		AppType          string         `json:"app_type"`
 		Path             string         `json:"path"`
 		Config           map[string]any `json:"config"`
-		Environment      []tfEnvVar     `json:"environment,omitempty"`
+		Environment      []tfEnvVar     `json:"env_vars,omitempty"`
 		Domains          []tfDomain     `json:"domains,omitempty"`
 	}
 	// tfDomain represents a domain configuration for Terraform.
@@ -58,7 +58,7 @@ type (
 		Key    string `json:"key"`
 		Value  any    `json:"value,omitempty"`
 		Source string `json:"source,omitempty"`
-		Scope  string `json:"scope,omitempty"`
+		Scope  string `json:"type,omitempty"`
 	}
 	// tfGithubConfig is used to pull image containers from GH
 	// container registry.
