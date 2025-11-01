@@ -12,7 +12,7 @@ jobs:
     name: Backup {{ .Name }} Database to BackBlaze
     runs-on: ubuntu-latest
     env:
-      BACKUP_PATH: 'backups/{{ .Name }}/'
+      BACKUP_PATH: '/backups/{{ .Name }}/'
       DO_ACCESS_TOKEN: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
 
     steps:
