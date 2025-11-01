@@ -92,3 +92,22 @@ jobs:
           package-type: 'container'
           min-versions-to-keep: 5
           delete-only-untagged-versions: false
+
+  # Deploy Web to DigitalOcean App Platform
+  deploy-web:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: production-web
+      url: https://www.my-website.com
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Deploy Web to DigitalOcean App Platform
+        uses: digitalocean/app_action/deploy@v2
+        with:
+          token: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
+          app_name: '${{ github.event.repository.name }}-web'

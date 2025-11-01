@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.11",
-	"generated_at": "2025-11-01T12:38:46.346208Z",
+	"version": "v0.0.12",
+	"generated_at": "2025-11-01T14:21:21.313752Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -70,9 +70,9 @@
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "118c167451972501288a1224f1e4134bb707d0699c6d80489f0efbd1a0221f5b",
+			"hash": "1172922487ecd12a047b74fee09239a74b2367e009d98f8c789cff086d19fd28",
 			"scaffolded": false,
-			"generated_at": "2025-11-01T12:38:46.342859Z"
+			"generated_at": "2025-11-01T14:21:21.310404Z"
 		},
 		".gitignore": {
 			"path": ".gitignore",
