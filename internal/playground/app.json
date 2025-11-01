@@ -1,5 +1,5 @@
 {
-	"webkit_version": "v0.0.3",
+	"webkit_version": "v0.0.8",
 	"project": {
 		"name": "my-website",
 		"title": "My Website",
@@ -74,7 +74,8 @@
 			"description": "Payload CMS for managing content.",
 			"path": "cms",
 			"build": {
-				"dockerfile": "Dockerfile"
+				"dockerfile": "Dockerfile",
+				"port": 3000
 			},
 			"infra": {
 				"provider": "digitalocean",
@@ -135,7 +136,8 @@
 			"type": "svelte-kit",
 			"path": "web",
 			"build": {
-				"dockerfile": "Dockerfile"
+				"dockerfile": "Dockerfile",
+				"port": 3001
 			},
 			"infra": {
 				"provider": "digitalocean",
@@ -188,7 +190,8 @@
 			"description": "GoLang API",
 			"path": "api",
 			"build": {
-				"dockerfile": "Dockerfile"
+				"dockerfile": "Dockerfile",
+				"port": 8080
 			},
 			"infra": {
 				"provider": "",
