@@ -31,6 +31,11 @@ var scaffoldCmd = &cli.Command{
 			Action: cmdtools.Wrap(files.PackageJSON),
 		},
 		{
+			Name:   "app-package-json",
+			Usage:  "Manipulate each app's package.json file (adds Docker scripts)",
+			Action: cmdtools.Wrap(files.PackageJSONApp),
+		},
+		{
 			Name:   "pr",
 			Usage:  "Generate GitHub Actions workflow files - TODO",
 			Action: cmdtools.Wrap(cicd.PR),
