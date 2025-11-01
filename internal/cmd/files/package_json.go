@@ -165,7 +165,6 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 		err = input.Generator().JSON(
 			pkgPath,
 			pkg,
-			scaffold.WithTracking(manifest.SourceApp(app.Name)),
 		)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("writing %s", pkgPath))
