@@ -206,6 +206,7 @@ func (d *Definition) MergeAllEnvironments() Environment {
 
 // mergeEnvironments merges multiple Environment structs left-to-right.
 // Later environments override earlier ones.
+// Default values are applied to each environment before merging environment-specific values.
 func mergeEnvironments(envs ...Environment) Environment {
 	merged := Environment{
 		Dev:        make(EnvVar),
@@ -214,9 +215,15 @@ func mergeEnvironments(envs ...Environment) Environment {
 	}
 
 	for _, env := range envs {
-		merged.Dev = mergeVars(merged.Dev, env.Dev)
-		merged.Staging = mergeVars(merged.Staging, env.Staging)
-		merged.Production = mergeVars(merged.Production, env.Production)
+		// Apply defaults to each environment first, then apply environment-specific overrides.
+		devWithDefaults := mergeVars(env.Default, env.Dev)
+		stagingWithDefaults := mergeVars(env.Default, env.Staging)
+		productionWithDefaults := mergeVars(env.Default, env.Production)
+
+		// Merge into accumulated result.
+		merged.Dev = mergeVars(merged.Dev, devWithDefaults)
+		merged.Staging = mergeVars(merged.Staging, stagingWithDefaults)
+		merged.Production = mergeVars(merged.Production, productionWithDefaults)
 	}
 
 	return merged

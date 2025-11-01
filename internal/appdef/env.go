@@ -7,6 +7,7 @@ import (
 type (
 	// Environment contains env-specific variable configurations.
 	Environment struct {
+		Default    EnvVar `json:"default,omitempty"`
 		Dev        EnvVar `json:"dev,omitempty"`
 		Staging    EnvVar `json:"staging,omitempty"`
 		Production EnvVar `json:"production,omitempty"`
@@ -97,18 +98,19 @@ func (e Environment) WalkE(fn EnvironmentWalkerE) error {
 }
 
 // walkEnvs is the internal helper that iterates over environments.
+// Default values are merged into each environment before iteration.
 func (e Environment) walkEnvs(fn func(envName env.Environment, vars EnvVar) error) error {
 	envs := []struct {
 		name env.Environment
 		vars EnvVar
 	}{
-		{env.Development, e.Dev},
-		{env.Staging, e.Staging},
-		{env.Production, e.Production},
+		{env.Development, mergeVars(e.Default, e.Dev)},
+		{env.Staging, mergeVars(e.Default, e.Staging)},
+		{env.Production, mergeVars(e.Default, e.Production)},
 	}
 
 	for _, envData := range envs {
-		if envData.vars == nil {
+		if envData.vars == nil || len(envData.vars) == 0 {
 			continue
 		}
 		if err := fn(envData.name, envData.vars); err != nil {

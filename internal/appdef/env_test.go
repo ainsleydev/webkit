@@ -68,6 +68,85 @@ func TestEnvironment_WalkE(t *testing.T) {
 	}, got)
 }
 
+func TestEnvironment_Walk_WithDefaults(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		env  Environment
+		want []string
+	}{
+		"Default Only": {
+			env: Environment{
+				Default: EnvVar{"API_KEY": {Source: EnvSourceSOPS, Path: "secrets.yaml:API_KEY"}},
+			},
+			want: []string{
+				"development:API_KEY=<nil>",
+				"staging:API_KEY=<nil>",
+				"production:API_KEY=<nil>",
+			},
+		},
+		"Default With Override": {
+			env: Environment{
+				Default:    EnvVar{"API_KEY": {Source: EnvSourceSOPS}},
+				Production: EnvVar{"API_KEY": {Source: EnvSourceValue, Value: "prod-key"}},
+			},
+			want: []string{
+				"development:API_KEY=<nil>",
+				"staging:API_KEY=<nil>",
+				"production:API_KEY=prod-key",
+			},
+		},
+		"Default Plus Specific": {
+			env: Environment{
+				Default: EnvVar{"SHARED_VAR": {Source: EnvSourceValue, Value: "shared"}},
+				Dev:     EnvVar{"DEV_VAR": {Source: EnvSourceValue, Value: "dev-only"}},
+			},
+			want: []string{
+				"development:SHARED_VAR=shared",
+				"development:DEV_VAR=dev-only",
+				"staging:SHARED_VAR=shared",
+				"production:SHARED_VAR=shared",
+			},
+		},
+		"Multiple Defaults Overridden": {
+			env: Environment{
+				Default: EnvVar{
+					"VAR1": {Source: EnvSourceValue, Value: "default1"},
+					"VAR2": {Source: EnvSourceValue, Value: "default2"},
+				},
+				Dev: EnvVar{
+					"VAR1": {Source: EnvSourceValue, Value: "dev-override"},
+				},
+				Production: EnvVar{
+					"VAR2": {Source: EnvSourceValue, Value: "prod-override"},
+				},
+			},
+			want: []string{
+				"development:VAR1=dev-override",
+				"development:VAR2=default2",
+				"staging:VAR1=default1",
+				"staging:VAR2=default2",
+				"production:VAR1=default1",
+				"production:VAR2=prod-override",
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			var got []string
+			test.env.Walk(func(entry EnvWalkEntry) {
+				val := fmt.Sprintf("%s:%s=%v", entry.Environment, entry.Key, entry.Value)
+				got = append(got, val)
+			})
+
+			assert.ElementsMatch(t, test.want, got)
+		})
+	}
+}
+
 func TestMergeVars(t *testing.T) {
 	t.Parallel()
 
