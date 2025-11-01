@@ -22,7 +22,6 @@ import (
 type MockProvider struct {
 	ctrl     *gomock.Controller
 	recorder *MockProviderMockRecorder
-	isgomock struct{}
 }
 
 // MockProviderMockRecorder is the mock recorder for MockProvider.
@@ -43,89 +42,89 @@ func (m *MockProvider) EXPECT() *MockProviderMockRecorder {
 }
 
 // Delete mocks base method.
-func (m *MockProvider) Delete(ctx context.Context, path string) error {
+func (m *MockProvider) Delete(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, path)
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockProviderMockRecorder) Delete(ctx, path any) *gomock.Call {
+func (mr *MockProviderMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockProvider)(nil).Delete), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockProvider)(nil).Delete), arg0, arg1)
 }
 
 // Download mocks base method.
-func (m *MockProvider) Download(ctx context.Context, path string) (io.ReadCloser, error) {
+func (m *MockProvider) Download(arg0 context.Context, arg1 string) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Download", ctx, path)
+	ret := m.ctrl.Call(m, "Download", arg0, arg1)
 	ret0, _ := ret[0].(io.ReadCloser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Download indicates an expected call of Download.
-func (mr *MockProviderMockRecorder) Download(ctx, path any) *gomock.Call {
+func (mr *MockProviderMockRecorder) Download(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Download", reflect.TypeOf((*MockProvider)(nil).Download), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Download", reflect.TypeOf((*MockProvider)(nil).Download), arg0, arg1)
 }
 
 // Exists mocks base method.
-func (m *MockProvider) Exists(ctx context.Context, path string) (bool, error) {
+func (m *MockProvider) Exists(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Exists", ctx, path)
+	ret := m.ctrl.Call(m, "Exists", arg0, arg1)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Exists indicates an expected call of Exists.
-func (mr *MockProviderMockRecorder) Exists(ctx, path any) *gomock.Call {
+func (mr *MockProviderMockRecorder) Exists(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockProvider)(nil).Exists), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockProvider)(nil).Exists), arg0, arg1)
 }
 
 // List mocks base method.
-func (m *MockProvider) List(ctx context.Context, prefix string) ([]string, error) {
+func (m *MockProvider) List(arg0 context.Context, arg1 string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, prefix)
+	ret := m.ctrl.Call(m, "List", arg0, arg1)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockProviderMockRecorder) List(ctx, prefix any) *gomock.Call {
+func (mr *MockProviderMockRecorder) List(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockProvider)(nil).List), ctx, prefix)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockProvider)(nil).List), arg0, arg1)
 }
 
 // Stat mocks base method.
-func (m *MockProvider) Stat(ctx context.Context, path string) (*storage.FileInfo, error) {
+func (m *MockProvider) Stat(arg0 context.Context, arg1 string) (*storage.FileInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Stat", ctx, path)
+	ret := m.ctrl.Call(m, "Stat", arg0, arg1)
 	ret0, _ := ret[0].(*storage.FileInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Stat indicates an expected call of Stat.
-func (mr *MockProviderMockRecorder) Stat(ctx, path any) *gomock.Call {
+func (mr *MockProviderMockRecorder) Stat(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stat", reflect.TypeOf((*MockProvider)(nil).Stat), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stat", reflect.TypeOf((*MockProvider)(nil).Stat), arg0, arg1)
 }
 
 // Upload mocks base method.
-func (m *MockProvider) Upload(ctx context.Context, path string, content io.Reader) error {
+func (m *MockProvider) Upload(arg0 context.Context, arg1 string, arg2 io.Reader) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Upload", ctx, path, content)
+	ret := m.ctrl.Call(m, "Upload", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Upload indicates an expected call of Upload.
-func (mr *MockProviderMockRecorder) Upload(ctx, path, content any) *gomock.Call {
+func (mr *MockProviderMockRecorder) Upload(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upload", reflect.TypeOf((*MockProvider)(nil).Upload), ctx, path, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upload", reflect.TypeOf((*MockProvider)(nil).Upload), arg0, arg1, arg2)
 }
