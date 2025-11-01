@@ -86,12 +86,9 @@ func TestCommandInput_AppDef(t *testing.T) {
 	})
 }
 
+// TestWrap cannot run in parallel as it modifies environment variables.
 func TestWrap(t *testing.T) {
-	t.Parallel()
-
 	t.Run("Production mode", func(t *testing.T) {
-		t.Parallel()
-
 		// Ensure we're not in development mode.
 		oldEnv := os.Getenv(env.AppEnvironmentKey)
 		defer func() {
@@ -121,8 +118,6 @@ func TestWrap(t *testing.T) {
 	})
 
 	t.Run("Development mode", func(t *testing.T) {
-		t.Parallel()
-
 		oldEnv := os.Getenv(env.AppEnvironmentKey)
 		defer func() {
 			if oldEnv != "" {
