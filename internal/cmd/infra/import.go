@@ -15,26 +15,36 @@ import (
 // into Terraform state.
 var ImportCmd = &cli.Command{
 	Name:  "import",
-	Usage: "Import existing infrastructure resources into Terraform state",
-	Description: `Import allows you to bring existing cloud resources under Terraform management.
+	Usage: "Import existing infrastructure resources or apps into Terraform state",
+	Description: `Import allows you to bring existing cloud resources or apps under Terraform management.
 
 This is useful when:
   - Migrating from manually created infrastructure
   - Adopting webkit for an existing project
   - Recovering from state loss
 
-Example:
-  webkit infra import --resource db --id ca9f591d-f38h-462a-a5c6-5a8a74838081`,
+Examples:
+  # Import a resource (database, storage, etc.)
+  webkit infra import --resource db --id ca9f591d-f38h-462a-a5c6-5a8a74838081
+
+  # Import an app
+  webkit infra import --app web --id a1b2c3d4-e5f6-7890-abcd-ef1234567890`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "resource",
 			Aliases:  []string{"r"},
-			Usage:    "Name of the resource in app.json to import",
-			Required: true,
+			Usage:    "Name of the resource in app.json to import (mutually exclusive with --app)",
+			Required: false,
+		},
+		&cli.StringFlag{
+			Name:     "app",
+			Aliases:  []string{"a"},
+			Usage:    "Name of the app in app.json to import (mutually exclusive with --resource)",
+			Required: false,
 		},
 		&cli.StringFlag{
 			Name:     "id",
-			Usage:    "Provider-specific resource ID (e.g., DigitalOcean cluster ID)",
+			Usage:    "Provider-specific resource/app ID (e.g., DigitalOcean cluster ID or app ID)",
 			Required: true,
 		},
 		&cli.StringFlag{
@@ -47,17 +57,39 @@ Example:
 	Action: cmdtools.Wrap(Import),
 }
 
-// Import executes the import operation for the specified resource.
+// Import executes the import operation for the specified resource or app.
 func Import(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
 
+	// Validate that exactly one of --resource or --app is provided
 	resourceName := input.Command.String("resource")
+	appName := input.Command.String("app")
+
+	if resourceName == "" && appName == "" {
+		return fmt.Errorf("either --resource or --app must be specified")
+	}
+	if resourceName != "" && appName != "" {
+		return fmt.Errorf("--resource and --app are mutually exclusive, specify only one")
+	}
+
+	// Determine if we're importing an app or resource
+	isApp := appName != ""
+	name := resourceName
+	if isApp {
+		name = appName
+	}
+
 	resourceID := input.Command.String("id")
 	environment := env.Environment(input.Command.String("env"))
 
-	printer.Info(fmt.Sprintf("Importing resource %q with ID %q into %s environment",
-		resourceName, resourceID, environment))
+	itemType := "resource"
+	if isApp {
+		itemType = "app"
+	}
+
+	printer.Info(fmt.Sprintf("Importing %s %q with ID %q into %s environment",
+		itemType, name, resourceID, environment))
 	printer.Print("")
 
 	// Initialise Terraform.
@@ -67,13 +99,14 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	printer.Print("Importing resources...")
+	printer.Print(fmt.Sprintf("Importing %s...", itemType))
 	spinner.Start()
 
 	result, err := tf.Import(ctx, infra.ImportInput{
-		ResourceName: resourceName,
+		ResourceName: name,
 		ResourceID:   resourceID,
 		Environment:  environment,
+		IsApp:        isApp,
 	})
 
 	spinner.Stop()
@@ -83,11 +116,11 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 		if result.Output != "" {
 			printer.Print(result.Output)
 		}
-		return nil
+		return err
 	}
 
-	printer.Success(fmt.Sprintf("Successfully imported %d resource(s)", len(result.ImportedResources)))
-	printer.Info("Imported Terraform resources:")
+	printer.Success(fmt.Sprintf("Successfully imported %d Terraform resource(s)", len(result.ImportedResources)))
+	printer.Info("Imported Terraform addresses:")
 	for _, addr := range result.ImportedResources {
 		printer.Print("  - " + addr)
 	}

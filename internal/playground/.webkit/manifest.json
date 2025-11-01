@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.8",
-	"generated_at": "2025-11-01T09:55:59.197379Z",
+	"version": "v0.0.12",
+	"generated_at": "2025-11-01T14:21:21.313752Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -54,9 +54,9 @@
 			"path": ".github/workflows/backup.yaml",
 			"generator": "cicd:BackupWorkflow",
 			"source": "resource:store",
-			"hash": "29e64ab530170e154607ad49ba2d01514efdb9c96a67503b9104ad44e570f1df",
+			"hash": "5b04a8e1d83040e320f07a118a7cdcc7f8c22d68e25187cb48aae8e69434ecbe",
 			"scaffolded": false,
-			"generated_at": "2025-11-01T09:55:59.195685Z"
+			"generated_at": "2025-11-01T12:38:46.343276Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
@@ -65,6 +65,14 @@
 			"hash": "da8a27a838094a4315f0cd01aaf6ee4731d20de9c4aec6f6e0a84c3b4c577957",
 			"scaffolded": false,
 			"generated_at": "2025-10-23T14:29:04.751035+01:00"
+		},
+		".github/workflows/release.yaml": {
+			"path": ".github/workflows/release.yaml",
+			"generator": "cicd:ReleaseWorkflow",
+			"source": "app:api",
+			"hash": "1172922487ecd12a047b74fee09239a74b2367e009d98f8c789cff086d19fd28",
+			"scaffolded": false,
+			"generated_at": "2025-11-01T14:21:21.310404Z"
 		},
 		".gitignore": {
 			"path": ".gitignore",
@@ -150,9 +158,9 @@
 			"path": "package.json",
 			"generator": "files:PackageJSON",
 			"source": "project",
-			"hash": "a18deb7d9169ec349885247247e018caad241f3c91df62ec1e295b54a1b3bbf8",
+			"hash": "f51b6c1c4a239be123bbbf3f89ad1d4cb93651ad6c05954b19030c4e50abc7b9",
 			"scaffolded": true,
-			"generated_at": "2025-10-23T14:29:04.75051+01:00"
+			"generated_at": "2025-11-01T12:38:46.341785Z"
 		},
 		"web/.env": {
 			"path": "web/.env",

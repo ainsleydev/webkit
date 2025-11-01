@@ -278,3 +278,147 @@ func TestBuildS3Imports(t *testing.T) {
 	got := buildS3Imports(resource, bucketID)
 	assert.Equal(t, want, got)
 }
+
+func TestBuildAppImportAddresses(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		projectName string
+		app         *appdef.App
+		appID       string
+		want        []importAddress
+		wantErr     bool
+	}{
+		"DigitalOcean App Platform (container)": {
+			projectName: "search-spares",
+			app: &appdef.App{
+				Name: "web",
+				Infra: appdef.Infra{
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Type:     "container",
+					Config:   map[string]any{},
+				},
+			},
+			appID: "app-abc123",
+			want: []importAddress{
+				{
+					Address: "module.apps[\"web\"].module.do_app[0].digitalocean_app.this",
+					ID:      "app-abc123",
+				},
+			},
+			wantErr: false,
+		},
+		"DigitalOcean Droplet (vm) - not supported": {
+			projectName: "test-project",
+			app: &appdef.App{
+				Name: "api",
+				Infra: appdef.Infra{
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Type:     "vm",
+					Config:   map[string]any{},
+				},
+			},
+			appID:   "droplet-123",
+			want:    nil,
+			wantErr: true,
+		},
+		"Unsupported provider": {
+			projectName: "test-project",
+			app: &appdef.App{
+				Name: "app",
+				Infra: appdef.Infra{
+					Provider: "unsupported",
+					Type:     "container",
+					Config:   map[string]any{},
+				},
+			},
+			appID:   "app-123",
+			want:    nil,
+			wantErr: true,
+		},
+		"Unsupported platform type": {
+			projectName: "test-project",
+			app: &appdef.App{
+				Name: "app",
+				Infra: appdef.Infra{
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Type:     "serverless",
+					Config:   map[string]any{},
+				},
+			},
+			appID:   "app-456",
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := buildAppImportAddresses(test.projectName, test.app, test.appID)
+			assert.Equal(t, test.wantErr, err != nil)
+
+			if !test.wantErr {
+				assert.Equal(t, test.want, got)
+			}
+		})
+	}
+}
+
+func TestBuildDigitalOceanAppImports(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		projectName string
+		app         *appdef.App
+		appID       string
+		want        []importAddress
+		wantErr     bool
+	}{
+		"Container app (App Platform)": {
+			projectName: "my-project",
+			app: &appdef.App{
+				Name: "web",
+				Infra: appdef.Infra{
+					Type:   "container",
+					Config: map[string]any{},
+				},
+			},
+			appID: "app-123",
+			want: []importAddress{
+				{
+					Address: "module.apps[\"web\"].module.do_app[0].digitalocean_app.this",
+					ID:      "app-123",
+				},
+			},
+			wantErr: false,
+		},
+		"VM app (Droplet) - not supported": {
+			projectName: "my-project",
+			app: &appdef.App{
+				Name: "api",
+				Infra: appdef.Infra{
+					Type:   "vm",
+					Config: map[string]any{},
+				},
+			},
+			appID:   "droplet-456",
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := buildDigitalOceanAppImports(test.projectName, test.app, test.appID)
+			assert.Equal(t, test.wantErr, err != nil)
+
+			if !test.wantErr {
+				assert.Equal(t, test.want, got)
+			}
+		})
+	}
+}

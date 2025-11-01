@@ -19,8 +19,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -32,6 +30,10 @@ jobs:
         with:
           database-id: {{ ghSecret (index $.Data .Name "DatabaseID") }}
           doctl-token: {{ ghSecret "DO_ACCESS_TOKEN" }}
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
 
       - name: Install PG Dump
         run: |
@@ -46,10 +48,6 @@ jobs:
       - name: Verify pg_dump version
         run: |
           pg_dump --version  # Should be 17
-
-      - name: Install rclone
-        run: |
-          curl https://rclone.org/install.sh | sudo bash
 
       - name: Configure rclone for BackBlaze B2
         run: |
@@ -119,8 +117,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Install rclone
         run: |
@@ -279,8 +275,10 @@ jobs:
             --drive-chunk-size=64M \
             --exclude ".DS_Store" \
             --exclude "Thumbs.db" \
-            --stats=1m \
-            --stats-one-line
+            --stats=30s \
+            --stats-one-line \
+            --stats-one-line-date \
+            --stats-log-level NOTICE
 
       - name: Verify Sync
         run: |

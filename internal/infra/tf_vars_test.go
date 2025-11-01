@@ -289,6 +289,79 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 
+	t.Run("App with Domains", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "domain-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "domain-project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "apps/web",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config: map[string]any{
+							"replicas": 2,
+						},
+					},
+					Domains: []appdef.Domain{
+						{
+							Name:     "example.com",
+							Type:     appdef.DomainTypePrimary,
+							Zone:     "example.com",
+							Wildcard: false,
+						},
+						{
+							Name:     "www.example.com",
+							Type:     appdef.DomainTypeAlias,
+							Zone:     "example.com",
+							Wildcard: false,
+						},
+						{
+							Name:     "*.staging.example.com",
+							Type:     appdef.DomainTypePrimary,
+							Zone:     "staging.example.com",
+							Wildcard: true,
+						},
+					},
+				},
+			},
+		}
+
+		got, err := tfVarsFromDefinition(env.Production, input)
+		assert.NoError(t, err)
+
+		t.Log("App with domains")
+		{
+			require.Len(t, got.Apps, 1)
+
+			app := got.Apps[0]
+			assert.Equal(t, "web", app.Name)
+
+			require.Len(t, app.Domains, 3)
+			assert.Equal(t, "example.com", app.Domains[0].Name)
+			assert.Equal(t, appdef.DomainTypePrimary.String(), app.Domains[0].Type)
+			assert.Equal(t, "example.com", app.Domains[0].Zone)
+			assert.Equal(t, false, app.Domains[0].Wildcard)
+
+			assert.Equal(t, "www.example.com", app.Domains[1].Name)
+			assert.Equal(t, appdef.DomainTypeAlias.String(), app.Domains[1].Type)
+			assert.Equal(t, "example.com", app.Domains[1].Zone)
+			assert.Equal(t, false, app.Domains[1].Wildcard)
+
+			assert.Equal(t, "*.staging.example.com", app.Domains[2].Name)
+			assert.Equal(t, appdef.DomainTypePrimary.String(), app.Domains[2].Type)
+			assert.Equal(t, "staging.example.com", app.Domains[2].Zone)
+			assert.Equal(t, true, app.Domains[2].Wildcard)
+		}
+	})
+
 	t.Run("Mixed null and empty configs with arrays", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{

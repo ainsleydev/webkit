@@ -155,4 +155,82 @@ func TestImport(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "parsing environment")
 	})
+
+	t.Run("Success Import App", func(t *testing.T) {
+		mock := mockinfra.NewMockManager(gomock.NewController(t))
+		mock.EXPECT().
+			Import(gomock.Any(), infra.ImportInput{
+				ResourceName: "web",
+				ResourceID:   "app-123",
+				Environment:  env.Production,
+				IsApp:        true,
+			}).
+			Return(infra.ImportOutput{
+				ImportedResources: []string{
+					"module.apps[\"web\"].module.do_app[0].digitalocean_app.this",
+				},
+				Output: "Import successful",
+			}, nil)
+		mock.EXPECT().
+			Cleanup().
+			Times(1)
+
+		def := &appdef.Definition{
+			Project: appdef.Project{Name: "test-project"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Type:     "container",
+					},
+				},
+			},
+		}
+
+		input, buf, teardown := setupWithPrinter(t, def, mock, false)
+		defer teardown()
+
+		err := Import(t.Context(), input)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "Successfully imported 1 Terraform resource(s)")
+		assert.Contains(t, buf.String(), "digitalocean_app.this")
+		assert.Contains(t, buf.String(), "Next steps")
+	})
+
+	t.Run("Error Both App And Resource Provided", func(t *testing.T) {
+		mock := mockinfra.NewMockManager(gomock.NewController(t))
+		mock.EXPECT().
+			Cleanup().
+			Times(1)
+
+		def := &appdef.Definition{
+			Project: appdef.Project{Name: "test-project"},
+		}
+
+		input, teardown := setup(t, def, mock, false)
+		defer teardown()
+
+		err := Import(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "mutually exclusive")
+	})
+
+	t.Run("Error Neither App Nor Resource Provided", func(t *testing.T) {
+		mock := mockinfra.NewMockManager(gomock.NewController(t))
+		mock.EXPECT().
+			Cleanup().
+			Times(1)
+
+		def := &appdef.Definition{
+			Project: appdef.Project{Name: "test-project"},
+		}
+
+		input, teardown := setup(t, def, mock, false)
+		defer teardown()
+
+		err := Import(t.Context(), input)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "either --resource or --app must be specified")
+	})
 }

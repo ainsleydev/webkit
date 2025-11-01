@@ -169,8 +169,6 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("writing %s", pkgPath))
 		}
-
-		input.Printer().Success("Added scripts to app package.json files")
 	}
 
 	return nil

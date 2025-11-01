@@ -43,14 +43,22 @@ type (
 		AppType          string         `json:"app_type"`
 		Path             string         `json:"path"`
 		Config           map[string]any `json:"config"`
-		Environment      []tfEnvVar     `json:"environment,omitempty"`
+		Environment      []tfEnvVar     `json:"env_vars,omitempty"`
+		Domains          []tfDomain     `json:"domains,omitempty"`
+	}
+	// tfDomain represents a domain configuration for Terraform.
+	tfDomain struct {
+		Name     string `json:"name"`
+		Type     string `json:"type"`
+		Zone     string `json:"zone,omitempty"`
+		Wildcard bool   `json:"wildcard,omitempty"`
 	}
 	// tfEnvVar represents an environment variable for Terraform
 	tfEnvVar struct {
 		Key    string `json:"key"`
 		Value  any    `json:"value,omitempty"`
 		Source string `json:"source,omitempty"`
-		Scope  string `json:"scope,omitempty"`
+		Scope  string `json:"type,omitempty"`
 	}
 	// tfGithubConfig is used to pull image containers from GH
 	// container registry.
@@ -114,6 +122,15 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 					Scope:  scope,
 				})
 			})
+
+		for _, domain := range app.Domains {
+			tfA.Domains = append(tfA.Domains, tfDomain{
+				Name:     domain.Name,
+				Type:     domain.Type.String(),
+				Zone:     domain.Zone,
+				Wildcard: domain.Wildcard,
+			})
+		}
 
 		vars.Apps = append(vars.Apps, tfA)
 	}

@@ -22,7 +22,7 @@ module "do_app" {
   source = "../../providers/digital_ocean/app"
 
   name               = "${var.project_name}-${var.name}"
-  service_name       = var.name
+  service_name       = var.app_type
   region             = try(var.platform_config.region, "lon")
   instance_size_slug = try(var.platform_config.size, "apps-s-1vcpu-1gb")
   instance_count     = try(var.platform_config.instance_count, 1)

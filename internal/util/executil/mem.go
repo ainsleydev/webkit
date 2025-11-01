@@ -34,7 +34,11 @@ func (r *MemRunner) Run(_ context.Context, cmd Command) (Result, error) {
 	for prefix, stub := range r.stubs {
 		if strings.HasPrefix(cmdLine, prefix) {
 			stub.CmdLine = cmdLine
-			return stub, r.errs[prefix] // Returns error if set
+			// Write output to cmd.Stdout if set (mimics real runner behaviour).
+			if cmd.Stdout != nil && stub.Output != "" {
+				_, _ = cmd.Stdout.Write([]byte(stub.Output))
+			}
+			return stub, r.errs[prefix] // Returns error if set.
 		}
 	}
 

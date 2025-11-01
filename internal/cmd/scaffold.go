@@ -65,5 +65,10 @@ var scaffoldCmd = &cli.Command{
 			Usage:  "TODO",
 			Action: cmdtools.Wrap(env.Scaffold),
 		},
+		{
+			Name:   "hooks",
+			Usage:  "Generate lefthook configuration for git hooks (secrets check, format)",
+			Action: cmdtools.Wrap(files.Hooks),
+		},
 	},
 }

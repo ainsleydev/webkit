@@ -21,6 +21,7 @@ var SyncCmd = &cli.Command{
 // Sync
 func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
+	printer := input.Printer()
 
 	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
 		SOPSClient: input.SOPSClient(),
@@ -58,6 +59,8 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 				return err
 			}
 		}
+
+		printer.Success("Successfully synced environment files for app: " + app.Name)
 	}
 
 	return nil

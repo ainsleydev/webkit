@@ -30,6 +30,18 @@ func buildImportAddresses(projectName string, resource *appdef.Resource, baseID 
 	}
 }
 
+// buildAppImportAddresses constructs the list of Terraform import addresses
+// for a given app based on its platform type and provider.
+// The projectName is used to build the full app name as Terraform modules do.
+func buildAppImportAddresses(projectName string, app *appdef.App, appID string) ([]importAddress, error) {
+	switch app.Infra.Provider {
+	case appdef.ResourceProviderDigitalOcean:
+		return buildDigitalOceanAppImports(projectName, app, appID)
+	default:
+		return nil, fmt.Errorf("import not supported for provider %q", app.Infra.Provider)
+	}
+}
+
 // buildDigitalOceanImports creates import addresses for DigitalOcean resources.
 func buildDigitalOceanImports(projectName string, resource *appdef.Resource, clusterID string) ([]importAddress, error) {
 	switch resource.Type {
@@ -115,5 +127,28 @@ func buildS3Imports(resource *appdef.Resource, bucketID string) []importAddress 
 			Address: fmt.Sprintf("%s.digitalocean_cdn.this", baseModule),
 			ID:      id,
 		},
+	}
+}
+
+// buildDigitalOceanAppImports creates import addresses for DigitalOcean apps.
+func buildDigitalOceanAppImports(_ string, app *appdef.App, appID string) ([]importAddress, error) {
+	// app.Infra.Type is a string field in the appdef.Infra struct
+	platformType := app.Infra.Type
+
+	switch platformType {
+	case "container":
+		// DigitalOcean App Platform
+		baseModule := fmt.Sprintf("module.apps[\"%s\"].module.do_app[0]", app.Name)
+		return []importAddress{
+			{
+				Address: fmt.Sprintf("%s.digitalocean_app.this", baseModule),
+				ID:      appID,
+			},
+		}, nil
+	case "vm":
+		// DigitalOcean Droplet - not yet supported for import
+		return nil, fmt.Errorf("import not yet supported for DigitalOcean Droplet apps")
+	default:
+		return nil, fmt.Errorf("import not supported for app platform type %q", platformType)
 	}
 }
