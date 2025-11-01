@@ -28,10 +28,12 @@ func TestExitError_Error(t *testing.T) {
 	}
 }
 
-func TestExitError_Type(t *testing.T) {
+func TestExitWithCode(t *testing.T) {
 	t.Parallel()
 
 	err := ExitWithCode(1)
-	_, ok := err.(*ExitError)
-	assert.True(t, ok)
+	assert.Equal(t, 1, err.Code)
+
+	// Verify it can be used as an error.
+	var _ error = err
 }
