@@ -131,7 +131,7 @@ func buildS3Imports(resource *appdef.Resource, bucketID string) []importAddress 
 }
 
 // buildDigitalOceanAppImports creates import addresses for DigitalOcean apps.
-func buildDigitalOceanAppImports(projectName string, app *appdef.App, appID string) ([]importAddress, error) {
+func buildDigitalOceanAppImports(_ string, app *appdef.App, appID string) ([]importAddress, error) {
 	// app.Infra.Type is a string field in the appdef.Infra struct
 	platformType := app.Infra.Type
 
