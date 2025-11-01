@@ -102,35 +102,15 @@ jobs:
       url: https://{{ index .Infra.Config "domain" }}
       {{- end }}
     steps:
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Deploy {{ .Title }} to DigitalOcean App Platform
+        uses: digitalocean/app_action/deploy@v2
         with:
           token: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
-
-      - name: Deploy to DigitalOcean App Platform
-        run: |
-          set -euo pipefail
-
-          APP_NAME='{{ ghVar "github.event.repository.name" }}-{{ .Name }}'
-
-          echo "Looking up app: $APP_NAME"
-
-          # Get the app ID from the app name
-          APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | grep "$APP_NAME" | awk '{print $1}')
-
-          if [ -z "$APP_ID" ]; then
-            echo "Error: App '$APP_NAME' not found in DigitalOcean"
-            echo "Available apps:"
-            doctl apps list --format ID,Spec.Name
-            exit 1
-          fi
-
-          echo "Found app ID: $APP_ID"
-          echo "Triggering deployment for {{ .Title }}..."
-
-          # Create a new deployment and wait for it to complete
-          doctl apps create-deployment "$APP_ID" --wait
-
-          echo "Deployment completed successfully for {{ .Title }}"
+          app_name: '{{ ghVar "github.event.repository.name" }}-{{ .Name }}'
 {{- end }}
 {{- end }}
