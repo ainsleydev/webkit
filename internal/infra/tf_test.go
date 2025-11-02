@@ -364,7 +364,7 @@ func TestTerraform_Apply(t *testing.T) {
 		tf.tf = mock
 
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
@@ -383,7 +383,7 @@ func TestTerraform_Apply(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mock := tfmocks.NewMockterraformExecutor(ctrl)
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("authentication failed")).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
