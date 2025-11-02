@@ -52,6 +52,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("BACK_BLAZE_KEY_ID", "id")
 	t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
 	t.Setenv("GITHUB_TOKEN", "token")
+	t.Setenv("GITHUB_TOKEN_CLASSIC", "token")
 }
 
 func teardownEnv(t *testing.T) {
@@ -65,6 +66,7 @@ func teardownEnv(t *testing.T) {
 		"BACK_BLAZE_KEY_ID",
 		"BACK_BLAZE_APPLICATION_KEY",
 		"GITHUB_TOKEN",
+		"GITHUB_TOKEN_CLASSIC",
 	}
 
 	for _, key := range envVars {

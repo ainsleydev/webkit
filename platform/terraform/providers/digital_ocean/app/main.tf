@@ -28,9 +28,14 @@ resource "digitalocean_app" "this" {
       image {
         registry_type        = "GHCR"
         registry             = "ghcr.io"
-        repository           = "${var.github_config.owner}/${var.github_config.repo}-web"
-        tag                  = var.image_tag
-        registry_credentials = "${var.github_config.owner}:${var.github_config.token}"
+        # The var.name variable should match the name of the image on GHCR.
+        # For example: ainsleydev/search-spares-web
+        repository           = "${var.github_config.owner}/${var.name}"
+        tag                  = "sha-2eef5657ea0ae1e440512e352b82c2a0d0dfa456"
+        # We have to use a classic token here as packages don't support fine-grained
+        # PATs right now, so this should use ghp_ token formats.
+        # See: https://github.com/github/roadmap/issues/558
+        registry_credentials = "${var.github_config.user}:${var.github_config.token}"
       }
 
       health_check {
