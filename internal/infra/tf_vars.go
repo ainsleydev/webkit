@@ -1,9 +1,16 @@
 package infra
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -42,6 +49,7 @@ type (
 		PlatformProvider string         `json:"platform_provider"`
 		AppType          string         `json:"app_type"`
 		Path             string         `json:"path"`
+		ImageTag         string         `json:"image_tag,omitempty"`
 		Config           map[string]any `json:"config"`
 		Environment      []tfEnvVar     `json:"env_vars,omitempty"`
 		Domains          []tfDomain     `json:"domains,omitempty"`
@@ -71,7 +79,7 @@ type (
 // tfVarsFromDefinition transforms an appdef.Definition into Terraform variables.
 // It should directly map what's defined in /platform/base/variables.tf, if it
 // doesn't, then provisioning probably won't work.
-func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, error) {
+func tfVarsFromDefinition(ctx context.Context, env env.Environment, def *appdef.Definition) (tfVars, error) {
 	if def == nil {
 		return tfVars{}, errors.New("definition cannot be nil")
 	}
@@ -104,6 +112,11 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 			AppType:          app.Type.String(),
 			Config:           encodeConfigForTerraform(app.Infra.Config),
 			Path:             app.Path,
+		}
+
+		// Determine the image tag for container-based apps.
+		if app.Infra.Type == "container" {
+			tfA.ImageTag = determineImageTag(ctx, def.Project.Repo.Owner, def.Project.Repo.Name, app.Name)
 		}
 
 		app.MergeEnvironments(def.Shared.Env).
@@ -191,6 +204,87 @@ func encodeConfigValue(value any) any {
 		// Primitives (strings, numbers, bools) and other types pass through.
 		return value
 	}
+}
+
+// ghcrTag represents a single tag from the GHCR API response.
+type ghcrTag struct {
+	Name      string    `json:"name"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// getLatestSHATag queries GHCR for the latest sha-* tag for a given image.
+// Returns empty string if no sha tags are found or if the query fails.
+func getLatestSHATag(ctx context.Context, owner, repo, appName string) string {
+	// Construct GHCR API URL for package tags.
+	// Format: https://ghcr.io/v2/{owner}/{repo}-{appName}/tags/list
+	url := fmt.Sprintf("https://ghcr.io/v2/%s/%s-%s/tags/list", owner, repo, appName)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return ""
+	}
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return ""
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return ""
+	}
+
+	// Parse the response.
+	var result struct {
+		Tags []string `json:"tags"`
+	}
+	if err = json.Unmarshal(body, &result); err != nil {
+		return ""
+	}
+
+	// Filter for sha-* tags and sort by name (they contain commit hash).
+	// Since we can't easily get timestamps from the /tags/list endpoint without auth,
+	// we'll just use the most recently pushed tag (usually the last one alphabetically).
+	var shaTags []string
+	for _, tag := range result.Tags {
+		if strings.HasPrefix(tag, "sha-") {
+			shaTags = append(shaTags, tag)
+		}
+	}
+
+	if len(shaTags) == 0 {
+		return ""
+	}
+
+	// Sort and return the last one (most recent).
+	sort.Strings(shaTags)
+	return shaTags[len(shaTags)-1]
+}
+
+// determineImageTag determines the appropriate image tag for an app.
+// Priority:
+//  1. GITHUB_SHA environment variable (when running in CI)
+//  2. Latest sha-* tag from GHCR (when running locally)
+//  3. "latest" as fallback
+func determineImageTag(ctx context.Context, owner, repo, appName string) string {
+	// Check if we're in CI with GITHUB_SHA env var.
+	if sha := os.Getenv("GITHUB_SHA"); sha != "" {
+		return "sha-" + sha
+	}
+
+	// Try to get the latest sha tag from GHCR.
+	if tag := getLatestSHATag(ctx, owner, repo, appName); tag != "" {
+		return tag
+	}
+
+	// Fallback to latest.
+	return "latest"
 }
 
 // writeTFVarsFile writes Terraform variables to a JSON file.

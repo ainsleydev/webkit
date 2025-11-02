@@ -152,7 +152,7 @@ type PlanOutput struct {
 //
 // Must be called after Init().
 func (t *Terraform) Plan(ctx context.Context, env env.Environment) (PlanOutput, error) {
-	if err := t.prepareVars(env); err != nil {
+	if err := t.prepareVars(ctx, env); err != nil {
 		return PlanOutput{}, err
 	}
 
@@ -200,7 +200,7 @@ type ApplyOutput struct {
 //
 // Must be called after Init().
 func (t *Terraform) Apply(ctx context.Context, env env.Environment) (ApplyOutput, error) {
-	if err := t.prepareVars(env); err != nil {
+	if err := t.prepareVars(ctx, env); err != nil {
 		return ApplyOutput{}, err
 	}
 
@@ -236,7 +236,7 @@ type DestroyOutput struct {
 //
 // Must be called after Init().
 func (t *Terraform) Destroy(ctx context.Context, env env.Environment) (DestroyOutput, error) {
-	if err := t.prepareVars(env); err != nil {
+	if err := t.prepareVars(ctx, env); err != nil {
 		return DestroyOutput{}, err
 	}
 
@@ -290,7 +290,7 @@ type OutputResult struct {
 //
 // Must be called after Init().
 func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResult, error) {
-	if err := t.prepareVars(env); err != nil {
+	if err := t.prepareVars(ctx, env); err != nil {
 		return OutputResult{}, err
 	}
 
@@ -364,7 +364,7 @@ type (
 //
 // Must be called after Init().
 func (t *Terraform) Import(ctx context.Context, input ImportInput) (ImportOutput, error) {
-	if err := t.prepareVars(input.Environment); err != nil {
+	if err := t.prepareVars(ctx, input.Environment); err != nil {
 		return ImportOutput{}, err
 	}
 
@@ -453,12 +453,12 @@ func (t *Terraform) hasInitialised() error {
 	return nil
 }
 
-func (t *Terraform) prepareVars(env env.Environment) error {
+func (t *Terraform) prepareVars(ctx context.Context, env env.Environment) error {
 	if err := t.hasInitialised(); err != nil {
 		return err
 	}
 
-	vars, err := tfVarsFromDefinition(env, t.appDef)
+	vars, err := tfVarsFromDefinition(ctx, env, t.appDef)
 	if err != nil {
 		return errors.Wrap(err, "generating terraform variables")
 	}

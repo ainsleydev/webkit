@@ -3,6 +3,7 @@
 package infra
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +15,7 @@ import (
 
 func TestTFVarsFromDefinition(t *testing.T) {
 	t.Run("Nil Definition", func(t *testing.T) {
-		_, err := tfVarsFromDefinition(env.Development, nil)
+		_, err := tfVarsFromDefinition(context.Background(), env.Development, nil)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "definition cannot be nil")
 	})
@@ -26,7 +27,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			Resources: []appdef.Resource{},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -66,7 +67,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -127,7 +128,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -233,7 +234,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -334,7 +335,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
 		assert.NoError(t, err)
 
 		t.Log("App with domains")
@@ -414,7 +415,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
 		assert.NoError(t, err)
 
 		t.Log("Apps with consistent config types")
