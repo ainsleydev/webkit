@@ -35,7 +35,7 @@ resource "digitalocean_app" "this" {
         # We have to use a classic token here as packages don't support fine-grained
         # PATs right now, so this should use ghp_ token formats.
         # See: https://github.com/github/roadmap/issues/558
-        registry_credentials = "${var.github_config.user}:${var.github_config.token}"
+        registry_credentials = "${var.github_config.owner}:${var.github_config.token}"
       }
 
       health_check {
