@@ -697,6 +697,8 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 	})
 
 	t.Run("Queries GHCR when GITHUB_SHA not set", func(t *testing.T) {
+		t.Setenv("GITHUB_SHA", "")
+
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Repo: appdef.GitHubRepo{
@@ -722,6 +724,8 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 	})
 
 	t.Run("Falls back to latest when GHCR returns empty", func(t *testing.T) {
+		t.Setenv("GITHUB_SHA", "")
+
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Repo: appdef.GitHubRepo{
