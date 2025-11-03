@@ -3,6 +3,7 @@
 package infra
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -18,6 +19,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/infra/internal/tfmocks"
 	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -666,5 +668,85 @@ func TestTerraform_Cleanup(t *testing.T) {
 		assert.NotPanics(t, func() {
 			tf.Cleanup()
 		})
+	})
+}
+
+func TestTerraform_DetermineImageTag(t *testing.T) {
+	t.Run("Uses GITHUB_SHA when set", func(t *testing.T) {
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+		}
+
+		ctrl := gomock.NewController(t)
+		mockClient := mocks.NewGHClient(ctrl)
+
+		tf := &Terraform{
+			appDef:   appDef,
+			ghClient: mockClient,
+		}
+
+		t.Setenv("GITHUB_SHA", "abc123def456")
+
+		tag := tf.determineImageTag(context.Background(), "web")
+		assert.Equal(t, "sha-abc123def456", tag)
+	})
+
+	t.Run("Queries GHCR when GITHUB_SHA not set", func(t *testing.T) {
+		t.Setenv("GITHUB_SHA", "")
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+		}
+
+		ctrl := gomock.NewController(t)
+		mockClient := mocks.NewGHClient(ctrl)
+		mockClient.EXPECT().
+			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
+			Return("sha-xyz789")
+
+		tf := &Terraform{
+			appDef:   appDef,
+			ghClient: mockClient,
+		}
+
+		tag := tf.determineImageTag(context.Background(), "web")
+		assert.Equal(t, "sha-xyz789", tag)
+	})
+
+	t.Run("Falls back to latest when GHCR returns empty", func(t *testing.T) {
+		t.Setenv("GITHUB_SHA", "")
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+		}
+
+		ctrl := gomock.NewController(t)
+		mockClient := mocks.NewGHClient(ctrl)
+		mockClient.EXPECT().
+			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
+			Return("")
+
+		tf := &Terraform{
+			appDef:   appDef,
+			ghClient: mockClient,
+		}
+
+		tag := tf.determineImageTag(context.Background(), "web")
+		assert.Equal(t, "latest", tag)
 	})
 }

@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -42,6 +43,7 @@ type (
 		PlatformProvider string         `json:"platform_provider"`
 		AppType          string         `json:"app_type"`
 		Path             string         `json:"path"`
+		ImageTag         string         `json:"image_tag,omitempty"`
 		Config           map[string]any `json:"config"`
 		Environment      []tfEnvVar     `json:"env_vars,omitempty"`
 		Domains          []tfDomain     `json:"domains,omitempty"`
@@ -71,23 +73,23 @@ type (
 // tfVarsFromDefinition transforms an appdef.Definition into Terraform variables.
 // It should directly map what's defined in /platform/base/variables.tf, if it
 // doesn't, then provisioning probably won't work.
-func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, error) {
-	if def == nil {
+func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environment) (tfVars, error) {
+	if t.appDef == nil {
 		return tfVars{}, errors.New("definition cannot be nil")
 	}
 
 	vars := tfVars{
-		ProjectName: def.Project.Name,
+		ProjectName: t.appDef.Project.Name,
 		Environment: env.String(),
-		Apps:        make([]tfApp, 0, len(def.Apps)),
-		Resources:   make([]tfResource, 0, len(def.Resources)),
+		Apps:        make([]tfApp, 0, len(t.appDef.Apps)),
+		Resources:   make([]tfResource, 0, len(t.appDef.Resources)),
 		GithubConfig: tfGithubConfig{
-			Owner: def.Project.Repo.Owner,
-			Repo:  def.Project.Repo.Name,
+			Owner: t.appDef.Project.Repo.Owner,
+			Repo:  t.appDef.Project.Repo.Name,
 		},
 	}
 
-	for _, res := range def.Resources {
+	for _, res := range t.appDef.Resources {
 		vars.Resources = append(vars.Resources, tfResource{
 			Name:             res.Name,
 			PlatformType:     res.Type.String(),
@@ -96,7 +98,7 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 		})
 	}
 
-	for _, app := range def.Apps {
+	for _, app := range t.appDef.Apps {
 		tfA := tfApp{
 			Name:             app.Name,
 			PlatformType:     app.Infra.Type,
@@ -106,7 +108,12 @@ func tfVarsFromDefinition(env env.Environment, def *appdef.Definition) (tfVars, 
 			Path:             app.Path,
 		}
 
-		app.MergeEnvironments(def.Shared.Env).
+		// Determine the image tag for container-based apps.
+		if app.Infra.Type == "container" {
+			tfA.ImageTag = t.determineImageTag(ctx, app.Name)
+		}
+
+		app.MergeEnvironments(t.appDef.Shared.Env).
 			Walk(func(entry appdef.EnvWalkEntry) {
 				if entry.Environment != env {
 					return

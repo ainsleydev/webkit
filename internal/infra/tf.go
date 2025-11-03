@@ -16,6 +16,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/fsext"
+	"github.com/ainsleydev/webkit/internal/ghapi"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 	"github.com/ainsleydev/webkit/pkg/enforce"
@@ -33,6 +34,7 @@ type Terraform struct {
 	tf              terraformExecutor
 	manifest        *manifest.Tracker
 	fs              afero.Fs
+	ghClient        ghapi.Client
 	useLocalBackend bool
 }
 
@@ -71,11 +73,16 @@ func NewTerraform(ctx context.Context, appDef *appdef.Definition, manifest *mani
 		return nil, err
 	}
 
+	// Create GitHub API client with token from environment.
+	// If GITHUB_TOKEN is not set, the client will be unauthenticated.
+	ghClient := ghapi.New(os.Getenv("GITHUB_TOKEN"))
+
 	return &Terraform{
 		appDef:          appDef,
 		path:            path,
 		fs:              afero.NewOsFs(),
 		env:             tfEnv,
+		ghClient:        ghClient,
 		useLocalBackend: false,
 		manifest:        manifest,
 	}, nil
@@ -152,7 +159,7 @@ type PlanOutput struct {
 //
 // Must be called after Init().
 func (t *Terraform) Plan(ctx context.Context, env env.Environment) (PlanOutput, error) {
-	if err := t.prepareVars(env); err != nil {
+	if err := t.prepareVars(ctx, env); err != nil {
 		return PlanOutput{}, err
 	}
 
@@ -200,7 +207,7 @@ type ApplyOutput struct {
 //
 // Must be called after Init().
 func (t *Terraform) Apply(ctx context.Context, env env.Environment) (ApplyOutput, error) {
-	if err := t.prepareVars(env); err != nil {
+	if err := t.prepareVars(ctx, env); err != nil {
 		return ApplyOutput{}, err
 	}
 
@@ -236,7 +243,7 @@ type DestroyOutput struct {
 //
 // Must be called after Init().
 func (t *Terraform) Destroy(ctx context.Context, env env.Environment) (DestroyOutput, error) {
-	if err := t.prepareVars(env); err != nil {
+	if err := t.prepareVars(ctx, env); err != nil {
 		return DestroyOutput{}, err
 	}
 
@@ -290,7 +297,7 @@ type OutputResult struct {
 //
 // Must be called after Init().
 func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResult, error) {
-	if err := t.prepareVars(env); err != nil {
+	if err := t.prepareVars(ctx, env); err != nil {
 		return OutputResult{}, err
 	}
 
@@ -364,7 +371,7 @@ type (
 //
 // Must be called after Init().
 func (t *Terraform) Import(ctx context.Context, input ImportInput) (ImportOutput, error) {
-	if err := t.prepareVars(input.Environment); err != nil {
+	if err := t.prepareVars(ctx, input.Environment); err != nil {
 		return ImportOutput{}, err
 	}
 
@@ -453,12 +460,12 @@ func (t *Terraform) hasInitialised() error {
 	return nil
 }
 
-func (t *Terraform) prepareVars(env env.Environment) error {
+func (t *Terraform) prepareVars(ctx context.Context, env env.Environment) error {
 	if err := t.hasInitialised(); err != nil {
 		return err
 	}
 
-	vars, err := tfVarsFromDefinition(env, t.appDef)
+	vars, err := t.tfVarsFromDefinition(ctx, env)
 	if err != nil {
 		return errors.Wrap(err, "generating terraform variables")
 	}
@@ -468,6 +475,26 @@ func (t *Terraform) prepareVars(env env.Environment) error {
 	}
 
 	return nil
+}
+
+// determineImageTag determines the appropriate image tag for an app.
+// Priority:
+//  1. GITHUB_SHA environment variable (when running in CI)
+//  2. Latest sha-* tag from GHCR via ghapi client (when running locally)
+//  3. "latest" as fallback
+func (t *Terraform) determineImageTag(ctx context.Context, appName string) string {
+	// Check if we're in CI with GITHUB_SHA env var.
+	if sha := os.Getenv("GITHUB_SHA"); sha != "" {
+		return "sha-" + sha
+	}
+
+	// Try to get the latest sha tag from GHCR using the injected client.
+	if tag := t.ghClient.GetLatestSHATag(ctx, t.appDef.Project.Repo.Owner, t.appDef.Project.Repo.Name, appName); tag != "" {
+		return tag
+	}
+
+	// Fallback to latest.
+	return "latest"
 }
 
 func getTerraformPath(ctx context.Context) (string, error) {

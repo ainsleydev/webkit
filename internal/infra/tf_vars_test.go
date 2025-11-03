@@ -3,18 +3,43 @@
 package infra
 
 import (
+	"context"
+	"os"
 	"testing"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
+func setupTfVars(t *testing.T, appDef *appdef.Definition) *Terraform {
+	t.Helper()
+
+	ctrl := gomock.NewController(t)
+	mockClient := mocks.NewGHClient(ctrl)
+
+	// Default behavior: return empty string (no SHA tags).
+	mockClient.EXPECT().
+		GetLatestSHATag(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return("").
+		AnyTimes()
+
+	return &Terraform{
+		appDef:   appDef,
+		fs:       afero.NewMemMapFs(),
+		ghClient: mockClient,
+	}
+}
+
 func TestTFVarsFromDefinition(t *testing.T) {
 	t.Run("Nil Definition", func(t *testing.T) {
-		_, err := tfVarsFromDefinition(env.Development, nil)
+		tf := setupTfVars(t, nil)
+		_, err := tf.tfVarsFromDefinition(context.Background(), env.Development)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "definition cannot be nil")
 	})
@@ -26,7 +51,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			Resources: []appdef.Resource{},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -66,7 +92,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -127,7 +154,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -233,7 +261,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -334,7 +363,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("App with domains")
@@ -414,7 +444,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(env.Production, input)
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Apps with consistent config types")
@@ -589,4 +620,137 @@ func TestEncodeConfigValue(t *testing.T) {
 			assert.Equal(t, test.want, got)
 		})
 	}
+}
+
+func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Container app gets image tag from client", func(t *testing.T) {
+		t.Parallel()
+
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Infra: appdef.Infra{
+						Type:     "container",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		// Create Terraform with mock client that returns a specific tag.
+		ctrl := gomock.NewController(t)
+		mockClient := mocks.NewGHClient(ctrl)
+		mockClient.EXPECT().
+			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
+			Return("sha-test123")
+
+		tf := &Terraform{
+			appDef:   input,
+			fs:       afero.NewMemMapFs(),
+			ghClient: mockClient,
+		}
+
+		// Ensure GITHUB_SHA is not set.
+		originalSHA := os.Getenv("GITHUB_SHA")
+		os.Unsetenv("GITHUB_SHA")
+		defer func() {
+			if originalSHA != "" {
+				os.Setenv("GITHUB_SHA", originalSHA)
+			}
+		}()
+
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		require.NoError(t, err)
+
+		require.Len(t, got.Apps, 1)
+		assert.Equal(t, "sha-test123", got.Apps[0].ImageTag)
+	})
+
+	t.Run("Non-container app does not get image tag", func(t *testing.T) {
+		t.Parallel()
+
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "api",
+					Type: appdef.AppTypeGoLang,
+					Infra: appdef.Infra{
+						Type:     "vm",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		require.NoError(t, err)
+
+		require.Len(t, got.Apps, 1)
+		assert.Equal(t, "", got.Apps[0].ImageTag)
+	})
+
+	t.Run("Uses GITHUB_SHA when set", func(t *testing.T) {
+		t.Parallel()
+
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Infra: appdef.Infra{
+						Type:     "container",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+
+		// Set GITHUB_SHA environment variable.
+		originalSHA := os.Getenv("GITHUB_SHA")
+		os.Setenv("GITHUB_SHA", "ci-sha-123")
+		defer func() {
+			if originalSHA == "" {
+				os.Unsetenv("GITHUB_SHA")
+			} else {
+				os.Setenv("GITHUB_SHA", originalSHA)
+			}
+		}()
+
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		require.NoError(t, err)
+
+		require.Len(t, got.Apps, 1)
+		assert.Equal(t, "sha-ci-sha-123", got.Apps[0].ImageTag)
+	})
 }
