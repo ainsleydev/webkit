@@ -10,39 +10,37 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	mockghapi "github.com/ainsleydev/webkit/internal/ghapi/mocks"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-// mockGHClient is a simple mock for testing that always returns empty string.
-type mockGHClient struct{}
-
-func (m *mockGHClient) GetLatestSHATag(ctx context.Context, owner, repo, appName string) string {
-	return ""
-}
-
-// mockGHClientWithTag is a mock that returns a specific tag.
-type mockGHClientWithTag struct {
-	tag string
-}
-
-func (m *mockGHClientWithTag) GetLatestSHATag(ctx context.Context, owner, repo, appName string) string {
-	return m.tag
-}
-
 // newTestTerraform creates a minimal Terraform instance for testing tfVarsFromDefinition.
-func newTestTerraform(appDef *appdef.Definition) *Terraform {
+// The ghClient returns empty string by default (simulating no SHA tags found).
+func newTestTerraform(t *testing.T, appDef *appdef.Definition) *Terraform {
+	t.Helper()
+
+	ctrl := gomock.NewController(t)
+	mockClient := mockghapi.NewMockClient(ctrl)
+
+	// Default behavior: return empty string (no SHA tags).
+	mockClient.EXPECT().
+		GetLatestSHATag(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return("").
+		AnyTimes()
+
 	return &Terraform{
 		appDef:   appDef,
 		fs:       afero.NewMemMapFs(),
-		ghClient: &mockGHClient{},
+		ghClient: mockClient,
 	}
 }
 
 func TestTFVarsFromDefinition(t *testing.T) {
 	t.Run("Nil Definition", func(t *testing.T) {
-		tf := newTestTerraform(nil)
+		tf := newTestTerraform(t, nil)
 		_, err := tf.tfVarsFromDefinition(context.Background(), env.Development)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "definition cannot be nil")
@@ -55,7 +53,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			Resources: []appdef.Resource{},
 		}
 
-		tf := newTestTerraform(input)
+		tf := newTestTerraform(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -96,7 +94,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(input)
+		tf := newTestTerraform(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -158,7 +156,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(input)
+		tf := newTestTerraform(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -265,7 +263,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(input)
+		tf := newTestTerraform(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -367,7 +365,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(input)
+		tf := newTestTerraform(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -448,7 +446,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(input)
+		tf := newTestTerraform(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -654,7 +652,12 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 		}
 
 		// Create Terraform with mock client that returns a specific tag.
-		mockClient := &mockGHClientWithTag{tag: "sha-test123"}
+		ctrl := gomock.NewController(t)
+		mockClient := mockghapi.NewMockClient(ctrl)
+		mockClient.EXPECT().
+			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
+			Return("sha-test123")
+
 		tf := &Terraform{
 			appDef:   input,
 			fs:       afero.NewMemMapFs(),
@@ -701,7 +704,7 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(input)
+		tf := newTestTerraform(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		require.NoError(t, err)
 
@@ -733,7 +736,7 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(input)
+		tf := newTestTerraform(t, input)
 
 		// Set GITHUB_SHA environment variable.
 		originalSHA := os.Getenv("GITHUB_SHA")

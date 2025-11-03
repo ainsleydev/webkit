@@ -8,6 +8,8 @@ import (
 	"github.com/google/go-github/v68/github"
 )
 
+//go:generate go tool go.uber.org/mock/mockgen -source=client.go -destination ./mocks/ghapi.go -package=mockghapi
+
 // Client provides methods for interacting with the GitHub API.
 type Client interface {
 	// GetLatestSHATag returns the most recent sha-* tag for a given container image.

@@ -17,6 +17,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	mockghapi "github.com/ainsleydev/webkit/internal/ghapi/mocks"
 	"github.com/ainsleydev/webkit/internal/infra/internal/tfmocks"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/util/executil"
@@ -685,9 +686,12 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 			},
 		}
 
+		ctrl := gomock.NewController(t)
+		mockClient := mockghapi.NewMockClient(ctrl)
+
 		tf := &Terraform{
 			appDef:   appDef,
-			ghClient: &mockGHClient{},
+			ghClient: mockClient,
 		}
 
 		// Set GITHUB_SHA environment variable.
@@ -718,7 +722,12 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		}
 
 		// Mock client that returns a specific SHA tag.
-		mockClient := &mockGHClientWithTag{tag: "sha-xyz789"}
+		ctrl := gomock.NewController(t)
+		mockClient := mockghapi.NewMockClient(ctrl)
+		mockClient.EXPECT().
+			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
+			Return("sha-xyz789")
+
 		tf := &Terraform{
 			appDef:   appDef,
 			ghClient: mockClient,
@@ -750,7 +759,12 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		}
 
 		// Mock client that returns empty string.
-		mockClient := &mockGHClient{}
+		ctrl := gomock.NewController(t)
+		mockClient := mockghapi.NewMockClient(ctrl)
+		mockClient.EXPECT().
+			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
+			Return("")
+
 		tf := &Terraform{
 			appDef:   appDef,
 			ghClient: mockClient,
@@ -768,13 +782,4 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		tag := tf.determineImageTag(context.Background(), "web")
 		assert.Equal(t, "latest", tag)
 	})
-}
-
-// mockGHClientWithTag is a mock that returns a specific tag.
-type mockGHClientWithTag struct {
-	tag string
-}
-
-func (m *mockGHClientWithTag) GetLatestSHATag(ctx context.Context, owner, repo, appName string) string {
-	return m.tag
 }
