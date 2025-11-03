@@ -146,12 +146,18 @@ func TestPR(t *testing.T) {
 
 		content := string(file)
 
-		assert.Contains(t, content, "migration-check-cms:", "should contain migration check job")
-		assert.Contains(t, content, "Migration Check - CMS", "should contain migration check job name")
-		assert.Contains(t, content, "Check for pending migrations", "should contain migration check step")
-		assert.Contains(t, content, "pnpm migrate:create", "should run migration check command")
-		assert.Contains(t, content, "db-add-ip", "should add runner IP to database")
-		assert.Contains(t, content, "db-remove-ip", "should remove runner IP from database")
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		t.Log("Migration Check")
+		{
+			assert.Contains(t, content, "migration-check-cms:", "should contain migration check job")
+			assert.Contains(t, content, "Migration Check - CMS", "should contain migration check job name")
+			assert.Contains(t, content, "Check for pending migrations", "should contain migration check step")
+			assert.Contains(t, content, "pnpm migrate:create", "should run migration check command")
+			assert.Contains(t, content, "db-add-ip", "should add runner IP to database")
+			assert.Contains(t, content, "db-remove-ip", "should remove runner IP from database")
+		}
 	})
 
 	t.Run("No Migration Check For Payload Without Postgres", func(t *testing.T) {
