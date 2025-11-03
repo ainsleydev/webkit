@@ -4,6 +4,7 @@ package infra
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -19,6 +20,15 @@ type mockGHClient struct{}
 
 func (m *mockGHClient) GetLatestSHATag(ctx context.Context, owner, repo, appName string) string {
 	return ""
+}
+
+// mockGHClientWithTag is a mock that returns a specific tag.
+type mockGHClientWithTag struct {
+	tag string
+}
+
+func (m *mockGHClientWithTag) GetLatestSHATag(ctx context.Context, owner, repo, appName string) string {
+	return m.tag
 }
 
 // newTestTerraform creates a minimal Terraform instance for testing tfVarsFromDefinition.
@@ -614,4 +624,132 @@ func TestEncodeConfigValue(t *testing.T) {
 			assert.Equal(t, test.want, got)
 		})
 	}
+}
+
+func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Container app gets image tag from client", func(t *testing.T) {
+		t.Parallel()
+
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Infra: appdef.InfraConfig{
+						Type:     "container",
+						Provider: appdef.InfraProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		// Create Terraform with mock client that returns a specific tag.
+		mockClient := &mockGHClientWithTag{tag: "sha-test123"}
+		tf := &Terraform{
+			appDef:   input,
+			fs:       afero.NewMemMapFs(),
+			ghClient: mockClient,
+		}
+
+		// Ensure GITHUB_SHA is not set.
+		originalSHA := os.Getenv("GITHUB_SHA")
+		os.Unsetenv("GITHUB_SHA")
+		defer func() {
+			if originalSHA != "" {
+				os.Setenv("GITHUB_SHA", originalSHA)
+			}
+		}()
+
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		require.NoError(t, err)
+
+		require.Len(t, got.Apps, 1)
+		assert.Equal(t, "sha-test123", got.Apps[0].ImageTag)
+	})
+
+	t.Run("Non-container app does not get image tag", func(t *testing.T) {
+		t.Parallel()
+
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "api",
+					Type: appdef.AppTypeGoLang,
+					Infra: appdef.InfraConfig{
+						Type:     "vm",
+						Provider: appdef.InfraProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		tf := newTestTerraform(input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		require.NoError(t, err)
+
+		require.Len(t, got.Apps, 1)
+		assert.Equal(t, "", got.Apps[0].ImageTag)
+	})
+
+	t.Run("Uses GITHUB_SHA when set", func(t *testing.T) {
+		t.Parallel()
+
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Infra: appdef.InfraConfig{
+						Type:     "container",
+						Provider: appdef.InfraProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		tf := newTestTerraform(input)
+
+		// Set GITHUB_SHA environment variable.
+		originalSHA := os.Getenv("GITHUB_SHA")
+		os.Setenv("GITHUB_SHA", "ci-sha-123")
+		defer func() {
+			if originalSHA == "" {
+				os.Unsetenv("GITHUB_SHA")
+			} else {
+				os.Setenv("GITHUB_SHA", originalSHA)
+			}
+		}()
+
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		require.NoError(t, err)
+
+		require.Len(t, got.Apps, 1)
+		assert.Equal(t, "sha-ci-sha-123", got.Apps[0].ImageTag)
+	})
 }

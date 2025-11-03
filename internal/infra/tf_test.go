@@ -3,6 +3,7 @@
 package infra
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -667,4 +668,113 @@ func TestTerraform_Cleanup(t *testing.T) {
 			tf.Cleanup()
 		})
 	})
+}
+
+func TestTerraform_DetermineImageTag(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Uses GITHUB_SHA when set", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+		}
+
+		tf := &Terraform{
+			appDef:   appDef,
+			ghClient: &mockGHClient{},
+		}
+
+		// Set GITHUB_SHA environment variable.
+		originalSHA := os.Getenv("GITHUB_SHA")
+		os.Setenv("GITHUB_SHA", "abc123def456")
+		defer func() {
+			if originalSHA == "" {
+				os.Unsetenv("GITHUB_SHA")
+			} else {
+				os.Setenv("GITHUB_SHA", originalSHA)
+			}
+		}()
+
+		tag := tf.determineImageTag(context.Background(), "web")
+		assert.Equal(t, "sha-abc123def456", tag)
+	})
+
+	t.Run("Queries GHCR when GITHUB_SHA not set", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+		}
+
+		// Mock client that returns a specific SHA tag.
+		mockClient := &mockGHClientWithTag{tag: "sha-xyz789"}
+		tf := &Terraform{
+			appDef:   appDef,
+			ghClient: mockClient,
+		}
+
+		// Ensure GITHUB_SHA is not set.
+		originalSHA := os.Getenv("GITHUB_SHA")
+		os.Unsetenv("GITHUB_SHA")
+		defer func() {
+			if originalSHA != "" {
+				os.Setenv("GITHUB_SHA", originalSHA)
+			}
+		}()
+
+		tag := tf.determineImageTag(context.Background(), "web")
+		assert.Equal(t, "sha-xyz789", tag)
+	})
+
+	t.Run("Falls back to latest when GHCR returns empty", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Repo: appdef.GitHubRepo{
+					Owner: "test-owner",
+					Name:  "test-repo",
+				},
+			},
+		}
+
+		// Mock client that returns empty string.
+		mockClient := &mockGHClient{}
+		tf := &Terraform{
+			appDef:   appDef,
+			ghClient: mockClient,
+		}
+
+		// Ensure GITHUB_SHA is not set.
+		originalSHA := os.Getenv("GITHUB_SHA")
+		os.Unsetenv("GITHUB_SHA")
+		defer func() {
+			if originalSHA != "" {
+				os.Setenv("GITHUB_SHA", originalSHA)
+			}
+		}()
+
+		tag := tf.determineImageTag(context.Background(), "web")
+		assert.Equal(t, "latest", tag)
+	})
+}
+
+// mockGHClientWithTag is a mock that returns a specific tag.
+type mockGHClientWithTag struct {
+	tag string
+}
+
+func (m *mockGHClientWithTag) GetLatestSHATag(ctx context.Context, owner, repo, appName string) string {
+	return m.tag
 }
