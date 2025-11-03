@@ -244,7 +244,9 @@ jobs:
         id: migration
         env:
           DATABASE_URL: {{ ghSecret (index $app.Secrets "DatabaseURL") }}
-          PAYLOAD_SECRET: {{ ghSecret "CMS_PAYLOAD_SECRET" }}
+{{- if index $app.Secrets "PayloadSecret" }}
+          PAYLOAD_SECRET: {{ ghSecret (index $app.Secrets "PayloadSecret") }}
+{{- end }}
 {{- if $app.App.Path }}
         working-directory: {{ $app.App.Path }}
 {{- end }}

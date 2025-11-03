@@ -157,7 +157,101 @@ func TestPR(t *testing.T) {
 			assert.Contains(t, content, "pnpm migrate:create", "should run migration check command")
 			assert.Contains(t, content, "db-add-ip", "should add runner IP to database")
 			assert.Contains(t, content, "db-remove-ip", "should remove runner IP from database")
+			assert.NotContains(t, content, "PAYLOAD_SECRET", "should not contain PAYLOAD_SECRET when not in env")
 		}
+	})
+
+	t.Run("Migration Check With PAYLOAD_SECRET", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name:  "cms",
+					Title: "CMS",
+					Path:  "./cms",
+					Type:  appdef.AppTypePayload,
+					Env: appdef.Environment{
+						Production: appdef.EnvVar{
+							"DATABASE_URL": {
+								Source: appdef.EnvSourceResource,
+								Value:  "db.connection_url",
+							},
+							"PAYLOAD_SECRET": {
+								Source: appdef.EnvSourceSOPS,
+								Path:   "PAYLOAD_SECRET",
+							},
+						},
+					},
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name: "db",
+					Type: appdef.ResourceTypePostgres,
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PR(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "pr.yaml"))
+		require.NoError(t, err)
+
+		content := string(file)
+
+		assert.Contains(t, content, "migration-check-cms:", "should contain migration check job")
+		assert.Contains(t, content, "PAYLOAD_SECRET:", "should include PAYLOAD_SECRET env var")
+		assert.Contains(t, content, "secrets.PAYLOAD_SECRET", "should reference PAYLOAD_SECRET from GitHub secrets")
+	})
+
+	t.Run("Migration Check Ignores Non-SOPS PAYLOAD_SECRET", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name:  "cms",
+					Title: "CMS",
+					Path:  "./cms",
+					Type:  appdef.AppTypePayload,
+					Env: appdef.Environment{
+						Production: appdef.EnvVar{
+							"DATABASE_URL": {
+								Source: appdef.EnvSourceResource,
+								Value:  "db.connection_url",
+							},
+							"PAYLOAD_SECRET": {
+								Source: appdef.EnvSourceValue,
+								Value:  "hardcoded-secret",
+							},
+						},
+					},
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name: "db",
+					Type: appdef.ResourceTypePostgres,
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PR(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "pr.yaml"))
+		require.NoError(t, err)
+
+		content := string(file)
+
+		assert.Contains(t, content, "migration-check-cms:", "should contain migration check job")
+		assert.NotContains(t, content, "PAYLOAD_SECRET:", "should not include non-SOPS PAYLOAD_SECRET")
 	})
 
 	t.Run("No Migration Check For Payload Without Postgres", func(t *testing.T) {

@@ -58,22 +58,27 @@ func findPayloadAppsWithPostgres(apps []appdef.App, resources []appdef.Resource)
 			continue
 		}
 
-		// Check if Payload has a dependency of Postgres
+		// Check if Payload has a dependency of Postgres.
 		var dbResource *appdef.Resource
+		var payloadSecret string
 		app.Env.Walk(func(entry appdef.EnvWalkEntry) {
-			if entry.Source != appdef.EnvSourceResource {
-				return
-			}
-
-			resourceName, _, ok := appdef.ParseResourceReference(entry.Value)
-			if !ok {
-				return
-			}
-
-			if resource, exists := resourceMap[resourceName]; exists {
-				if resource.Type == appdef.ResourceTypePostgres {
-					dbResource = &resource
+			// Check for Postgres resource dependency.
+			if entry.Source == appdef.EnvSourceResource {
+				resourceName, _, ok := appdef.ParseResourceReference(entry.Value)
+				if !ok {
+					return
 				}
+
+				if resource, exists := resourceMap[resourceName]; exists {
+					if resource.Type == appdef.ResourceTypePostgres {
+						dbResource = &resource
+					}
+				}
+			}
+
+			// Check for PAYLOAD_SECRET env var.
+			if entry.Key == "PAYLOAD_SECRET" && entry.Source == appdef.EnvSourceSOPS {
+				payloadSecret = entry.Key
 			}
 		})
 
@@ -81,13 +86,20 @@ func findPayloadAppsWithPostgres(apps []appdef.App, resources []appdef.Resource)
 		if dbResource != nil {
 			enviro := env.Production
 
+			secrets := map[string]string{
+				"DatabaseURL": dbResource.GitHubSecretName(enviro, "connection_url"),
+				"DatabaseID":  dbResource.GitHubSecretName(enviro, "id"),
+			}
+
+			// Add PAYLOAD_SECRET if found in app env.
+			if payloadSecret != "" {
+				secrets["PayloadSecret"] = payloadSecret
+			}
+
 			result = append(result, AppWithDatabase{
 				App:      app,
 				Database: *dbResource,
-				Secrets: map[string]string{
-					"DatabaseURL": dbResource.GitHubSecretName(enviro, "connection_url"),
-					"DatabaseID":  dbResource.GitHubSecretName(enviro, "id"),
-				},
+				Secrets:  secrets,
 			})
 		}
 	}
