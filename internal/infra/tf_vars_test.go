@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -13,9 +14,26 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
+// mockGHClient is a simple mock for testing that always returns empty string.
+type mockGHClient struct{}
+
+func (m *mockGHClient) GetLatestSHATag(ctx context.Context, owner, repo, appName string) string {
+	return ""
+}
+
+// newTestTerraform creates a minimal Terraform instance for testing tfVarsFromDefinition.
+func newTestTerraform(appDef *appdef.Definition) *Terraform {
+	return &Terraform{
+		appDef:   appDef,
+		fs:       afero.NewMemMapFs(),
+		ghClient: &mockGHClient{},
+	}
+}
+
 func TestTFVarsFromDefinition(t *testing.T) {
 	t.Run("Nil Definition", func(t *testing.T) {
-		_, err := tfVarsFromDefinition(context.Background(), env.Development, nil)
+		tf := newTestTerraform(nil)
+		_, err := tf.tfVarsFromDefinition(context.Background(), env.Development)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "definition cannot be nil")
 	})
@@ -27,7 +45,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			Resources: []appdef.Resource{},
 		}
 
-		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
+		tf := newTestTerraform(input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -67,7 +86,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
+		tf := newTestTerraform(input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -128,7 +148,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
+		tf := newTestTerraform(input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -234,7 +255,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
+		tf := newTestTerraform(input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Metadata")
@@ -335,7 +357,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
+		tf := newTestTerraform(input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("App with domains")
@@ -415,7 +438,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		got, err := tfVarsFromDefinition(context.Background(), env.Production, input)
+		tf := newTestTerraform(input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
 		t.Log("Apps with consistent config types")

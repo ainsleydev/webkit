@@ -16,6 +16,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/fsext"
+	"github.com/ainsleydev/webkit/internal/ghapi"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 	"github.com/ainsleydev/webkit/pkg/enforce"
@@ -33,6 +34,7 @@ type Terraform struct {
 	tf              terraformExecutor
 	manifest        *manifest.Tracker
 	fs              afero.Fs
+	ghClient        ghapi.Client
 	useLocalBackend bool
 }
 
@@ -71,11 +73,16 @@ func NewTerraform(ctx context.Context, appDef *appdef.Definition, manifest *mani
 		return nil, err
 	}
 
+	// Create GitHub API client with token from environment.
+	// If GITHUB_TOKEN is not set, the client will be unauthenticated.
+	ghClient := ghapi.NewClient(os.Getenv("GITHUB_TOKEN"))
+
 	return &Terraform{
 		appDef:          appDef,
 		path:            path,
 		fs:              afero.NewOsFs(),
 		env:             tfEnv,
+		ghClient:        ghClient,
 		useLocalBackend: false,
 		manifest:        manifest,
 	}, nil
@@ -458,7 +465,7 @@ func (t *Terraform) prepareVars(ctx context.Context, env env.Environment) error 
 		return err
 	}
 
-	vars, err := tfVarsFromDefinition(ctx, env, t.appDef)
+	vars, err := t.tfVarsFromDefinition(ctx, env)
 	if err != nil {
 		return errors.Wrap(err, "generating terraform variables")
 	}
@@ -468,6 +475,26 @@ func (t *Terraform) prepareVars(ctx context.Context, env env.Environment) error 
 	}
 
 	return nil
+}
+
+// determineImageTag determines the appropriate image tag for an app.
+// Priority:
+//  1. GITHUB_SHA environment variable (when running in CI)
+//  2. Latest sha-* tag from GHCR via ghapi client (when running locally)
+//  3. "latest" as fallback
+func (t *Terraform) determineImageTag(ctx context.Context, appName string) string {
+	// Check if we're in CI with GITHUB_SHA env var.
+	if sha := os.Getenv("GITHUB_SHA"); sha != "" {
+		return "sha-" + sha
+	}
+
+	// Try to get the latest sha tag from GHCR using the injected client.
+	if tag := t.ghClient.GetLatestSHATag(ctx, t.appDef.Project.Repo.Owner, t.appDef.Project.Repo.Name, appName); tag != "" {
+		return tag
+	}
+
+	// Fallback to latest.
+	return "latest"
 }
 
 func getTerraformPath(ctx context.Context) (string, error) {
