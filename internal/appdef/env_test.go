@@ -268,7 +268,6 @@ func TestParseResourceReference(t *testing.T) {
 			t.Parallel()
 
 			gotResourceName, gotOutputName, gotOk := ParseResourceReference(test.input)
-
 			assert.Equal(t, test.wantOk, gotOk)
 			assert.Equal(t, test.wantResourceName, gotResourceName)
 			assert.Equal(t, test.wantOutputName, gotOutputName)

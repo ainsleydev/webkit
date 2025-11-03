@@ -31,17 +31,14 @@ type AppWithDatabase struct {
 // drift detection and app-specific PR workflows.
 func PR(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
-	tpl := templates.MustLoadTemplate(filepath.Join(workflowsPath, "pr.yaml.tmpl"))
 
-	payloadPostgresApps := findPayloadAppsWithPostgres(appDef.Apps, appDef.Resources)
-
-	data := map[string]any{
-		"Apps":                appDef.Apps,
-		"PayloadPostgresApps": payloadPostgresApps,
-	}
-	file := filepath.Join(workflowsPath, "pr.yaml")
-
-	return input.Generator().Template(file, tpl, data,
+	return input.Generator().Template(
+		filepath.Join(workflowsPath, "pr.yaml"),
+		templates.MustLoadTemplate(filepath.Join(workflowsPath, "pr.yaml.tmpl")),
+		map[string]any{
+			"Apps":                appDef.Apps,
+			"PayloadPostgresApps": findPayloadAppsWithPostgres(appDef.Apps, appDef.Resources),
+		},
 		scaffold.WithTracking(manifest.SourceProject()),
 	)
 }
@@ -61,21 +58,18 @@ func findPayloadAppsWithPostgres(apps []appdef.App, resources []appdef.Resource)
 			continue
 		}
 
-		// Check if this app has a Postgres dependency.
+		// Check if Payload has a dependency of Postgres
 		var dbResource *appdef.Resource
 		app.Env.Walk(func(entry appdef.EnvWalkEntry) {
-			// Only check resource-type env vars.
 			if entry.Source != appdef.EnvSourceResource {
 				return
 			}
 
-			// Parse resource reference using the helper function.
 			resourceName, _, ok := appdef.ParseResourceReference(entry.Value)
 			if !ok {
 				return
 			}
 
-			// Check if this resource is a Postgres database.
 			if resource, exists := resourceMap[resourceName]; exists {
 				if resource.Type == appdef.ResourceTypePostgres {
 					dbResource = &resource
