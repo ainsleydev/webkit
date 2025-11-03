@@ -1,5 +1,3 @@
-//go:build !race
-
 package ghapi
 
 import (
@@ -9,13 +7,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewClient(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Creates client with token", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("test-token")
+		client := New("test-token")
 		assert.NotNil(t, client)
 
 		dc, ok := client.(*DefaultClient)
@@ -26,7 +24,7 @@ func TestNewClient(t *testing.T) {
 	t.Run("Creates client without token", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("")
+		client := New("")
 		assert.NotNil(t, client)
 
 		dc, ok := client.(*DefaultClient)
@@ -41,7 +39,7 @@ func TestGetLatestSHATag(t *testing.T) {
 	t.Run("Returns empty string for non-existent package", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("")
+		client := New("")
 		tag := client.GetLatestSHATag(
 			context.Background(),
 			"non-existent-owner",
@@ -55,7 +53,7 @@ func TestGetLatestSHATag(t *testing.T) {
 	t.Run("Returns empty string with invalid inputs", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("")
+		client := New("")
 		tag := client.GetLatestSHATag(
 			context.Background(),
 			"",

@@ -75,7 +75,7 @@ func NewTerraform(ctx context.Context, appDef *appdef.Definition, manifest *mani
 
 	// Create GitHub API client with token from environment.
 	// If GITHUB_TOKEN is not set, the client will be unauthenticated.
-	ghClient := ghapi.NewClient(os.Getenv("GITHUB_TOKEN"))
+	ghClient := ghapi.New(os.Getenv("GITHUB_TOKEN"))
 
 	return &Terraform{
 		appDef:          appDef,

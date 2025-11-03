@@ -5,14 +5,15 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/google/go-github/v68/github"
+	"github.com/google/go-github/v76/github"
 )
 
-//go:generate go tool go.uber.org/mock/mockgen -source=client.go -destination ./mocks/ghapi.go -package=mockghapi
+//go:generate go tool go.uber.org/mock/mockgen -source=client.go -destination ../mocks/ghapi.go -package=mockghapi
 
 // Client provides methods for interacting with the GitHub API.
 type Client interface {
 	// GetLatestSHATag returns the most recent sha-* tag for a given container image.
+	//
 	// Returns empty string if no sha tags are found or if the query fails.
 	GetLatestSHATag(ctx context.Context, owner, repo, appName string) string
 }
@@ -22,9 +23,9 @@ type DefaultClient struct {
 	client *github.Client
 }
 
-// NewClient creates a new GitHub API client.
+// New creates a new GitHub API client.
 // If token is empty, the client will be unauthenticated (rate limited).
-func NewClient(token string) Client {
+func New(token string) Client {
 	var client *github.Client
 	if token != "" {
 		client = github.NewClient(nil).WithAuthToken(token)
@@ -67,8 +68,8 @@ func (c *DefaultClient) GetLatestSHATag(ctx context.Context, owner, repo, appNam
 	// Collect all sha-* tags from all versions.
 	var shaTags []string
 	for _, version := range versions {
-		if version.Metadata != nil && version.Metadata.Container != nil {
-			for _, tag := range version.Metadata.Container.Tags {
+		if version.Metadata != nil && version.Metadata != nil {
+			for _, tag := range version.Metadata {
 				if strings.HasPrefix(tag, "sha-") {
 					shaTags = append(shaTags, tag)
 				}
@@ -84,5 +85,6 @@ func (c *DefaultClient) GetLatestSHATag(ctx context.Context, owner, repo, appNam
 	// SHA tags are in format sha-<40-char-hash>, so alphabetical sorting
 	// isn't perfect but works reasonably well for recent tags.
 	sort.Strings(shaTags)
+
 	return shaTags[len(shaTags)-1]
 }
