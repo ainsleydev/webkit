@@ -17,9 +17,9 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	mockghapi "github.com/ainsleydev/webkit/internal/ghapi/mocks"
 	"github.com/ainsleydev/webkit/internal/infra/internal/tfmocks"
 	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -672,11 +672,7 @@ func TestTerraform_Cleanup(t *testing.T) {
 }
 
 func TestTerraform_DetermineImageTag(t *testing.T) {
-	t.Parallel()
-
 	t.Run("Uses GITHUB_SHA when set", func(t *testing.T) {
-		t.Parallel()
-
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Repo: appdef.GitHubRepo{
@@ -687,31 +683,20 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		}
 
 		ctrl := gomock.NewController(t)
-		mockClient := mockghapi.NewMockClient(ctrl)
+		mockClient := mocks.NewGHClient(ctrl)
 
 		tf := &Terraform{
 			appDef:   appDef,
 			ghClient: mockClient,
 		}
 
-		// Set GITHUB_SHA environment variable.
-		originalSHA := os.Getenv("GITHUB_SHA")
-		os.Setenv("GITHUB_SHA", "abc123def456")
-		defer func() {
-			if originalSHA == "" {
-				os.Unsetenv("GITHUB_SHA")
-			} else {
-				os.Setenv("GITHUB_SHA", originalSHA)
-			}
-		}()
+		t.Setenv("GITHUB_SHA", "abc123def456")
 
 		tag := tf.determineImageTag(context.Background(), "web")
 		assert.Equal(t, "sha-abc123def456", tag)
 	})
 
 	t.Run("Queries GHCR when GITHUB_SHA not set", func(t *testing.T) {
-		t.Parallel()
-
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Repo: appdef.GitHubRepo{
@@ -721,9 +706,8 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 			},
 		}
 
-		// Mock client that returns a specific SHA tag.
 		ctrl := gomock.NewController(t)
-		mockClient := mockghapi.NewMockClient(ctrl)
+		mockClient := mocks.NewGHClient(ctrl)
 		mockClient.EXPECT().
 			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
 			Return("sha-xyz789")
@@ -733,22 +717,11 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 			ghClient: mockClient,
 		}
 
-		// Ensure GITHUB_SHA is not set.
-		originalSHA := os.Getenv("GITHUB_SHA")
-		os.Unsetenv("GITHUB_SHA")
-		defer func() {
-			if originalSHA != "" {
-				os.Setenv("GITHUB_SHA", originalSHA)
-			}
-		}()
-
 		tag := tf.determineImageTag(context.Background(), "web")
 		assert.Equal(t, "sha-xyz789", tag)
 	})
 
 	t.Run("Falls back to latest when GHCR returns empty", func(t *testing.T) {
-		t.Parallel()
-
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Repo: appdef.GitHubRepo{
@@ -758,9 +731,8 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 			},
 		}
 
-		// Mock client that returns empty string.
 		ctrl := gomock.NewController(t)
-		mockClient := mockghapi.NewMockClient(ctrl)
+		mockClient := mocks.NewGHClient(ctrl)
 		mockClient.EXPECT().
 			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
 			Return("")
@@ -769,15 +741,6 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 			appDef:   appDef,
 			ghClient: mockClient,
 		}
-
-		// Ensure GITHUB_SHA is not set.
-		originalSHA := os.Getenv("GITHUB_SHA")
-		os.Unsetenv("GITHUB_SHA")
-		defer func() {
-			if originalSHA != "" {
-				os.Setenv("GITHUB_SHA", originalSHA)
-			}
-		}()
 
 		tag := tf.determineImageTag(context.Background(), "web")
 		assert.Equal(t, "latest", tag)

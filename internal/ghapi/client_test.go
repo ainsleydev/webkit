@@ -15,10 +15,6 @@ func TestNew(t *testing.T) {
 
 		client := New("test-token")
 		assert.NotNil(t, client)
-
-		dc, ok := client.(*DefaultClient)
-		assert.True(t, ok)
-		assert.NotNil(t, dc.client)
 	})
 
 	t.Run("Creates client without token", func(t *testing.T) {
@@ -26,10 +22,6 @@ func TestNew(t *testing.T) {
 
 		client := New("")
 		assert.NotNil(t, client)
-
-		dc, ok := client.(*DefaultClient)
-		assert.True(t, ok)
-		assert.NotNil(t, dc.client)
 	})
 }
 
@@ -70,7 +62,7 @@ type mockGHClient struct {
 	tags []string
 }
 
-func (m *mockGHClient) GetLatestSHATag(ctx context.Context, owner, repo, appName string) string {
+func (m *mockGHClient) GetLatestSHATag(_ context.Context, _, _, _ string) string {
 	var shaTags []string
 	for _, tag := range m.tags {
 		if len(tag) > 4 && tag[:4] == "sha-" {

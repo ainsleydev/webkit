@@ -13,17 +13,15 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	mockghapi "github.com/ainsleydev/webkit/internal/ghapi/mocks"
+	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-// newTestTerraform creates a minimal Terraform instance for testing tfVarsFromDefinition.
-// The ghClient returns empty string by default (simulating no SHA tags found).
-func newTestTerraform(t *testing.T, appDef *appdef.Definition) *Terraform {
+func setupTfVars(t *testing.T, appDef *appdef.Definition) *Terraform {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
-	mockClient := mockghapi.NewMockClient(ctrl)
+	mockClient := mocks.NewGHClient(ctrl)
 
 	// Default behavior: return empty string (no SHA tags).
 	mockClient.EXPECT().
@@ -40,7 +38,7 @@ func newTestTerraform(t *testing.T, appDef *appdef.Definition) *Terraform {
 
 func TestTFVarsFromDefinition(t *testing.T) {
 	t.Run("Nil Definition", func(t *testing.T) {
-		tf := newTestTerraform(t, nil)
+		tf := setupTfVars(t, nil)
 		_, err := tf.tfVarsFromDefinition(context.Background(), env.Development)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "definition cannot be nil")
@@ -53,7 +51,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			Resources: []appdef.Resource{},
 		}
 
-		tf := newTestTerraform(t, input)
+		tf := setupTfVars(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -94,7 +92,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(t, input)
+		tf := setupTfVars(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -156,7 +154,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(t, input)
+		tf := setupTfVars(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -263,7 +261,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(t, input)
+		tf := setupTfVars(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -365,7 +363,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(t, input)
+		tf := setupTfVars(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -446,7 +444,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			},
 		}
 
-		tf := newTestTerraform(t, input)
+		tf := setupTfVars(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
@@ -642,9 +640,9 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 				{
 					Name: "web",
 					Type: appdef.AppTypeSvelteKit,
-					Infra: appdef.InfraConfig{
+					Infra: appdef.Infra{
 						Type:     "container",
-						Provider: appdef.InfraProviderDigitalOcean,
+						Provider: appdef.ResourceProviderDigitalOcean,
 						Config:   map[string]any{},
 					},
 				},
@@ -653,7 +651,7 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 
 		// Create Terraform with mock client that returns a specific tag.
 		ctrl := gomock.NewController(t)
-		mockClient := mockghapi.NewMockClient(ctrl)
+		mockClient := mocks.NewGHClient(ctrl)
 		mockClient.EXPECT().
 			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
 			Return("sha-test123")
@@ -695,16 +693,16 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 				{
 					Name: "api",
 					Type: appdef.AppTypeGoLang,
-					Infra: appdef.InfraConfig{
+					Infra: appdef.Infra{
 						Type:     "vm",
-						Provider: appdef.InfraProviderDigitalOcean,
+						Provider: appdef.ResourceProviderDigitalOcean,
 						Config:   map[string]any{},
 					},
 				},
 			},
 		}
 
-		tf := newTestTerraform(t, input)
+		tf := setupTfVars(t, input)
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		require.NoError(t, err)
 
@@ -727,16 +725,16 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 				{
 					Name: "web",
 					Type: appdef.AppTypeSvelteKit,
-					Infra: appdef.InfraConfig{
+					Infra: appdef.Infra{
 						Type:     "container",
-						Provider: appdef.InfraProviderDigitalOcean,
+						Provider: appdef.ResourceProviderDigitalOcean,
 						Config:   map[string]any{},
 					},
 				},
 			},
 		}
 
-		tf := newTestTerraform(t, input)
+		tf := setupTfVars(t, input)
 
 		// Set GITHUB_SHA environment variable.
 		originalSHA := os.Getenv("GITHUB_SHA")

@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-github/v76/github"
 )
 
-//go:generate go tool go.uber.org/mock/mockgen -source=client.go -destination ../mocks/ghapi.go -package=mockghapi
+//go:generate go tool go.uber.org/mock/mockgen -source=client.go -destination ../mocks/ghapi.go -package=mocks -mock_names=Client=GHClient
 
 // Client provides methods for interacting with the GitHub API.
 type Client interface {
@@ -76,12 +76,12 @@ func (c *DefaultClient) GetLatestSHATag(ctx context.Context, owner, repo, appNam
 			shaTagsMap[*version.Name] = true
 		}
 
-		// Also check ContainerMetadata.Tags if available.
-		if version.ContainerMetadata != nil && version.ContainerMetadata.Tags != nil {
-			for _, tag := range version.ContainerMetadata.Tags {
-				if strings.HasPrefix(tag, "sha-") {
-					shaTagsMap[tag] = true
-				}
+		// Also check ContainerMetadata.Tag if available.
+		if version.ContainerMetadata != nil &&
+			version.ContainerMetadata.Tag != nil &&
+			version.ContainerMetadata.Tag.Name != nil {
+			if strings.HasPrefix(*version.ContainerMetadata.Tag.Name, "sha-") {
+				shaTagsMap[*version.ContainerMetadata.Tag.Name] = true
 			}
 		}
 	}
