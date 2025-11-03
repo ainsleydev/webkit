@@ -210,9 +210,9 @@ jobs:
 {{- end }}
 {{- end }}
 
-{{- range $appWithDB := .AppsWithDBs }}
-  migration-check-{{ $appWithDB.App.Name }}:
-    name: Migration Check - {{ $appWithDB.App.Title }}
+{{- range $app := .PayloadPostgresApps }}
+  migration-check-{{ $app.App.Name }}:
+    name: Migration Check - {{ $app.App.Title }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -225,31 +225,31 @@ jobs:
 
       - name: Install dependencies (Dependabot)
         if: {{ ghVar "github.actor" }} == 'dependabot[bot]'
-{{- if $appWithDB.App.Path }}
-        working-directory: {{ $appWithDB.App.Path }}
+{{- if $app.App.Path }}
+        working-directory: {{ $app.App.Path }}
 {{- end }}
         run: pnpm install --no-frozen-lockfile
 
       - name: Install dependencies (Regular)
         if: {{ ghVar "github.actor" }} != 'dependabot[bot]'
-{{- if $appWithDB.App.Path }}
-        working-directory: {{ $appWithDB.App.Path }}
+{{- if $app.App.Path }}
+        working-directory: {{ $app.App.Path }}
 {{- end }}
         run: pnpm install
 
       - name: Add Runner IP to Database
         uses: ./.github/actions/db-add-ip
         with:
-          database-id: {{ ghSecret (index $appWithDB.Secrets "DatabaseID") }}
+          database-id: {{ ghSecret (index $app.Secrets "DatabaseID") }}
           doctl-token: {{ ghSecret "DO_ACCESS_TOKEN" }}
 
       - name: Check for pending migrations
         id: migration
         env:
-          DATABASE_URL: {{ ghSecret (index $appWithDB.Secrets "DatabaseURL") }}
+          DATABASE_URL: {{ ghSecret (index $app.Secrets "DatabaseURL") }}
           PAYLOAD_SECRET: {{ ghSecret "CMS_PAYLOAD_SECRET" }}
-{{- if $appWithDB.App.Path }}
-        working-directory: {{ $appWithDB.App.Path }}
+{{- if $app.App.Path }}
+        working-directory: {{ $app.App.Path }}
 {{- end }}
         run: |
           echo "🔎 Checking for pending migrations..."
@@ -291,18 +291,18 @@ jobs:
               issue_number: context.issue.number
             {{ "}" }});
 
-            const existing = comments.find(c => c.body.includes("Migration Check - {{ $appWithDB.App.Title }}"));
+            const existing = comments.find(c => c.body.includes("Migration Check - {{ $app.App.Title }}"));
             if (existing) {{ "{" }}
               await github.rest.issues.updateComment({{ "{" }}
                 ...context.repo,
                 comment_id: existing.id,
-                body: `### Migration Check - {{ $appWithDB.App.Title }}\n${body}`
+                body: `### Migration Check - {{ $app.App.Title }}\n${body}`
               {{ "}" }});
             {{ "}" }} else {{ "{" }}
               await github.rest.issues.createComment({{ "{" }}
                 ...context.repo,
                 issue_number: context.issue.number,
-                body: `### Migration Check - {{ $appWithDB.App.Title }}\n${body}`
+                body: `### Migration Check - {{ $app.App.Title }}\n${body}`
               {{ "}" }});
             {{ "}" }}
 
@@ -310,6 +310,6 @@ jobs:
         if: always()
         uses: ./.github/actions/db-remove-ip
         with:
-          database-id: {{ ghSecret (index $appWithDB.Secrets "DatabaseID") }}
+          database-id: {{ ghSecret (index $app.Secrets "DatabaseID") }}
           doctl-token: {{ ghSecret "DO_ACCESS_TOKEN" }}
 {{- end }}

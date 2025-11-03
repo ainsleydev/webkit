@@ -3,7 +3,6 @@ package cicd
 import (
 	"context"
 	"path/filepath"
-	"strings"
 
 	"github.com/urfave/cli/v3"
 
@@ -34,15 +33,29 @@ func PR(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	tpl := templates.MustLoadTemplate(filepath.Join(workflowsPath, "pr.yaml.tmpl"))
 
+	payloadPostgresApps := findPayloadAppsWithPostgres(appDef.Apps, appDef.Resources)
+
+	data := map[string]any{
+		"Apps":                appDef.Apps,
+		"PayloadPostgresApps": payloadPostgresApps,
+	}
+	file := filepath.Join(workflowsPath, "pr.yaml")
+
+	return input.Generator().Template(file, tpl, data,
+		scaffold.WithTracking(manifest.SourceProject()),
+	)
+}
+
+// findPayloadAppsWithPostgres finds Payload apps that depend on a Postgres resource.
+func findPayloadAppsWithPostgres(apps []appdef.App, resources []appdef.Resource) []AppWithDatabase {
 	// Build a map of resource names to Resource objects for quick lookup.
 	resourceMap := make(map[string]appdef.Resource)
-	for _, resource := range appDef.Resources {
+	for _, resource := range resources {
 		resourceMap[resource.Name] = resource
 	}
 
-	// Find Payload apps with Postgres dependencies.
-	var appsWithDBs []AppWithDatabase
-	for _, app := range appDef.Apps {
+	var result []AppWithDatabase
+	for _, app := range apps {
 		// Only check Payload apps.
 		if app.Type != appdef.AppTypePayload {
 			continue
@@ -50,24 +63,17 @@ func PR(_ context.Context, input cmdtools.CommandInput) error {
 
 		// Check if this app has a Postgres dependency.
 		var dbResource *appdef.Resource
-		app.Env.WalkE(func(entry appdef.EnvWalkEntry) error {
+		app.Env.Walk(func(entry appdef.EnvWalkEntry) {
 			// Only check resource-type env vars.
 			if entry.Source != appdef.EnvSourceResource {
-				return nil
+				return
 			}
 
-			// Parse resource reference (format: "resource_name.output_name").
-			valueStr, ok := entry.Value.(string)
+			// Parse resource reference using the helper function.
+			resourceName, _, ok := appdef.ParseResourceReference(entry.Value)
 			if !ok {
-				return nil
+				return
 			}
-
-			parts := strings.SplitN(valueStr, ".", 2)
-			if len(parts) != 2 {
-				return nil
-			}
-
-			resourceName := parts[0]
 
 			// Check if this resource is a Postgres database.
 			if resource, exists := resourceMap[resourceName]; exists {
@@ -75,15 +81,13 @@ func PR(_ context.Context, input cmdtools.CommandInput) error {
 					dbResource = &resource
 				}
 			}
-
-			return nil
 		})
 
 		// If we found a Postgres dependency, add this app to the list.
 		if dbResource != nil {
 			enviro := env.Production
 
-			appsWithDBs = append(appsWithDBs, AppWithDatabase{
+			result = append(result, AppWithDatabase{
 				App:      app,
 				Database: *dbResource,
 				Secrets: map[string]string{
@@ -94,14 +98,5 @@ func PR(_ context.Context, input cmdtools.CommandInput) error {
 		}
 	}
 
-	data := map[string]any{
-		"Apps":          appDef.Apps,
-		"AppsWithDBs":   appsWithDBs,
-		"HasMigrations": len(appsWithDBs) > 0,
-	}
-	file := filepath.Join(workflowsPath, "pr.yaml")
-
-	return input.Generator().Template(file, tpl, data,
-		scaffold.WithTracking(manifest.SourceProject()),
-	)
+	return result
 }

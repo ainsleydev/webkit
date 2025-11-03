@@ -1,6 +1,8 @@
 package appdef
 
 import (
+	"strings"
+
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -150,4 +152,21 @@ func mergeVars(base, override EnvVar) EnvVar {
 	}
 
 	return result
+}
+
+// ParseResourceReference parses a resource reference string (e.g., "db.connection_url").
+// Returns resourceName, outputName, and ok boolean.
+// Resource references follow the format: "resource_name.output_name".
+func ParseResourceReference(value any) (resourceName, outputName string, ok bool) {
+	valueStr, isString := value.(string)
+	if !isString {
+		return "", "", false
+	}
+
+	parts := strings.SplitN(valueStr, ".", 2)
+	if len(parts) != 2 {
+		return "", "", false
+	}
+
+	return parts[0], parts[1], true
 }
