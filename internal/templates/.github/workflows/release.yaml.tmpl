@@ -141,13 +141,10 @@ jobs:
           ref: {{ ghVar "steps.read_version.outputs.version" }}
           path: '.webkit-repo'
 
-      - name: Create ansible directory
-        run: mkdir -p ./ansible
-
       - name: Copy Ansible Files
         run: |
           cp -r .webkit-repo/platform/ansible ./
-          echo "Copied ansible files from WebKit ${{ steps.read_version.outputs.version }}"
+          echo "Copied ansible files from WebKit {{ ghVar "steps.read_version.outputs.version" }}
 
       - name: Determine SHA
         id: determine_sha
