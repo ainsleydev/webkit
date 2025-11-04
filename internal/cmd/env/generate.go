@@ -116,20 +116,6 @@ func generateEnvFile(ctx context.Context, input cmdtools.CommandInput, args gene
 	return nil
 }
 
-// getEnvironmentVars extracts vars for the specified environment.
-func getEnvironmentVars(app appdef.Environment, environment env.Environment) (appdef.EnvVar, error) {
-	switch environment {
-	case env.Development:
-		return app.Dev, nil
-	case env.Staging:
-		return app.Staging, nil
-	case env.Production:
-		return app.Production, nil
-	default:
-		return nil, fmt.Errorf("unsupported environment: %s", environment)
-	}
-}
-
 // envSuffix returns the .env file suffix for an environment.
 func envSuffix(environment env.Environment) string {
 	if environment == env.Development {

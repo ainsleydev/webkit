@@ -35,15 +35,11 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 		mergedApp := app.MergeEnvironments(appDef.Shared.Env)
 
 		for _, enviro := range environmentsWithDotEnv {
-			var vars appdef.EnvVar
-			switch enviro {
-			case env.Development:
-				vars = mergedApp.Dev
-			case env.Production:
-				vars = mergedApp.Production
+			vars, err := getEnvironmentVars(mergedApp, enviro)
+			if err != nil {
+				return err
 			}
 
-			// Skip empty environments
 			if len(vars) == 0 {
 				continue
 			}

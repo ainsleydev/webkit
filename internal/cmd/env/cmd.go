@@ -47,6 +47,20 @@ type writeArgs struct {
 
 var dotEnvMarshaller = godotenv.Marshal
 
+// getEnvironmentVars extracts vars for the specified environment.
+func getEnvironmentVars(app appdef.Environment, environment env.Environment) (appdef.EnvVar, error) {
+	switch environment {
+	case env.Development:
+		return app.Dev, nil
+	case env.Staging:
+		return app.Staging, nil
+	case env.Production:
+		return app.Production, nil
+	default:
+		return nil, fmt.Errorf("unsupported environment: %s", environment)
+	}
+}
+
 // writeMapToFile writes environment variables to dotenv file.
 func writeMapToFile(args writeArgs) error {
 	envMap := make(map[string]string)
