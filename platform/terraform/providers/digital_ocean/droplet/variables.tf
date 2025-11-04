@@ -26,3 +26,9 @@ variable "tags" {
   type        = list(string)
   default     = []
 }
+
+variable "server_user" {
+  description = "The SSH user for the server"
+  type        = string
+  default     = "root"
+}

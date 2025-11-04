@@ -29,6 +29,14 @@ output "ssh_private_key" {
   sensitive = true
 }
 
+output "server_user" {
+  description = "SSH user for the VM"
+  value = (
+    var.platform_type == "vm" && var.platform_provider == "digitalocean" ? module.do_droplet[0].server_user :
+    null
+  )
+}
+
 # Container (App Platform) Outputs
 output "app_id" {
   description = "ID of the App Platform app"

@@ -96,3 +96,9 @@ variable "tags" {
   type        = list(string)
   default     = []
 }
+
+variable "server_user" {
+  description = "SSH user for VM deployments"
+  type        = string
+  default     = "root"
+}

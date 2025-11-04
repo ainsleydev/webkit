@@ -66,6 +66,7 @@ output "apps" {
         app.ip_address != null ? { ip_address = app.ip_address } : {},
         app.droplet_id != null ? { droplet_id = app.droplet_id } : {},
         app.ssh_private_key != null ? { ssh_private_key = app.ssh_private_key } : {},
+        app.server_user != null ? { server_user = app.server_user } : {},
 
       # Container (App Platform) outputs
         app.app_id != null ? { app_id = app.app_id } : {},

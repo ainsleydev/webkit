@@ -133,16 +133,38 @@ locals {
     s3 = ["id", "urn", "bucket_name", "bucket_url", "region", "endpoint"]
   }
 
-  # Build ALL secret keys from var.resources (fully known at plan time)
-  github_secrets = merge([
+  # Define which outputs each app type has (known at plan time)
+  app_output_map = {
+    vm        = ["ip_address", "ssh_private_key", "server_user"]
+    container = []
+  }
+
+  # Build secret keys from var.resources (fully known at plan time)
+  github_secrets_resources = merge([
     for resource in var.resources : {
       for output_name in lookup(local.resource_output_map, resource.platform_type, []) :
       upper("TF_${local.environment_short}_${replace(resource.name, "-", "_")}_${output_name}") => tomap({
+        source_type   = "resource"
         resource_name = resource.name
         output_name   = output_name
       })
     }
   ]...)
+
+  # Build secret keys from var.apps (fully known at plan time)
+  github_secrets_apps = merge([
+    for app in var.apps : {
+      for output_name in lookup(local.app_output_map, app.platform_type, []) :
+      upper("TF_${local.environment_short}_${replace(app.name, "-", "_")}_${output_name}") => tomap({
+        source_type = "app"
+        app_name    = app.name
+        output_name = output_name
+      })
+    }
+  ]...)
+
+  # Merge all GitHub secrets
+  github_secrets = merge(local.github_secrets_resources, local.github_secrets_apps)
 }
 
 resource "github_actions_secret" "resource_outputs" {
@@ -151,7 +173,7 @@ resource "github_actions_secret" "resource_outputs" {
   repository      = var.github_config.repo
   secret_name     = each.key
   plaintext_value = try(
-    tostring(module.resources[each.value["resource_name"]][each.value["output_name"]]),
+    each.value["source_type"] == "resource" ? tostring(module.resources[each.value["resource_name"]][each.value["output_name"]]) : tostring(module.apps[each.value["app_name"]][each.value["output_name"]]),
     "NOT_SET"
   )
   depends_on = [module.resources, module.apps]

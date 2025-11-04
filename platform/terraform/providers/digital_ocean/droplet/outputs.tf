@@ -23,3 +23,8 @@ output "ssh_public_key" {
   description = "Public key for the server (Terraform generated)"
   value       = tls_private_key.this.public_key_openssh
 }
+
+output "server_user" {
+  description = "The SSH user for the server"
+  value       = var.server_user
+}
