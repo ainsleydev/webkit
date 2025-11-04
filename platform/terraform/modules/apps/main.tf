@@ -14,6 +14,7 @@ module "do_droplet" {
   droplet_region = try(var.platform_config.region, "lon1")
   ssh_keys       = try(var.ssh_keys, [])
   tags           = try(var.tags, [])
+  server_user    = var.server_user
 }
 
 # DigitalOcean App Platform (Container)

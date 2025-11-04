@@ -139,10 +139,10 @@ jobs:
         with:
           playbook: playbooks/server.yaml
           directory: platform/ansible
-          key: ${{"{{"}} secrets.{{ printf "%s_SSH_PRIVATE_KEY" (.Name | upper) }} {{ "}}" }}
+          key: {{ ghSecret (printf "TF_PROD_%s_SSH_PRIVATE_KEY" (.Name | upper | replace "-" "_")) }}
           inventory: |
             [all]
-            {{ .Name }} ansible_host=${{"{{"}} secrets.{{ printf "%s_SERVER_IP" (.Name | upper) }} {{ "}}" }} ansible_user=${{"{{"}} secrets.{{ printf "%s_SERVER_USER" (.Name | upper) }} {{ "}}" }}
+            {{ .Name }} ansible_host={{ ghSecret (printf "TF_PROD_%s_IP_ADDRESS" (.Name | upper | replace "-" "_")) }} ansible_user={{ ghSecret (printf "TF_PROD_%s_SERVER_USER" (.Name | upper | replace "-" "_")) }}
           options: |
             -e webkit_version=latest
             -e age_secret_key=${{"{{"}} secrets.ORG_AGE_SECRET {{ "}}" }}
