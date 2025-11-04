@@ -125,23 +125,6 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	// Print what we're importing.
-	itemType := "resource"
-	if target.Kind == infra.ImportKindApp {
-		itemType = "app"
-	} else if target.Kind == infra.ImportKindProject {
-		itemType = "project"
-	}
-
-	if target.Kind == infra.ImportKindProject {
-		printer.Info(fmt.Sprintf("Importing DigitalOcean project with ID %q into %s environment",
-			target.ID, target.Environment))
-	} else {
-		printer.Info(fmt.Sprintf("Importing %s %q with ID %q into %s environment",
-			itemType, target.Name, target.ID, target.Environment))
-	}
-	printer.Print("")
-
 	// Initialise Terraform.
 	tf, cleanup, err := initTerraform(ctx, input)
 	defer cleanup()
@@ -149,7 +132,6 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	printer.Print(fmt.Sprintf("Importing %s...", itemType))
 	spinner.Start()
 
 	result, err := tf.Import(ctx, infra.ImportInput{
