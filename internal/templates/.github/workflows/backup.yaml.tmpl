@@ -219,13 +219,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120 # 2 Hours
     needs:
-      - backup-codebase
 {{- range .Resources }}
-      - backup-{{ .Name }}
+      - backup-resource-{{ .Name }}
 {{- end }}
+      - backup-codebase
     env:
       BUCKET_NAME: '{{ $.BucketName }}'
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
