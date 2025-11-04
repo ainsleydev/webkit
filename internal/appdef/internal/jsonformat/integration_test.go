@@ -13,38 +13,21 @@ import (
 func TestFormat_WithRealAppJSON(t *testing.T) {
 	// This test simulates what happens in the webkit update command.
 	// It creates a structure similar to app.json, marshals it, and applies our formatter.
+	// Uses the test types that are registered in the formatter_test.go init().
 
-	type envValue struct {
-		Source string `json:"source"`
-		Value  string `json:"value,omitempty"`
-		Path   string `json:"path,omitempty"`
-	}
-
-	type commandSpec struct {
-		Command string `json:"command,omitempty"`
-		SkipCI  bool   `json:"skip_ci,omitempty"`
-		Timeout string `json:"timeout,omitempty"`
-	}
-
-	type app struct {
-		Name     string                     `json:"name"`
-		Env      map[string]map[string]envValue `json:"env"`
-		Commands map[string]commandSpec     `json:"commands"`
-	}
-
-	testApp := app{
+	testApp := testApp{
 		Name: "cms",
-		Env: map[string]map[string]envValue{
-			"dev": {
+		Env: testEnvironment{
+			Dev: testEnvVar{
 				"DATABASE_URI": {Source: "value", Value: "file:./cms.db"},
 				"FRONTEND_URL": {Source: "value", Value: "http://localhost:5173"},
 			},
-			"production": {
+			Production: testEnvVar{
 				"DATABASE_URI": {Source: "resource", Value: "db.connection_url"},
 				"FRONTEND_URL": {Source: "value", Value: "https://searchspares.com"},
 			},
 		},
-		Commands: map[string]commandSpec{
+		Commands: map[string]testCommandSpec{
 			"build": {Command: "pnpm build"},
 			"test":  {Command: "pnpm test"},
 			"lint":  {Command: "pnpm lint"},

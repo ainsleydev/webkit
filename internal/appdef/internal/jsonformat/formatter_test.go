@@ -1,11 +1,47 @@
 package jsonformat
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Test types that mimic appdef structures with inline tags.
+type (
+	testEnvValue struct {
+		Source string `json:"source"`
+		Value  string `json:"value,omitempty"`
+		Path   string `json:"path,omitempty"`
+	}
+
+	testEnvVar map[string]testEnvValue
+
+	testEnvironment struct {
+		Dev        testEnvVar `json:"dev,omitempty" inline:"true"`
+		Production testEnvVar `json:"production,omitempty" inline:"true"`
+		Staging    testEnvVar `json:"staging,omitempty" inline:"true"`
+	}
+
+	testCommandSpec struct {
+		Command string `json:"command,omitempty"`
+		SkipCI  bool   `json:"skip_ci,omitempty"`
+		Timeout string `json:"timeout,omitempty"`
+	}
+
+	testApp struct {
+		Name     string                      `json:"name"`
+		Env      testEnvironment             `json:"env"`
+		Commands map[string]testCommandSpec `json:"commands,omitempty" inline:"true"`
+	}
+)
+
+func init() {
+	// Register test types for testing.
+	RegisterType(reflect.TypeOf(testApp{}))
+	RegisterType(reflect.TypeOf(testEnvironment{}))
+}
 
 func TestFormat(t *testing.T) {
 	t.Parallel()
