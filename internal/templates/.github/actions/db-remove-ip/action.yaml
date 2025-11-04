@@ -1,0 +1,36 @@
+name: 'Remove IP from Database Firewall'
+description: 'Removes current runner IP from DigitalOcean database firewall'
+
+inputs:
+  database-id:
+    description: 'DigitalOcean database ID'
+    required: true
+  doctl-token:
+    description: 'DigitalOcean API token'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get Runner IP
+      id: ip
+      run: echo "RUNNER_IP=$(curl -s https://api.ipify.org)" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Set up doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ inputs.doctl-token }}
+
+    - name: Remove Runner IP from Firewall
+      run: |
+        echo "Removing runner IP from DB firewall..."
+        RULE_UUID=$(doctl databases firewalls list ${{ inputs.database-id }} -o json | \
+                    jq -r '.[] | select(.value=="'"${RUNNER_IP}/32"'") | .uuid')
+        if [ -n "$RULE_UUID" ]; then
+          doctl databases firewalls remove ${{ inputs.database-id }} --uuid "$RULE_UUID"
+          echo "Removed runner IP $RUNNER_IP from firewall."
+        else
+          echo "No firewall rule found for runner IP $RUNNER_IP."
+        fi
+      shell: bash

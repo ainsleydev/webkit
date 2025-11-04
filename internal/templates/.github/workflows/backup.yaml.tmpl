@@ -29,7 +29,7 @@ jobs:
         uses: ./.github/actions/db-add-ip
         with:
           database-id: {{ ghSecret (index $.Data .Name "DatabaseID") }}
-          doctl-token: {{ ghSecret "DO_ACCESS_TOKEN" }}
+          doctl-token: {{ ghEnv "DO_ACCESS_TOKEN" }}
 
       - name: Install rclone
         run: |

@@ -49,7 +49,6 @@ jobs:
           name: webkit
           path: webkit
           if-no-files-found: error
-
   secret-scan:
     name: gitleaks
     runs-on: ubuntu-latest
@@ -64,7 +63,6 @@ jobs:
         env:
           GITHUB_TOKEN: {{ ghSecret "GITHUB_TOKEN" }}
           GITLEAKS_LICENSE: {{ ghSecret "ORG_GITLEAKS_LICENSE" }}
-
   drift-detection:
     runs-on: ubuntu-latest
     needs: setup-webkit
@@ -113,7 +111,6 @@ jobs:
           echo "❌ Drift detected in WebKit-generated files"
           echo "Run 'webkit update' to sync your project with the latest templates"
           exit 1
-
   app-json-diff:
     runs-on: ubuntu-latest
     needs: setup-webkit
@@ -208,4 +205,110 @@ jobs:
         run: {{ $spec.Cmd }}
 {{- end }}
 {{- end }}
+{{- end }}
+
+{{- range $app := .PayloadPostgresApps }}
+  migration-check-{{ $app.App.Name }}:
+    name: Migration Check - {{ $app.App.Title }}
+    runs-on: ubuntu-latest
+    env:
+      DO_ACCESS_TOKEN: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies (Dependabot)
+        if: github.actor == 'dependabot[bot]'
+{{- if $app.App.Path }}
+        working-directory: {{ $app.App.Path }}
+{{- end }}
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Install dependencies (Regular)
+        if: github.actor != 'dependabot[bot]'
+{{- if $app.App.Path }}
+        working-directory: {{ $app.App.Path }}
+{{- end }}
+        run: pnpm install
+
+      - name: Add Runner IP to Database
+        uses: ./.github/actions/db-add-ip
+        with:
+          database-id: {{ ghSecret (index $app.Secrets "DatabaseID") }}
+          doctl-token: {{ ghEnv "DO_ACCESS_TOKEN" }}
+
+      - name: Check for pending migrations
+        id: migration
+        env:
+          DATABASE_URL: {{ ghSecret (index $app.Secrets "DatabaseURL") }}
+          # PAYLOAD_SECRET is required by Payload but doesn't need to be the real value
+          # for migration generation. A random value per run is sufficient.
+          PAYLOAD_SECRET: migration-check-{{ ghVar "github.run_id" }}-{{ ghVar "github.run_attempt" }}
+{{- if $app.App.Path }}
+        working-directory: {{ $app.App.Path }}
+{{- end }}
+        run: |
+          echo "🔎 Checking for pending migrations..."
+          output=$(pnpm migrate:create 2>&1 || true)
+          echo "$output"
+
+          if echo "$output" | grep -q "No schema changes detected"; then
+            echo "✅ No pending migrations detected"
+            echo "result=pass" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Schema changes detected! Please run migrations locally."
+            echo "result=fail" >> $GITHUB_OUTPUT
+
+            echo "---- Generated Migration Files ----"
+            ls -t src/migrations | head -n 1 | while read file; do
+              echo "📄 $file"
+              echo "---------------------------------"
+              cat "src/migrations/$file"
+              echo "---------------------------------"
+            done
+            exit 1
+          fi
+
+      - name: Comment on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: {{ ghSecret "GITHUB_TOKEN" }}
+          script: |
+            const result = "{{ ghVar "steps.migration.outputs.result" }}";
+            const body = result === "fail"
+              ? "❌ **Schema changes detected!** Please run `pnpm migrate:create`, commit the migration, and push."
+              : result === "pass"
+              ? "✅ **No pending migrations detected.** All clear to merge!"
+              : "⚠️ Migration check did not run correctly.";
+
+            const {{ "{" }} data: comments {{ "}" }} = await github.rest.issues.listComments({{ "{" }}
+              ...context.repo,
+              issue_number: context.issue.number
+            {{ "}" }});
+
+            const existing = comments.find(c => c.body.includes("Migration Check - {{ $app.App.Title }}"));
+            if (existing) {{ "{" }}
+              await github.rest.issues.updateComment({{ "{" }}
+                ...context.repo,
+                comment_id: existing.id,
+                body: `### Migration Check - {{ $app.App.Title }}\n${body}`
+              {{ "}" }});
+            {{ "}" }} else {{ "{" }}
+              await github.rest.issues.createComment({{ "{" }}
+                ...context.repo,
+                issue_number: context.issue.number,
+                body: `### Migration Check - {{ $app.App.Title }}\n${body}`
+              {{ "}" }});
+            {{ "}" }}
+
+      - name: Remove Runner IP from Database
+        if: always()
+        uses: ./.github/actions/db-remove-ip
+        with:
+          database-id: {{ ghSecret (index $app.Secrets "DatabaseID") }}
+          doctl-token: {{ ghEnv "DO_ACCESS_TOKEN" }}
 {{- end }}

@@ -191,3 +191,86 @@ func TestMergeVars(t *testing.T) {
 		})
 	}
 }
+
+func TestParseResourceReference(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input            any
+		wantResourceName string
+		wantOutputName   string
+		wantOk           bool
+	}{
+		"Valid Reference": {
+			input:            "db.connection_url",
+			wantResourceName: "db",
+			wantOutputName:   "connection_url",
+			wantOk:           true,
+		},
+		"Valid With Underscore": {
+			input:            "my_database.access_key",
+			wantResourceName: "my_database",
+			wantOutputName:   "access_key",
+			wantOk:           true,
+		},
+		"Valid With Hyphen": {
+			input:            "my-db.connection-url",
+			wantResourceName: "my-db",
+			wantOutputName:   "connection-url",
+			wantOk:           true,
+		},
+		"Valid With Multiple Dots": {
+			input:            "db.output.nested",
+			wantResourceName: "db",
+			wantOutputName:   "output.nested",
+			wantOk:           true,
+		},
+		"Invalid No Dot": {
+			input:            "db_connection_url",
+			wantResourceName: "",
+			wantOutputName:   "",
+			wantOk:           false,
+		},
+		"Invalid Empty String": {
+			input:            "",
+			wantResourceName: "",
+			wantOutputName:   "",
+			wantOk:           false,
+		},
+		"Invalid Only Dot": {
+			input:            ".",
+			wantResourceName: "",
+			wantOutputName:   "",
+			wantOk:           false,
+		},
+		"Invalid Not String": {
+			input:            123,
+			wantResourceName: "",
+			wantOutputName:   "",
+			wantOk:           false,
+		},
+		"Invalid Nil": {
+			input:            nil,
+			wantResourceName: "",
+			wantOutputName:   "",
+			wantOk:           false,
+		},
+		"Invalid Bool": {
+			input:            true,
+			wantResourceName: "",
+			wantOutputName:   "",
+			wantOk:           false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			gotResourceName, gotOutputName, gotOk := ParseResourceReference(test.input)
+			assert.Equal(t, test.wantOk, gotOk)
+			assert.Equal(t, test.wantResourceName, gotResourceName)
+			assert.Equal(t, test.wantOutputName, gotOutputName)
+		})
+	}
+}

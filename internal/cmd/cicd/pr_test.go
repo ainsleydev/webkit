@@ -107,4 +107,141 @@ func TestPR(t *testing.T) {
 		err := PR(t.Context(), input)
 		assert.Error(t, err)
 	})
+
+	t.Run("Migration Check For Payload With Postgres", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name:  "cms",
+					Title: "CMS",
+					Path:  "./cms",
+					Type:  appdef.AppTypePayload,
+					Env: appdef.Environment{
+						Production: appdef.EnvVar{
+							"DATABASE_URL": {
+								Source: appdef.EnvSourceResource,
+								Value:  "db.connection_url",
+							},
+						},
+					},
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name: "db",
+					Type: appdef.ResourceTypePostgres,
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PR(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "pr.yaml"))
+		require.NoError(t, err)
+
+		content := string(file)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		t.Log("Migration Check")
+		{
+			assert.Contains(t, content, "migration-check-cms:", "should contain migration check job")
+			assert.Contains(t, content, "Migration Check - CMS", "should contain migration check job name")
+			assert.Contains(t, content, "Check for pending migrations", "should contain migration check step")
+			assert.Contains(t, content, "pnpm migrate:create", "should run migration check command")
+			assert.Contains(t, content, "db-add-ip", "should add runner IP to database")
+			assert.Contains(t, content, "db-remove-ip", "should remove runner IP from database")
+			assert.Contains(t, content, "PAYLOAD_SECRET: migration-check-", "should contain generated PAYLOAD_SECRET")
+		}
+	})
+
+	t.Run("No Migration Check For Payload Without Postgres", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name:  "cms",
+					Title: "CMS",
+					Path:  "./cms",
+					Type:  appdef.AppTypePayload,
+					Env: appdef.Environment{
+						Production: appdef.EnvVar{
+							"API_KEY": {
+								Source: appdef.EnvSourceValue,
+								Value:  "test-key",
+							},
+						},
+					},
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name: "storage",
+					Type: appdef.ResourceTypeS3,
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PR(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "pr.yaml"))
+		require.NoError(t, err)
+
+		content := string(file)
+
+		assert.NotContains(t, content, "migration-check-cms:", "should not contain migration check job")
+		assert.NotContains(t, content, "Check for pending migrations", "should not contain migration check step")
+	})
+
+	t.Run("No Migration Check For Non-Payload Apps", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name:  "api",
+					Title: "API",
+					Path:  "./api",
+					Type:  appdef.AppTypeGoLang,
+					Env: appdef.Environment{
+						Production: appdef.EnvVar{
+							"DATABASE_URL": {
+								Source: appdef.EnvSourceResource,
+								Value:  "db.connection_url",
+							},
+						},
+					},
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name: "db",
+					Type: appdef.ResourceTypePostgres,
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PR(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "pr.yaml"))
+		require.NoError(t, err)
+
+		content := string(file)
+
+		assert.NotContains(t, content, "migration-check-api:", "should not contain migration check for non-Payload app")
+		assert.NotContains(t, content, "Check for pending migrations", "should not contain migration check step")
+	})
 }
