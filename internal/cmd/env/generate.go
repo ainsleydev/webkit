@@ -36,43 +36,30 @@ var GenerateCmd = &cli.Command{
 	Action: cmdtools.Wrap(Generate),
 }
 
-type generateArgs struct {
-	AppName     string
-	Environment string
-	OutputPath  string
-}
-
 // Generate creates a .env file for a specific app and environment.
 func Generate(ctx context.Context, input cmdtools.CommandInput) error {
-	args := generateArgs{
-		AppName:     input.Command.String("app"),
-		Environment: input.Command.String("environment"),
-		OutputPath:  input.Command.String("output"),
-	}
-
-	return generateEnvFile(ctx, input, args)
-}
-
-// generateEnvFile contains the core logic for generating env files.
-func generateEnvFile(ctx context.Context, input cmdtools.CommandInput, args generateArgs) error {
 	appDef := input.AppDef()
 	printer := input.Printer()
 
-	environment, err := env.Parse(args.Environment)
+	appName := input.Command.String("app")
+	environmentStr := input.Command.String("environment")
+	outputPath := input.Command.String("output")
+
+	environment, err := env.Parse(environmentStr)
 	if err != nil {
 		return fmt.Errorf("invalid environment: %w", err)
 	}
 
 	var targetApp *appdef.App
 	for _, app := range appDef.Apps {
-		if app.Name == args.AppName {
+		if app.Name == appName {
 			targetApp = &app
 			break
 		}
 	}
 
 	if targetApp == nil {
-		return fmt.Errorf("app '%s' not found in app.json", args.AppName)
+		return fmt.Errorf("app '%s' not found in app.json", appName)
 	}
 
 	err = secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
@@ -91,7 +78,7 @@ func generateEnvFile(ctx context.Context, input cmdtools.CommandInput, args gene
 	}
 
 	if len(vars) == 0 {
-		printer.Warn(fmt.Sprintf("No environment variables defined for app '%s' in environment '%s'", args.AppName, environment))
+		printer.Warn(fmt.Sprintf("No environment variables defined for app '%s' in environment '%s'", appName, environment))
 		return nil
 	}
 
@@ -100,18 +87,17 @@ func generateEnvFile(ctx context.Context, input cmdtools.CommandInput, args gene
 		Vars:             vars,
 		App:              *targetApp,
 		Environment:      environment,
-		CustomOutputPath: args.OutputPath,
+		CustomOutputPath: outputPath,
 	})
 	if err != nil {
 		return err
 	}
 
-	outputPath := args.OutputPath
 	if outputPath == "" {
 		outputPath = fmt.Sprintf("%s/.env%s", targetApp.Path, envSuffix(environment))
 	}
 
-	printer.Success(fmt.Sprintf("Generated env file for app '%s' (%s) at: %s", args.AppName, environment, outputPath))
+	printer.Success(fmt.Sprintf("Generated env file for app '%s' (%s) at: %s", appName, environment, outputPath))
 
 	return nil
 }

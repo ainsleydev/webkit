@@ -31,8 +31,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -104,8 +102,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Deploy {{ .Title }} to DigitalOcean App Platform
         uses: digitalocean/app_action/deploy@v2
@@ -132,8 +128,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Determine SHA
         id: determine_sha
