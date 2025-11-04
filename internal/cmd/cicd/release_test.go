@@ -130,7 +130,7 @@ func TestReleaseWorkflow(t *testing.T) {
 		t.Log("Jobs")
 		{
 			assert.Contains(t, content, "build-and-push:")
-			assert.Contains(t, content, "cleanup:")
+			assert.Contains(t, content, "cleanup-containers:")
 		}
 
 		t.Log("App in matrix")

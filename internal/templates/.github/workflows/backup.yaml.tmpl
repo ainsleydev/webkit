@@ -8,8 +8,7 @@ on:
 jobs:
 {{- range .Resources }}
 {{- if eq .Type "postgres" }}
-  backup-{{ .Name }}:
-    name: Backup {{ .Name }} Database to BackBlaze
+  backup-resource-{{ .Name }}:
     runs-on: ubuntu-latest
     env:
       BUCKET_NAME: '{{ $.BucketName }}'
@@ -106,8 +105,7 @@ jobs:
           slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
           channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
 {{- else if eq .Type "s3" }}
-  backup-{{ .Name }}:
-    name: Backup {{ .Name }} Bucket to Backblaze B2
+  backup-resource-{{ .Name }}:
     runs-on: ubuntu-latest
     timeout-minutes: 60 # 1 Hour
     env:
@@ -151,7 +149,6 @@ jobs:
 {{- end }}
 
   backup-codebase:
-    name: Backup GitHub Repository to Backblaze B2
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -219,7 +216,6 @@ jobs:
           channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
 
   sync-to-gdrive:
-    name: Sync Backblaze B2 to Google Drive
     runs-on: ubuntu-latest
     timeout-minutes: 120 # 2 Hours
     needs:
