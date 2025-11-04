@@ -339,22 +339,33 @@ func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResu
 }
 
 type (
+	// ImportKind represents the type of item being imported.
+	ImportKind int
+)
+
+const (
+	// ImportKindResource indicates importing a resource (database, storage, etc.).
+	ImportKindResource ImportKind = iota
+	// ImportKindApp indicates importing an app.
+	ImportKindApp
+	// ImportKindProject indicates importing a DigitalOcean project.
+	ImportKindProject
+)
+
+type (
 	// ImportInput contains the configuration for importing existing resources or apps.
 	ImportInput struct {
-		// ResourceName is the name of the resource or app in app.json.
-		ResourceName string
+		// Kind specifies what type of item is being imported.
+		Kind ImportKind
 
-		// ResourceID is the provider-specific ID (e.g., DigitalOcean cluster ID or app ID).
-		ResourceID string
+		// Name is the name of the resource or app in app.json (empty for projects).
+		Name string
+
+		// ID is the provider-specific ID (e.g., DigitalOcean cluster ID, app ID, project ID).
+		ID string
 
 		// Environment specifies which environment to import into.
 		Environment env.Environment
-
-		// IsApp indicates whether we're importing an app (true) or a resource (false).
-		IsApp bool
-
-		// IsProject indicates whether we're importing a project (true).
-		IsProject bool
 	}
 	// ImportOutput contains the results of an import operation.
 	ImportOutput struct {
@@ -378,43 +389,46 @@ func (t *Terraform) Import(ctx context.Context, input ImportInput) (ImportOutput
 	var addresses []importAddress
 	var err error
 
-	if input.IsProject {
+	switch input.Kind {
+	case ImportKindProject:
 		// Import DigitalOcean project.
-		addresses = buildProjectImportAddress(input.ResourceID)
-	} else if input.IsApp {
+		addresses = buildProjectImportAddress(input.ID)
+
+	case ImportKindApp:
 		// Find the app in the definition.
 		var app *appdef.App
 		for i := range t.appDef.Apps {
-			if t.appDef.Apps[i].Name == input.ResourceName {
+			if t.appDef.Apps[i].Name == input.Name {
 				app = &t.appDef.Apps[i]
 				break
 			}
 		}
 		if app == nil {
-			return ImportOutput{}, fmt.Errorf("app %q not found in app.json", input.ResourceName)
+			return ImportOutput{}, fmt.Errorf("app %q not found in app.json", input.Name)
 		}
 
 		// Build import addresses based on app type and provider.
-		addresses, err = buildAppImportAddresses(t.appDef.Project.Name, app, input.ResourceID)
+		addresses, err = buildAppImportAddresses(t.appDef.Project.Name, app, input.ID)
 		if err != nil {
 			return ImportOutput{}, err
 		}
-	} else {
+
+	case ImportKindResource:
 		// Find the resource in the definition.
 		var resource *appdef.Resource
 		for i := range t.appDef.Resources {
-			if t.appDef.Resources[i].Name == input.ResourceName {
+			if t.appDef.Resources[i].Name == input.Name {
 				resource = &t.appDef.Resources[i]
 				break
 			}
 		}
 		if resource == nil {
-			return ImportOutput{}, fmt.Errorf("resource %q not found in app.json", input.ResourceName)
+			return ImportOutput{}, fmt.Errorf("resource %q not found in app.json", input.Name)
 		}
 
 		// Build import addresses based on resource type and provider.
 		// Pass project name to build full resource names matching Terraform's naming convention.
-		addresses, err = buildImportAddresses(t.appDef.Project.Name, resource, input.ResourceID)
+		addresses, err = buildImportAddresses(t.appDef.Project.Name, resource, input.ID)
 		if err != nil {
 			return ImportOutput{}, err
 		}

@@ -168,11 +168,10 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 	spinner.Start()
 
 	result, err := tf.Import(ctx, infra.ImportInput{
-		ResourceName: target.Name,
-		ResourceID:   target.ID,
-		Environment:  target.Environment,
-		IsApp:        target.Type == importTypeApp,
-		IsProject:    target.Type == importTypeProject,
+		Kind:        infra.ImportKind(target.Type),
+		Name:        target.Name,
+		ID:          target.ID,
+		Environment: target.Environment,
 	})
 
 	spinner.Stop()
