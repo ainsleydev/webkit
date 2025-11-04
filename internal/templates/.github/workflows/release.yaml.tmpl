@@ -31,8 +31,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -104,8 +102,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Deploy {{ .Title }} to DigitalOcean App Platform
         uses: digitalocean/app_action/deploy@v2
@@ -114,5 +110,51 @@ jobs:
         with:
           token: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
           app_name: '{{ ghVar "github.event.repository.name" }}-{{ .Name }}'
+{{- end }}
+{{- end }}
+
+{{- range .Apps }}
+{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "vm") }}
+
+  # Deploy {{ .Title }} to DigitalOcean VM
+  deploy-{{ .Name }}-vm:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: production-{{ .Name }}
+      {{- if index .Infra.Config "domain" }}
+      url: https://{{ index .Infra.Config "domain" }}
+      {{- end }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Determine SHA
+        id: determine_sha
+        run: |
+          echo "sha={{ ghVar "github.sha" }}" >> $GITHUB_OUTPUT
+
+      - name: Run Ansible playbook for {{ .Title }}
+        uses: dawidd6/action-ansible-playbook@v4
+        with:
+          playbook: playbooks/server.yaml
+          directory: platform/ansible
+          key: ${{"{{"}} secrets.{{ printf "%s_SSH_PRIVATE_KEY" (.Name | upper) }} {{ "}}" }}
+          inventory: |
+            [all]
+            {{ .Name }} ansible_host=${{"{{"}} secrets.{{ printf "%s_SERVER_IP" (.Name | upper) }} {{ "}}" }} ansible_user=${{"{{"}} secrets.{{ printf "%s_SERVER_USER" (.Name | upper) }} {{ "}}" }}
+          options: |
+            -e webkit_version=latest
+            -e age_secret_key=${{"{{"}} secrets.ORG_AGE_SECRET {{ "}}" }}
+            -e app_name={{ .Name }}
+            -e env_name=production
+            -e git_sha={{ ghVar "steps.determine_sha.outputs.sha" }}
+            -e github_user={{ ghVar "github.repository_owner" }}
+            -e github_token=${{"{{"}} secrets.GITHUB_TOKEN {{ "}}" }}
+            -e domain={{ index .Infra.Config "domain" }}
+            -e docker_image={{ ghVar "github.event.repository.name" }}-{{ .Name }}
+            -e docker_image_tag=sha-{{ ghVar "steps.determine_sha.outputs.sha" }}
+            -e docker_port={{ .Build.Port }}
+            -v
 {{- end }}
 {{- end }}

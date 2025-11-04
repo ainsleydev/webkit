@@ -1,0 +1,76 @@
+---
+# Install and configure webkit on the VM
+
+- name: Ensure curl is installed
+  apt:
+    name: curl
+    state: present
+    update_cache: yes
+
+- name: Download webkit installer script
+  get_url:
+    url: https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh
+    dest: /tmp/webkit-install.sh
+    mode: '0755'
+
+- name: Install webkit binary
+  shell: |
+    VERSION={{ webkit_version }} INSTALL_DIR={{ webkit_install_dir }} /tmp/webkit-install.sh
+  args:
+    creates: '{{ webkit_install_dir }}/webkit'
+  environment:
+    VERSION: '{{ webkit_version }}'
+    INSTALL_DIR: '{{ webkit_install_dir }}'
+
+- name: Verify webkit installation
+  command: '{{ webkit_install_dir }}/webkit version'
+  register: webkit_version_output
+  changed_when: false
+
+- name: Display webkit version
+  debug:
+    msg: 'Installed {{ webkit_version_output.stdout }}'
+
+- name: Create webkit configuration directory
+  file:
+    path: '{{ webkit_config_dir }}'
+    state: directory
+    mode: '0755'
+
+- name: Create webkit secrets directory
+  file:
+    path: '{{ webkit_config_dir }}/resources/secrets'
+    state: directory
+    mode: '0755'
+
+- name: Copy app.json to VM
+  copy:
+    src: '{{ app_definition_path }}'
+    dest: '{{ webkit_config_dir }}/app.json'
+    mode: '0644'
+
+- name: Copy secrets directory to VM
+  copy:
+    src: '{{ secrets_path }}/'
+    dest: '{{ webkit_config_dir }}/resources/secrets/'
+    mode: '0644'
+  when: secrets_path is defined
+
+- name: Create AGE config directory
+  file:
+    path: /root/.config/webkit
+    state: directory
+    mode: '0700'
+
+- name: Write AGE secret key
+  copy:
+    content: '{{ age_secret_key }}'
+    dest: /root/.config/webkit/age.key
+    mode: '0600'
+  when: age_secret_key != ''
+  no_log: true  # Don't log the secret key
+
+- name: Clean up installer script
+  file:
+    path: /tmp/webkit-install.sh
+    state: absent
