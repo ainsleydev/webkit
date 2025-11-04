@@ -94,8 +94,8 @@ jobs:
     needs: build-and-push
     environment:
       name: production-{{ .Name }}
-      {{- if index .Infra.Config "domain" }}
-      url: https://{{ index .Infra.Config "domain" }}
+      {{- if .PrimaryDomain }}
+      url: https://{{ .PrimaryDomain }}
       {{- end }}
     steps:
       - name: Checkout Repository
@@ -120,8 +120,8 @@ jobs:
     needs: build-and-push
     environment:
       name: production-{{ .Name }}
-      {{- if index .Infra.Config "domain" }}
-      url: https://{{ index .Infra.Config "domain" }}
+      {{- if .PrimaryDomain }}
+      url: https://{{ .PrimaryDomain }}
       {{- end }}
     steps:
       - name: Checkout Repository
@@ -168,7 +168,7 @@ jobs:
             -e git_sha={{ ghVar "steps.determine_sha.outputs.sha" }}
             -e github_user={{ ghVar "github.repository_owner" }}
             -e github_token=${{"{{"}} secrets.GITHUB_TOKEN {{ "}}" }}
-            -e domain={{ index .Infra.Config "domain" }}
+            -e domain={{ .PrimaryDomain }}
             -e docker_image={{ ghVar "github.event.repository.name" }}-{{ .Name }}
             -e docker_image_tag=sha-{{ ghVar "steps.determine_sha.outputs.sha" }}
             -e docker_port={{ .Build.Port }}

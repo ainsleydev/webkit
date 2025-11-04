@@ -407,3 +407,58 @@ func TestApp_ApplyDefaults_Port(t *testing.T) {
 		})
 	}
 }
+
+func TestApp_PrimaryDomain(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		domains []Domain
+		want    string
+	}{
+		"Returns primary domain when present": {
+			domains: []Domain{
+				{Name: "example.com", Type: DomainTypePrimary, Zone: "example.com"},
+				{Name: "www.example.com", Type: DomainTypeAlias, Zone: "example.com"},
+			},
+			want: "example.com",
+		},
+		"Returns first domain when no primary": {
+			domains: []Domain{
+				{Name: "www.example.com", Type: DomainTypeAlias, Zone: "example.com"},
+				{Name: "example.com", Type: DomainTypeAlias, Zone: "example.com"},
+			},
+			want: "www.example.com",
+		},
+		"Returns primary domain even if not first": {
+			domains: []Domain{
+				{Name: "www.example.com", Type: DomainTypeAlias, Zone: "example.com"},
+				{Name: "example.com", Type: DomainTypePrimary, Zone: "example.com"},
+			},
+			want: "example.com",
+		},
+		"Returns empty string when no domains": {
+			domains: []Domain{},
+			want:    "",
+		},
+		"Returns empty string when domains is nil": {
+			domains: nil,
+			want:    "",
+		},
+		"Returns first primary when multiple primaries": {
+			domains: []Domain{
+				{Name: "example.com", Type: DomainTypePrimary, Zone: "example.com"},
+				{Name: "example.org", Type: DomainTypePrimary, Zone: "example.org"},
+			},
+			want: "example.com",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			app := App{Domains: test.domains}
+			got := app.PrimaryDomain()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
