@@ -66,57 +66,94 @@ Examples:
 	Action: cmdtools.Wrap(Import),
 }
 
+type (
+	// importType represents what kind of item is being imported.
+	importType int
+)
+
+const (
+	importTypeResource importType = iota
+	importTypeApp
+	importTypeProject
+)
+
+func (t importType) String() string {
+	switch t {
+	case importTypeApp:
+		return "app"
+	case importTypeProject:
+		return "project"
+	default:
+		return "resource"
+	}
+}
+
+// importTarget represents the validated import target from CLI flags.
+type importTarget struct {
+	Type        importType
+	Name        string // Empty for projects
+	ID          string
+	Environment env.Environment
+}
+
+// parseImportFlags validates and extracts the import target from CLI flags.
+func parseImportFlags(cmd *cli.Command) (importTarget, error) {
+	resourceName := cmd.String("resource")
+	appName := cmd.String("app")
+	isProject := cmd.Bool("project")
+
+	// Count how many flags are set.
+	flagsSet := []bool{resourceName != "", appName != "", isProject}
+	count := 0
+	for _, set := range flagsSet {
+		if set {
+			count++
+		}
+	}
+
+	if count == 0 {
+		return importTarget{}, fmt.Errorf("one of --resource, --app, or --project must be specified")
+	}
+	if count > 1 {
+		return importTarget{}, fmt.Errorf("--resource, --app, and --project are mutually exclusive")
+	}
+
+	target := importTarget{
+		ID:          cmd.String("id"),
+		Environment: env.Environment(cmd.String("env")),
+	}
+
+	switch {
+	case isProject:
+		target.Type = importTypeProject
+	case appName != "":
+		target.Type = importTypeApp
+		target.Name = appName
+	default:
+		target.Type = importTypeResource
+		target.Name = resourceName
+	}
+
+	return target, nil
+}
+
 // Import executes the import operation for the specified resource or app.
 func Import(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
 
-	// Validate that exactly one of --resource, --app, or --project is provided
-	resourceName := input.Command.String("resource")
-	appName := input.Command.String("app")
-	isProject := input.Command.Bool("project")
-
-	flagCount := 0
-	if resourceName != "" {
-		flagCount++
-	}
-	if appName != "" {
-		flagCount++
-	}
-	if isProject {
-		flagCount++
+	target, err := parseImportFlags(input.Command)
+	if err != nil {
+		return err
 	}
 
-	if flagCount == 0 {
-		return fmt.Errorf("one of --resource, --app, or --project must be specified")
-	}
-	if flagCount > 1 {
-		return fmt.Errorf("--resource, --app, and --project are mutually exclusive, specify only one")
-	}
-
-	// Determine what we're importing
-	isApp := appName != ""
-	name := resourceName
-	if isApp {
-		name = appName
-	}
-
-	resourceID := input.Command.String("id")
-	environment := env.Environment(input.Command.String("env"))
-
-	itemType := "resource"
-	if isApp {
-		itemType = "app"
-	} else if isProject {
-		itemType = "project"
-	}
-
-	if isProject {
+	// Print what we're importing.
+	if target.Type == importTypeProject {
 		printer.Info(fmt.Sprintf("Importing DigitalOcean project with ID %q into %s environment",
-			resourceID, environment))
+			target.ID, target.Environment))
 	} else {
 		printer.Info(fmt.Sprintf("Importing %s %q with ID %q into %s environment",
-			itemType, name, resourceID, environment))
+			target.Type, target.Name, target.ID, target.Environment))
 	}
 	printer.Print("")
 
@@ -127,15 +164,15 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	printer.Print(fmt.Sprintf("Importing %s...", itemType))
+	printer.Print(fmt.Sprintf("Importing %s...", target.Type))
 	spinner.Start()
 
 	result, err := tf.Import(ctx, infra.ImportInput{
-		ResourceName: name,
-		ResourceID:   resourceID,
-		Environment:  environment,
-		IsApp:        isApp,
-		IsProject:    isProject,
+		ResourceName: target.Name,
+		ResourceID:   target.ID,
+		Environment:  target.Environment,
+		IsApp:        target.Type == importTypeApp,
+		IsProject:    target.Type == importTypeProject,
 	})
 
 	spinner.Stop()
