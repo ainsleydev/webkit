@@ -352,6 +352,9 @@ type (
 
 		// IsApp indicates whether we're importing an app (true) or a resource (false).
 		IsApp bool
+
+		// IsProject indicates whether we're importing a project (true).
+		IsProject bool
 	}
 	// ImportOutput contains the results of an import operation.
 	ImportOutput struct {
@@ -375,7 +378,10 @@ func (t *Terraform) Import(ctx context.Context, input ImportInput) (ImportOutput
 	var addresses []importAddress
 	var err error
 
-	if input.IsApp {
+	if input.IsProject {
+		// Import DigitalOcean project.
+		addresses = buildProjectImportAddress(input.ResourceID)
+	} else if input.IsApp {
 		// Find the app in the definition.
 		var app *appdef.App
 		for i := range t.appDef.Apps {

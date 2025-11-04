@@ -28,18 +28,27 @@ Examples:
   webkit infra import --resource db --id ca9f591d-f38h-462a-a5c6-5a8a74838081
 
   # Import an app
-  webkit infra import --app web --id a1b2c3d4-e5f6-7890-abcd-ef1234567890`,
+  webkit infra import --app web --id a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+  # Import a DigitalOcean project
+  webkit infra import --project --id 12345678-abcd-1234-5678-1234567890ab`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "resource",
 			Aliases:  []string{"r"},
-			Usage:    "Name of the resource in app.json to import (mutually exclusive with --app)",
+			Usage:    "Name of the resource in app.json to import (mutually exclusive with --app and --project)",
 			Required: false,
 		},
 		&cli.StringFlag{
 			Name:     "app",
 			Aliases:  []string{"a"},
-			Usage:    "Name of the app in app.json to import (mutually exclusive with --resource)",
+			Usage:    "Name of the app in app.json to import (mutually exclusive with --resource and --project)",
+			Required: false,
+		},
+		&cli.BoolFlag{
+			Name:     "project",
+			Aliases:  []string{"p"},
+			Usage:    "Import a DigitalOcean project (mutually exclusive with --resource and --app)",
 			Required: false,
 		},
 		&cli.StringFlag{
@@ -62,18 +71,30 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
 
-	// Validate that exactly one of --resource or --app is provided
+	// Validate that exactly one of --resource, --app, or --project is provided
 	resourceName := input.Command.String("resource")
 	appName := input.Command.String("app")
+	isProject := input.Command.Bool("project")
 
-	if resourceName == "" && appName == "" {
-		return fmt.Errorf("either --resource or --app must be specified")
+	flagCount := 0
+	if resourceName != "" {
+		flagCount++
 	}
-	if resourceName != "" && appName != "" {
-		return fmt.Errorf("--resource and --app are mutually exclusive, specify only one")
+	if appName != "" {
+		flagCount++
+	}
+	if isProject {
+		flagCount++
 	}
 
-	// Determine if we're importing an app or resource
+	if flagCount == 0 {
+		return fmt.Errorf("one of --resource, --app, or --project must be specified")
+	}
+	if flagCount > 1 {
+		return fmt.Errorf("--resource, --app, and --project are mutually exclusive, specify only one")
+	}
+
+	// Determine what we're importing
 	isApp := appName != ""
 	name := resourceName
 	if isApp {
@@ -86,10 +107,17 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 	itemType := "resource"
 	if isApp {
 		itemType = "app"
+	} else if isProject {
+		itemType = "project"
 	}
 
-	printer.Info(fmt.Sprintf("Importing %s %q with ID %q into %s environment",
-		itemType, name, resourceID, environment))
+	if isProject {
+		printer.Info(fmt.Sprintf("Importing DigitalOcean project with ID %q into %s environment",
+			resourceID, environment))
+	} else {
+		printer.Info(fmt.Sprintf("Importing %s %q with ID %q into %s environment",
+			itemType, name, resourceID, environment))
+	}
 	printer.Print("")
 
 	// Initialise Terraform.
@@ -107,6 +135,7 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 		ResourceID:   resourceID,
 		Environment:  environment,
 		IsApp:        isApp,
+		IsProject:    isProject,
 	})
 
 	spinner.Stop()

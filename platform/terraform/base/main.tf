@@ -70,7 +70,7 @@ locals {
 # DigitalOcean Project
 #
 resource "digitalocean_project" "this" {
-  name        = "${var.project_name}-${var.environment}"
+  name        = var.project_name
   description = var.project_description
   purpose     = "Web Application"
   environment = title(var.environment)
@@ -193,11 +193,12 @@ resource "github_actions_secret" "resource_outputs" {
 # DigitalOcean Project Resources
 #
 # Assign all DigitalOcean resources to the project.
+# Only includes resources where platform_provider is "digitalocean".
 resource "digitalocean_project_resources" "this" {
   project = digitalocean_project.this.id
   resources = compact(concat(
-    [for r in module.resources : try(r.urn, "")],
-    [for a in module.apps : try(a.urn, "")]
+    [for r in module.resources : r.platform_provider == "digitalocean" ? try(r.urn, "") : ""],
+    [for a in module.apps : a.platform_provider == "digitalocean" ? try(a.urn, "") : ""]
   ))
 
   depends_on = [module.resources, module.apps]
