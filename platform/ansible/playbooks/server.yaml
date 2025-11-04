@@ -122,3 +122,9 @@
     - name: Run Certbot to get HTTPS certificate
       include_role:
         name: certbot
+
+    - name: Deploy SSL Nginx configuration after certificates are obtained
+      include_role:
+        name: nginx
+      vars:
+        skip_install: true

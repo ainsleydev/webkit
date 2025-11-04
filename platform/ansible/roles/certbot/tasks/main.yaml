@@ -25,12 +25,34 @@
 
 - name: Run Certbot production if dry-run succeeded
   command: >
-    certbot --nginx -d {{ domain }}
+    certbot certonly --nginx -d {{ domain }}
     --non-interactive
     --agree-tos
     --email {{ admin_email }}
-    --redirect
     -v
   register: certbot_prod_result
   ignore_errors: no
   when: certbot_dry_run_result.rc == 0
+
+- name: Check if options-ssl-nginx.conf exists
+  stat:
+    path: /etc/letsencrypt/options-ssl-nginx.conf
+  register: ssl_options_check
+
+- name: Download options-ssl-nginx.conf if missing
+  get_url:
+    url: https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf
+    dest: /etc/letsencrypt/options-ssl-nginx.conf
+    mode: '0644'
+  when: not ssl_options_check.stat.exists
+  ignore_errors: yes
+
+- name: Check if ssl-dhparams.pem exists
+  stat:
+    path: /etc/letsencrypt/ssl-dhparams.pem
+  register: ssl_dhparams_check
+
+- name: Generate ssl-dhparams.pem if missing
+  command: openssl dhparam -out /etc/letsencrypt/ssl-dhparams.pem 2048
+  when: not ssl_dhparams_check.stat.exists
+  ignore_errors: yes
