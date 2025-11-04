@@ -1,0 +1,21 @@
+---
+# Default variables for webkit role
+
+# Webkit version to install (e.g., "v0.0.15" or "latest")
+webkit_version: latest
+
+# Installation directory for webkit binary
+webkit_install_dir: /usr/local/bin
+
+# Configuration directory for webkit
+webkit_config_dir: /etc/webkit
+
+# AGE secret key for decrypting SOPS secrets
+# This should be passed from GitHub secrets
+age_secret_key: ''
+
+# Path to app.json in the repository (relative to playbook directory)
+app_definition_path: '../../app.json'
+
+# Path to secrets directory in the repository (relative to playbook directory)
+secrets_path: '../../resources/secrets'

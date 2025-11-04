@@ -25,6 +25,7 @@ var Command = &cli.Command{
 	Commands: []*cli.Command{
 		ScaffoldCmd,
 		SyncCmd,
+		GenerateCmd,
 	},
 }
 
