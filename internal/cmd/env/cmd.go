@@ -25,6 +25,7 @@ var Command = &cli.Command{
 	Commands: []*cli.Command{
 		ScaffoldCmd,
 		SyncCmd,
+		GenerateCmd,
 	},
 }
 
@@ -36,14 +37,29 @@ var environmentsWithDotEnv = []env.Environment{
 }
 
 type writeArgs struct {
-	Input       cmdtools.CommandInput
-	Vars        appdef.EnvVar
-	App         appdef.App
-	Environment env.Environment
-	IsScaffold  bool
+	Input            cmdtools.CommandInput
+	Vars             appdef.EnvVar
+	App              appdef.App
+	Environment      env.Environment
+	IsScaffold       bool
+	CustomOutputPath string
 }
 
 var dotEnvMarshaller = godotenv.Marshal
+
+// getEnvironmentVars extracts vars for the specified environment.
+func getEnvironmentVars(app appdef.Environment, environment env.Environment) (appdef.EnvVar, error) {
+	switch environment {
+	case env.Development:
+		return app.Dev, nil
+	case env.Staging:
+		return app.Staging, nil
+	case env.Production:
+		return app.Production, nil
+	default:
+		return nil, fmt.Errorf("unsupported environment: %s", environment)
+	}
+}
 
 // writeMapToFile writes environment variables to dotenv file.
 func writeMapToFile(args writeArgs) error {
@@ -57,17 +73,22 @@ func writeMapToFile(args writeArgs) error {
 		return err
 	}
 
-	err = args.Input.FS.MkdirAll(args.App.Path, os.ModePerm)
+	var envPath string
+	if args.CustomOutputPath != "" {
+		envPath = args.CustomOutputPath
+	} else {
+		file := ".env"
+		if args.Environment != env.Development {
+			file = fmt.Sprintf(".env.%s", args.Environment)
+		}
+		envPath = filepath.Join(args.App.Path, file)
+	}
+
+	outputDir := filepath.Dir(envPath)
+	err = args.Input.FS.MkdirAll(outputDir, os.ModePerm)
 	if err != nil {
 		return err
 	}
-
-	file := ".env"
-	if args.Environment != env.Development {
-		file = fmt.Sprintf(".env.%s", args.Environment)
-	}
-
-	envPath := filepath.Join(args.App.Path, file)
 
 	var opts []scaffold.Option
 	if args.IsScaffold {
