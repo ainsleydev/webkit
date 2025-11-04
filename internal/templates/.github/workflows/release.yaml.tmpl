@@ -171,6 +171,7 @@ jobs:
             -e git_sha={{ ghVar "steps.determine_sha.outputs.sha" }}
             -e github_user={{ ghVar "github.repository_owner" }}
             -e github_token=${{"{{"}} secrets.GITHUB_TOKEN {{ "}}" }}
+            This will break if there's no value, needs to validate it.
             -e domain={{ index .Infra.Config "domain" }}
             -e docker_image={{ ghVar "github.event.repository.name" }}-{{ .Name }}
             -e docker_image_tag=sha-{{ ghVar "steps.determine_sha.outputs.sha" }}
