@@ -52,11 +52,11 @@ func TestAnsibleVMDeployment(t *testing.T) {
 		_ = cleanupCmd.Run()
 	})
 
-	t.Log("Installing Python in test container")
+	t.Log("Installing Python and systemd in test container")
 	installPython := exec.CommandContext(ctx, "docker", "exec", containerName,
-		"bash", "-c", "apt-get update -qq && apt-get install -y -qq python3 python3-pip curl sudo")
+		"bash", "-c", "apt-get update -qq && apt-get install -y -qq python3 python3-pip curl sudo systemd")
 	err = installPython.Run()
-	require.NoError(t, err, "Failed to install Python in container")
+	require.NoError(t, err, "Failed to install Python and systemd in container")
 
 	tmpDir := t.TempDir()
 	fs := afero.NewOsFs()
@@ -130,6 +130,7 @@ func TestAnsibleVMDeployment(t *testing.T) {
 		"-e", "docker_image=test-image",
 		"-e", "docker_image_tag=sha-abc123",
 		"-e", "docker_port=3000",
+		"-e", "skip_reboot=true",
 		"-v")
 	ansibleCmd.Env = append(os.Environ(), fmt.Sprintf("ANSIBLE_ROLES_PATH=%s/roles", ansibleDir))
 	ansibleCmd.Dir = ansibleDir

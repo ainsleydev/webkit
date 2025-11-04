@@ -37,7 +37,9 @@
       reboot:
         msg: 'Reboot initiated by Ansible due to package upgrade'
         reboot_timeout: 600
-      when: upgrade_result.changed
+      when:
+        - upgrade_result.changed
+        - skip_reboot is not defined or not skip_reboot
 
   roles:
     - fail2ban
