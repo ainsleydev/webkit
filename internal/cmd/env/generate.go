@@ -45,10 +45,7 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 	environmentStr := input.Command.String("environment")
 	outputPath := input.Command.String("output")
 
-	environment, err := env.Parse(environmentStr)
-	if err != nil {
-		return fmt.Errorf("invalid environment: %w", err)
-	}
+	environment := env.Environment(environmentStr)
 
 	var targetApp *appdef.App
 	for _, app := range appDef.Apps {
@@ -62,7 +59,7 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 		return fmt.Errorf("app '%s' not found in app.json", appName)
 	}
 
-	err = secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
+	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
 		SOPSClient: input.SOPSClient(),
 		BaseDir:    input.BaseDir,
 	})

@@ -215,17 +215,19 @@ func TestAnsibleVMDeployment(t *testing.T) {
 	assert.NotContains(t, strings.ToLower(string(output)), "failed=")
 
 	t.Log("Verifying webkit installation in container")
-	verifyCmd := exec.CommandContext(ctx, "docker", "exec", containerName,
-		"/usr/local/bin/webkit", "version")
-	verifyOutput, err := verifyCmd.CombinedOutput()
-	require.NoError(t, err, "webkit version command failed")
-	t.Logf("WebKit version: %s", string(verifyOutput))
+	{
+		verifyCmd := exec.CommandContext(ctx, "docker", "exec", containerName, "/usr/local/bin/webkit", "version")
+		verifyOutput, err := verifyCmd.CombinedOutput()
+		require.NoError(t, err, "webkit version command failed")
+		t.Logf("WebKit version: %s", string(verifyOutput))
+	}
 
 	t.Log("Verifying env file in container")
-	catCmd := exec.CommandContext(ctx, "docker", "exec", containerName,
-		"cat", "/opt/test-app/.env")
-	envOutput, err := catCmd.CombinedOutput()
-	require.NoError(t, err, "Failed to read env file from container")
-	assert.Contains(t, string(envOutput), "FOO=", "Env file should contain FOO variable")
-	t.Logf("Env file contents:\n%s", string(envOutput))
+	{
+		catCmd := exec.CommandContext(ctx, "docker", "exec", containerName, "cat", "/opt/test-app/.env")
+		envOutput, err := catCmd.CombinedOutput()
+		require.NoError(t, err, "Failed to read env file from container")
+		assert.Contains(t, string(envOutput), "FOO=", "Env file should contain FOO variable")
+		t.Logf("Env file contents:\n%s", string(envOutput))
+	}
 }

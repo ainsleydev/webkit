@@ -5,10 +5,8 @@ import (
 
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets"
-	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 var SyncCmd = &cli.Command{
