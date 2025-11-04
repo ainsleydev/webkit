@@ -8,6 +8,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/jsonformat"
 	"github.com/ainsleydev/webkit/internal/version"
 )
 
@@ -22,6 +23,12 @@ func Definition(_ context.Context, input cmdtools.CommandInput) error {
 	data, err := identMarshaller(def, "", "\t")
 	if err != nil {
 		return errors.Wrap(err, "marshaling definition")
+	}
+
+	// Apply custom formatting to inline specific objects.
+	data, err = jsonformat.Format(data)
+	if err != nil {
+		return errors.Wrap(err, "formatting JSON")
 	}
 
 	// Add trailing newline for better git diffs.
