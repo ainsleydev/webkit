@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/terraform-exec/tfexec"
 	"github.com/hashicorp/terraform-json"
-	"github.com/kaptinlin/messageformat-go/pkg/logger"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
@@ -488,11 +488,16 @@ func (t *Terraform) determineImageTag(ctx context.Context, appName string) strin
 	// Try to get the latest sha tag from GHCR using the injected client.
 	tag, err := t.ghClient.GetLatestSHATag(ctx, t.appDef.Project.Repo.Owner, t.appDef.Project.Repo.Name, appName)
 	if err != nil {
-		logger.Error("Obtaining latest SHA tag for app %Q, error: %s", appName, err.Error())
+		slog.Error("Obtaining latest SHA tag for app %Q, error: %s", appName, err.Error())
 
 		// Fallback to latest.
 		return "latest"
 	}
+
+	slog.Debug("Found latest tag for app",
+		slog.String("tag", tag),
+		slog.String("app", appName),
+	)
 
 	return tag
 }
