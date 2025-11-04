@@ -357,6 +357,63 @@ func TestTerraform_DefaultB2Bucket(t *testing.T) {
 func TestTerraform_Apps(t *testing.T) {
 	t.Skip()
 
+	t.Run("Digital Ocean - VM", func(t *testing.T) {
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "project",
+				Repo: appdef.GitHubRepo{
+					Owner: "ainsley-dev",
+					Name:  "project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Type:     "vm",
+						Config: map[string]any{
+							"size":   "s-1vcpu-1gb",
+							"region": "lon1",
+						},
+					},
+				},
+			},
+		}
+
+		tf, teardown := setup(t, appDef)
+		defer teardown()
+
+		err := tf.Init(t.Context())
+		require.NoError(t, err)
+
+		got, err := tf.Plan(t.Context(), env.Production)
+		require.NoError(t, err)
+		require.NotNil(t, got)
+		assert.True(t, got.HasChanges, "Plan should have changes")
+
+		t.Log("GitHub Secrets for VM")
+		{
+			secrets := got.Plan.PlannedValues.Outputs["github_secrets_created"]
+			require.NotNil(t, secrets)
+
+			secretNames := secrets.Value.([]any)
+			assert.Contains(t, secretNames, "TF_PROD_CMS_IP_ADDRESS")
+			assert.Contains(t, secretNames, "TF_PROD_CMS_SSH_PRIVATE_KEY")
+			assert.Contains(t, secretNames, "TF_PROD_CMS_SERVER_USER")
+		}
+
+		t.Log("App Outputs")
+		{
+			appNames := got.Plan.PlannedValues.Outputs["app_names"]
+			require.NotNil(t, appNames)
+			names := appNames.Value.([]any)
+			assert.Len(t, names, 1)
+			assert.Equal(t, "cms", names[0])
+		}
+	})
+
 	t.Run("Digital Ocean - App", func(t *testing.T) {
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
