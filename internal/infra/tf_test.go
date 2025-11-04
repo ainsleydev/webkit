@@ -714,7 +714,7 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		mockClient := mocks.NewGHClient(ctrl)
 		mockClient.EXPECT().
 			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
-			Return("sha-xyz789")
+			Return("sha-xyz789", nil)
 
 		tf := &Terraform{
 			appDef:   appDef,
@@ -725,7 +725,7 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		assert.Equal(t, "sha-xyz789", tag)
 	})
 
-	t.Run("Falls back to latest when GHCR returns empty", func(t *testing.T) {
+	t.Run("Falls back to latest when GHCR returns error", func(t *testing.T) {
 		t.Setenv("GITHUB_SHA", "")
 
 		appDef := &appdef.Definition{
@@ -741,7 +741,7 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		mockClient := mocks.NewGHClient(ctrl)
 		mockClient.EXPECT().
 			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
-			Return("")
+			Return("", errors.New("error"))
 
 		tf := &Terraform{
 			appDef:   appDef,
