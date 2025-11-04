@@ -141,10 +141,13 @@ jobs:
           ref: {{ ghVar "steps.read_version.outputs.version" }}
           path: '.webkit-repo'
 
+      - name: Create ansible directory
+        run: mkdir -p ./ansible
+
       - name: Copy Ansible Files
         run: |
-          cp -r .webkit-repo/platform/ansible ./platform/ansible
-          echo "Copied ansible files from WebKit {{ ghVar "steps.read_version.outputs.version" }}"
+          cp -r .webkit-repo/platform/ansible ./
+          echo "Copied ansible files from WebKit ${{ steps.read_version.outputs.version }}"
 
       - name: Determine SHA
         id: determine_sha
@@ -155,7 +158,7 @@ jobs:
         uses: dawidd6/action-ansible-playbook@v4
         with:
           playbook: playbooks/server.yaml
-          directory: platform/ansible
+          directory: ansible
           key: {{ ghSecret (printf "TF_PROD_%s_SSH_PRIVATE_KEY" (.Name | upper | replace "-" "_")) }}
           inventory: |
             [all]
