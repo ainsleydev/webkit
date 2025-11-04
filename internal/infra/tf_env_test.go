@@ -19,6 +19,7 @@ func TestParseTFEnvironment(t *testing.T) {
 		t.Setenv("BACK_BLAZE_KEY_ID", "id")
 		t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
 		t.Setenv("GITHUB_TOKEN", "token")
+		t.Setenv("GITHUB_TOKEN_CLASSIC", "token")
 
 		cfg, err := ParseTFEnvironment()
 		assert.NoError(t, err)
@@ -29,6 +30,7 @@ func TestParseTFEnvironment(t *testing.T) {
 		assert.Equal(t, "id", cfg.BackBlazeKeyID)
 		assert.Equal(t, "appkey", cfg.BackBlazeApplicationKey)
 		assert.Equal(t, "token", cfg.GithubToken)
+		assert.Equal(t, "token", cfg.GithubTokenClassic)
 	})
 
 	t.Run("Failure", func(t *testing.T) {
