@@ -2,17 +2,15 @@
   hosts: all
   become: true
   vars:
-    domain: cms.searchspares.com
-    admin_email: hello@ainsley.dev
-    github_user: ainsleydev
-    github_repo: search-spares
-    docker_image: search-spares-cms
-    docker_image_tag: 'sha-{{ git_sha }}'
-    docker_port: 3000
-    # App name for webkit env generation
-    app_name: cms
-    # Environment for webkit env generation
-    environment: production
+    # All variables below are required and should be passed via -e flags
+    # domain: from app.Infra.Config.domain
+    # github_user: repository owner
+    # docker_image: repo-name-app-name (e.g., my-repo-cms)
+    # docker_image_tag: 'sha-abc123'
+    # docker_port: from app.Build.Port
+    # app_name: from app.Name
+    # env_name: environment name (development, staging, production)
+    # age_secret_key: AGE private key for SOPS decryption
     # Path where env file will be generated
     env_file_path: '/opt/{{ app_name }}/.env'
 
@@ -71,13 +69,13 @@
       command: >
         /usr/local/bin/webkit env generate
         --app {{ app_name }}
-        --environment {{ environment }}
+        --environment {{ env_name }}
         --output {{ env_file_path }}
       args:
         chdir: /etc/webkit
       environment:
         SOPS_AGE_KEY: '{{ age_secret_key }}'
-      no_log: true  # Don't log the command (contains secret key)
+      no_log: true
 
     - name: Debug image tag
       debug:

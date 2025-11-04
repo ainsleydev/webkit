@@ -107,104 +107,32 @@ func TestAnsibleVMDeployment(t *testing.T) {
 	err = afero.WriteFile(fs, inventoryPath, []byte(inventory), 0644)
 	require.NoError(t, err)
 
-	ansibleDir, err := filepath.Abs("../../..")
+	ansibleDir, err := filepath.Abs(".")
 	require.NoError(t, err)
 
-	playbookPath := filepath.Join(tmpDir, "test_playbook.yaml")
-	playbook := fmt.Sprintf(`---
-- name: Test webkit VM deployment
-  hosts: all
-  become: true
-  vars:
-    webkit_version: latest
-    age_secret_key: "AGE-SECRET-KEY-1TEST123456789"
-    app_definition_path: "%s"
-    secrets_path: "%s"
-    app_name: test-app
-    environment: production
-    git_sha: abc123
-    github_user: testuser
-    github_token: testtoken
-    domain: test.example.com
-    docker_image: test-image
-    docker_image_tag: sha-abc123
-    docker_port: 3000
+	playbookPath := filepath.Join(ansibleDir, "playbooks", "server.yaml")
+	require.FileExists(t, playbookPath, "server.yaml playbook should exist")
 
-  roles:
-    - webkit
-
-  post_tasks:
-    - name: Verify webkit is installed
-      command: /usr/local/bin/webkit version
-      register: webkit_version_output
-      changed_when: false
-
-    - name: Display webkit version
-      debug:
-        msg: "{{ webkit_version_output.stdout }}"
-
-    - name: Verify app.json was copied
-      stat:
-        path: /etc/webkit/app.json
-      register: app_json_stat
-      failed_when: not app_json_stat.stat.exists
-
-    - name: Verify AGE key was written
-      stat:
-        path: /root/.config/webkit/age.key
-      register: age_key_stat
-      failed_when: not age_key_stat.stat.exists or age_key_stat.stat.mode != '0600'
-
-    - name: Create test env directory
-      file:
-        path: /opt/test-app
-        state: directory
-        mode: '0755'
-
-    - name: Generate env file using webkit
-      command: >
-        /usr/local/bin/webkit env generate
-        --app test-app
-        --environment production
-        --output /opt/test-app/.env
-      args:
-        chdir: /etc/webkit
-      environment:
-        SOPS_AGE_KEY: "{{ age_secret_key }}"
-      register: webkit_generate_output
-
-    - name: Display webkit generate output
-      debug:
-        msg: "{{ webkit_generate_output.stdout }}"
-
-    - name: Verify env file was created
-      stat:
-        path: /opt/test-app/.env
-      register: env_file_stat
-      failed_when: not env_file_stat.stat.exists
-
-    - name: Read env file contents
-      slurp:
-        src: /opt/test-app/.env
-      register: env_file_contents
-
-    - name: Verify env file contains expected vars
-      assert:
-        that:
-          - "'FOO=' in env_file_contents.content | b64decode"
-        fail_msg: "Env file does not contain expected variables"
-`, filepath.Join(fixturesDir, "app.json"), filepath.Join(fixturesDir, "resources", "secrets"))
-
-	err = afero.WriteFile(fs, playbookPath, []byte(playbook), 0644)
-	require.NoError(t, err)
-
-	t.Log("Running Ansible playbook")
+	t.Log("Running Ansible playbook with actual server.yaml")
 	ansibleCmd := exec.CommandContext(ctx, "ansible-playbook",
 		"-i", inventoryPath,
 		playbookPath,
+		"-e", "webkit_version=latest",
+		"-e", "age_secret_key=AGE-SECRET-KEY-1TEST123456789",
+		"-e", fmt.Sprintf("app_definition_path=%s", filepath.Join(fixturesDir, "app.json")),
+		"-e", fmt.Sprintf("secrets_path=%s", filepath.Join(fixturesDir, "resources", "secrets")),
+		"-e", "app_name=test-app",
+		"-e", "env_name=production",
+		"-e", "git_sha=abc123",
+		"-e", "github_user=testuser",
+		"-e", "github_token=testtoken",
+		"-e", "domain=test.example.com",
+		"-e", "docker_image=test-image",
+		"-e", "docker_image_tag=sha-abc123",
+		"-e", "docker_port=3000",
 		"-v")
 	ansibleCmd.Env = append(os.Environ(), fmt.Sprintf("ANSIBLE_ROLES_PATH=%s/roles", ansibleDir))
-	ansibleCmd.Dir = tmpDir
+	ansibleCmd.Dir = ansibleDir
 
 	output, err := ansibleCmd.CombinedOutput()
 	t.Logf("Ansible output:\n%s", string(output))

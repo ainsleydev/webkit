@@ -147,7 +147,7 @@ jobs:
             -e webkit_version=latest
             -e age_secret_key=${{"{{"}} secrets.ORG_AGE_SECRET {{ "}}" }}
             -e app_name={{ .Name }}
-            -e environment=production
+            -e env_name=production
             -e git_sha={{ ghVar "steps.determine_sha.outputs.sha" }}
             -e github_user={{ ghVar "github.repository_owner" }}
             -e github_token=${{"{{"}} secrets.GITHUB_TOKEN {{ "}}" }}
