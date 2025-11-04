@@ -66,31 +66,9 @@ Examples:
 	Action: cmdtools.Wrap(Import),
 }
 
-type (
-	// importType represents what kind of item is being imported.
-	importType int
-)
-
-const (
-	importTypeResource importType = iota
-	importTypeApp
-	importTypeProject
-)
-
-func (t importType) String() string {
-	switch t {
-	case importTypeApp:
-		return "app"
-	case importTypeProject:
-		return "project"
-	default:
-		return "resource"
-	}
-}
-
 // importTarget represents the validated import target from CLI flags.
 type importTarget struct {
-	Type        importType
+	Kind        infra.ImportKind
 	Name        string // Empty for projects
 	ID          string
 	Environment env.Environment
@@ -125,12 +103,12 @@ func parseImportFlags(cmd *cli.Command) (importTarget, error) {
 
 	switch {
 	case isProject:
-		target.Type = importTypeProject
+		target.Kind = infra.ImportKindProject
 	case appName != "":
-		target.Type = importTypeApp
+		target.Kind = infra.ImportKindApp
 		target.Name = appName
 	default:
-		target.Type = importTypeResource
+		target.Kind = infra.ImportKindResource
 		target.Name = resourceName
 	}
 
@@ -148,12 +126,19 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 
 	// Print what we're importing.
-	if target.Type == importTypeProject {
+	itemType := "resource"
+	if target.Kind == infra.ImportKindApp {
+		itemType = "app"
+	} else if target.Kind == infra.ImportKindProject {
+		itemType = "project"
+	}
+
+	if target.Kind == infra.ImportKindProject {
 		printer.Info(fmt.Sprintf("Importing DigitalOcean project with ID %q into %s environment",
 			target.ID, target.Environment))
 	} else {
 		printer.Info(fmt.Sprintf("Importing %s %q with ID %q into %s environment",
-			target.Type, target.Name, target.ID, target.Environment))
+			itemType, target.Name, target.ID, target.Environment))
 	}
 	printer.Print("")
 
@@ -164,11 +149,11 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	printer.Print(fmt.Sprintf("Importing %s...", target.Type))
+	printer.Print(fmt.Sprintf("Importing %s...", itemType))
 	spinner.Start()
 
 	result, err := tf.Import(ctx, infra.ImportInput{
-		Kind:        infra.ImportKind(target.Type),
+		Kind:        target.Kind,
 		Name:        target.Name,
 		ID:          target.ID,
 		Environment: target.Environment,
