@@ -67,6 +67,16 @@ locals {
 }
 
 #
+# DigitalOcean Project
+#
+resource "digitalocean_project" "this" {
+  name        = "${var.project_name}-${var.environment}"
+  description = var.project_description
+  purpose     = "Web Application"
+  environment = title(var.environment)
+}
+
+#
 # Default B2 Bucket (always provisioned for every project)
 #
 module "default_b2_bucket" {
@@ -176,5 +186,19 @@ resource "github_actions_secret" "resource_outputs" {
     each.value["source_type"] == "resource" ? tostring(module.resources[each.value["resource_name"]][each.value["output_name"]]) : tostring(module.apps[each.value["app_name"]][each.value["output_name"]]),
     "NOT_SET"
   )
+  depends_on = [module.resources, module.apps]
+}
+
+#
+# DigitalOcean Project Resources
+#
+# Assign all DigitalOcean resources to the project.
+resource "digitalocean_project_resources" "this" {
+  project = digitalocean_project.this.id
+  resources = compact(concat(
+    [for r in module.resources : try(r.urn, "")],
+    [for a in module.apps : try(a.urn, "")]
+  ))
+
   depends_on = [module.resources, module.apps]
 }

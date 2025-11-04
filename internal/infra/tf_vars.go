@@ -23,11 +23,12 @@ type (
 	// tfVars represents the root structure of Terraform variables
 	// that will be written to webkit.auto.tfvars.json
 	tfVars struct {
-		ProjectName  string         `json:"project_name"`
-		Environment  string         `json:"environment"`
-		GithubConfig tfGithubConfig `json:"github_config"`
-		Apps         []tfApp        `json:"apps"`
-		Resources    []tfResource   `json:"resources"`
+		ProjectName        string         `json:"project_name"`
+		ProjectDescription string         `json:"project_description"`
+		Environment        string         `json:"environment"`
+		GithubConfig       tfGithubConfig `json:"github_config"`
+		Apps               []tfApp        `json:"apps"`
+		Resources          []tfResource   `json:"resources"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -79,10 +80,11 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 	}
 
 	vars := tfVars{
-		ProjectName: t.appDef.Project.Name,
-		Environment: env.String(),
-		Apps:        make([]tfApp, 0, len(t.appDef.Apps)),
-		Resources:   make([]tfResource, 0, len(t.appDef.Resources)),
+		ProjectName:        t.appDef.Project.Name,
+		ProjectDescription: t.appDef.Project.Description,
+		Environment:        env.String(),
+		Apps:               make([]tfApp, 0, len(t.appDef.Apps)),
+		Resources:          make([]tfResource, 0, len(t.appDef.Resources)),
 		GithubConfig: tfGithubConfig{
 			Owner: t.appDef.Project.Repo.Owner,
 			Repo:  t.appDef.Project.Repo.Name,

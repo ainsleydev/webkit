@@ -81,3 +81,12 @@ output "platform_provider" {
   description = "Cloud provider used"
   value       = var.platform_provider
 }
+
+output "urn" {
+  description = "Resource URN (DigitalOcean specific)"
+  value = (
+    var.platform_type == "vm" && var.platform_provider == "digitalocean" ? module.do_droplet[0].urn :
+    var.platform_type == "container" && var.platform_provider == "digitalocean" ? module.do_app[0].urn :
+    null
+  )
+}
