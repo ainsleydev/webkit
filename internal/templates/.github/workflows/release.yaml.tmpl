@@ -146,7 +146,7 @@ jobs:
 
       - name: Copy Ansible Files
         run: |
-          cp -r .webkit-repo/platform/ansible ./ansible
+          cp -r .webkit-repo/ansible ./ansible
           echo "Copied ansible files from WebKit ${{ steps.read_version.outputs.version }}"
 
       - name: Determine SHA
@@ -172,6 +172,7 @@ jobs:
             -e github_user={{ ghVar "github.repository_owner" }}
             -e github_token=${{"{{"}} secrets.GITHUB_TOKEN {{ "}}" }}
             # This will break if there's no value, needs to validate it.
+            # TODO: It shouldnt be using Config domain, but the doamins property.
             -e domain={{ index .Infra.Config "domain" }}
             -e docker_image={{ ghVar "github.event.repository.name" }}-{{ .Name }}
             -e docker_image_tag=sha-{{ ghVar "steps.determine_sha.outputs.sha" }}
