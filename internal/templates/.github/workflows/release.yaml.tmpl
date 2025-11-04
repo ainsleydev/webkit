@@ -129,14 +129,24 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      - name: Setup WebKit Repository
-        id: setup_webkit
-        uses: ./.github/actions/setup-webkit
+      - name: Read WebKit Version
+        id: read_version
+        run: |
+          WEBKIT_VERSION=$(jq -r '.webkit_version // "latest"' "app.json")
+          echo "version=$WEBKIT_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected WebKit version: $WEBKIT_VERSION"
+
+      - name: Checkout WebKit Repository
+        uses: actions/checkout@v5
+        with:
+          repository: 'ainsleydev/webkit'
+          ref: {{ ghVar "steps.read_version.outputs.version" }}
+          path: '.webkit-repo'
 
       - name: Copy Ansible Files
         run: |
-          cp -r {{ ghVar "steps.setup_webkit.outputs.webkit-path" }}/platform/ansible ./platform/ansible
-          echo "Copied ansible files from WebKit {{ ghVar "steps.setup_webkit.outputs.version" }}"
+          cp -r .webkit-repo/platform/ansible ./platform/ansible
+          echo "Copied ansible files from WebKit {{ ghVar "steps.read_version.outputs.version" }}"
 
       - name: Determine SHA
         id: determine_sha
