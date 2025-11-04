@@ -146,7 +146,7 @@ jobs:
 
       - name: Copy Ansible Files
         run: |
-          cp -r .webkit-repo/ansible ./ansible
+          cp -r .webkit-repo/platform/ansible ./ansible
           echo "Copied ansible files from WebKit ${{ steps.read_version.outputs.version }}"
 
       - name: Determine SHA
