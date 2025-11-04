@@ -31,8 +31,8 @@ type (
 	}
 
 	testApp struct {
-		Name     string                      `json:"name"`
-		Env      testEnvironment             `json:"env"`
+		Name     string                     `json:"name"`
+		Env      testEnvironment            `json:"env"`
 		Commands map[string]testCommandSpec `json:"commands,omitempty" inline:"true"`
 	}
 )
