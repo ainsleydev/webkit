@@ -26,7 +26,7 @@ func setupTfVars(t *testing.T, appDef *appdef.Definition) *Terraform {
 	// Default behavior: return empty string (no SHA tags).
 	mockClient.EXPECT().
 		GetLatestSHATag(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return("").
+		Return("", nil).
 		AnyTimes()
 
 	return &Terraform{
@@ -654,7 +654,7 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 		mockClient := mocks.NewGHClient(ctrl)
 		mockClient.EXPECT().
 			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
-			Return("sha-test123")
+			Return("sha-test123", nil)
 
 		tf := &Terraform{
 			appDef:   input,

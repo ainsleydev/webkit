@@ -41,11 +41,12 @@ func (m *GHClient) EXPECT() *GHClientMockRecorder {
 }
 
 // GetLatestSHATag mocks base method.
-func (m *GHClient) GetLatestSHATag(ctx context.Context, owner, repo, appName string) string {
+func (m *GHClient) GetLatestSHATag(ctx context.Context, owner, repo, appName string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLatestSHATag", ctx, owner, repo, appName)
 	ret0, _ := ret[0].(string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetLatestSHATag indicates an expected call of GetLatestSHATag.

@@ -54,6 +54,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("BACK_BLAZE_KEY_ID", "id")
 	t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
 	t.Setenv("GITHUB_TOKEN", "token")
+	t.Setenv("GITHUB_TOKEN_CLASSIC", "token")
 }
 
 func teardownEnv(t *testing.T) {
@@ -67,6 +68,7 @@ func teardownEnv(t *testing.T) {
 		"BACK_BLAZE_KEY_ID",
 		"BACK_BLAZE_APPLICATION_KEY",
 		"GITHUB_TOKEN",
+		"GITHUB_TOKEN_CLASSIC",
 	}
 
 	for _, key := range envVars {
@@ -364,7 +366,7 @@ func TestTerraform_Apply(t *testing.T) {
 		tf.tf = mock
 
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
@@ -383,7 +385,7 @@ func TestTerraform_Apply(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mock := tfmocks.NewMockterraformExecutor(ctrl)
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("authentication failed")).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
@@ -712,7 +714,7 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		mockClient := mocks.NewGHClient(ctrl)
 		mockClient.EXPECT().
 			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
-			Return("sha-xyz789")
+			Return("sha-xyz789", nil)
 
 		tf := &Terraform{
 			appDef:   appDef,
@@ -723,7 +725,7 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		assert.Equal(t, "sha-xyz789", tag)
 	})
 
-	t.Run("Falls back to latest when GHCR returns empty", func(t *testing.T) {
+	t.Run("Falls back to latest when GHCR returns error", func(t *testing.T) {
 		t.Setenv("GITHUB_SHA", "")
 
 		appDef := &appdef.Definition{
@@ -739,7 +741,7 @@ func TestTerraform_DetermineImageTag(t *testing.T) {
 		mockClient := mocks.NewGHClient(ctrl)
 		mockClient.EXPECT().
 			GetLatestSHATag(gomock.Any(), "test-owner", "test-repo", "web").
-			Return("")
+			Return("", errors.New("error"))
 
 		tf := &Terraform{
 			appDef:   appDef,

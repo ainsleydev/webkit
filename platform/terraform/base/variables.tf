@@ -48,6 +48,11 @@ variable "github_token" {
   sensitive = true
 }
 
+variable "github_token_classic" {
+  type = string
+  sensitive = true
+}
+
 variable "resources" {
   type = list(object({
     name              = string

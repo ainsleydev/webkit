@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -73,16 +74,12 @@ func NewTerraform(ctx context.Context, appDef *appdef.Definition, manifest *mani
 		return nil, err
 	}
 
-	// Create GitHub API client with token from environment.
-	// If GITHUB_TOKEN is not set, the client will be unauthenticated.
-	ghClient := ghapi.New(os.Getenv("GITHUB_TOKEN"))
-
 	return &Terraform{
 		appDef:          appDef,
 		path:            path,
 		fs:              afero.NewOsFs(),
 		env:             tfEnv,
-		ghClient:        ghClient,
+		ghClient:        ghapi.New(tfEnv.GithubTokenClassic),
 		useLocalBackend: false,
 		manifest:        manifest,
 	}, nil
@@ -489,12 +486,20 @@ func (t *Terraform) determineImageTag(ctx context.Context, appName string) strin
 	}
 
 	// Try to get the latest sha tag from GHCR using the injected client.
-	if tag := t.ghClient.GetLatestSHATag(ctx, t.appDef.Project.Repo.Owner, t.appDef.Project.Repo.Name, appName); tag != "" {
-		return tag
+	tag, err := t.ghClient.GetLatestSHATag(ctx, t.appDef.Project.Repo.Owner, t.appDef.Project.Repo.Name, appName)
+	if err != nil {
+		slog.Error("Obtaining latest SHA tag for app %Q, error: %s", appName, err.Error())
+
+		// Fallback to latest.
+		return "latest"
 	}
 
-	// Fallback to latest.
-	return "latest"
+	slog.Debug("Found latest tag for app",
+		slog.String("tag", tag),
+		slog.String("app", appName),
+	)
+
+	return tag
 }
 
 func getTerraformPath(ctx context.Context) (string, error) {

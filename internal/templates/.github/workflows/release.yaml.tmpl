@@ -110,7 +110,7 @@ jobs:
       - name: Deploy {{ .Title }} to DigitalOcean App Platform
         uses: digitalocean/app_action/deploy@v2
         env:
-          IMAGE_TAG_{{ .Type | upper | replace "-" "_" }}: sha-{{ ghVar "github.sha" }}
+          IMAGE_TAG_{{ printf "%s" .Type  | upper | replace "-" "_" }}: sha-{{ ghVar "github.sha" }}
         with:
           token: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
           app_name: '{{ ghVar "github.event.repository.name" }}-{{ .Name }}'

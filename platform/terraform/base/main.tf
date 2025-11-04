@@ -111,7 +111,7 @@ module "apps" {
   github_config = {
     owner = var.github_config.owner
     repo  = var.github_config.repo
-    token = var.github_token
+    token = var.github_token_classic
   }
   ssh_keys = try(var.ssh_keys, [])
   domains = try(each.value.domains, [])

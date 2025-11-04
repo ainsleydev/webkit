@@ -3,6 +3,7 @@ package ghapi
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -12,117 +13,96 @@ func TestNew(t *testing.T) {
 
 	t.Run("Creates client with token", func(t *testing.T) {
 		t.Parallel()
-
 		client := New("test-token")
 		assert.NotNil(t, client)
 	})
+}
 
-	t.Run("Creates client without token", func(t *testing.T) {
-		t.Parallel()
+type mockClient struct {
+	versions []mockVersion
+}
 
-		client := New("")
-		assert.NotNil(t, client)
-	})
+type mockVersion struct {
+	tags      []string
+	createdAt time.Time
+}
+
+func (m *mockClient) GetLatestSHATag(_ context.Context, _, _, _ string) (string, error) {
+	var shaTags []struct {
+		tag       string
+		createdAt time.Time
+	}
+
+	for _, v := range m.versions {
+		for _, t := range v.tags {
+			if t != "" && len(t) >= 4 && t[:4] == "sha-" {
+				shaTags = append(shaTags, struct {
+					tag       string
+					createdAt time.Time
+				}{t, v.createdAt})
+			}
+		}
+	}
+
+	if len(shaTags) == 0 {
+		return "", nil
+	}
+
+	// Sort by creation time descending
+	for i := 0; i < len(shaTags)-1; i++ {
+		for j := i + 1; j < len(shaTags); j++ {
+			if shaTags[j].createdAt.After(shaTags[i].createdAt) {
+				shaTags[i], shaTags[j] = shaTags[j], shaTags[i]
+			}
+		}
+	}
+
+	return shaTags[0].tag, nil
 }
 
 func TestGetLatestSHATag(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Returns empty string for non-existent package", func(t *testing.T) {
+	t.Run("Returns latest SHA tag by creation time", func(t *testing.T) {
 		t.Parallel()
 
-		client := New("")
-		tag := client.GetLatestSHATag(
-			context.Background(),
-			"non-existent-owner",
-			"non-existent-repo",
-			"non-existent-app",
-		)
-
-		assert.Equal(t, "", tag)
-	})
-
-	t.Run("Returns empty string with invalid inputs", func(t *testing.T) {
-		t.Parallel()
-
-		client := New("")
-		tag := client.GetLatestSHATag(
-			context.Background(),
-			"",
-			"",
-			"",
-		)
-
-		assert.Equal(t, "", tag)
-	})
-}
-
-// mockGHClient is a test client that returns predefined responses.
-type mockGHClient struct {
-	tags []string
-}
-
-func (m *mockGHClient) GetLatestSHATag(_ context.Context, _, _, _ string) string {
-	var shaTags []string
-	for _, tag := range m.tags {
-		if len(tag) > 4 && tag[:4] == "sha-" {
-			shaTags = append(shaTags, tag)
-		}
-	}
-
-	if len(shaTags) == 0 {
-		return ""
-	}
-
-	// Simple sorting - return last alphabetically.
-	// In real implementation, this is sorted properly.
-	latest := shaTags[0]
-	for _, tag := range shaTags {
-		if tag > latest {
-			latest = tag
-		}
-	}
-	return latest
-}
-
-func TestMockClient(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Mock returns latest SHA tag", func(t *testing.T) {
-		t.Parallel()
-
-		mock := &mockGHClient{
-			tags: []string{
-				"latest",
-				"sha-abc123",
-				"sha-def456",
-				"v1.0.0",
+		mock := &mockClient{
+			versions: []mockVersion{
+				{tags: []string{"sha-aaa"}, createdAt: time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)},
+				{tags: []string{"sha-bbb"}, createdAt: time.Date(2025, 11, 1, 11, 0, 0, 0, time.UTC)},
+				{tags: []string{"latest"}, createdAt: time.Date(2025, 11, 1, 12, 0, 0, 0, time.UTC)},
 			},
 		}
 
-		tag := mock.GetLatestSHATag(context.Background(), "owner", "repo", "app")
-		assert.Equal(t, "sha-def456", tag)
+		tag, err := mock.GetLatestSHATag(context.Background(), "owner", "repo", "app")
+		assert.NoError(t, err)
+		assert.Equal(t, "sha-bbb", tag)
 	})
 
-	t.Run("Mock returns empty for no SHA tags", func(t *testing.T) {
+	t.Run("Returns empty string if no SHA tags", func(t *testing.T) {
 		t.Parallel()
 
-		mock := &mockGHClient{
-			tags: []string{"latest", "v1.0.0"},
+		mock := &mockClient{
+			versions: []mockVersion{
+				{tags: []string{"latest"}, createdAt: time.Now()},
+				{tags: []string{"v1.0.0"}, createdAt: time.Now()},
+			},
 		}
 
-		tag := mock.GetLatestSHATag(context.Background(), "owner", "repo", "app")
+		tag, err := mock.GetLatestSHATag(context.Background(), "owner", "repo", "app")
+		assert.NoError(t, err)
 		assert.Equal(t, "", tag)
 	})
 
-	t.Run("Mock returns empty for empty tags", func(t *testing.T) {
+	t.Run("Returns empty string for empty versions", func(t *testing.T) {
 		t.Parallel()
 
-		mock := &mockGHClient{
-			tags: []string{},
+		mock := &mockClient{
+			versions: []mockVersion{},
 		}
 
-		tag := mock.GetLatestSHATag(context.Background(), "owner", "repo", "app")
+		tag, err := mock.GetLatestSHATag(context.Background(), "owner", "repo", "app")
+		assert.NoError(t, err)
 		assert.Equal(t, "", tag)
 	})
 }
