@@ -30,11 +30,11 @@
 				},
 				"SENTRY_DSN": {
 					"source": "sops",
-					"path": "SENTRY_DSN"
+					"value": "SENTRY_DSN"
 				},
 				"TODO": {
 					"source": "sops",
-					"value": "https://my-website.com"
+					"value": "TODO"
 				}
 			}
 		}
@@ -94,7 +94,7 @@
 					},
 					"PAYLOAD_SECRET": {
 						"source": "sops",
-						"path": "PAYLOAD_SECRET"
+						"value": "PAYLOAD_SECRET"
 					}
 				},
 				"staging": {
@@ -110,7 +110,7 @@
 					},
 					"PAYLOAD_SECRET": {
 						"source": "sops",
-						"path": "PAYLOAD_SECRET"
+						"value": "PAYLOAD_SECRET"
 					}
 				}
 			},
