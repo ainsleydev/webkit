@@ -209,7 +209,6 @@ jobs:
 
 {{- range $app := .PayloadPostgresApps }}
   migration-check-{{ $app.App.Name }}:
-    name: Migration Check - {{ $app.App.Title }}
     runs-on: ubuntu-latest
     env:
       DO_ACCESS_TOKEN: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
