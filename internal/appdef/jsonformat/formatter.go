@@ -96,7 +96,6 @@ func Format(data []byte) ([]byte, error) {
 
 		// Check if we should inline this object.
 		shouldInline := false
-		var fieldsToInline map[string]bool
 
 		// Check if we're inside an inline parent.
 		if len(currentParents) > 0 {
@@ -109,11 +108,11 @@ func Format(data []byte) ([]byte, error) {
 
 		// Fallback: check if this object matches env/command pattern.
 		if !shouldInline {
-			shouldInline, fieldsToInline = shouldInlineObject(lines, i)
+			shouldInline, _ = shouldInlineObject(lines, i)
 		}
 
 		if shouldInline {
-			inlined, consumed := inlineObject(lines, i, fieldsToInline)
+			inlined, consumed := inlineObject(lines, i)
 			result = append(result, inlined)
 			i += consumed
 		} else {
@@ -235,7 +234,7 @@ func isCommandObject(fields map[string]bool) bool {
 	return true
 }
 
-func inlineObject(lines [][]byte, startIdx int, allowedFields map[string]bool) ([]byte, int) {
+func inlineObject(lines [][]byte, startIdx int) ([]byte, int) {
 	startLine := lines[startIdx]
 	indentation := extractIndentation(startLine)
 	keyPart := string(bytes.TrimSpace(startLine))

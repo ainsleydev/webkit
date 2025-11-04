@@ -115,9 +115,9 @@ func TestFormat_WithRealJSON(t *testing.T) {
 	}
 
 	type app struct {
-		Name     string                 `json:"name"`
+		Name     string                         `json:"name"`
 		Env      map[string]map[string]envValue `json:"env"`
-		Commands map[string]commandSpec `json:"commands"`
+		Commands map[string]commandSpec         `json:"commands"`
 	}
 
 	testApp := app{
