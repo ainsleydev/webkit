@@ -18,7 +18,7 @@ type (
 		UsesNPM          *bool                   `json:"usesNPM"`
 		TerraformManaged *bool                   `json:"terraformManaged,omitempty"`
 		Domains          []Domain                `json:"domains,omitzero"`
-		Commands         map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string"`
+		Commands         map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string" inline:"true"`
 	}
 	Build struct {
 		Dockerfile string `json:"dockerfile"`

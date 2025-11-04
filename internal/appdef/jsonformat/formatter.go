@@ -2,27 +2,117 @@ package jsonformat
 
 import (
 	"bytes"
+	"reflect"
 	"regexp"
+	"strings"
 )
 
-// fieldNameRegex extracts the field name from a JSON line.
+// inlineParents contains JSON field names whose child objects should be inlined.
+// Built at init time by scanning struct tags.
+var inlineParents map[string]bool
+
+func init() {
+	inlineParents = make(map[string]bool)
+}
+
+// RegisterType scans a struct type for fields tagged with inline:"true".
+func RegisterType(t reflect.Type) {
+	scanType(t)
+}
+
+// scanType recursively scans a type for inline tags.
+func scanType(t reflect.Type) {
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	if t.Kind() != reflect.Struct {
+		return
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		if !field.IsExported() {
+			continue
+		}
+
+		jsonTag := field.Tag.Get("json")
+		if jsonTag == "" || jsonTag == "-" {
+			continue
+		}
+
+		jsonName := strings.Split(jsonTag, ",")[0]
+		if jsonName == "" {
+			continue
+		}
+
+		// If this field has inline:"true", its children should be inlined.
+		if field.Tag.Get("inline") == "true" {
+			inlineParents[jsonName] = true
+		}
+
+		// Recurse into struct fields.
+		fieldType := field.Type
+		for fieldType.Kind() == reflect.Ptr || fieldType.Kind() == reflect.Slice || fieldType.Kind() == reflect.Map {
+			fieldType = fieldType.Elem()
+		}
+		if fieldType.Kind() == reflect.Struct {
+			scanType(fieldType)
+		}
+	}
+}
+
 var fieldNameRegex = regexp.MustCompile(`^\s*"([^"]+)"\s*:`)
 
 // Format processes JSON output from json.MarshalIndent and applies custom
 // formatting rules to make specific objects more compact.
-//
-// It inlines objects that contain only environment variable fields
-// (source, value, path) or command fields (command, skip_ci, timeout).
 func Format(data []byte) ([]byte, error) {
 	lines := bytes.Split(data, []byte("\n"))
 	var result [][]byte
+
+	// Track which inline parent we're currently inside.
+	var currentParents []string
 
 	i := 0
 	for i < len(lines) {
 		line := lines[i]
 
-		// Check if this line starts an object that should be inlined.
-		if shouldInline, fieldsToInline := shouldInlineObject(lines, i); shouldInline {
+		// Check if this line defines an inline parent (e.g., "dev": {).
+		if parent := extractParentIfInlineCandidate(line); parent != "" {
+			currentParents = append(currentParents, parent)
+			result = append(result, line)
+			i++
+			continue
+		}
+
+		// Check if this line closes a brace, pop parent.
+		if isClosingBrace(line) {
+			if len(currentParents) > 0 {
+				currentParents = currentParents[:len(currentParents)-1]
+			}
+			result = append(result, line)
+			i++
+			continue
+		}
+
+		// Check if we should inline this object.
+		shouldInline := false
+		var fieldsToInline map[string]bool
+
+		// Check if we're inside an inline parent.
+		if len(currentParents) > 0 {
+			parent := currentParents[len(currentParents)-1]
+			if inlineParents[parent] {
+				// We're inside an inline parent, inline this object.
+				shouldInline = true
+			}
+		}
+
+		// Fallback: check if this object matches env/command pattern.
+		if !shouldInline {
+			shouldInline, fieldsToInline = shouldInlineObject(lines, i)
+		}
+
+		if shouldInline {
 			inlined, consumed := inlineObject(lines, i, fieldsToInline)
 			result = append(result, inlined)
 			i += consumed
@@ -35,17 +125,34 @@ func Format(data []byte) ([]byte, error) {
 	return bytes.Join(result, []byte("\n")), nil
 }
 
-// shouldInlineObject checks if an object at the given index should be inlined.
-// Returns true if it should be inlined, along with the allowed field names.
+// extractParentIfInlineCandidate checks if this line starts an inline parent.
+func extractParentIfInlineCandidate(line []byte) string {
+	if !bytes.Contains(line, []byte(": {")) {
+		return ""
+	}
+
+	key := extractFieldName(line)
+	if key != "" && inlineParents[key] {
+		return key
+	}
+
+	return ""
+}
+
+// isClosingBrace checks if a line is just a closing brace.
+func isClosingBrace(line []byte) bool {
+	trimmed := bytes.TrimSpace(line)
+	return bytes.HasPrefix(trimmed, []byte("}"))
+}
+
+// shouldInlineObject checks if an object matches an inline pattern.
 func shouldInlineObject(lines [][]byte, startIdx int) (bool, map[string]bool) {
 	line := lines[startIdx]
 
-	// Must be a line that starts an object: "key": {
 	if !bytes.Contains(line, []byte(": {")) {
 		return false, nil
 	}
 
-	// Look ahead to see what fields this object contains.
 	if startIdx+1 >= len(lines) {
 		return false, nil
 	}
@@ -59,7 +166,6 @@ func shouldInlineObject(lines [][]byte, startIdx int) (bool, map[string]bool) {
 		currentLine := lines[idx]
 		trimmed := bytes.TrimSpace(currentLine)
 
-		// Track depth.
 		if bytes.Contains(trimmed, []byte("{")) {
 			depth++
 		}
@@ -70,7 +176,6 @@ func shouldInlineObject(lines [][]byte, startIdx int) (bool, map[string]bool) {
 			}
 		}
 
-		// Extract field name if this is a field line.
 		if depth == 1 && !bytes.HasPrefix(trimmed, []byte("}")) {
 			fieldName := extractFieldName(currentLine)
 			if fieldName != "" {
@@ -93,14 +198,12 @@ func shouldInlineObject(lines [][]byte, startIdx int) (bool, map[string]bool) {
 }
 
 var (
-	// envValueFields are the allowed fields in environment value objects.
 	envValueFields = map[string]bool{
 		"source": true,
 		"value":  true,
 		"path":   true,
 	}
 
-	// commandFields are the allowed fields in command objects.
 	commandFields = map[string]bool{
 		"command": true,
 		"skip_ci": true,
@@ -108,37 +211,30 @@ var (
 	}
 )
 
-// isEnvValueObject checks if fields match an environment value object.
 func isEnvValueObject(fields map[string]bool) bool {
 	if len(fields) == 0 {
 		return false
 	}
-
 	for field := range fields {
 		if !envValueFields[field] {
 			return false
 		}
 	}
-
 	return true
 }
 
-// isCommandObject checks if fields match a command object.
 func isCommandObject(fields map[string]bool) bool {
 	if len(fields) == 0 {
 		return false
 	}
-
 	for field := range fields {
 		if !commandFields[field] {
 			return false
 		}
 	}
-
 	return true
 }
 
-// inlineObject takes a multi-line object and collapses it to a single line.
 func inlineObject(lines [][]byte, startIdx int, allowedFields map[string]bool) ([]byte, int) {
 	startLine := lines[startIdx]
 	indentation := extractIndentation(startLine)
@@ -154,31 +250,28 @@ func inlineObject(lines [][]byte, startIdx int, allowedFields map[string]bool) (
 
 		trimmed := bytes.TrimSpace(line)
 
-		// Found the closing brace.
 		if bytes.HasPrefix(trimmed, []byte("}")) {
 			closeBrace := string(trimmed)
-			// Build the result.
 			result := indentation + keyPart
 			for _, part := range parts {
 				result += part + ", "
 			}
-			result = result[:len(result)-2] // Remove last ", "
+			if len(parts) > 0 {
+				result = result[:len(result)-2] // Remove last ", "
+			}
 			result += closeBrace
 			return []byte(result), consumed
 		}
 
-		// Extract field part.
 		fieldPart := extractFieldPart(line)
 		parts = append(parts, fieldPart)
 
 		idx++
 	}
 
-	// If we get here, something went wrong. Return original line.
 	return startLine, 1
 }
 
-// extractIndentation returns the leading whitespace from a line.
 func extractIndentation(line []byte) string {
 	for i, b := range line {
 		if b != ' ' && b != '\t' {
@@ -188,7 +281,6 @@ func extractIndentation(line []byte) string {
 	return string(line)
 }
 
-// extractFieldName extracts the field name from a JSON line.
 func extractFieldName(line []byte) string {
 	matches := fieldNameRegex.FindSubmatch(line)
 	if len(matches) < 2 {
@@ -197,7 +289,6 @@ func extractFieldName(line []byte) string {
 	return string(matches[1])
 }
 
-// extractFieldPart extracts the field definition without indentation.
 func extractFieldPart(line []byte) string {
 	trimmed := bytes.TrimLeft(line, " \t")
 	trimmed = bytes.TrimRight(trimmed, ",\r\n\t ")
