@@ -18,9 +18,14 @@ type (
 	EnvVar map[string]EnvValue
 	// EnvValue represents a single env variable configuration
 	EnvValue struct {
-		Source EnvSource `json:"source"`          // See below
-		Value  any       `json:"value,omitempty"` // Used for "value" and "resource" sources
-		Path   string    `json:"path,omitempty"`  // Used for "sops" source (format: "file:key")
+		// Source defines the source type: "value", "resource", or "sops"
+		Source EnvSource `json:"source"`
+		// Value holds the actual value for different source types:
+		// - "value": A static string (e.g., "https://api.example.com")
+		// - "resource": A Terraform resource reference (e.g., "db.connection_url")
+		// - "sops": The variable name/key to lookup in the SOPS file (e.g., "API_KEY")
+		//   Note: For SOPS, the file path is determined by environment (dev.yaml, staging.yaml, production.yaml)
+		Value any `json:"value,omitempty"`
 	}
 )
 
@@ -52,7 +57,6 @@ type EnvWalkEntry struct {
 	Key         string
 	Value       any
 	Source      EnvSource
-	Path        string
 	Map         EnvVar
 }
 
@@ -71,7 +75,6 @@ func (e Environment) Walk(fn EnvironmentWalker) {
 				Key:         key,
 				Value:       val.Value,
 				Source:      val.Source,
-				Path:        val.Path,
 				Map:         vars,
 			})
 		}
@@ -89,7 +92,6 @@ func (e Environment) WalkE(fn EnvironmentWalkerE) error {
 				Key:         key,
 				Value:       val.Value,
 				Source:      val.Source,
-				Path:        val.Path,
 				Map:         vars,
 			}); err != nil {
 				return err

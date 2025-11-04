@@ -77,7 +77,7 @@ func TestEnvironment_Walk_WithDefaults(t *testing.T) {
 	}{
 		"Default Only": {
 			env: Environment{
-				Default: EnvVar{"API_KEY": {Source: EnvSourceSOPS, Path: "secrets.yaml:API_KEY"}},
+				Default: EnvVar{"API_KEY": {Source: EnvSourceSOPS}},
 			},
 			want: []string{
 				"development:API_KEY=<nil>",
