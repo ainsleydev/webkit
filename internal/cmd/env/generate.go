@@ -3,17 +3,11 @@ package env
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
-	"github.com/joho/godotenv"
-	"github.com/spf13/cast"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
-	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -42,36 +36,45 @@ var GenerateCmd = &cli.Command{
 	Action: cmdtools.Wrap(Generate),
 }
 
-// Generate creates a .env file for a specific app and environment
+type generateArgs struct {
+	AppName     string
+	Environment string
+	OutputPath  string
+}
+
+// Generate creates a .env file for a specific app and environment.
 func Generate(ctx context.Context, input cmdtools.CommandInput) error {
+	args := generateArgs{
+		AppName:     input.Command.String("app"),
+		Environment: input.Command.String("environment"),
+		OutputPath:  input.Command.String("output"),
+	}
+
+	return generateEnvFile(ctx, input, args)
+}
+
+// generateEnvFile contains the core logic for generating env files.
+func generateEnvFile(ctx context.Context, input cmdtools.CommandInput, args generateArgs) error {
 	appDef := input.AppDef()
 	printer := input.Printer()
 
-	// Get flags
-	appName := input.Command.String("app")
-	environmentStr := input.Command.String("environment")
-	outputPath := input.Command.String("output")
-
-	// Parse environment
-	environment, err := env.Parse(environmentStr)
+	environment, err := env.Parse(args.Environment)
 	if err != nil {
 		return fmt.Errorf("invalid environment: %w", err)
 	}
 
-	// Find the app
 	var targetApp *appdef.App
 	for _, app := range appDef.Apps {
-		if app.Name == appName {
+		if app.Name == args.AppName {
 			targetApp = &app
 			break
 		}
 	}
 
 	if targetApp == nil {
-		return fmt.Errorf("app '%s' not found in app.json", appName)
+		return fmt.Errorf("app '%s' not found in app.json", args.AppName)
 	}
 
-	// Resolve secrets
 	err = secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
 		SOPSClient: input.SOPSClient(),
 		BaseDir:    input.BaseDir,
@@ -80,68 +83,57 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	// Merge shared and app-specific environments
 	mergedApp := targetApp.MergeEnvironments(appDef.Shared.Env)
 
-	// Get environment-specific vars
-	var vars appdef.EnvVar
-	switch environment {
-	case env.Development:
-		vars = mergedApp.Dev
-	case env.Staging:
-		vars = mergedApp.Staging
-	case env.Production:
-		vars = mergedApp.Production
-	default:
-		return fmt.Errorf("unsupported environment: %s", environment)
+	vars, err := getEnvironmentVars(mergedApp, environment)
+	if err != nil {
+		return err
 	}
 
-	// Skip if no environment variables
 	if len(vars) == 0 {
-		printer.Warn(fmt.Sprintf("No environment variables defined for app '%s' in environment '%s'", appName, environment))
+		printer.Warn(fmt.Sprintf("No environment variables defined for app '%s' in environment '%s'", args.AppName, environment))
 		return nil
 	}
 
-	// Determine output path
+	err = writeMapToFile(writeArgs{
+		Input:            input,
+		Vars:             vars,
+		App:              *targetApp,
+		Environment:      environment,
+		CustomOutputPath: args.OutputPath,
+	})
+	if err != nil {
+		return err
+	}
+
+	outputPath := args.OutputPath
 	if outputPath == "" {
-		// Default to app directory
-		fileName := ".env"
-		if environment != env.Development {
-			fileName = fmt.Sprintf(".env.%s", environment)
-		}
-		outputPath = filepath.Join(targetApp.Path, fileName)
+		outputPath = fmt.Sprintf("%s/.env%s", targetApp.Path, envSuffix(environment))
 	}
 
-	// Convert vars to string map
-	envMap := make(map[string]string)
-	for k, v := range vars {
-		envMap[k] = cast.ToString(v.Value)
-	}
-
-	// Marshal to dotenv format
-	buf, err := godotenv.Marshal(envMap)
-	if err != nil {
-		return fmt.Errorf("failed to marshal env vars: %w", err)
-	}
-
-	// Ensure directory exists
-	outputDir := filepath.Dir(outputPath)
-	err = input.FS.MkdirAll(outputDir, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("failed to create output directory: %w", err)
-	}
-
-	// Write file with webkit notice
-	opts := []scaffold.Option{
-		scaffold.WithTracking(manifest.SourceProject()),
-	}
-
-	err = input.Generator().Bytes(outputPath, []byte(buf), opts...)
-	if err != nil {
-		return fmt.Errorf("failed to write env file: %w", err)
-	}
-
-	printer.Success(fmt.Sprintf("Generated env file for app '%s' (%s) at: %s", appName, environment, outputPath))
+	printer.Success(fmt.Sprintf("Generated env file for app '%s' (%s) at: %s", args.AppName, environment, outputPath))
 
 	return nil
+}
+
+// getEnvironmentVars extracts vars for the specified environment.
+func getEnvironmentVars(app appdef.Environment, environment env.Environment) (appdef.EnvVar, error) {
+	switch environment {
+	case env.Development:
+		return app.Dev, nil
+	case env.Staging:
+		return app.Staging, nil
+	case env.Production:
+		return app.Production, nil
+	default:
+		return nil, fmt.Errorf("unsupported environment: %s", environment)
+	}
+}
+
+// envSuffix returns the .env file suffix for an environment.
+func envSuffix(environment env.Environment) string {
+	if environment == env.Development {
+		return ""
+	}
+	return fmt.Sprintf(".%s", environment)
 }

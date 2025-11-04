@@ -37,11 +37,12 @@ var environmentsWithDotEnv = []env.Environment{
 }
 
 type writeArgs struct {
-	Input       cmdtools.CommandInput
-	Vars        appdef.EnvVar
-	App         appdef.App
-	Environment env.Environment
-	IsScaffold  bool
+	Input            cmdtools.CommandInput
+	Vars             appdef.EnvVar
+	App              appdef.App
+	Environment      env.Environment
+	IsScaffold       bool
+	CustomOutputPath string
 }
 
 var dotEnvMarshaller = godotenv.Marshal
@@ -58,17 +59,22 @@ func writeMapToFile(args writeArgs) error {
 		return err
 	}
 
-	err = args.Input.FS.MkdirAll(args.App.Path, os.ModePerm)
+	var envPath string
+	if args.CustomOutputPath != "" {
+		envPath = args.CustomOutputPath
+	} else {
+		file := ".env"
+		if args.Environment != env.Development {
+			file = fmt.Sprintf(".env.%s", args.Environment)
+		}
+		envPath = filepath.Join(args.App.Path, file)
+	}
+
+	outputDir := filepath.Dir(envPath)
+	err = args.Input.FS.MkdirAll(outputDir, os.ModePerm)
 	if err != nil {
 		return err
 	}
-
-	file := ".env"
-	if args.Environment != env.Development {
-		file = fmt.Sprintf(".env.%s", args.Environment)
-	}
-
-	envPath := filepath.Join(args.App.Path, file)
 
 	var opts []scaffold.Option
 	if args.IsScaffold {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 )
@@ -110,4 +111,31 @@ func TestEnvIntegration(t *testing.T) {
 		assert.Contains(t, string(prodFile), "API_PROD_KEY")
 		assert.Contains(t, string(prodFile), "SHARED_KEY")
 	}
+
+	t.Run("Generate with custom path", func(t *testing.T) {
+		customPath := filepath.Join(tmpDir, "custom", "location", ".env")
+
+		input := cmdtools.CommandInput{
+			FS:          fs,
+			BaseDir:     tmpDir,
+			AppDefCache: appDef,
+			Manifest:    manifest.NewTracker(),
+		}
+
+		err = generateEnvFile(ctx, input, generateArgs{
+			AppName:     "api",
+			Environment: "production",
+			OutputPath:  customPath,
+		})
+		require.NoError(t, err)
+
+		exists, err := afero.Exists(fs, customPath)
+		require.NoError(t, err)
+		assert.True(t, exists)
+
+		content, err := afero.ReadFile(fs, customPath)
+		require.NoError(t, err)
+		assert.Contains(t, string(content), "API_PROD_KEY")
+		assert.Contains(t, string(content), "SHARED_KEY")
+	})
 }
