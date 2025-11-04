@@ -129,6 +129,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
+      - name: Setup WebKit Repository
+        id: setup_webkit
+        uses: ./.github/actions/setup-webkit
+
+      - name: Copy Ansible Files
+        run: |
+          cp -r {{ ghVar "steps.setup_webkit.outputs.webkit-path" }}/platform/ansible ./platform/ansible
+          echo "Copied ansible files from WebKit {{ ghVar "steps.setup_webkit.outputs.version" }}"
+
       - name: Determine SHA
         id: determine_sha
         run: |
