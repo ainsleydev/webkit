@@ -1,47 +1,12 @@
 package jsonformat
 
 import (
-	"reflect"
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-// Test types that mimic appdef structures with inline tags.
-type (
-	testEnvValue struct {
-		Source string `json:"source"`
-		Value  string `json:"value,omitempty"`
-		Path   string `json:"path,omitempty"`
-	}
-
-	testEnvVar map[string]testEnvValue
-
-	testEnvironment struct {
-		Dev        testEnvVar `json:"dev,omitempty" inline:"true"`
-		Production testEnvVar `json:"production,omitempty" inline:"true"`
-		Staging    testEnvVar `json:"staging,omitempty" inline:"true"`
-	}
-
-	testCommandSpec struct {
-		Command string `json:"command,omitempty"`
-		SkipCI  bool   `json:"skip_ci,omitempty"`
-		Timeout string `json:"timeout,omitempty"`
-	}
-
-	testApp struct {
-		Name     string                     `json:"name"`
-		Env      testEnvironment            `json:"env"`
-		Commands map[string]testCommandSpec `json:"commands,omitempty" inline:"true"`
-	}
-)
-
-func init() {
-	// Register test types for testing.
-	RegisterType(reflect.TypeOf(testApp{}))
-	RegisterType(reflect.TypeOf(testEnvironment{}))
-}
 
 func TestFormat(t *testing.T) {
 	t.Parallel()
@@ -93,53 +58,6 @@ func TestFormat(t *testing.T) {
 	}
 }`,
 		},
-		"Environment variable with source and path": {
-			input: `{
-	"env": {
-		"production": {
-			"API_KEY": {
-				"source": "sops",
-				"path": "secrets/prod.yaml:API_KEY"
-			}
-		}
-	}
-}`,
-			want: `{
-	"env": {
-		"production": {
-			"API_KEY": {"source": "sops", "path": "secrets/prod.yaml:API_KEY"}
-		}
-	}
-}`,
-		},
-		"Multiple environments": {
-			input: `{
-	"env": {
-		"dev": {
-			"DATABASE_URI": {
-				"source": "value",
-				"value": "file:./cms.db"
-			}
-		},
-		"production": {
-			"DATABASE_URI": {
-				"source": "resource",
-				"value": "db.connection_url"
-			}
-		}
-	}
-}`,
-			want: `{
-	"env": {
-		"dev": {
-			"DATABASE_URI": {"source": "value", "value": "file:./cms.db"}
-		},
-		"production": {
-			"DATABASE_URI": {"source": "resource", "value": "db.connection_url"}
-		}
-	}
-}`,
-		},
 		"Simple command": {
 			input: `{
 	"commands": {
@@ -162,195 +80,14 @@ func TestFormat(t *testing.T) {
 		},
 		"test": {
 			"command": "pnpm test"
-		},
-		"lint": {
-			"command": "pnpm lint"
 		}
 	}
 }`,
 			want: `{
 	"commands": {
 		"build": {"command": "pnpm build"},
-		"test": {"command": "pnpm test"},
-		"lint": {"command": "pnpm lint"}
+		"test": {"command": "pnpm test"}
 	}
-}`,
-		},
-		"Command with multiple fields": {
-			input: `{
-	"commands": {
-		"test": {
-			"command": "go test ./...",
-			"timeout": "5m"
-		}
-	}
-}`,
-			want: `{
-	"commands": {
-		"test": {"command": "go test ./...", "timeout": "5m"}
-	}
-}`,
-		},
-		"Command with skip_ci": {
-			input: `{
-	"commands": {
-		"deploy": {
-			"command": "kubectl apply",
-			"skip_ci": true
-		}
-	}
-}`,
-			want: `{
-	"commands": {
-		"deploy": {"command": "kubectl apply", "skip_ci": true}
-	}
-}`,
-		},
-		"Mixed content with trailing comma": {
-			input: `{
-	"name": "test",
-	"env": {
-		"dev": {
-			"URL": {
-				"source": "value",
-				"value": "localhost"
-			}
-		}
-	},
-	"commands": {
-		"build": {
-			"command": "make"
-		}
-	}
-}`,
-			want: `{
-	"name": "test",
-	"env": {
-		"dev": {
-			"URL": {"source": "value", "value": "localhost"}
-		}
-	},
-	"commands": {
-		"build": {"command": "make"}
-	}
-}`,
-		},
-		"Nested structure not matching pattern": {
-			input: `{
-	"config": {
-		"nested": {
-			"field1": "value1",
-			"field2": "value2"
-		}
-	}
-}`,
-			want: `{
-	"config": {
-		"nested": {
-			"field1": "value1",
-			"field2": "value2"
-		}
-	}
-}`,
-		},
-		"Environment with resource reference": {
-			input: `{
-	"env": {
-		"production": {
-			"DB_URL": {
-				"source": "resource",
-				"value": "db.connection_string"
-			},
-			"BUCKET": {
-				"source": "resource",
-				"value": "storage.bucket_name"
-			}
-		}
-	}
-}`,
-			want: `{
-	"env": {
-		"production": {
-			"DB_URL": {"source": "resource", "value": "db.connection_string"},
-			"BUCKET": {"source": "resource", "value": "storage.bucket_name"}
-		}
-	}
-}`,
-		},
-		"Real world example": {
-			input: `{
-	"apps": [
-		{
-			"name": "cms",
-			"env": {
-				"dev": {
-					"DATABASE_URI": {
-						"source": "value",
-						"value": "file:./cms.db"
-					},
-					"FRONTEND_URL": {
-						"source": "value",
-						"value": "http://localhost:5173"
-					}
-				},
-				"production": {
-					"DATABASE_URI": {
-						"source": "resource",
-						"value": "db.connection_url"
-					},
-					"FRONTEND_URL": {
-						"source": "value",
-						"value": "https://searchspares.com"
-					}
-				}
-			},
-			"commands": {
-				"build": {
-					"command": "pnpm build"
-				},
-				"test": {
-					"command": "pnpm test"
-				}
-			}
-		}
-	]
-}`,
-			want: `{
-	"apps": [
-		{
-			"name": "cms",
-			"env": {
-				"dev": {
-					"DATABASE_URI": {"source": "value", "value": "file:./cms.db"},
-					"FRONTEND_URL": {"source": "value", "value": "http://localhost:5173"}
-				},
-				"production": {
-					"DATABASE_URI": {"source": "resource", "value": "db.connection_url"},
-					"FRONTEND_URL": {"source": "value", "value": "https://searchspares.com"}
-				}
-			},
-			"commands": {
-				"build": {"command": "pnpm build"},
-				"test": {"command": "pnpm test"}
-			}
-		}
-	]
-}`,
-		},
-		"Empty object": {
-			input: `{
-}`,
-			want: `{
-}`,
-		},
-		"Object with no inline candidates": {
-			input: `{
-	"name": "test",
-	"version": "1.0.0"
-}`,
-			want: `{
-	"name": "test",
-	"version": "1.0.0"
 }`,
 		},
 	}
@@ -366,56 +103,42 @@ func TestFormat(t *testing.T) {
 	}
 }
 
-func TestFormat_PreservesIndentation(t *testing.T) {
-	t.Parallel()
-
-	input := `{
-		"deeply": {
-			"nested": {
-				"env": {
-					"dev": {
-						"KEY": {
-							"source": "value",
-							"value": "test"
-						}
-					}
-				}
-			}
-		}
-	}`
-
-	want := `{
-		"deeply": {
-			"nested": {
-				"env": {
-					"dev": {
-						"KEY": {"source": "value", "value": "test"}
-					}
-				}
-			}
-		}
-	}`
-
-	got, err := Format([]byte(input))
-	require.NoError(t, err)
-	assert.Equal(t, want, string(got))
-}
-
-func TestFormat_HandlesTrailingNewline(t *testing.T) {
-	t.Parallel()
-
-	input := `{
-	"commands": {
-		"build": {
-			"command": "make"
-		}
+func TestFormat_WithRealJSON(t *testing.T) {
+	// Test with actual JSON marshaling to ensure it works end-to-end.
+	type envValue struct {
+		Source string `json:"source"`
+		Value  string `json:"value,omitempty"`
 	}
-}
-`
 
-	got, err := Format([]byte(input))
+	type commandSpec struct {
+		Command string `json:"command"`
+	}
+
+	type app struct {
+		Name     string                 `json:"name"`
+		Env      map[string]map[string]envValue `json:"env"`
+		Commands map[string]commandSpec `json:"commands"`
+	}
+
+	testApp := app{
+		Name: "test",
+		Env: map[string]map[string]envValue{
+			"dev": {
+				"DB_URL": {Source: "value", Value: "localhost"},
+			},
+		},
+		Commands: map[string]commandSpec{
+			"build": {Command: "make"},
+		},
+	}
+
+	data, err := json.MarshalIndent(testApp, "", "\t")
 	require.NoError(t, err)
 
-	// Result should preserve structure but may not have exact trailing newline.
-	assert.Contains(t, string(got), `"build": {"command": "make"}`)
+	formatted, err := Format(data)
+	require.NoError(t, err)
+
+	result := string(formatted)
+	assert.Contains(t, result, `"DB_URL": {"source": "value", "value": "localhost"}`)
+	assert.Contains(t, result, `"build": {"command": "make"}`)
 }

@@ -9,10 +9,10 @@ import (
 type (
 	// Environment contains env-specific variable configurations.
 	Environment struct {
-		Default    EnvVar `json:"default,omitempty" inline:"true"`
-		Dev        EnvVar `json:"dev,omitempty" inline:"true"`
-		Staging    EnvVar `json:"staging,omitempty" inline:"true"`
-		Production EnvVar `json:"production,omitempty" inline:"true"`
+		Default    EnvVar `json:"default,omitempty"`
+		Dev        EnvVar `json:"dev,omitempty"`
+		Staging    EnvVar `json:"staging,omitempty"`
+		Production EnvVar `json:"production,omitempty"`
 	}
 	// EnvVar is a map of variable names to their configurations.
 	EnvVar map[string]EnvValue
