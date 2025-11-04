@@ -94,8 +94,8 @@ jobs:
     needs: build-and-push
     environment:
       name: production-{{ .Name }}
-      {{- if index .Infra.Config "domain" }}
-      url: https://{{ index .Infra.Config "domain" }}
+      {{- if .PrimaryDomain }}
+      url: https://{{ .PrimaryDomain }}
       {{- end }}
     steps:
       - name: Checkout Repository
@@ -120,8 +120,8 @@ jobs:
     needs: build-and-push
     environment:
       name: production-{{ .Name }}
-      {{- if index .Infra.Config "domain" }}
-      url: https://{{ index .Infra.Config "domain" }}
+      {{- if .PrimaryDomain }}
+      url: https://{{ .PrimaryDomain }}
       {{- end }}
     steps:
       - name: Checkout Repository
@@ -143,8 +143,8 @@ jobs:
 
       - name: Copy Ansible Files
         run: |
-          cp -r .webkit-repo/platform/ansible ./platform/ansible
-          echo "Copied ansible files from WebKit {{ ghVar "steps.read_version.outputs.version" }}"
+          cp -r .webkit-repo/platform/ansible ./
+          echo "Copied ansible files from WebKit {{ ghVar "steps.read_version.outputs.version" }}
 
       - name: Determine SHA
         id: determine_sha
@@ -155,7 +155,7 @@ jobs:
         uses: dawidd6/action-ansible-playbook@v4
         with:
           playbook: playbooks/server.yaml
-          directory: platform/ansible
+          directory: ansible
           key: {{ ghSecret (printf "TF_PROD_%s_SSH_PRIVATE_KEY" (.Name | upper | replace "-" "_")) }}
           inventory: |
             [all]
@@ -168,7 +168,7 @@ jobs:
             -e git_sha={{ ghVar "steps.determine_sha.outputs.sha" }}
             -e github_user={{ ghVar "github.repository_owner" }}
             -e github_token=${{"{{"}} secrets.GITHUB_TOKEN {{ "}}" }}
-            -e domain={{ index .Infra.Config "domain" }}
+            -e domain={{ .PrimaryDomain }}
             -e docker_image={{ ghVar "github.event.repository.name" }}-{{ .Name }}
             -e docker_image_tag=sha-{{ ghVar "steps.determine_sha.outputs.sha" }}
             -e docker_port={{ .Build.Port }}

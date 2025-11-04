@@ -23,15 +23,15 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 info() {
-    printf "${GREEN}==>${NC} %s\n" "$1"
+    printf "${GREEN}==>${NC} %s\n" "$1" >&2
 }
 
 warn() {
-    printf "${YELLOW}Warning:${NC} %s\n" "$1"
+    printf "${YELLOW}Warning:${NC} %s\n" "$1" >&2
 }
 
 error() {
-    printf "${RED}Error:${NC} %s\n" "$1"
+    printf "${RED}Error:${NC} %s\n" "$1" >&2
     exit 1
 }
 

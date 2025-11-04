@@ -133,6 +133,24 @@ func (a *App) ShouldRelease() bool {
 	return *a.Build.Release
 }
 
+// PrimaryDomain returns the primary domain for this app.
+// It first looks for a domain with type "primary" in the Domains array.
+// If no primary domain is found, it returns the first domain in the array.
+// If the Domains array is empty, it returns an empty string.
+func (a *App) PrimaryDomain() string {
+	// First try to find a primary domain
+	for _, domain := range a.Domains {
+		if domain.Type == DomainTypePrimary {
+			return domain.Name
+		}
+	}
+	// Fallback to first domain if exists
+	if len(a.Domains) > 0 {
+		return a.Domains[0].Name
+	}
+	return ""
+}
+
 func (a *App) applyDefaults() error {
 	if a.Commands == nil {
 		a.Commands = make(map[Command]CommandSpec)
