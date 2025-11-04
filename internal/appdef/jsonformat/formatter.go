@@ -200,7 +200,6 @@ var (
 	envValueFields = map[string]bool{
 		"source": true,
 		"value":  true,
-		"path":   true,
 	}
 
 	commandFields = map[string]bool{

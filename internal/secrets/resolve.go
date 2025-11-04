@@ -98,7 +98,6 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 		rc.vars[rc.key] = appdef.EnvValue{
 			Source: rc.config.Source,
 			Value:  secret,
-			Path:   rc.config.Path,
 		}
 
 		return nil

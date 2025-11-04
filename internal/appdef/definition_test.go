@@ -376,7 +376,7 @@ func TestMergeAllEnvironments(t *testing.T) {
 						Name: "app1",
 						Env: Environment{
 							Dev: EnvVar{
-								"KEY1": EnvValue{Source: EnvSourceSOPS, Path: "secrets/prod.yaml:API_KEY"},
+								"KEY1": EnvValue{Source: EnvSourceSOPS, Value: "API_KEY"},
 								"KEY3": EnvValue{Source: EnvSourceResource, Value: "cache.url"},
 							},
 						},
@@ -385,7 +385,7 @@ func TestMergeAllEnvironments(t *testing.T) {
 			},
 			want: Environment{
 				Dev: EnvVar{
-					"KEY1": EnvValue{Source: EnvSourceSOPS, Path: "secrets/prod.yaml:API_KEY"},
+					"KEY1": EnvValue{Source: EnvSourceSOPS, Value: "API_KEY"},
 					"KEY2": EnvValue{Source: EnvSourceResource, Value: "db.connection"},
 					"KEY3": EnvValue{Source: EnvSourceResource, Value: "cache.url"},
 				},
