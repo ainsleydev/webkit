@@ -272,38 +272,34 @@ jobs:
             exit 1
           fi
 
-      - name: Comment on PR
+      - name: Format Migration Comment
         if: always()
-        uses: actions/github-script@v7
+        id: format-comment
+        run: |
+          result="{{ ghVar "steps.migration.outputs.result" }}"
+          if [[ "$result" == "fail" ]]; then
+            message="❌ **Schema changes detected!** Please run \`pnpm migrate:create\`, commit the migration, and push."
+          elif [[ "$result" == "pass" ]]; then
+            message="✅ **No pending migrations detected.** All clear to merge!"
+          else
+            message="⚠️ Migration check did not run correctly."
+          fi
+
+          {
+            echo 'comment_body<<EOF'
+            echo "### Migration Check - {{ $app.App.Title }}"
+            echo "$message"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: ./.github/actions/pr-comment
         with:
-          github-token: {{ ghSecret "GITHUB_TOKEN" }}
-          script: |
-            const result = "{{ ghVar "steps.migration.outputs.result" }}";
-            const body = result === "fail"
-              ? "❌ **Schema changes detected!** Please run `pnpm migrate:create`, commit the migration, and push."
-              : result === "pass"
-              ? "✅ **No pending migrations detected.** All clear to merge!"
-              : "⚠️ Migration check did not run correctly.";
-
-            const {{ "{" }} data: comments {{ "}" }} = await github.rest.issues.listComments({{ "{" }}
-              ...context.repo,
-              issue_number: context.issue.number
-            {{ "}" }});
-
-            const existing = comments.find(c => c.body.includes("Migration Check - {{ $app.App.Title }}"));
-            if (existing) {{ "{" }}
-              await github.rest.issues.updateComment({{ "{" }}
-                ...context.repo,
-                comment_id: existing.id,
-                body: `### Migration Check - {{ $app.App.Title }}\n${body}`
-              {{ "}" }});
-            {{ "}" }} else {{ "{" }}
-              await github.rest.issues.createComment({{ "{" }}
-                ...context.repo,
-                issue_number: context.issue.number,
-                body: `### Migration Check - {{ $app.App.Title }}\n${body}`
-              {{ "}" }});
-            {{ "}" }}
+          body-includes: 'Migration Check - {{ $app.App.Title }}'
+          comment-body: {{ ghVar "steps.format-comment.outputs.comment_body" }}
+          issue-number: {{ ghVar "github.event.pull_request.number" }}
+          private-key: {{ ghSecret "ORG_GITHUB_APP_PRIVATE_KEY" }}
 
       - name: Remove Runner IP from Database
         if: always()
