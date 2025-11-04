@@ -11,8 +11,6 @@ This directory is automatically copied to user repositories during VM deployment
 3. Copies this `platform/ansible` directory into the workspace
 4. Runs the playbook with app-specific configuration
 
-This approach keeps user repositories clean while ensuring ansible files are available during deployment.
-
 ## Structure
 
 ```
