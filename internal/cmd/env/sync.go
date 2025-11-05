@@ -6,7 +6,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/secrets"
