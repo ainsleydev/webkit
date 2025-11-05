@@ -172,7 +172,7 @@ jobs:
             -e docker_image={{ ghVar "github.event.repository.name" }}-{{ .Name }}
             -e docker_image_tag=sha-{{ ghVar "steps.determine_sha.outputs.sha" }}
             -e docker_port={{ .Build.Port }}
-            -e enable_https={{ default "true" (index .Infra.Config "https") }}
+            -e enable_https={{ if eq (index .Infra.Config "https") false }}false{{ else }}{{ default "true" (index .Infra.Config "https") }}{{ end }}
             -e admin_email={{ default "hello@ainsley.dev" (index .Infra.Config "admin_email") }}
             -v
 {{- end }}
