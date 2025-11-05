@@ -17,6 +17,7 @@ var Command = &cli.Command{
 		BackupCmd,
 		PRCmd,
 		ReleaseCmd,
+		VMMaintenanceCmd,
 	},
 }
 
