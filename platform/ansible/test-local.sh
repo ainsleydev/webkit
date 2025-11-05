@@ -13,30 +13,23 @@ CONTAINER_NAME="webkit-ansible-test"
 IMAGE_NAME="webkit-ansible-test"
 ANSIBLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Default test variables (override with environment variables)
-TEST_DOMAIN="${TEST_DOMAIN:-test.local}"
-TEST_GITHUB_USER="${TEST_GITHUB_USER:-testuser}"
-TEST_DOCKER_IMAGE="${TEST_DOCKER_IMAGE:-test-app}"
-TEST_DOCKER_IMAGE_TAG="${TEST_DOCKER_IMAGE_TAG:-latest}"
-TEST_DOCKER_PORT="${TEST_DOCKER_PORT:-3000}"
-TEST_APP_NAME="${TEST_APP_NAME:-testapp}"
-TEST_ENV_NAME="${TEST_ENV_NAME:-development}"
-TEST_AGE_SECRET_KEY="${TEST_AGE_SECRET_KEY:-fake-key-for-testing}"
-TEST_GITHUB_TOKEN="${TEST_GITHUB_TOKEN:-fake-token}"
-TEST_ADMIN_EMAIL="${TEST_ADMIN_EMAIL:-test@example.com}"
-
 # Flags
 KEEP_RUNNING=false
 CLEAN=false
 SKIP_BUILD=false
 VERBOSE=false
+WEBKIT_REPO_PATH=""
 
 # Help message
 show_help() {
     cat << EOF
-Usage: ./test-local.sh [OPTIONS]
+Usage: ./test-local.sh <webkit-repo-path> [OPTIONS]
 
-Test Ansible playbooks locally using Docker.
+Test Ansible playbooks locally using a real webkit-enabled repository.
+
+ARGUMENTS:
+    webkit-repo-path    Path to your webkit-enabled repository
+                        (e.g., ../my-webkit-app or ~/projects/playground)
 
 OPTIONS:
     -k, --keep-running    Keep container running after test
@@ -45,29 +38,40 @@ OPTIONS:
     -v, --verbose        Show verbose Ansible output
     -h, --help           Show this help message
 
-ENVIRONMENT VARIABLES:
-    You can override test variables by setting these before running:
-    TEST_DOMAIN, TEST_GITHUB_USER, TEST_DOCKER_IMAGE, TEST_DOCKER_IMAGE_TAG,
-    TEST_DOCKER_PORT, TEST_APP_NAME, TEST_ENV_NAME, TEST_AGE_SECRET_KEY,
-    TEST_GITHUB_TOKEN, TEST_ADMIN_EMAIL
-
 EXAMPLES:
-    # Basic test run
-    ./test-local.sh
+    # Test with your playground repo
+    ./test-local.sh ~/projects/playground
 
     # Keep container running for debugging
-    ./test-local.sh -k
+    ./test-local.sh ~/projects/playground -k
 
-    # Clean rebuild
-    ./test-local.sh -c
+    # Verbose output
+    ./test-local.sh ~/projects/playground -v
 
-    # Custom domain
-    TEST_DOMAIN=myapp.test ./test-local.sh
+    # Clean rebuild and test
+    ./test-local.sh ~/projects/playground -c
 
 EOF
 }
 
 # Parse arguments
+if [ $# -eq 0 ]; then
+    echo -e "${RED}Error: webkit-repo-path is required${NC}"
+    show_help
+    exit 1
+fi
+
+# First argument should be the webkit repo path
+if [[ "$1" != -* ]]; then
+    WEBKIT_REPO_PATH="$1"
+    shift
+else
+    echo -e "${RED}Error: webkit-repo-path is required as first argument${NC}"
+    show_help
+    exit 1
+fi
+
+# Parse remaining options
 while [[ $# -gt 0 ]]; do
     case $1 in
         -k|--keep-running)
@@ -98,6 +102,24 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Validate webkit repo path
+if [ ! -d "$WEBKIT_REPO_PATH" ]; then
+    echo -e "${RED}Error: Directory not found: $WEBKIT_REPO_PATH${NC}"
+    exit 1
+fi
+
+# Convert to absolute path
+WEBKIT_REPO_PATH="$(cd "$WEBKIT_REPO_PATH" && pwd)"
+
+# Check for app.json
+if [ ! -f "$WEBKIT_REPO_PATH/app.json" ]; then
+    echo -e "${RED}Error: app.json not found in $WEBKIT_REPO_PATH${NC}"
+    echo -e "${YELLOW}Make sure you're pointing to a webkit-enabled repository${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}Using webkit repo: $WEBKIT_REPO_PATH${NC}"
+
 # Cleanup function
 cleanup() {
     if [ "$KEEP_RUNNING" = false ]; then
@@ -106,6 +128,7 @@ cleanup() {
     else
         echo -e "${GREEN}Container '$CONTAINER_NAME' is still running for debugging${NC}"
         echo -e "${BLUE}To connect: docker exec -it $CONTAINER_NAME /bin/bash${NC}"
+        echo -e "${BLUE}To view webkit config: docker exec $CONTAINER_NAME ls -la /etc/webkit${NC}"
         echo -e "${BLUE}To stop: docker rm -f $CONTAINER_NAME${NC}"
     fi
 }
@@ -138,6 +161,7 @@ docker run -d \
     --tmpfs /run \
     --tmpfs /run/lock \
     -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
+    -v "$WEBKIT_REPO_PATH:/webkit-repo:ro" \
     "$IMAGE_NAME"
 
 # Wait for container to be ready
@@ -153,11 +177,11 @@ fi
 
 echo -e "${GREEN}Container is running${NC}"
 
-# Install Ansible in container (faster than SSH setup)
+# Install Ansible in container
 echo -e "${BLUE}Installing Ansible in container...${NC}"
 docker exec "$CONTAINER_NAME" bash -c "
     apt-get update > /dev/null && \
-    apt-get install -y ansible python3-pip > /dev/null && \
+    apt-get install -y ansible python3-pip jq > /dev/null && \
     pip3 install community.docker > /dev/null 2>&1 || true
 "
 
@@ -165,24 +189,52 @@ docker exec "$CONTAINER_NAME" bash -c "
 echo -e "${BLUE}Copying Ansible files to container...${NC}"
 docker cp "$ANSIBLE_DIR" "$CONTAINER_NAME:/tmp/ansible"
 
+# Setup webkit config in container
+echo -e "${BLUE}Setting up webkit configuration...${NC}"
+docker exec "$CONTAINER_NAME" bash -c "
+    mkdir -p /etc/webkit
+    cp /webkit-repo/app.json /etc/webkit/
+    [ -d /webkit-repo/resources ] && cp -r /webkit-repo/resources /etc/webkit/ || true
+"
+
+# Extract variables from app.json
+echo -e "${BLUE}Reading configuration from app.json...${NC}"
+APP_JSON_CONTENT=$(docker exec "$CONTAINER_NAME" cat /etc/webkit/app.json)
+
+# Use jq to extract values (with defaults)
+DOMAIN=$(echo "$APP_JSON_CONTENT" | docker exec -i "$CONTAINER_NAME" jq -r '.apps[0].primary_domain // "test.local"')
+APP_NAME=$(echo "$APP_JSON_CONTENT" | docker exec -i "$CONTAINER_NAME" jq -r '.apps[0].name // "testapp"')
+DOCKER_PORT=$(echo "$APP_JSON_CONTENT" | docker exec -i "$CONTAINER_NAME" jq -r '.apps[0].build.port // 3000')
+GITHUB_USER=$(echo "$APP_JSON_CONTENT" | docker exec -i "$CONTAINER_NAME" jq -r '.repository.owner // "testuser"')
+REPO_NAME=$(echo "$APP_JSON_CONTENT" | docker exec -i "$CONTAINER_NAME" jq -r '.repository.name // "testrepo"')
+ENABLE_HTTPS=$(echo "$APP_JSON_CONTENT" | docker exec -i "$CONTAINER_NAME" jq -r '.apps[0].infra.config.https // true')
+ADMIN_EMAIL=$(echo "$APP_JSON_CONTENT" | docker exec -i "$CONTAINER_NAME" jq -r '.apps[0].infra.config.admin_email // "test@example.com"')
+
+# Display config
+echo -e "${GREEN}Configuration:${NC}"
+echo -e "  Domain: $DOMAIN"
+echo -e "  App: $APP_NAME"
+echo -e "  Port: $DOCKER_PORT"
+echo -e "  GitHub: $GITHUB_USER/$REPO_NAME"
+echo ""
+
 # Create inventory file
-echo -e "${BLUE}Creating inventory file...${NC}"
 docker exec "$CONTAINER_NAME" bash -c "echo 'localhost ansible_connection=local' > /tmp/ansible/inventory"
 
 # Build ansible-playbook command
 ANSIBLE_CMD="ansible-playbook /tmp/ansible/playbooks/server.yaml -i /tmp/ansible/inventory"
 
-# Add extra vars
-ANSIBLE_CMD="$ANSIBLE_CMD -e domain=$TEST_DOMAIN"
-ANSIBLE_CMD="$ANSIBLE_CMD -e github_user=$TEST_GITHUB_USER"
-ANSIBLE_CMD="$ANSIBLE_CMD -e docker_image=$TEST_DOCKER_IMAGE"
-ANSIBLE_CMD="$ANSIBLE_CMD -e docker_image_tag=$TEST_DOCKER_IMAGE_TAG"
-ANSIBLE_CMD="$ANSIBLE_CMD -e docker_port=$TEST_DOCKER_PORT"
-ANSIBLE_CMD="$ANSIBLE_CMD -e app_name=$TEST_APP_NAME"
-ANSIBLE_CMD="$ANSIBLE_CMD -e env_name=$TEST_ENV_NAME"
-ANSIBLE_CMD="$ANSIBLE_CMD -e age_secret_key=$TEST_AGE_SECRET_KEY"
-ANSIBLE_CMD="$ANSIBLE_CMD -e github_token=$TEST_GITHUB_TOKEN"
-ANSIBLE_CMD="$ANSIBLE_CMD -e admin_email=$TEST_ADMIN_EMAIL"
+# Add vars from app.json
+ANSIBLE_CMD="$ANSIBLE_CMD -e domain=$DOMAIN"
+ANSIBLE_CMD="$ANSIBLE_CMD -e github_user=$GITHUB_USER"
+ANSIBLE_CMD="$ANSIBLE_CMD -e docker_image=${REPO_NAME}-${APP_NAME}"
+ANSIBLE_CMD="$ANSIBLE_CMD -e docker_image_tag=test-latest"
+ANSIBLE_CMD="$ANSIBLE_CMD -e docker_port=$DOCKER_PORT"
+ANSIBLE_CMD="$ANSIBLE_CMD -e app_name=$APP_NAME"
+ANSIBLE_CMD="$ANSIBLE_CMD -e env_name=development"
+ANSIBLE_CMD="$ANSIBLE_CMD -e age_secret_key=fake-key-for-testing"
+ANSIBLE_CMD="$ANSIBLE_CMD -e github_token=fake-token"
+ANSIBLE_CMD="$ANSIBLE_CMD -e admin_email=$ADMIN_EMAIL"
 ANSIBLE_CMD="$ANSIBLE_CMD -e enable_https=false"
 ANSIBLE_CMD="$ANSIBLE_CMD -e skip_reboot=true"
 
@@ -193,7 +245,6 @@ fi
 
 # Run Ansible playbook
 echo -e "${BLUE}Running Ansible playbook...${NC}"
-echo -e "${YELLOW}Command: $ANSIBLE_CMD${NC}"
 echo ""
 
 if docker exec "$CONTAINER_NAME" bash -c "cd /tmp/ansible && $ANSIBLE_CMD"; then

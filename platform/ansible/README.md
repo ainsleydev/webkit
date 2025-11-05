@@ -40,74 +40,78 @@ All configuration is passed via variables from the workflow, sourced from the us
 
 ## Local Testing with Docker
 
-Test Ansible changes locally before deploying to production using the included Docker testing environment.
+Test Ansible changes locally using your actual webkit-enabled repositories (like playground or production repos) without deploying to live servers.
 
 ### Quick Start
 
 ```bash
 cd platform/ansible
-./test-local.sh
+./test-local.sh ~/path/to/your-webkit-repo
 ```
 
-This will:
-1. Build a Ubuntu 22.04 Docker container
-2. Install Ansible and dependencies
-3. Run the playbook with test variables
+The script will:
+1. Read your repo's `app.json` configuration
+2. Spin up a Ubuntu 22.04 Docker container
+3. Run the Ansible playbook with your real config
 4. Show results and clean up
+
+**That's it!** No need to set variables - it uses your actual repository configuration.
+
+### Examples
+
+```bash
+# Test with playground repo
+./test-local.sh ~/projects/playground
+
+# Test with production config (safely!)
+./test-local.sh ~/projects/my-production-app
+
+# Keep container running for debugging
+./test-local.sh ~/projects/playground -k
+
+# Verbose Ansible output
+./test-local.sh ~/projects/playground -v
+
+# Clean rebuild
+./test-local.sh ~/projects/playground -c
+```
 
 ### Options
 
-```bash
-# Keep container running for debugging
-./test-local.sh --keep-running
+- `-k, --keep-running` - Keep container running after test for inspection
+- `-c, --clean` - Remove existing container/image before starting
+- `-s, --skip-build` - Skip Docker image rebuild (faster iteration)
+- `-v, --verbose` - Show verbose Ansible output
 
-# Clean rebuild (removes existing container/image)
-./test-local.sh --clean
+### What Gets Tested
 
-# Skip Docker image rebuild (faster iteration)
-./test-local.sh --skip-build
+The script automatically extracts from your `app.json`:
+- Domain configuration
+- App name and port
+- GitHub repository details
+- Admin email
+- HTTPS settings
 
-# Verbose Ansible output
-./test-local.sh --verbose
-
-# Combine options
-./test-local.sh -k -v
-```
-
-### Custom Test Variables
-
-Override default test values with environment variables:
-
-```bash
-TEST_DOMAIN=myapp.test \
-TEST_APP_NAME=myapp \
-TEST_DOCKER_PORT=8080 \
-./test-local.sh
-```
-
-Available variables:
-- `TEST_DOMAIN` (default: test.local)
-- `TEST_GITHUB_USER` (default: testuser)
-- `TEST_DOCKER_IMAGE` (default: test-app)
-- `TEST_DOCKER_IMAGE_TAG` (default: latest)
-- `TEST_DOCKER_PORT` (default: 3000)
-- `TEST_APP_NAME` (default: testapp)
-- `TEST_ENV_NAME` (default: development)
-- `TEST_ADMIN_EMAIL` (default: test@example.com)
+Then runs the full playbook against a fresh Ubuntu container, testing:
+- All role installations (fail2ban, docker, nginx, ufw, etc.)
+- Configuration file templating
+- Service setup and management
+- Package installations
 
 ### Debugging
 
-When using `--keep-running`, the container stays active after the test:
+When using `-k`, inspect the container after the test:
 
 ```bash
-# Connect to the container
+# Connect to container
 docker exec -it webkit-ansible-test /bin/bash
 
-# Check service status
+# Check installed services
 docker exec webkit-ansible-test systemctl status nginx
+docker exec webkit-ansible-test systemctl status docker
 
-# View logs
-docker exec webkit-ansible-test journalctl -u nginx
+# View webkit config
+docker exec webkit-ansible-test cat /etc/webkit/app.json
 
 # Stop when done
 docker rm -f webkit-ansible-test
@@ -115,16 +119,17 @@ docker rm -f webkit-ansible-test
 
 ### Benefits
 
-- **No production risk**: Test on isolated containers
-- **Fast iteration**: Rebuild and test in seconds
-- **Catch errors early**: Find provisioning issues before deployment
-- **Full integration testing**: Tests actual package installation and service configuration
+- **Use real configs**: Test with your actual `app.json` files
+- **No production risk**: Runs in isolated Docker containers
+- **Fast iteration**: Test changes in seconds, not minutes
+- **Catch errors early**: Find issues before they hit live servers
+- **Multiple repos**: Test against playground, staging, or production configs
 
-### Limitations
+### Expected Failures
 
-Some tasks will fail in the test environment (by design):
-- Certbot/HTTPS configuration (DNS validation not possible)
-- Docker image pulling from GHCR (uses fake credentials)
-- Webkit env generation (requires real app.json and secrets)
+Some tasks will fail (by design - they require live infrastructure):
+- Certbot/HTTPS (requires DNS validation)
+- Docker image pulls (requires authentication)
+- Webkit env generation (requires decryption keys)
 
-These failures are expected and can be ignored during role development. The script sets `enable_https=false` and `skip_reboot=true` automatically.
+These are normal and can be ignored. The script automatically sets `enable_https=false` and `skip_reboot=true`.
