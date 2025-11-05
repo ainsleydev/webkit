@@ -308,7 +308,7 @@ type OutputResult struct {
 //
 // Must be called after Init().
 func (t *Terraform) Output(ctx context.Context, env env.Environment) (OutputResult, error) {
-	if err := t.prepareVars(ctx, env); err != nil {
+	if err := t.hasInitialised(); err != nil {
 		return OutputResult{}, err
 	}
 
