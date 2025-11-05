@@ -1,0 +1,273 @@
+- name: Weekly Server Maintenance
+  hosts: all
+  become: true
+  vars:
+    # All variables below are required and should be passed via -e flags
+    # domain: from app.PrimaryDomain
+    # app_name: from app.Name
+    # admin_email: from app.Infra.Config.admin_email (defaults to hello@ainsley.dev)
+    disk_usage_threshold: 80
+    webkit_config_dir: '/etc/webkit'
+
+  tasks:
+    # ========================================
+    # System Updates
+    # ========================================
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 0
+
+    - name: Upgrade all packages (skip reboot)
+      apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes
+      register: upgrade_result
+
+    - name: Display packages upgraded
+      debug:
+        msg: "Packages upgraded: {{ upgrade_result.changed }}"
+
+    # ========================================
+    # Certbot Certificate Renewal
+    # ========================================
+    - name: Check if certbot is installed
+      command: which certbot
+      register: certbot_check
+      failed_when: false
+      changed_when: false
+
+    - name: Renew Certbot certificates
+      command: certbot renew --quiet --deploy-hook "sudo systemctl reload nginx"
+      when: certbot_check.rc == 0
+      register: certbot_renew_result
+
+    - name: Display certificate status
+      command: certbot certificates
+      when: certbot_check.rc == 0
+      register: certbot_status
+      changed_when: false
+
+    - name: Show certificate information
+      debug:
+        msg: "{{ certbot_status.stdout_lines }}"
+      when: certbot_check.rc == 0
+
+    # ========================================
+    # SSL Certificate Expiry Check
+    # ========================================
+    - name: Check SSL certificate expiry date
+      shell: |
+        if [ -d "/etc/letsencrypt/live/{{ domain }}" ]; then
+          openssl x509 -in /etc/letsencrypt/live/{{ domain }}/cert.pem -noout -enddate
+        else
+          echo "No certificate found for {{ domain }}"
+        fi
+      register: ssl_expiry
+      changed_when: false
+      failed_when: false
+      when: certbot_check.rc == 0
+
+    - name: Display SSL certificate expiry
+      debug:
+        msg: "SSL Certificate Expiry: {{ ssl_expiry.stdout }}"
+      when: certbot_check.rc == 0 and ssl_expiry.rc == 0
+
+    # ========================================
+    # Disk Space Check
+    # ========================================
+    - name: Check disk usage
+      shell: df -h / | tail -1 | awk '{print $5}' | sed 's/%//'
+      register: disk_usage
+      changed_when: false
+
+    - name: Display disk usage
+      debug:
+        msg: "Disk usage: {{ disk_usage.stdout }}%"
+
+    - name: Warn if disk usage is high
+      debug:
+        msg: "WARNING: Disk usage is {{ disk_usage.stdout }}% (threshold: {{ disk_usage_threshold }}%)"
+      when: disk_usage.stdout | int > disk_usage_threshold
+
+    - name: Fail if disk usage is critical (>95%)
+      fail:
+        msg: "CRITICAL: Disk usage is {{ disk_usage.stdout }}% - immediate action required!"
+      when: disk_usage.stdout | int > 95
+
+    # ========================================
+    # Nginx Health Check
+    # ========================================
+    - name: Test Nginx configuration
+      command: nginx -t
+      register: nginx_test
+      changed_when: false
+      failed_when: nginx_test.rc != 0
+
+    - name: Check Nginx service status
+      systemd:
+        name: nginx
+        state: started
+      register: nginx_status
+
+    - name: Display Nginx status
+      debug:
+        msg: "Nginx is running and configuration is valid"
+
+    # ========================================
+    # Docker Swarm Health Check
+    # ========================================
+    - name: Check if Docker is installed
+      command: which docker
+      register: docker_check
+      failed_when: false
+      changed_when: false
+
+    - name: Get Docker Swarm status
+      command: docker info --format '{{`{{.Swarm.LocalNodeState}}`}}'
+      register: swarm_status
+      changed_when: false
+      when: docker_check.rc == 0
+
+    - name: Display Docker Swarm status
+      debug:
+        msg: "Docker Swarm status: {{ swarm_status.stdout }}"
+      when: docker_check.rc == 0
+
+    - name: List Docker services
+      command: docker service ls
+      register: docker_services
+      changed_when: false
+      when: docker_check.rc == 0 and swarm_status.stdout == 'active'
+
+    - name: Display Docker services
+      debug:
+        msg: "{{ docker_services.stdout_lines }}"
+      when: docker_check.rc == 0 and swarm_status.stdout == 'active'
+
+    # ========================================
+    # Fail2ban Status Check
+    # ========================================
+    - name: Check if fail2ban is installed
+      command: which fail2ban-client
+      register: fail2ban_check
+      failed_when: false
+      changed_when: false
+
+    - name: Check fail2ban service status
+      systemd:
+        name: fail2ban
+        state: started
+      register: fail2ban_status
+      when: fail2ban_check.rc == 0
+
+    - name: Get fail2ban status
+      command: fail2ban-client status
+      register: fail2ban_info
+      changed_when: false
+      when: fail2ban_check.rc == 0
+
+    - name: Display fail2ban status
+      debug:
+        msg: "{{ fail2ban_info.stdout_lines }}"
+      when: fail2ban_check.rc == 0
+
+    # ========================================
+    # UFW Firewall Verification
+    # ========================================
+    - name: Check if UFW is installed
+      command: which ufw
+      register: ufw_check
+      failed_when: false
+      changed_when: false
+
+    - name: Get UFW status
+      command: ufw status verbose
+      register: ufw_status
+      changed_when: false
+      when: ufw_check.rc == 0
+
+    - name: Display UFW status
+      debug:
+        msg: "{{ ufw_status.stdout_lines }}"
+      when: ufw_check.rc == 0
+
+    - name: Verify UFW is active
+      fail:
+        msg: "WARNING: UFW firewall is not active!"
+      when: ufw_check.rc == 0 and "'Status: active' not in ufw_status.stdout"
+      ignore_errors: yes
+
+    # ========================================
+    # Log Rotation Check
+    # ========================================
+    - name: Check if logrotate is installed
+      command: which logrotate
+      register: logrotate_check
+      failed_when: false
+      changed_when: false
+
+    - name: Force logrotate to run
+      command: logrotate -f /etc/logrotate.conf
+      when: logrotate_check.rc == 0
+      register: logrotate_result
+      failed_when: false
+
+    - name: Display logrotate status
+      debug:
+        msg: "Log rotation completed"
+      when: logrotate_check.rc == 0
+
+    # ========================================
+    # Security Updates Check
+    # ========================================
+    - name: Check for pending security updates
+      shell: apt list --upgradable 2>/dev/null | grep -i security | wc -l
+      register: security_updates
+      changed_when: false
+
+    - name: Display security updates count
+      debug:
+        msg: "Pending security updates: {{ security_updates.stdout }}"
+
+    # ========================================
+    # Memory and Load Check
+    # ========================================
+    - name: Check memory usage
+      shell: free -h | grep Mem | awk '{print $3 "/" $2}'
+      register: memory_usage
+      changed_when: false
+
+    - name: Display memory usage
+      debug:
+        msg: "Memory usage: {{ memory_usage.stdout }}"
+
+    - name: Check system load
+      shell: uptime | awk -F'load average:' '{print $2}'
+      register: system_load
+      changed_when: false
+
+    - name: Display system load
+      debug:
+        msg: "System load: {{ system_load.stdout }}"
+
+    # ========================================
+    # Summary
+    # ========================================
+    - name: Maintenance summary
+      debug:
+        msg: |
+          ========================================
+          Server Maintenance Summary for {{ app_name }}
+          ========================================
+          - System updates: {{ 'Applied' if upgrade_result.changed else 'No updates needed' }}
+          - SSL certificates: {{ 'Renewed' if certbot_renew_result.changed else 'Up to date' }}
+          - Disk usage: {{ disk_usage.stdout }}%
+          - Memory usage: {{ memory_usage.stdout }}
+          - System load: {{ system_load.stdout }}
+          - Nginx: Healthy
+          - Docker Swarm: {{ swarm_status.stdout if docker_check.rc == 0 else 'Not installed' }}
+          - Fail2ban: {{ 'Active' if fail2ban_check.rc == 0 else 'Not installed' }}
+          - UFW: {{ 'Active' if ufw_check.rc == 0 and 'Status: active' in ufw_status.stdout else 'Inactive or not installed' }}
+          ========================================
