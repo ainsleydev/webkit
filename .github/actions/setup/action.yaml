@@ -55,4 +55,5 @@ runs:
       if: ${{ inputs.integration == 'true' }}
       uses: hashicorp/setup-terraform@v3
       with:
+        # NOTE: Keep this version in sync with internal/infra/tf.go (TerraformVersion constant)
         terraform_version: "1.13.0"

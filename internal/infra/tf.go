@@ -25,6 +25,14 @@ import (
 	"github.com/ainsleydev/webkit/platform/terraform"
 )
 
+const (
+	// TerraformVersion is the version of Terraform to use in CI/CD workflows.
+	// This should be kept in sync with:
+	// - .github/actions/setup/action.yaml
+	// - platform/terraform/base/main.tf (required_version)
+	TerraformVersion = "1.13.0"
+)
+
 // Terraform represents the type for interacting with the
 // terraform exec CLI.
 type Terraform struct {
@@ -66,12 +74,12 @@ func NewTerraform(ctx context.Context, appDef *appdef.Definition, manifest *mani
 
 	path, err := getTerraformPath(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "locating terraform binary")
 	}
 
 	tfEnv, err := ParseTFEnvironment()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "validating terraform environment variables")
 	}
 
 	return &Terraform{
@@ -506,7 +514,7 @@ func getTerraformPath(ctx context.Context) (string, error) {
 	whichCmd := executil.NewCommand("which", "terraform")
 	run, err := executil.DefaultRunner().Run(ctx, whichCmd)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "terraform binary not found in PATH (install terraform or add it to your PATH)")
 	}
 	return strings.TrimSpace(run.Output), nil
 }
