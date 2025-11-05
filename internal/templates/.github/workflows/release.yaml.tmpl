@@ -16,6 +16,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Setup WebKit CLI
+  setup-webkit:
+    runs-on: ubuntu-latest
+    outputs:
+      version: {{ ghVar "steps.version.outputs.version" }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Read WebKit Version
+        id: version
+        shell: bash
+        run: |
+          WEBKIT_VERSION=$(jq -r '.webkit_version // "latest"' "app.json")
+          echo "version=$WEBKIT_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected WebKit version: $WEBKIT_VERSION"
+
+      - name: Download WebKit Release Asset
+        id: setup
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: 'ainsleydev/webkit'
+          tag: {{ ghVar "steps.version.outputs.version" }}
+          fileName: 'webkit_linux_x86_64.tar.gz'
+          extract: true
+
+      - name: Upload WebKit CLI Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webkit
+          path: webkit
+          if-no-files-found: error
+
   # Build Containers
   build-and-push:
     runs-on: ubuntu-latest
@@ -117,7 +150,7 @@ jobs:
   # Deploy {{ .Title }} to DigitalOcean VM
   deploy-vm-{{ .Name }}:
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: [build-and-push, setup-webkit]
     environment:
       name: production-{{ .Name }}
       {{- if .PrimaryDomain }}
@@ -127,37 +160,32 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      - name: Read WebKit Version
-        id: read_version
-        run: |
-          WEBKIT_VERSION=$(jq -r '.webkit_version // "latest"' "app.json")
-          echo "version=$WEBKIT_VERSION" >> $GITHUB_OUTPUT
-          echo "Detected WebKit version: $WEBKIT_VERSION"
-
       - name: Checkout WebKit Repository
         uses: actions/checkout@v5
         with:
           repository: 'ainsleydev/webkit'
-          ref: {{ ghVar "steps.read_version.outputs.version" }}
+          ref: {{ ghVar "needs.setup-webkit.outputs.version" }}
           path: '.webkit-repo'
 
       - name: Copy Ansible Files
         run: |
           cp -r .webkit-repo/platform/ansible ./
-          echo "Copied ansible files from WebKit {{ ghVar "steps.read_version.outputs.version" }}"
+          echo "Copied ansible files from WebKit {{ ghVar "needs.setup-webkit.outputs.version" }}"
 
-      - name: Install WebKit Binary
-        run: |
-          VERSION={{ ghVar "steps.read_version.outputs.version" }} \
-          INSTALL_DIR=/usr/local/bin \
-          curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | bash
-          webkit version
+      - name: Download WebKit CLI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webkit
+          path: ./
+
+      - name: Make WebKit executable
+        run: chmod +x ./webkit
 
       - name: Generate production env file for {{ .Title }}
         env:
           SOPS_AGE_KEY: ${{"{{"}} secrets.ORG_AGE_SECRET {{ "}}" }}
         run: |
-          webkit env generate \
+          ./webkit env generate \
             --app {{ .Name }} \
             --environment production \
             --output /tmp/{{ .Name }}.env
@@ -178,7 +206,7 @@ jobs:
             [all]
             {{ .Name }} ansible_host={{ ghSecret (printf "TF_PROD_%s_IP_ADDRESS" (.Name | upper | replace "-" "_")) }} ansible_user={{ ghSecret (printf "TF_PROD_%s_SERVER_USER" (.Name | upper | replace "-" "_")) }}
           options: |
-            -e webkit_version=latest
+            -e webkit_version={{ ghVar "needs.setup-webkit.outputs.version" }}
             -e age_secret_key=${{"{{"}} secrets.ORG_AGE_SECRET {{ "}}" }}
             -e app_name={{ .Name }}
             -e env_name=production
