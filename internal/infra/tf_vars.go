@@ -60,7 +60,7 @@ type (
 	// tfEnvVar represents an environment variable for Terraform
 	tfEnvVar struct {
 		Key    string `json:"key"`
-		Value  any    `json:"value,omitempty"`
+		Value  any    `json:"value"`
 		Source string `json:"source,omitempty"`
 		Scope  string `json:"type,omitempty"`
 	}
