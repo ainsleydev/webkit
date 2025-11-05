@@ -152,22 +152,17 @@ fi
 # Stop existing container if running
 docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
 
-# Start container with systemd
+# Start container
 echo -e "${BLUE}Starting test container...${NC}"
 docker run -d \
     --name "$CONTAINER_NAME" \
     --platform linux/amd64 \
-    --privileged \
-    --tmpfs /tmp \
-    --tmpfs /run \
-    --tmpfs /run/lock \
-    -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
     -v "$WEBKIT_REPO_PATH:/webkit-repo:ro" \
     "$IMAGE_NAME"
 
 # Wait for container to be ready
 echo -e "${BLUE}Waiting for container to be ready...${NC}"
-sleep 3
+sleep 2
 
 # Check if container is running
 if ! docker ps | grep -q "$CONTAINER_NAME"; then
