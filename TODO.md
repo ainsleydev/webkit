@@ -1,3 +1,42 @@
 # TODO
 
+## Validation
+
+We need to utilise one of the following packages to transform our `internal/appdef/definition.go` to
+a JSON schema.
+
+- https://github.com/invopop/jsonschema
+- https://github.com/swaggest/jsonschema-go
+
+Leaning towards the latter as it's a bit more verbose.
+
+**Flow**:
+
+- Add JSON schema decorations to the structures.
+- Create a new `webkit validate` command which will ensure the `app.json` is valid and true.
+- Add the same validation to `wekit update`, so it's validate every time a user updates.
+- Ensure proper testing.
+
+**Required Validation**:
+
 - Validate domains in app specs, they should not contain https.
+- Validate .Path on App and ensure it exists.
+- Validate that terraform-managed VM apps (.Infra.Type == "vm" (or app) && .IsTerraformManaged())
+  must have at least one domain in .Domains array.
+- Validate that domain names in .Domains should not contain protocol prefixes (e.g., "https://").
+
+## Documentation
+
+Create and update the `docs` folder with coherent documentation for WebKit.
+
+
+## README Generation
+
+Create beautiful looking README's from the `app.json` data.
+
+## Misc
+
+- Slack and BetterStack Providers for Infra.
+- Improve Coverage.
+- Improve path matching for GitHub. Why should we run test and lint if it’s not?
+- Create an infra plan —destroy command. So we can see whats destroyed?
