@@ -276,7 +276,7 @@ DB_PASS: dbpass123
 					Name: "test-app",
 					Env: appdef.Environment{
 						Dev: map[string]appdef.EnvValue{
-							"DATABASE_URL":  {Source: appdef.EnvSourceResource, Value: "db.connection_url"},
+							"DATABASE_URL": {Source: appdef.EnvSourceResource, Value: "db.connection_url"},
 							"DATABASE_HOST": {Source: appdef.EnvSourceResource, Value: "db.host"},
 							"DATABASE_PORT": {Source: appdef.EnvSourceResource, Value: "db.port"},
 						},
@@ -330,9 +330,9 @@ API_KEY: supersecret
 					Name: "test-app",
 					Env: appdef.Environment{
 						Production: map[string]appdef.EnvValue{
-							"DATABASE_URL":  {Source: appdef.EnvSourceResource, Value: "db.connection_url"},
-							"API_KEY":       {Source: appdef.EnvSourceSOPS, Value: "API_KEY"},
-							"FRONTEND_URL":  {Source: appdef.EnvSourceValue, Value: "https://example.com"},
+							"DATABASE_URL": {Source: appdef.EnvSourceResource, Value: "db.connection_url"},
+							"API_KEY":      {Source: appdef.EnvSourceSOPS, Value: "API_KEY"},
+							"FRONTEND_URL": {Source: appdef.EnvSourceValue, Value: "https://example.com"},
 						},
 					},
 				},

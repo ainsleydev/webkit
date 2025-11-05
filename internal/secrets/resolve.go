@@ -38,26 +38,21 @@ func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) err
 // resolveAllEnvs resolves all variables in an Environment (dev, staging, production)
 func resolveAllEnvs(ctx context.Context, def *appdef.Definition, cfg ResolveConfig, enviro *appdef.Environment) error {
 	return enviro.WalkE(func(entry appdef.EnvWalkEntry) error {
-		for key, config := range entry.Map {
-			resolveFn, ok := resolver[config.Source]
-			if !ok {
-				return fmt.Errorf("unknown env source type: %s", config.Source)
-			}
-
-			rc := resolveContext{
-				def:    def,
-				cfg:    cfg,
-				env:    entry.Environment,
-				key:    key,
-				config: config,
-				vars:   entry.Map,
-			}
-
-			if err := resolveFn(ctx, rc); err != nil {
-				return err
-			}
+		resolveFn, ok := resolver[entry.Source]
+		if !ok {
+			return fmt.Errorf("unknown env source type: %s", entry.Source)
 		}
-		return nil
+
+		rc := resolveContext{
+			def:    def,
+			cfg:    cfg,
+			env:    entry.Environment,
+			key:    entry.Key,
+			config: appdef.EnvValue{Source: entry.Source, Value: entry.Value},
+			vars:   entry.Map,
+		}
+
+		return resolveFn(ctx, rc)
 	})
 }
 
