@@ -12,7 +12,7 @@
     # env_name: environment name (development, staging, production)
     # age_secret_key: AGE private key for SOPS decryption
     # enable_https: from app.Infra.Config.https (defaults to true)
-    # admin_email: from app.Infra.Config.admin_email (defaults to noreply@example.com)
+    # admin_email: from app.Infra.Config.admin_email (defaults to hello@ainsley.dev)
     # Path where env file will be generated
     env_file_path: '/opt/{{ app_name }}/.env'
 

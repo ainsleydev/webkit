@@ -1,3 +1,3 @@
 # Default admin email for Let's Encrypt certificate notifications
 # Should be overridden via -e admin_email=your@email.com or app.Infra.Config.admin_email
-admin_email: "noreply@example.com"
+admin_email: "hello@ainsley.dev"
