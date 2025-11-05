@@ -90,6 +90,18 @@
       debug:
         msg: 'Secrets directory exists: {{ secrets_dir_stat.stat.exists }}, path: {{ webkit_config_dir }}/resources/secrets'
 
+    - name: Remove old env file for sanity
+      file:
+        path: '{{ env_file_path }}'
+        state: absent
+
+    - name: Copy pre-generated env file from CI/CD to VM
+      copy:
+        src: '{{ env_file_source_path }}'
+        dest: '{{ env_file_path }}'
+        mode: '0600'
+      when: env_file_source_path is defined
+
     - name: Generate production env file using webkit
       command: >
         /usr/local/bin/webkit env generate
@@ -104,16 +116,21 @@
       failed_when: false
       ignore_errors: yes
       no_log: true
+      when: env_file_source_path is not defined
 
     - name: Display env generation error if command failed
       debug:
         msg: 'ERROR generating env file: {{ env_generate_result.stderr }}'
-      when: env_generate_result.rc != 0
+      when:
+        - env_file_source_path is not defined
+        - env_generate_result.rc != 0
 
     - name: Fail if env generation failed
       fail:
         msg: 'webkit env generate failed with exit code {{ env_generate_result.rc }}'
-      when: env_generate_result.rc != 0
+      when:
+        - env_file_source_path is not defined
+        - env_generate_result.rc != 0
 
     - name: Verify env file was created
       stat:
@@ -122,7 +139,7 @@
 
     - name: Fail if env file doesn't exist
       fail:
-        msg: 'Environment file was not created at {{ env_file_path }}. Check that app.json and secrets exist in /etc/webkit'
+        msg: 'Environment file was not created at {{ env_file_path }}. Check that app.json and secrets exist in /etc/webkit or that env_file_source_path was provided'
       when: not env_file_stat.stat.exists
 
     - name: Debug image tag
