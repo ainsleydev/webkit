@@ -146,6 +146,23 @@ jobs:
           cp -r .webkit-repo/platform/ansible ./
           echo "Copied ansible files from WebKit {{ ghVar "steps.read_version.outputs.version" }}"
 
+      - name: Install WebKit Binary
+        run: |
+          VERSION={{ ghVar "steps.read_version.outputs.version" }} \
+          INSTALL_DIR=/usr/local/bin \
+          curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | bash
+          webkit version
+
+      - name: Generate production env file for {{ .Title }}
+        env:
+          SOPS_AGE_KEY: ${{"{{"}} secrets.ORG_AGE_SECRET {{ "}}" }}
+        run: |
+          webkit env generate \
+            --app {{ .Name }} \
+            --environment production \
+            --output /tmp/{{ .Name }}.env
+          echo "Generated .env file for {{ .Name }}"
+
       - name: Determine SHA
         id: determine_sha
         run: |
@@ -174,6 +191,7 @@ jobs:
             -e docker_port={{ .Build.Port }}
             -e enable_https={{ if eq (index .Infra.Config "https") false }}false{{ else }}{{ default "true" (index .Infra.Config "https") }}{{ end }}
             -e admin_email={{ default "hello@ainsley.dev" (index .Infra.Config "admin_email") }}
+            -e env_file_source_path=/tmp/{{ .Name }}.env
             -v
 {{- end }}
 {{- end }}
