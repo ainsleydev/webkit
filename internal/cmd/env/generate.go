@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -40,6 +42,7 @@ var GenerateCmd = &cli.Command{
 func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	printer := input.Printer()
+	spinner := input.Spinner()
 
 	appName := input.Command.String("app")
 	environmentStr := input.Command.String("environment")
@@ -59,9 +62,26 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 		return fmt.Errorf("app '%s' not found in app.json", appName)
 	}
 
-	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
-		SOPSClient: input.SOPSClient(),
-		BaseDir:    input.BaseDir,
+	// Check if we need to fetch Terraform outputs (only if there are resource references).
+	var tfOutputs *secrets.TerraformOutputProvider
+	var err error
+	if hasResourceReferences(appDef) {
+		printer.Println("Fetching Terraform outputs...")
+		spinner.Start()
+
+		tfOutputs, err = fetchTerraformOutputs(ctx, input, environment)
+		if err != nil {
+			spinner.Stop()
+			return errors.Wrap(err, "fetching terraform outputs")
+		}
+
+		spinner.Stop()
+	}
+
+	err = secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
+		SOPSClient:      input.SOPSClient(),
+		BaseDir:         input.BaseDir,
+		TerraformOutput: tfOutputs,
 	})
 	if err != nil {
 		return err
@@ -105,4 +125,34 @@ func envSuffix(environment env.Environment) string {
 		return ""
 	}
 	return fmt.Sprintf(".%s", environment)
+}
+
+// fetchTerraformOutputs fetches Terraform outputs for the specified environment.
+// Returns a TerraformOutputProvider containing resource outputs.
+func fetchTerraformOutputs(
+	ctx context.Context,
+	input cmdtools.CommandInput,
+	environment env.Environment,
+) (*secrets.TerraformOutputProvider, error) {
+	tf, err := infra.NewTerraform(ctx, input.AppDef(), input.Manifest)
+	if err != nil {
+		return nil, errors.Wrap(err, "creating terraform manager")
+	}
+
+	if err := tf.Init(ctx); err != nil {
+		return nil, errors.Wrap(err, "initialising terraform")
+	}
+	defer tf.Cleanup()
+
+	result, err := tf.Output(ctx, environment)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving terraform outputs")
+	}
+
+	provider := &secrets.TerraformOutputProvider{
+		Outputs: make(map[env.Environment]map[string]map[string]any),
+	}
+	provider.Outputs[environment] = result.Resources
+
+	return provider, nil
 }

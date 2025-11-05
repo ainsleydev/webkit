@@ -3,10 +3,13 @@ package env
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/secrets"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 var SyncCmd = &cli.Command{
@@ -20,10 +23,28 @@ var SyncCmd = &cli.Command{
 func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	printer := input.Printer()
+	spinner := input.Spinner()
 
-	err := secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
-		SOPSClient: input.SOPSClient(),
-		BaseDir:    input.BaseDir,
+	// Check if we need to fetch Terraform outputs (only if there are resource references).
+	var tfOutputs *secrets.TerraformOutputProvider
+	var err error
+	if hasResourceReferences(appDef) {
+		printer.Println("Fetching Terraform outputs...")
+		spinner.Start()
+
+		tfOutputs, err = fetchAllTerraformOutputs(ctx, input)
+		if err != nil {
+			spinner.Stop()
+			return errors.Wrap(err, "fetching terraform outputs")
+		}
+
+		spinner.Stop()
+	}
+
+	err = secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
+		SOPSClient:      input.SOPSClient(),
+		BaseDir:         input.BaseDir,
+		TerraformOutput: tfOutputs,
 	})
 	if err != nil {
 		return err
@@ -58,4 +79,34 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 
 	return nil
+}
+
+// fetchAllTerraformOutputs fetches Terraform outputs for all environments that have .env files.
+func fetchAllTerraformOutputs(
+	ctx context.Context,
+	input cmdtools.CommandInput,
+) (*secrets.TerraformOutputProvider, error) {
+	provider := &secrets.TerraformOutputProvider{
+		Outputs: make(map[env.Environment]map[string]map[string]any),
+	}
+
+	tf, err := infra.NewTerraform(ctx, input.AppDef(), input.Manifest)
+	if err != nil {
+		return nil, errors.Wrap(err, "creating terraform manager")
+	}
+
+	if err := tf.Init(ctx); err != nil {
+		return nil, errors.Wrap(err, "initialising terraform")
+	}
+	defer tf.Cleanup()
+
+	for _, environment := range environmentsWithDotEnv {
+		result, err := tf.Output(ctx, environment)
+		if err != nil {
+			return nil, errors.Wrap(err, "retrieving terraform outputs for "+string(environment))
+		}
+		provider.Outputs[environment] = result.Resources
+	}
+
+	return provider, nil
 }
