@@ -77,42 +77,37 @@ type resolveContext struct {
 type resolveFunc func(ctx context.Context, rc resolveContext) error
 
 var resolver = map[appdef.EnvSource]resolveFunc{
-	// Static value - use as-is
+	// Static value - use as-is.
 	appdef.EnvSourceValue: func(ctx context.Context, rc resolveContext) error {
 		return nil
 	},
-	// Resource reference - resolve from Terraform outputs
+	// Resource reference - resolves infrastructure outputs by querying Terraform state.
+	// This allows environment variables to reference resources defined in app.json (e.g., "db.connection_url").
 	appdef.EnvSourceResource: func(_ context.Context, rc resolveContext) error {
-		// Parse the resource reference (e.g., "db.connection_url")
 		resourceName, outputName, ok := appdef.ParseResourceReference(rc.config.Value)
 		if !ok {
 			return fmt.Errorf("invalid resource reference format for key '%s': expected 'resource_name.output_name', got '%v'", rc.key, rc.config.Value)
 		}
 
-		// Check if Terraform outputs are provided
 		if rc.cfg.TerraformOutput == nil {
 			return fmt.Errorf("terraform outputs not provided: cannot resolve resource reference '%s.%s' for key '%s'", resourceName, outputName, rc.key)
 		}
 
-		// Get outputs for the current environment
 		envOutputs, ok := rc.cfg.TerraformOutput.Outputs[rc.env]
 		if !ok {
 			return fmt.Errorf("no terraform outputs found for environment '%s' (referenced by key '%s')", rc.env, rc.key)
 		}
 
-		// Get outputs for the specific resource
 		resourceOutputs, ok := envOutputs[resourceName]
 		if !ok {
 			return fmt.Errorf("resource '%s' not found in terraform outputs for environment '%s' (referenced by key '%s')", resourceName, rc.env, rc.key)
 		}
 
-		// Get the specific output value
 		value, ok := resourceOutputs[outputName]
 		if !ok {
 			return fmt.Errorf("output '%s' not found for resource '%s' in terraform outputs (referenced by key '%s')", outputName, resourceName, rc.key)
 		}
 
-		// Update the variable with the resolved value
 		rc.vars[rc.key] = appdef.EnvValue{
 			Source: rc.config.Source,
 			Value:  value,
@@ -120,7 +115,7 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 
 		return nil
 	},
-	// SOPS secret - decrypt now
+	// SOPS secret - decrypt now.
 	appdef.EnvSourceSOPS: func(_ context.Context, rc resolveContext) error {
 		path := filepath.Join(rc.cfg.BaseDir, FilePathFromEnv(rc.env))
 

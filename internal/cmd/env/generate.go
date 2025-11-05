@@ -134,25 +134,21 @@ func fetchTerraformOutputs(
 	input cmdtools.CommandInput,
 	environment env.Environment,
 ) (*secrets.TerraformOutputProvider, error) {
-	// Initialize Terraform manager.
 	tf, err := infra.NewTerraform(ctx, input.AppDef(), input.Manifest)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating terraform manager")
 	}
 
-	// Initialize terraform (copies templates to temp dir).
 	if err := tf.Init(ctx); err != nil {
 		return nil, errors.Wrap(err, "initialising terraform")
 	}
 	defer tf.Cleanup()
 
-	// Fetch outputs from Terraform state.
 	result, err := tf.Output(ctx, environment)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving terraform outputs")
 	}
 
-	// Convert OutputResult to TerraformOutputProvider format.
 	provider := &secrets.TerraformOutputProvider{
 		Outputs: make(map[env.Environment]map[string]map[string]any),
 	}

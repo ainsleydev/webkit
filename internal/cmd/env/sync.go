@@ -90,19 +90,16 @@ func fetchAllTerraformOutputs(
 		Outputs: make(map[env.Environment]map[string]map[string]any),
 	}
 
-	// Initialize Terraform manager once.
 	tf, err := infra.NewTerraform(ctx, input.AppDef(), input.Manifest)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating terraform manager")
 	}
 
-	// Initialize terraform (copies templates to temp dir).
 	if err := tf.Init(ctx); err != nil {
 		return nil, errors.Wrap(err, "initialising terraform")
 	}
 	defer tf.Cleanup()
 
-	// Fetch outputs for all environments that need .env files.
 	for _, environment := range environmentsWithDotEnv {
 		result, err := tf.Output(ctx, environment)
 		if err != nil {
