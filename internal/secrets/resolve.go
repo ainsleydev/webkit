@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
@@ -20,13 +21,13 @@ type ResolveConfig struct {
 
 func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) error {
 	// Resolve shared environment
-	if err := resolveAllEnvs(ctx, cfg, &def.Shared.Env); err != nil {
+	if err := resolveAllEnvs(ctx, def, cfg, &def.Shared.Env); err != nil {
 		return fmt.Errorf("resolving shared env: %w", err)
 	}
 
 	// Resolve each app environment
 	for i := range def.Apps {
-		if err := resolveAllEnvs(ctx, cfg, &def.Apps[i].Env); err != nil {
+		if err := resolveAllEnvs(ctx, def, cfg, &def.Apps[i].Env); err != nil {
 			return fmt.Errorf("resolving app %q env: %w", def.Apps[i].Name, err)
 		}
 	}
@@ -35,7 +36,7 @@ func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) err
 }
 
 // resolveAllEnvs resolves all variables in an Environment (dev, staging, production)
-func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Environment) error {
+func resolveAllEnvs(ctx context.Context, def *appdef.Definition, cfg ResolveConfig, enviro *appdef.Environment) error {
 	return enviro.WalkE(func(entry appdef.EnvWalkEntry) error {
 		for key, config := range entry.Map {
 			resolveFn, ok := resolver[config.Source]
@@ -44,6 +45,7 @@ func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Envir
 			}
 
 			rc := resolveContext{
+				def:    def,
 				cfg:    cfg,
 				env:    entry.Environment,
 				key:    key,
@@ -60,6 +62,7 @@ func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Envir
 }
 
 type resolveContext struct {
+	def    *appdef.Definition
 	cfg    ResolveConfig
 	env    env.Environment
 	key    string
@@ -74,9 +77,42 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 	appdef.EnvSourceValue: func(ctx context.Context, rc resolveContext) error {
 		return nil
 	},
-	// We haven't implemented this yet, but hopefully we can do
-	// so when we get Terraform outputs.
+	// Resource reference - resolve from Terraform outputs stored in environment variables
 	appdef.EnvSourceResource: func(_ context.Context, rc resolveContext) error {
+		// Parse the resource reference (e.g., "db.connection_url")
+		resourceName, outputName, ok := appdef.ParseResourceReference(rc.config.Value)
+		if !ok {
+			return fmt.Errorf("invalid resource reference format for key '%s': expected 'resource_name.output_name', got '%v'", rc.key, rc.config.Value)
+		}
+
+		// Find the resource in the definition
+		var resource *appdef.Resource
+		for i := range rc.def.Resources {
+			if rc.def.Resources[i].Name == resourceName {
+				resource = &rc.def.Resources[i]
+				break
+			}
+		}
+
+		if resource == nil {
+			return fmt.Errorf("resource '%s' not found in definition (referenced by key '%s')", resourceName, rc.key)
+		}
+
+		// Build the environment variable name (e.g., TF_PROD_DB_CONNECTION_URL)
+		envVarName := resource.GitHubSecretName(rc.env, outputName)
+
+		// Read the value from the environment variable
+		value := os.Getenv(envVarName)
+		if value == "" {
+			return fmt.Errorf("environment variable '%s' not set (required for key '%s' referencing '%s.%s')", envVarName, rc.key, resourceName, outputName)
+		}
+
+		// Update the variable with the resolved value
+		rc.vars[rc.key] = appdef.EnvValue{
+			Source: rc.config.Source,
+			Value:  value,
+		}
+
 		return nil
 	},
 	// SOPS secret - decrypt now
