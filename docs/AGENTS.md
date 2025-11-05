@@ -254,7 +254,7 @@ gen.Template(path, tpl, data,
 
 Variables can have three sources:
 
-1. `value`: Static string (e.g., "http://localhost:3000")
+1. `value`: Static string (e.g., `"http://localhost:3000"`)
 2. `sops`: Encrypted secret key (e.g., "PAYLOAD_SECRET")
 3. `resource`: Terraform output path (e.g., "db.connection_url")
 
