@@ -11,11 +11,18 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
+// TerraformOutputProvider provides access to Terraform outputs for resource resolution.
+// Maps: environment -> resource name -> output name -> value
+type TerraformOutputProvider struct {
+	Outputs map[env.Environment]map[string]map[string]any
+}
+
 // ResolveConfig defines the data needed in order to decrypt the
 // definitions environments secrets.
 type ResolveConfig struct {
-	SOPSClient sops.EncrypterDecrypter
-	BaseDir    string
+	SOPSClient      sops.EncrypterDecrypter
+	BaseDir         string
+	TerraformOutput *TerraformOutputProvider
 }
 
 func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) error {
@@ -74,9 +81,43 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 	appdef.EnvSourceValue: func(ctx context.Context, rc resolveContext) error {
 		return nil
 	},
-	// We haven't implemented this yet, but hopefully we can do
-	// so when we get Terraform outputs.
+	// Resource reference - resolve from Terraform outputs
 	appdef.EnvSourceResource: func(_ context.Context, rc resolveContext) error {
+		// Parse the resource reference (e.g., "db.connection_url")
+		resourceName, outputName, ok := appdef.ParseResourceReference(rc.config.Value)
+		if !ok {
+			return fmt.Errorf("invalid resource reference format for key '%s': expected 'resource_name.output_name', got '%v'", rc.key, rc.config.Value)
+		}
+
+		// Check if Terraform outputs are provided
+		if rc.cfg.TerraformOutput == nil {
+			return fmt.Errorf("terraform outputs not provided: cannot resolve resource reference '%s.%s' for key '%s'", resourceName, outputName, rc.key)
+		}
+
+		// Get outputs for the current environment
+		envOutputs, ok := rc.cfg.TerraformOutput.Outputs[rc.env]
+		if !ok {
+			return fmt.Errorf("no terraform outputs found for environment '%s' (referenced by key '%s')", rc.env, rc.key)
+		}
+
+		// Get outputs for the specific resource
+		resourceOutputs, ok := envOutputs[resourceName]
+		if !ok {
+			return fmt.Errorf("resource '%s' not found in terraform outputs for environment '%s' (referenced by key '%s')", resourceName, rc.env, rc.key)
+		}
+
+		// Get the specific output value
+		value, ok := resourceOutputs[outputName]
+		if !ok {
+			return fmt.Errorf("output '%s' not found for resource '%s' in terraform outputs (referenced by key '%s')", outputName, resourceName, rc.key)
+		}
+
+		// Update the variable with the resolved value
+		rc.vars[rc.key] = appdef.EnvValue{
+			Source: rc.config.Source,
+			Value:  value,
+		}
+
 		return nil
 	},
 	// SOPS secret - decrypt now
