@@ -3,7 +3,7 @@
   become: true
   vars:
     # All variables below are required and should be passed via -e flags
-    # domain: from app.Infra.Config.domain
+    # domain: from app.PrimaryDomain
     # github_user: repository owner
     # docker_image: repo-name-app-name (e.g., my-repo-cms)
     # docker_image_tag: 'sha-abc123'
@@ -11,6 +11,8 @@
     # app_name: from app.Name
     # env_name: environment name (development, staging, production)
     # age_secret_key: AGE private key for SOPS decryption
+    # enable_https: from app.Infra.Config.https (defaults to true)
+    # admin_email: from app.Infra.Config.admin_email (defaults to noreply@example.com)
     # Path where env file will be generated
     env_file_path: '/opt/{{ app_name }}/.env'
 
@@ -122,9 +124,11 @@
     - name: Run Certbot to get HTTPS certificate
       include_role:
         name: certbot
+      when: enable_https | default(true) | bool
 
     - name: Deploy SSL Nginx configuration after certificates are obtained
       include_role:
         name: nginx
       vars:
         skip_install: true
+      when: enable_https | default(true) | bool
