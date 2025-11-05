@@ -3,6 +3,7 @@
     name: nginx
     state: present
   become: true
+  when: skip_install is not defined or not skip_install
 
 - name: Remove all files in sites-enabled
   file:
@@ -10,11 +11,24 @@
     state: absent
   loop: "{{ lookup('fileglob', '/etc/nginx/sites-enabled/*', wantlist=True) }}"
 
-- name: Deploy Nginx config
+- name: Check if SSL certificates exist
+  stat:
+    path: '/etc/letsencrypt/live/{{ domain }}/fullchain.pem'
+  register: ssl_cert_check
+
+- name: Deploy HTTP-only Nginx config (SSL certs not found)
+  template:
+    src: ../templates/nginx-http.conf.j2
+    dest: '/etc/nginx/sites-available/{{ domain }}.conf'
+    mode: '0644'
+  when: not ssl_cert_check.stat.exists
+
+- name: Deploy SSL Nginx config (SSL certs found)
   template:
     src: ../templates/nginx.conf.j2
     dest: '/etc/nginx/sites-available/{{ domain }}.conf'
     mode: '0644'
+  when: ssl_cert_check.stat.exists
 
 - name: Enable site
   file:
@@ -25,8 +39,22 @@
 - name: Test Nginx configuration
   command: nginx -t
   changed_when: false
+  register: nginx_test_result
+  ignore_errors: yes
+
+- name: Warn if Nginx test failed
+  debug:
+    msg: 'WARNING: Nginx configuration test failed. Nginx may not restart properly. Error: {{ nginx_test_result.stderr }}'
+  when: nginx_test_result.rc != 0
 
 - name: Restart Nginx
   service:
     name: nginx
     state: restarted
+  when: nginx_test_result.rc == 0
+
+- name: Ensure Nginx is running (fallback)
+  service:
+    name: nginx
+    state: started
+  when: nginx_test_result.rc != 0
