@@ -308,7 +308,7 @@ func TestBuildAppImportAddresses(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		"DigitalOcean Droplet (vm) - not supported": {
+		"DigitalOcean Droplet (vm)": {
 			projectName: "test-project",
 			app: &appdef.App{
 				Name: "api",
@@ -318,9 +318,14 @@ func TestBuildAppImportAddresses(t *testing.T) {
 					Config:   map[string]any{},
 				},
 			},
-			appID:   "droplet-123",
-			want:    nil,
-			wantErr: true,
+			appID: "droplet-123",
+			want: []importAddress{
+				{
+					Address: "module.apps[\"api\"].module.do_droplet[0].digitalocean_droplet.this",
+					ID:      "droplet-123",
+				},
+			},
+			wantErr: false,
 		},
 		"Unsupported provider": {
 			projectName: "test-project",
@@ -394,7 +399,7 @@ func TestBuildDigitalOceanAppImports(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		"VM app (Droplet) - not supported": {
+		"VM app (Droplet)": {
 			projectName: "my-project",
 			app: &appdef.App{
 				Name: "api",
@@ -403,9 +408,14 @@ func TestBuildDigitalOceanAppImports(t *testing.T) {
 					Config: map[string]any{},
 				},
 			},
-			appID:   "droplet-456",
-			want:    nil,
-			wantErr: true,
+			appID: "droplet-456",
+			want: []importAddress{
+				{
+					Address: "module.apps[\"api\"].module.do_droplet[0].digitalocean_droplet.this",
+					ID:      "droplet-456",
+				},
+			},
+			wantErr: false,
 		},
 	}
 

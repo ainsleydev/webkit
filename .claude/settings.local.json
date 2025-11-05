@@ -6,7 +6,8 @@
 			"Bash(git add:*)",
 			"Bash(git restore:*)",
 			"Bash(git push:*)",
-			"Bash(gh pr create:*)"
+			"Bash(gh pr create:*)",
+			"Bash(pnpm lint:go:*)"
 		],
 		"deny": [],
 		"ask": []

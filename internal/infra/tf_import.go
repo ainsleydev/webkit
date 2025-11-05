@@ -146,10 +146,24 @@ func buildDigitalOceanAppImports(_ string, app *appdef.App, appID string) ([]imp
 			},
 		}, nil
 	case "vm":
-		// DigitalOcean Droplet - not yet supported for import
-		return nil, fmt.Errorf("import not yet supported for DigitalOcean Droplet apps")
+		// DigitalOcean Droplet
+		return buildDropletImports(app, appID), nil
 	default:
 		return nil, fmt.Errorf("import not supported for app platform type %q", platformType)
+	}
+}
+
+// buildDropletImports creates the import addresses for a DigitalOcean Droplet.
+// Currently only imports the droplet resource itself. The SSH key and firewall
+// resources created by the module should be imported separately if they exist.
+func buildDropletImports(app *appdef.App, dropletID string) []importAddress {
+	baseModule := fmt.Sprintf("module.apps[\"%s\"].module.do_droplet[0]", app.Name)
+
+	return []importAddress{
+		{
+			Address: fmt.Sprintf("%s.digitalocean_droplet.this", baseModule),
+			ID:      dropletID,
+		},
 	}
 }
 

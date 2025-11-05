@@ -45,6 +45,10 @@ type Terraform struct {
 	fs              afero.Fs
 	ghClient        ghapi.Client
 	useLocalBackend bool
+	// varsCache caches prepared variables per environment to avoid
+	// redundant API calls and file writes
+	varsCache    map[env.Environment]tfVars
+	varsPrepared map[env.Environment]bool
 }
 
 //go:generate go tool go.uber.org/mock/mockgen -source=tf.go -destination ./internal/tfmocks/tf.go -package=tfmocks
@@ -90,6 +94,8 @@ func NewTerraform(ctx context.Context, appDef *appdef.Definition, manifest *mani
 		ghClient:        ghapi.New(tfEnv.GithubTokenClassic),
 		useLocalBackend: false,
 		manifest:        manifest,
+		varsCache:       make(map[env.Environment]tfVars),
+		varsPrepared:    make(map[env.Environment]bool),
 	}, nil
 }
 
@@ -490,6 +496,11 @@ func (t *Terraform) prepareVars(ctx context.Context, env env.Environment) error 
 		return err
 	}
 
+	// Check if vars have already been prepared for this environment
+	if t.varsPrepared[env] {
+		return nil
+	}
+
 	vars, err := t.tfVarsFromDefinition(ctx, env)
 	if err != nil {
 		return errors.Wrap(err, "generating terraform variables")
@@ -498,6 +509,10 @@ func (t *Terraform) prepareVars(ctx context.Context, env env.Environment) error 
 	if err = t.writeTFVarsFile(vars); err != nil {
 		return errors.Wrap(err, "writing tfvars file")
 	}
+
+	// Cache the vars and mark as prepared
+	t.varsCache[env] = vars
+	t.varsPrepared[env] = true
 
 	return nil
 }

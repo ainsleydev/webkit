@@ -1,18 +1,22 @@
 package env
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 	"github.com/spf13/cast"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -83,4 +87,42 @@ func writeMapToFile(args writeArgs) error {
 	opts = append(opts, scaffold.WithTracking(manifest.SourceProject()))
 
 	return args.Input.Generator().Bytes(envPath, []byte(buf), opts...)
+}
+
+// envSuffix returns the .env file suffix for an environment.
+func envSuffix(environment env.Environment) string {
+	if environment == env.Development {
+		return ""
+	}
+	return fmt.Sprintf(".%s", environment)
+}
+
+// fetchTerraformOutputs fetches Terraform outputs for the specified environment.
+// Returns a TerraformOutputProvider containing resource outputs.
+//
+// This function manages the full Terraform lifecycle (create, init, output, cleanup).
+// See also: infra/cmd.go:fetchTerraformOutputs for a similar function that uses
+// an existing Terraform instance.
+func fetchTerraformOutputs(
+	ctx context.Context,
+	input cmdtools.CommandInput,
+	environment env.Environment,
+) (*secrets.TerraformOutputProvider, error) {
+	tf, err := infra.NewTerraform(ctx, input.AppDef(), input.Manifest)
+	if err != nil {
+		return nil, errors.Wrap(err, "creating terraform manager")
+	}
+
+	if err := tf.Init(ctx); err != nil {
+		return nil, errors.Wrap(err, "initialising terraform")
+	}
+	defer tf.Cleanup()
+
+	result, err := tf.Output(ctx, environment)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving terraform outputs")
+	}
+
+	provider := secrets.TransformOutputs(result, environment)
+	return &provider, nil
 }

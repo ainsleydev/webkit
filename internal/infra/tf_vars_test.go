@@ -272,6 +272,11 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			assert.Equal(t, "complex-project", got.GithubConfig.Repo)
 		}
 
+		t.Log("SSH")
+		{
+			assert.ElementsMatch(t, []string{"Ainsley - Mac Studio"}, got.SSHKeys)
+		}
+
 		t.Log("Apps")
 		{
 			require.Len(t, got.Apps, 2)
