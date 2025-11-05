@@ -15,6 +15,9 @@ concurrency:
   group: {{ ghVar "github.workflow" }}-{{ ghVar "github.ref" }}
   cancel-in-progress: true
 
+env:
+  TF_VERSION: '{{ .TerraformVersion }}'
+
 jobs:
   # Setup WebKit CLI
   setup-webkit:
@@ -181,6 +184,11 @@ jobs:
       - name: Make WebKit executable
         run: chmod +x ./webkit
 
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: {{ ghVar "env.TF_VERSION" }}
+
       - name: Generate production env file for {{ .Title }}
         env:
           SOPS_AGE_KEY: {{ ghSecret "ORG_AGE_SECRET" }}
@@ -190,7 +198,7 @@ jobs:
           BACK_BLAZE_BUCKET: {{ ghSecret "ORG_BACK_BLAZE_TF_BUCKET" }}
           BACK_BLAZE_KEY_ID: {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }}
           BACK_BLAZE_APPLICATION_KEY: {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
-          GITHUB_TOKEN: {{ ghSecret "ORG_GITHUB_TOKEN " }}
+          GITHUB_TOKEN: {{ ghSecret "ORG_GITHUB_TOKEN" }}
           GITHUB_TOKEN_CLASSIC: {{ ghSecret "ORG_GITHUB_TOKEN_CLASSIC" }}
         run: |
           ./webkit env generate \
@@ -198,6 +206,16 @@ jobs:
             --environment production \
             --output /tmp/{{ .Name }}.env
           echo "Generated .env file for {{ .Name }}"
+
+      - name: Verify env file was generated
+        run: |
+          if [ ! -f /tmp/{{ .Name }}.env ]; then
+            echo "ERROR: Environment file was not generated at /tmp/{{ .Name }}.env"
+            exit 1
+          fi
+          echo "✓ Environment file exists at /tmp/{{ .Name }}.env"
+          echo "✓ Environment file size: $(wc -l < /tmp/{{ .Name }}.env) lines"
+          echo "✓ Environment file contains $(grep -c '=' /tmp/{{ .Name }}.env || echo 0) variables"
 
       - name: Determine SHA
         id: determine_sha

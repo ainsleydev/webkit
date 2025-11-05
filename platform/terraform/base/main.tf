@@ -1,4 +1,5 @@
 terraform {
+  # NOTE: Keep this version in sync with internal/infra/tf.go (TerraformVersion constant)
   required_version = ">= 1.13.0"
 
   # Backend configuration - details provided via backend.hcl
