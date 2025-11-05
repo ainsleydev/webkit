@@ -1,0 +1,31 @@
+---
+# Install SOPS (Secrets OPerationS) for encrypted secret management
+
+- name: Check if SOPS is already installed
+  command: which sops
+  register: sops_installed
+  failed_when: false
+  changed_when: false
+
+- name: Get latest SOPS version from GitHub
+  uri:
+    url: https://api.github.com/repos/getsops/sops/releases/latest
+    return_content: yes
+  register: sops_latest_release
+  when: sops_installed.rc != 0
+
+- name: Download and install SOPS binary
+  get_url:
+    url: "https://github.com/getsops/sops/releases/download/{{ sops_latest_release.json.tag_name }}/sops-{{ sops_latest_release.json.tag_name }}.linux.amd64"
+    dest: "{{ sops_install_dir }}/sops"
+    mode: '0755'
+  when: sops_installed.rc != 0
+
+- name: Verify SOPS installation
+  command: sops --version
+  register: sops_version_output
+  changed_when: false
+
+- name: Display SOPS version
+  debug:
+    msg: "Installed {{ sops_version_output.stdout }}"

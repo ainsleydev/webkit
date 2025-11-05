@@ -49,6 +49,7 @@
     - fail2ban
     - tools
     - docker
+    - sops
     - webkit
     - nginx
     - ufw
