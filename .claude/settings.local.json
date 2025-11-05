@@ -1,6 +1,13 @@
 {
 	"permissions": {
-		"allow": ["Bash(go test:*)"],
+		"allow": [
+			"Bash(go test:*)",
+			"Bash(git checkout:*)",
+			"Bash(git add:*)",
+			"Bash(git restore:*)",
+			"Bash(git push:*)",
+			"Bash(gh pr create:*)"
+		],
 		"deny": [],
 		"ask": []
 	}
