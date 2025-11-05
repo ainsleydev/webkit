@@ -87,7 +87,7 @@ func fetchAllTerraformOutputs(
 	}
 
 	// Initialize Terraform manager once.
-	tf, err := infra.NewTerraform(ctx, input.AppDef(), input.Manifest())
+	tf, err := infra.NewTerraform(ctx, input.AppDef(), input.Manifest)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating terraform manager")
 	}
