@@ -67,16 +67,6 @@ locals {
 }
 
 #
-# DigitalOcean Project
-#
-resource "digitalocean_project" "this" {
-  name        = var.project_name
-  description = var.project_description
-  purpose     = "Web Application"
-  environment = title(var.environment)
-}
-
-#
 # Default B2 Bucket (always provisioned for every project)
 #
 module "default_b2_bucket" {
@@ -190,10 +180,17 @@ resource "github_actions_secret" "resource_outputs" {
 }
 
 #
-# DigitalOcean Project Resources
+# DigitalOcean Project
 #
-# Assign all DigitalOcean resources to the project.
+# Create the project and assign all DigitalOcean resources to it.
 # Only includes resources where platform_provider is "digitalocean".
+resource "digitalocean_project" "this" {
+  name        = var.project_name
+  description = var.project_description
+  purpose     = "Web Application"
+  environment = title(var.environment)
+}
+
 resource "digitalocean_project_resources" "this" {
   project = digitalocean_project.this.id
   resources = compact(concat(
