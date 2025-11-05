@@ -153,6 +153,12 @@ jobs:
 
       - name: Run Ansible playbook for {{ .Title }}
         uses: dawidd6/action-ansible-playbook@v4
+        env:
+{{- range $resource := $.Resources }}
+{{- range $output := $resource.Type.Outputs }}
+          {{ $resource.GitHubSecretName "production" $output }}: {{ ghSecret ($resource.GitHubSecretName "production" $output) }}
+{{- end }}
+{{- end }}
         with:
           playbook: playbooks/server.yaml
           directory: ansible

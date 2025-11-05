@@ -317,7 +317,7 @@ DB_PASS: dbpass123
 		content := `
 API_KEY: supersecret
 `
-		tmpDir, secretPath := writeTempSecret(t, content)
+		tmpDir, _ := writeTempSecret(t, content)
 
 		t.Setenv("TF_PROD_DB_CONNECTION_URL", "postgresql://prod:5432/db")
 

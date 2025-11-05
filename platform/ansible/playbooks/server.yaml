@@ -98,8 +98,7 @@
         --output {{ env_file_path }}
       args:
         chdir: /etc/webkit
-      environment:
-        SOPS_AGE_KEY: '{{ age_secret_key }}'
+      environment: '{{ ansible_env | combine({"SOPS_AGE_KEY": age_secret_key}) }}'
       register: env_generate_result
       failed_when: false
       ignore_errors: yes

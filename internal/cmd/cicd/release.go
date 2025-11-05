@@ -41,7 +41,8 @@ func ReleaseWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	path := filepath.Join(workflowsPath, "release.yaml")
 
 	data := map[string]any{
-		"Apps": appsToRelease,
+		"Apps":      appsToRelease,
+		"Resources": appDef.Resources,
 	}
 
 	// Track all apps as sources for this workflow.
