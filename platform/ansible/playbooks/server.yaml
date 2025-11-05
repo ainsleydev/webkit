@@ -100,23 +100,29 @@
       environment:
         SOPS_AGE_KEY: '{{ age_secret_key }}'
       register: env_generate_result
-      failed_when: env_generate_result.rc != 0
+      failed_when: false
+      ignore_errors: yes
       no_log: true
+
+    - name: Display env generation error if command failed
+      debug:
+        msg: 'ERROR generating env file: {{ env_generate_result.stderr }}'
+      when: env_generate_result.rc != 0
+
+    - name: Fail if env generation failed
+      fail:
+        msg: 'webkit env generate failed with exit code {{ env_generate_result.rc }}'
+      when: env_generate_result.rc != 0
 
     - name: Verify env file was created
       stat:
         path: '{{ env_file_path }}'
       register: env_file_stat
 
-    - name: Display env generation error if file wasn't created
-      debug:
-        msg: 'WARNING: webkit env generate completed but .env file was not created at {{ env_file_path }}'
-      when: not env_file_stat.stat.exists
-
     - name: Fail if env file doesn't exist
       fail:
         msg: 'Environment file was not created at {{ env_file_path }}. Check that app.json and secrets exist in /etc/webkit'
-      when: not env_file_stat.exists
+      when: not env_file_stat.stat.exists
 
     - name: Debug image tag
       debug:
