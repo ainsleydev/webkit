@@ -183,7 +183,15 @@ jobs:
 
       - name: Generate production env file for {{ .Title }}
         env:
-          SOPS_AGE_KEY: ${{"{{"}} secrets.ORG_AGE_SECRET {{ "}}" }}
+          SOPS_AGE_KEY: {{ ghSecret "ORG_AGE_SECRET" }}
+          DO_API_KEY: {{ ghSecret "ORG_DO_ACCESS_TOKEN" }}
+          DO_SPACES_ACCESS_KEY: {{ ghSecret "ORG_DO_SPACES_ACCESS_KEY" }}
+          DO_SPACES_SECRET_KEY: {{ ghSecret "ORG_DO_SPACES_SECRET_KEY" }}
+          BACK_BLAZE_BUCKET: {{ ghSecret "ORG_BACK_BLAZE_TF_BUCKET" }}
+          BACK_BLAZE_KEY_ID: {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }}
+          BACK_BLAZE_APPLICATION_KEY: {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+          GITHUB_TOKEN: {{ ghSecret "ORG_GITHUB_TOKEN " }}
+          GITHUB_TOKEN_CLASSIC: {{ ghSecret "ORG_GITHUB_TOKEN_CLASSIC" }}
         run: |
           ./webkit env generate \
             --app {{ .Name }} \
@@ -207,12 +215,12 @@ jobs:
             {{ .Name }} ansible_host={{ ghSecret (printf "TF_PROD_%s_IP_ADDRESS" (.Name | upper | replace "-" "_")) }} ansible_user={{ ghSecret (printf "TF_PROD_%s_SERVER_USER" (.Name | upper | replace "-" "_")) }}
           options: |
             -e webkit_version={{ ghVar "needs.setup-webkit.outputs.version" }}
-            -e age_secret_key=${{"{{"}} secrets.ORG_AGE_SECRET {{ "}}" }}
+            -e age_secret_key={{ ghSecret "ORG_AGE_SECRET" }}
             -e app_name={{ .Name }}
             -e env_name=production
             -e git_sha={{ ghVar "steps.determine_sha.outputs.sha" }}
             -e github_user={{ ghVar "github.repository_owner" }}
-            -e github_token=${{"{{"}} secrets.GITHUB_TOKEN {{ "}}" }}
+            -e github_token={{ ghSecret "GITHUB_TOKEN" }}
             -e domain={{ .PrimaryDomain }}
             -e docker_image={{ ghVar "github.event.repository.name" }}-{{ .Name }}
             -e docker_image_tag=sha-{{ ghVar "steps.determine_sha.outputs.sha" }}
