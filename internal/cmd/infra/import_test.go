@@ -62,9 +62,10 @@ func TestImport(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
 			Import(gomock.Any(), infra.ImportInput{
-				ResourceName: "db",
-				ResourceID:   "cluster-123",
-				Environment:  env.Production,
+				Kind:        infra.ImportKindResource,
+				Name:        "db",
+				ID:          "cluster-123",
+				Environment: env.Production,
 			}).
 			Return(infra.ImportOutput{
 				ImportedResources: []string{
@@ -160,10 +161,10 @@ func TestImport(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
 			Import(gomock.Any(), infra.ImportInput{
-				ResourceName: "web",
-				ResourceID:   "app-123",
-				Environment:  env.Production,
-				IsApp:        true,
+				Kind:        infra.ImportKindApp,
+				Name:        "web",
+				ID:          "app-123",
+				Environment: env.Production,
 			}).
 			Return(infra.ImportOutput{
 				ImportedResources: []string{
@@ -231,6 +232,6 @@ func TestImport(t *testing.T) {
 
 		err := Import(t.Context(), input)
 		assert.Error(t, err)
-		assert.ErrorContains(t, err, "either --resource or --app must be specified")
+		assert.ErrorContains(t, err, "one of --resource, --app, or --project must be specified")
 	})
 }
