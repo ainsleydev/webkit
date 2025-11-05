@@ -15,6 +15,8 @@
     # admin_email: from app.Infra.Config.admin_email (defaults to hello@ainsley.dev)
     # Path where env file will be generated
     env_file_path: '/opt/{{ app_name }}/.env'
+    # Configuration directory for webkit (must match role default)
+    webkit_config_dir: '/etc/webkit'
 
   # TODO (BUG):
   # If the server updates it's packages then reboots,
@@ -69,6 +71,24 @@
         state: directory
         mode: '0755'
 
+    - name: Check if app.json exists in webkit config
+      stat:
+        path: '{{ webkit_config_dir }}/app.json'
+      register: app_json_stat
+
+    - name: Display app.json status
+      debug:
+        msg: 'app.json exists: {{ app_json_stat.stat.exists }}, path: {{ webkit_config_dir }}/app.json'
+
+    - name: Check if secrets directory exists
+      stat:
+        path: '{{ webkit_config_dir }}/resources/secrets'
+      register: secrets_dir_stat
+
+    - name: Display secrets directory status
+      debug:
+        msg: 'Secrets directory exists: {{ secrets_dir_stat.stat.exists }}, path: {{ webkit_config_dir }}/resources/secrets'
+
     - name: Generate production env file using webkit
       command: >
         /usr/local/bin/webkit env generate
@@ -79,7 +99,24 @@
         chdir: /etc/webkit
       environment:
         SOPS_AGE_KEY: '{{ age_secret_key }}'
+      register: env_generate_result
+      failed_when: env_generate_result.rc != 0
       no_log: true
+
+    - name: Verify env file was created
+      stat:
+        path: '{{ env_file_path }}'
+      register: env_file_stat
+
+    - name: Display env generation error if file wasn't created
+      debug:
+        msg: 'WARNING: webkit env generate completed but .env file was not created at {{ env_file_path }}'
+      when: not env_file_stat.stat.exists
+
+    - name: Fail if env file doesn't exist
+      fail:
+        msg: 'Environment file was not created at {{ env_file_path }}. Check that app.json and secrets exist in /etc/webkit'
+      when: not env_file_stat.exists
 
     - name: Debug image tag
       debug:
