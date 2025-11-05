@@ -152,3 +152,13 @@ func buildDigitalOceanAppImports(_ string, app *appdef.App, appID string) ([]imp
 		return nil, fmt.Errorf("import not supported for app platform type %q", platformType)
 	}
 }
+
+// buildProjectImportAddress creates the import address for a DigitalOcean project.
+func buildProjectImportAddress(projectID string) []importAddress {
+	return []importAddress{
+		{
+			Address: "digitalocean_project.this",
+			ID:      projectID,
+		},
+	}
+}

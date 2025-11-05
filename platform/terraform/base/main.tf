@@ -179,3 +179,19 @@ resource "github_actions_secret" "resource_outputs" {
   )
   depends_on = [module.resources, module.apps]
 }
+
+#
+# DigitalOcean Project
+#
+# Create the project and assign all DigitalOcean resources to it.
+# Only includes resources where platform_provider is "digitalocean".
+resource "digitalocean_project" "this" {
+  name        = var.project_name
+  description = var.project_description
+  purpose     = "Web Application"
+  environment = title(var.environment)
+  resources = compact(concat(
+    [for r in module.resources : r.platform_provider == "digitalocean" ? try(r.urn, "") : ""],
+    [for a in module.apps : a.platform_provider == "digitalocean" ? try(a.urn, "") : ""]
+  ))
+}

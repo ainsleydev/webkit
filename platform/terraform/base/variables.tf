@@ -8,6 +8,12 @@ variable "project_name" {
   }
 }
 
+variable "project_description" {
+  type        = string
+  description = "Description of the project"
+  default     = "Managed by WebKit"
+}
+
 variable "environment" {
   type        = string
   description = "The environment the platform is currently running on"
