@@ -1,15 +1,6 @@
 {
 	"permissions": {
-		"allow": [
-			"Bash(git checkout:*)",
-			"Bash(git add:*)",
-			"Bash(git commit -m *)",
-			"Bash(git push:*)",
-			"Bash(pnpm test)",
-			"Bash(pnpm lint)",
-			"Bash(pnpm lint:go:*)",
-			"Bash(pnpm test:go:*)"
-		],
+		"allow": ["Bash(go test:*)"],
 		"deny": [],
 		"ask": []
 	}

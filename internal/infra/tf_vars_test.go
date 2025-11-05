@@ -623,7 +623,6 @@ func TestEncodeConfigValue(t *testing.T) {
 
 func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 	t.Run("Container app gets image tag from client", func(t *testing.T) {
-
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test-project",
@@ -669,8 +668,6 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 	})
 
 	t.Run("Non-container app does not get image tag", func(t *testing.T) {
-		t.Parallel()
-
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test-project",
