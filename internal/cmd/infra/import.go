@@ -66,55 +66,6 @@ Examples:
 	Action: cmdtools.Wrap(Import),
 }
 
-// importTarget represents the validated import target from CLI flags.
-type importTarget struct {
-	Kind        infra.ImportKind
-	Name        string // Empty for projects
-	ID          string
-	Environment env.Environment
-}
-
-// parseImportFlags validates and extracts the import target from CLI flags.
-func parseImportFlags(cmd *cli.Command) (importTarget, error) {
-	resourceName := cmd.String("resource")
-	appName := cmd.String("app")
-	isProject := cmd.Bool("project")
-
-	// Count how many flags are set.
-	flagsSet := []bool{resourceName != "", appName != "", isProject}
-	count := 0
-	for _, set := range flagsSet {
-		if set {
-			count++
-		}
-	}
-
-	if count == 0 {
-		return importTarget{}, fmt.Errorf("one of --resource, --app, or --project must be specified")
-	}
-	if count > 1 {
-		return importTarget{}, fmt.Errorf("--resource, --app, and --project are mutually exclusive")
-	}
-
-	target := importTarget{
-		ID:          cmd.String("id"),
-		Environment: env.Environment(cmd.String("env")),
-	}
-
-	switch {
-	case isProject:
-		target.Kind = infra.ImportKindProject
-	case appName != "":
-		target.Kind = infra.ImportKindApp
-		target.Name = appName
-	default:
-		target.Kind = infra.ImportKindResource
-		target.Name = resourceName
-	}
-
-	return target, nil
-}
-
 // Import executes the import operation for the specified resource or app.
 func Import(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
@@ -134,12 +85,7 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 
 	spinner.Start()
 
-	result, err := tf.Import(ctx, infra.ImportInput{
-		Kind:        target.Kind,
-		Name:        target.Name,
-		ID:          target.ID,
-		Environment: target.Environment,
-	})
+	result, err := tf.Import(ctx, target)
 
 	spinner.Stop()
 
@@ -163,4 +109,45 @@ func Import(ctx context.Context, input cmdtools.CommandInput) error {
 	printer.Print("  3. Run 'webkit infra apply' to finalise any adjustments")
 
 	return nil
+}
+
+// parseImportFlags validates and extracts the import target from CLI flags.
+func parseImportFlags(cmd *cli.Command) (infra.ImportInput, error) {
+	resourceName := cmd.String("resource")
+	appName := cmd.String("app")
+	isProject := cmd.Bool("project")
+
+	// Count how many flags are set.
+	flagsSet := []bool{resourceName != "", appName != "", isProject}
+	count := 0
+	for _, set := range flagsSet {
+		if set {
+			count++
+		}
+	}
+
+	if count == 0 {
+		return infra.ImportInput{}, fmt.Errorf("one of --resource, --app, or --project must be specified")
+	}
+	if count > 1 {
+		return infra.ImportInput{}, fmt.Errorf("--resource, --app, and --project are mutually exclusive")
+	}
+
+	target := infra.ImportInput{
+		ID:          cmd.String("id"),
+		Environment: env.Environment(cmd.String("env")),
+	}
+
+	switch {
+	case isProject:
+		target.Kind = infra.ImportKindProject
+	case appName != "":
+		target.Kind = infra.ImportKindApp
+		target.Name = appName
+	default:
+		target.Kind = infra.ImportKindResource
+		target.Name = resourceName
+	}
+
+	return target, nil
 }
