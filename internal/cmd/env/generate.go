@@ -78,7 +78,7 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 		spinner.Stop()
 	}
 
-	err = secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
+	err = secrets.ResolveForEnvironment(ctx, appDef, environment, secrets.ResolveConfig{
 		SOPSClient:      input.SOPSClient(),
 		BaseDir:         input.BaseDir,
 		TerraformOutput: tfOutputs,

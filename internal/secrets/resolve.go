@@ -41,29 +41,81 @@ func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) err
 	return nil
 }
 
+// ResolveForEnvironment resolves variables for a specific environment only.
+// This is more efficient when you only need one environment (e.g., env generation).
+func ResolveForEnvironment(ctx context.Context, def *appdef.Definition, targetEnv env.Environment, cfg ResolveConfig) error {
+	// Resolve shared environment for target env
+	if err := resolveSingleEnv(ctx, cfg, &def.Shared.Env, targetEnv); err != nil {
+		return fmt.Errorf("resolving shared env: %w", err)
+	}
+
+	// Resolve each app environment for target env
+	for i := range def.Apps {
+		if err := resolveSingleEnv(ctx, cfg, &def.Apps[i].Env, targetEnv); err != nil {
+			return fmt.Errorf("resolving app %q env: %w", def.Apps[i].Name, err)
+		}
+	}
+
+	return nil
+}
+
 // resolveAllEnvs resolves all variables in an Environment (dev, staging, production)
 func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Environment) error {
-	return enviro.WalkE(func(entry appdef.EnvWalkEntry) error {
-		for key, config := range entry.Map {
-			resolveFn, ok := resolver[config.Source]
-			if !ok {
-				return fmt.Errorf("unknown env source type: %s", config.Source)
-			}
-
-			rc := resolveContext{
-				cfg:    cfg,
-				env:    entry.Environment,
-				key:    key,
-				config: config,
-				vars:   entry.Map,
-			}
-
-			if err := resolveFn(ctx, rc); err != nil {
-				return err
-			}
+	// Resolve all three environments by calling resolveSingleEnv for each
+	for _, targetEnv := range []env.Environment{env.Development, env.Staging, env.Production} {
+		if err := resolveSingleEnv(ctx, cfg, enviro, targetEnv); err != nil {
+			return err
 		}
-		return nil
-	})
+	}
+	return nil
+}
+
+// resolveSingleEnv resolves variables for a specific environment only.
+// It resolves defaults first, then environment-specific vars (following the merge pattern).
+func resolveSingleEnv(ctx context.Context, cfg ResolveConfig, enviro *appdef.Environment, targetEnv env.Environment) error {
+	// Resolve defaults first (they apply to the target environment)
+	if err := resolveVars(ctx, cfg, enviro.Default, targetEnv); err != nil {
+		return err
+	}
+
+	// Get the specific environment vars
+	var targetVars appdef.EnvVar
+	switch targetEnv {
+	case env.Development:
+		targetVars = enviro.Dev
+	case env.Staging:
+		targetVars = enviro.Staging
+	case env.Production:
+		targetVars = enviro.Production
+	default:
+		return fmt.Errorf("unknown environment: %s", targetEnv)
+	}
+
+	// Resolve environment-specific vars
+	return resolveVars(ctx, cfg, targetVars, targetEnv)
+}
+
+// resolveVars resolves all variables in a single EnvVar map.
+func resolveVars(ctx context.Context, cfg ResolveConfig, vars appdef.EnvVar, targetEnv env.Environment) error {
+	for key, config := range vars {
+		resolveFn, ok := resolver[config.Source]
+		if !ok {
+			return fmt.Errorf("unknown env source type: %s", config.Source)
+		}
+
+		rc := resolveContext{
+			cfg:    cfg,
+			env:    targetEnv,
+			key:    key,
+			config: config,
+			vars:   vars,
+		}
+
+		if err := resolveFn(ctx, rc); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type resolveContext struct {
