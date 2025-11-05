@@ -77,10 +77,7 @@ jobs:
 
       - name: Upload Backup to B2
         run: |
-          # TODO: The name of the bucket needs to somehow be dynamic, how can we tell what bucket to use and where? Do we do a global one?
-          # Upload backup file to B2
-          rclone copy $BACKUP_FILE b2_backup:${BUCKET_NAME}${BACKUP_PATH} \
-            --progress
+          rclone copy $BACKUP_FILE b2_backup:${BUCKET_NAME}${BACKUP_PATH} --progress
 
       - name: Retain only 30 latest backups
         run: |
