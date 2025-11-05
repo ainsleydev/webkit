@@ -25,17 +25,21 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
 
-	// Fetch Terraform outputs for all environments.
-	printer.Println("Fetching Terraform outputs...")
-	spinner.Start()
+	// Check if we need to fetch Terraform outputs (only if there are resource references).
+	var tfOutputs *secrets.TerraformOutputProvider
+	var err error
+	if hasResourceReferences(appDef) {
+		printer.Println("Fetching Terraform outputs...")
+		spinner.Start()
 
-	tfOutputs, err := fetchAllTerraformOutputs(ctx, input)
-	if err != nil {
+		tfOutputs, err = fetchAllTerraformOutputs(ctx, input)
+		if err != nil {
+			spinner.Stop()
+			return errors.Wrap(err, "fetching terraform outputs")
+		}
+
 		spinner.Stop()
-		return errors.Wrap(err, "fetching terraform outputs")
 	}
-
-	spinner.Stop()
 
 	err = secrets.Resolve(ctx, appDef, secrets.ResolveConfig{
 		SOPSClient:      input.SOPSClient(),
@@ -75,6 +79,35 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 
 	return nil
+}
+
+// hasResourceReferences checks if the definition contains any environment
+// variables with source="resource" that need Terraform outputs.
+func hasResourceReferences(def *appdef.Definition) bool {
+	// Check shared environment.
+	hasResource := false
+	def.Shared.Env.Walk(func(entry appdef.EnvWalkEntry) {
+		if entry.Source == appdef.EnvSourceResource {
+			hasResource = true
+		}
+	})
+	if hasResource {
+		return true
+	}
+
+	// Check app environments.
+	for _, app := range def.Apps {
+		app.Env.Walk(func(entry appdef.EnvWalkEntry) {
+			if entry.Source == appdef.EnvSourceResource {
+				hasResource = true
+			}
+		})
+		if hasResource {
+			return true
+		}
+	}
+
+	return false
 }
 
 // fetchAllTerraformOutputs fetches Terraform outputs for all environments that have .env files.
