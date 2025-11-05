@@ -1,0 +1,14 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(git checkout:*)",
+			"Bash(git add:*)",
+			"Bash(git commit -m \"$(cat <<''EOF''\nfix: Improving Ansible VM deployment error handling and reducing timeout\n\n- Remove ignore_errors from app health check to fail workflow on deployment issues\n- Reduce health check timeout from 10 minutes to 5 minutes (60 retries × 5s)\n- Add rescue block to capture Docker service logs when deployment fails\n- Display clear error message with common troubleshooting tips\n- Ensure workflow explicitly fails with diagnostic information\n\nThis addresses the issue where deployment failures were silently ignored,\nmaking it difficult to diagnose why applications failed to start.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+			"Bash(git push:*)",
+			"Bash(npm test)",
+			"Bash(npm run lint)"
+		],
+		"deny": [],
+		"ask": []
+	}
+}
