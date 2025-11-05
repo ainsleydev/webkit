@@ -9,7 +9,6 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/secrets"
-	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 var SyncCmd = &cli.Command{
@@ -54,7 +53,7 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 		mergedApp := app.MergeEnvironments(appDef.Shared.Env)
 
 		for _, enviro := range environmentsWithDotEnv {
-			vars, err := getEnvironmentVars(mergedApp, enviro)
+			vars, err := mergedApp.GetVarsForEnvironment(enviro)
 			if err != nil {
 				return err
 			}
@@ -86,9 +85,7 @@ func fetchAllTerraformOutputs(
 	ctx context.Context,
 	input cmdtools.CommandInput,
 ) (*secrets.TerraformOutputProvider, error) {
-	provider := &secrets.TerraformOutputProvider{
-		Outputs: make(map[env.Environment]map[string]map[string]any),
-	}
+	provider := make(secrets.TerraformOutputProvider)
 
 	tf, err := infra.NewTerraform(ctx, input.AppDef(), input.Manifest)
 	if err != nil {
@@ -105,8 +102,17 @@ func fetchAllTerraformOutputs(
 		if err != nil {
 			return nil, errors.Wrap(err, "retrieving terraform outputs for "+string(environment))
 		}
-		provider.Outputs[environment] = result.Resources
+		for resourceName, outputs := range result.Resources {
+			for outputName, value := range outputs {
+				key := secrets.OutputKey{
+					Environment:  environment,
+					ResourceName: resourceName,
+					OutputName:   outputName,
+				}
+				provider[key] = value
+			}
+		}
 	}
 
-	return provider, nil
+	return &provider, nil
 }

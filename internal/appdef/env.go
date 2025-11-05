@@ -1,6 +1,7 @@
 package appdef
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/ainsleydev/webkit/pkg/env"
@@ -135,6 +136,21 @@ func (e Environment) walkEnvs(fn func(envName env.Environment, vars EnvVar) erro
 	}
 
 	return nil
+}
+
+// GetVarsForEnvironment returns the EnvVar map for the specified environment.
+// Returns an error if the environment is unknown.
+func (e Environment) GetVarsForEnvironment(target env.Environment) (EnvVar, error) {
+	switch target {
+	case env.Development:
+		return e.Dev, nil
+	case env.Staging:
+		return e.Staging, nil
+	case env.Production:
+		return e.Production, nil
+	default:
+		return nil, fmt.Errorf("unknown environment: %s", target)
+	}
 }
 
 // ParseResourceReference parses a resource reference string

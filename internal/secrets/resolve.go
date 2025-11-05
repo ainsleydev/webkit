@@ -11,11 +11,15 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-// TerraformOutputProvider provides access to Terraform outputs for resource resolution.
-// Maps: environment -> resource name -> output name -> value
-type TerraformOutputProvider struct {
-	Outputs map[env.Environment]map[string]map[string]any
+// OutputKey uniquely identifies a Terraform output value.
+type OutputKey struct {
+	Environment  env.Environment
+	ResourceName string
+	OutputName   string
 }
+
+// TerraformOutputProvider provides access to Terraform outputs for resource resolution.
+type TerraformOutputProvider map[OutputKey]any
 
 // ResolveConfig defines the data needed in order to decrypt the
 // definitions environments secrets.
@@ -79,16 +83,9 @@ func resolveSingleEnv(ctx context.Context, cfg ResolveConfig, enviro *appdef.Env
 	}
 
 	// Get the specific environment vars
-	var targetVars appdef.EnvVar
-	switch targetEnv {
-	case env.Development:
-		targetVars = enviro.Dev
-	case env.Staging:
-		targetVars = enviro.Staging
-	case env.Production:
-		targetVars = enviro.Production
-	default:
-		return fmt.Errorf("unknown environment: %s", targetEnv)
+	targetVars, err := enviro.GetVarsForEnvironment(targetEnv)
+	if err != nil {
+		return err
 	}
 
 	// Resolve environment-specific vars
@@ -145,19 +142,15 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 			return fmt.Errorf("terraform outputs not provided: cannot resolve resource reference '%s.%s' for key '%s'", resourceName, outputName, rc.key)
 		}
 
-		envOutputs, ok := rc.cfg.TerraformOutput.Outputs[rc.env]
-		if !ok {
-			return fmt.Errorf("no terraform outputs found for environment '%s' (referenced by key '%s')", rc.env, rc.key)
+		key := OutputKey{
+			Environment:  rc.env,
+			ResourceName: resourceName,
+			OutputName:   outputName,
 		}
 
-		resourceOutputs, ok := envOutputs[resourceName]
+		value, ok := (*rc.cfg.TerraformOutput)[key]
 		if !ok {
-			return fmt.Errorf("resource '%s' not found in terraform outputs for environment '%s' (referenced by key '%s')", resourceName, rc.env, rc.key)
-		}
-
-		value, ok := resourceOutputs[outputName]
-		if !ok {
-			return fmt.Errorf("output '%s' not found for resource '%s' in terraform outputs (referenced by key '%s')", outputName, resourceName, rc.key)
+			return fmt.Errorf("terraform output not found for environment '%s', resource '%s', output '%s' (referenced by key '%s')", rc.env, resourceName, outputName, rc.key)
 		}
 
 		rc.vars[rc.key] = appdef.EnvValue{

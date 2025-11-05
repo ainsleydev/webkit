@@ -6,9 +6,11 @@
 			"Bash(git commit -m *)",
 			"Bash(git push:*)",
 			"Bash(pnpm test)",
-			"Bash(pnpm lint)"
+			"Bash(pnpm lint)",
+			"Bash(pnpm lint:go:*)",
+			"Bash(pnpm test:go:*)"
 		],
-		"deny": ["Bash(git push origin main)", "Bash(git push main)"],
+		"deny": [],
 		"ask": []
 	}
 }

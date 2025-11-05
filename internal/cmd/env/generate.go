@@ -89,7 +89,7 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 
 	mergedApp := targetApp.MergeEnvironments(appDef.Shared.Env)
 
-	vars, err := getEnvironmentVars(mergedApp, environment)
+	vars, err := mergedApp.GetVarsForEnvironment(environment)
 	if err != nil {
 		return err
 	}
@@ -149,10 +149,17 @@ func fetchTerraformOutputs(
 		return nil, errors.Wrap(err, "retrieving terraform outputs")
 	}
 
-	provider := &secrets.TerraformOutputProvider{
-		Outputs: make(map[env.Environment]map[string]map[string]any),
+	provider := make(secrets.TerraformOutputProvider)
+	for resourceName, outputs := range result.Resources {
+		for outputName, value := range outputs {
+			key := secrets.OutputKey{
+				Environment:  environment,
+				ResourceName: resourceName,
+				OutputName:   outputName,
+			}
+			provider[key] = value
+		}
 	}
-	provider.Outputs[environment] = result.Resources
 
-	return provider, nil
+	return &provider, nil
 }

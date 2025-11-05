@@ -67,7 +67,7 @@ func TestGetEnvironmentVars(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := getEnvironmentVars(test.input, test.env)
+			got, err := test.input.GetVarsForEnvironment(test.env)
 			assert.Equal(t, test.wantErr, err != nil)
 
 			if !test.wantErr {

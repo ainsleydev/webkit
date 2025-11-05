@@ -238,13 +238,11 @@ func TestResolveForEnvironment(t *testing.T) {
 
 		// Only provide Terraform outputs for production
 		tfOutputs := &TerraformOutputProvider{
-			Outputs: map[env.Environment]map[string]map[string]any{
-				env.Production: {
-					"db": {
-						"connection_url": "postgresql://prod-db:5432",
-					},
-				},
-			},
+			OutputKey{
+				Environment:  env.Production,
+				ResourceName: "db",
+				OutputName:   "connection_url",
+			}: "postgresql://prod-db:5432",
 		}
 
 		cfg := ResolveConfig{
@@ -316,13 +314,11 @@ func TestResolveForEnvironment(t *testing.T) {
 
 		// Terraform outputs only for dev, not production
 		tfOutputs := &TerraformOutputProvider{
-			Outputs: map[env.Environment]map[string]map[string]any{
-				env.Development: {
-					"db": {
-						"connection_url": "postgresql://dev-db:5432",
-					},
-				},
-			},
+			OutputKey{
+				Environment:  env.Development,
+				ResourceName: "db",
+				OutputName:   "connection_url",
+			}: "postgresql://dev-db:5432",
 		}
 
 		cfg := ResolveConfig{
@@ -331,6 +327,6 @@ func TestResolveForEnvironment(t *testing.T) {
 
 		err := ResolveForEnvironment(t.Context(), def, env.Production, cfg)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "no terraform outputs found for environment 'production'")
+		assert.Contains(t, err.Error(), "terraform output not found")
 	})
 }
