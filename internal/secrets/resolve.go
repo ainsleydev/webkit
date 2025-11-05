@@ -133,6 +133,11 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 	// Resource reference - resolves infrastructure outputs by querying Terraform state.
 	// This allows environment variables to reference resources defined in app.json (e.g., "db.connection_url").
 	appdef.EnvSourceResource: func(_ context.Context, rc resolveContext) error {
+		// Don't resolve anything that's not production now.
+		if rc.env != env.Production {
+			return nil
+		}
+
 		resourceName, outputName, ok := appdef.ParseResourceReference(rc.config.Value)
 		if !ok {
 			return fmt.Errorf("invalid resource reference format for key '%s': expected 'resource_name.output_name', got '%v'", rc.key, rc.config.Value)

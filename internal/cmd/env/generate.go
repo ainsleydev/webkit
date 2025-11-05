@@ -9,7 +9,6 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
@@ -117,49 +116,4 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 	printer.Success(fmt.Sprintf("Generated env file for app '%s' (%s) at: %s", appName, environment, outputPath))
 
 	return nil
-}
-
-// envSuffix returns the .env file suffix for an environment.
-func envSuffix(environment env.Environment) string {
-	if environment == env.Development {
-		return ""
-	}
-	return fmt.Sprintf(".%s", environment)
-}
-
-// fetchTerraformOutputs fetches Terraform outputs for the specified environment.
-// Returns a TerraformOutputProvider containing resource outputs.
-func fetchTerraformOutputs(
-	ctx context.Context,
-	input cmdtools.CommandInput,
-	environment env.Environment,
-) (*secrets.TerraformOutputProvider, error) {
-	tf, err := infra.NewTerraform(ctx, input.AppDef(), input.Manifest)
-	if err != nil {
-		return nil, errors.Wrap(err, "creating terraform manager")
-	}
-
-	if err := tf.Init(ctx); err != nil {
-		return nil, errors.Wrap(err, "initialising terraform")
-	}
-	defer tf.Cleanup()
-
-	result, err := tf.Output(ctx, environment)
-	if err != nil {
-		return nil, errors.Wrap(err, "retrieving terraform outputs")
-	}
-
-	provider := make(secrets.TerraformOutputProvider)
-	for resourceName, outputs := range result.Resources {
-		for outputName, value := range outputs {
-			key := secrets.OutputKey{
-				Environment:  environment,
-				ResourceName: resourceName,
-				OutputName:   outputName,
-			}
-			provider[key] = value
-		}
-	}
-
-	return &provider, nil
 }
