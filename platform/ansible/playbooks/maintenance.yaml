@@ -196,7 +196,7 @@
     - name: Verify UFW is active
       fail:
         msg: "WARNING: UFW firewall is not active!"
-      when: ufw_check.rc == 0 and "'Status: active' not in ufw_status.stdout"
+      when: "ufw_check.rc == 0 and 'Status: active' not in ufw_status.stdout"
       ignore_errors: yes
 
     # ========================================
