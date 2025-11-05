@@ -17,22 +17,39 @@ When environment variables are set via Terraform, DigitalOcean encrypts them on 
 This is a known issue in the DigitalOcean Terraform provider:
 - https://github.com/digitalocean/terraform-provider-digitalocean/issues/869
 
-**Current Solution:**
+**Implemented Solution:**
 All environment variables (including secrets) are managed via Terraform. The deployment workflow in GitHub Actions only triggers deployments and does not modify environment variables.
 
-To avoid perpetual Terraform drift, use lifecycle ignore rules:
+To avoid perpetual Terraform drift while still detecting real env var changes, we use a combination of `ignore_changes` and `replace_triggered_by`:
 
 ```hcl
+# Track env var changes via hash
+resource "terraform_data" "env_vars_hash" {
+  input = sha256(jsonencode(var.envs))
+}
+
 resource "digitalocean_app" "example" {
   # ... app configuration
 
   lifecycle {
+    # Ignore DO's server-side encryption (prevents drift)
     ignore_changes = [
       spec[0].service[0].env
+    ]
+
+    # Force replacement when env vars actually change in code
+    replace_triggered_by = [
+      terraform_data.env_vars_hash
     ]
   }
 }
 ```
+
+This approach:
+- ✅ Prevents drift from DigitalOcean's server-side encryption
+- ✅ Automatically detects when env vars change in code
+- ✅ Triggers app replacement (with zero-downtime rolling deployment)
+- ✅ No manual intervention required
 
 **Alternative Approaches Considered:**
 
@@ -64,9 +81,9 @@ Use Terraform for all environment variable management, including secrets. This m
 
 ### Future Improvements
 
-- [ ] Document Terraform lifecycle ignore patterns for DO App Platform
-- [ ] Add example Terraform configuration for DO App Platform with env vars
-- [ ] Consider contributing fix to DigitalOcean Terraform provider
+- [x] Document Terraform lifecycle ignore patterns for DO App Platform
+- [x] Add example Terraform configuration for DO App Platform with env vars
+- [ ] Consider contributing workaround documentation to DigitalOcean Terraform provider
 - [ ] Investigate if DO API supports reading plain-text values for comparison
 
 ## GitHub Actions Secrets

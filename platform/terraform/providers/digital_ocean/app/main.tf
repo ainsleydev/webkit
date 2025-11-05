@@ -1,5 +1,12 @@
 # App Platform
 # Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/app
+
+# Track env var changes to trigger app replacement when they change
+# This allows us to ignore DO's encryption drift while still detecting real changes
+resource "terraform_data" "env_vars_hash" {
+  input = sha256(jsonencode(var.envs))
+}
+
 resource "digitalocean_app" "this" {
 
   spec {
@@ -77,5 +84,21 @@ resource "digitalocean_app" "this" {
         }
       }
     }
+  }
+
+  lifecycle {
+    # Ignore changes to env vars caused by DigitalOcean's server-side encryption
+    # This prevents perpetual drift between Terraform state (plain text) and DO API (encrypted)
+    # See: https://github.com/digitalocean/terraform-provider-digitalocean/issues/869
+    ignore_changes = [
+      spec[0].service[0].env
+    ]
+
+    # Force app replacement when env vars actually change in our code
+    # The terraform_data.env_vars_hash tracks a hash of var.envs
+    # When env vars change in code, the hash changes, triggering replacement
+    replace_triggered_by = [
+      terraform_data.env_vars_hash
+    ]
   }
 }
