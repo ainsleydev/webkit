@@ -15,7 +15,7 @@ When environment variables are set via Terraform, DigitalOcean encrypts them on 
 3. Terraform detects a diff on every `terraform plan` (plain text vs encrypted)
 
 This is a known issue in the DigitalOcean Terraform provider:
-- https://github.com/digitalocean/terraform-provider-digitalocean/issues/...
+- https://github.com/digitalocean/terraform-provider-digitalocean/issues/869
 
 **Current Solution:**
 All environment variables (including secrets) are managed via Terraform. The deployment workflow in GitHub Actions only triggers deployments and does not modify environment variables.
