@@ -146,7 +146,7 @@ fi
 # Build Docker image
 if [ "$SKIP_BUILD" = false ]; then
     echo -e "${BLUE}Building test Docker image...${NC}"
-    docker build -f "$ANSIBLE_DIR/Dockerfile.test" -t "$IMAGE_NAME" "$ANSIBLE_DIR"
+    docker build --platform linux/amd64 -f "$ANSIBLE_DIR/Dockerfile.test" -t "$IMAGE_NAME" "$ANSIBLE_DIR"
 fi
 
 # Stop existing container if running
@@ -156,6 +156,7 @@ docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
 echo -e "${BLUE}Starting test container...${NC}"
 docker run -d \
     --name "$CONTAINER_NAME" \
+    --platform linux/amd64 \
     --privileged \
     --tmpfs /tmp \
     --tmpfs /run \

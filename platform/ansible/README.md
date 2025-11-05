@@ -117,14 +117,6 @@ docker exec webkit-ansible-test cat /etc/webkit/app.json
 docker rm -f webkit-ansible-test
 ```
 
-### Benefits
-
-- **Use real configs**: Test with your actual `app.json` files
-- **No production risk**: Runs in isolated Docker containers
-- **Fast iteration**: Test changes in seconds, not minutes
-- **Catch errors early**: Find issues before they hit live servers
-- **Multiple repos**: Test against playground, staging, or production configs
-
 ### Expected Failures
 
 Some tasks will fail (by design - they require live infrastructure):
