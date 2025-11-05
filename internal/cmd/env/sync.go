@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/secrets"
@@ -79,35 +80,6 @@ func Sync(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 
 	return nil
-}
-
-// hasResourceReferences checks if the definition contains any environment
-// variables with source="resource" that need Terraform outputs.
-func hasResourceReferences(def *appdef.Definition) bool {
-	// Check shared environment.
-	hasResource := false
-	def.Shared.Env.Walk(func(entry appdef.EnvWalkEntry) {
-		if entry.Source == appdef.EnvSourceResource {
-			hasResource = true
-		}
-	})
-	if hasResource {
-		return true
-	}
-
-	// Check app environments.
-	for _, app := range def.Apps {
-		app.Env.Walk(func(entry appdef.EnvWalkEntry) {
-			if entry.Source == appdef.EnvSourceResource {
-				hasResource = true
-			}
-		})
-		if hasResource {
-			return true
-		}
-	}
-
-	return false
 }
 
 // fetchAllTerraformOutputs fetches Terraform outputs for all environments that have .env files.
