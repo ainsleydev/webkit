@@ -11,11 +11,15 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-// TerraformOutputProvider provides access to Terraform outputs for resource resolution.
-// Maps: environment -> resource name -> output name -> value
-type TerraformOutputProvider struct {
-	Outputs map[env.Environment]map[string]map[string]any
+// OutputKey uniquely identifies a Terraform output value.
+type OutputKey struct {
+	Environment  env.Environment
+	ResourceName string
+	OutputName   string
 }
+
+// TerraformOutputProvider provides access to Terraform outputs for resource resolution.
+type TerraformOutputProvider map[OutputKey]any
 
 // ResolveConfig defines the data needed in order to decrypt the
 // definitions environments secrets.
@@ -41,29 +45,74 @@ func Resolve(ctx context.Context, def *appdef.Definition, cfg ResolveConfig) err
 	return nil
 }
 
+// ResolveForEnvironment resolves variables for a specific environment only.
+// This is more efficient when you only need one environment (e.g., env generation).
+func ResolveForEnvironment(ctx context.Context, def *appdef.Definition, targetEnv env.Environment, cfg ResolveConfig) error {
+	// Resolve shared environment for target env
+	if err := resolveSingleEnv(ctx, cfg, &def.Shared.Env, targetEnv); err != nil {
+		return fmt.Errorf("resolving shared env: %w", err)
+	}
+
+	// Resolve each app environment for target env
+	for i := range def.Apps {
+		if err := resolveSingleEnv(ctx, cfg, &def.Apps[i].Env, targetEnv); err != nil {
+			return fmt.Errorf("resolving app %q env: %w", def.Apps[i].Name, err)
+		}
+	}
+
+	return nil
+}
+
 // resolveAllEnvs resolves all variables in an Environment (dev, staging, production)
 func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Environment) error {
-	return enviro.WalkE(func(entry appdef.EnvWalkEntry) error {
-		for key, config := range entry.Map {
-			resolveFn, ok := resolver[config.Source]
-			if !ok {
-				return fmt.Errorf("unknown env source type: %s", config.Source)
-			}
-
-			rc := resolveContext{
-				cfg:    cfg,
-				env:    entry.Environment,
-				key:    key,
-				config: config,
-				vars:   entry.Map,
-			}
-
-			if err := resolveFn(ctx, rc); err != nil {
-				return err
-			}
+	// Resolve all three environments by calling resolveSingleEnv for each
+	for _, targetEnv := range []env.Environment{env.Development, env.Staging, env.Production} {
+		if err := resolveSingleEnv(ctx, cfg, enviro, targetEnv); err != nil {
+			return err
 		}
-		return nil
-	})
+	}
+	return nil
+}
+
+// resolveSingleEnv resolves variables for a specific environment only.
+// It resolves defaults first, then environment-specific vars (following the merge pattern).
+func resolveSingleEnv(ctx context.Context, cfg ResolveConfig, enviro *appdef.Environment, targetEnv env.Environment) error {
+	// Resolve defaults first (they apply to the target environment)
+	if err := resolveVars(ctx, cfg, enviro.Default, targetEnv); err != nil {
+		return err
+	}
+
+	// Get the specific environment vars
+	targetVars, err := enviro.GetVarsForEnvironment(targetEnv)
+	if err != nil {
+		return err
+	}
+
+	// Resolve environment-specific vars
+	return resolveVars(ctx, cfg, targetVars, targetEnv)
+}
+
+// resolveVars resolves all variables in a single EnvVar map.
+func resolveVars(ctx context.Context, cfg ResolveConfig, vars appdef.EnvVar, targetEnv env.Environment) error {
+	for key, config := range vars {
+		resolveFn, ok := resolver[config.Source]
+		if !ok {
+			return fmt.Errorf("unknown env source type: %s", config.Source)
+		}
+
+		rc := resolveContext{
+			cfg:    cfg,
+			env:    targetEnv,
+			key:    key,
+			config: config,
+			vars:   vars,
+		}
+
+		if err := resolveFn(ctx, rc); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type resolveContext struct {
@@ -93,19 +142,15 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 			return fmt.Errorf("terraform outputs not provided: cannot resolve resource reference '%s.%s' for key '%s'", resourceName, outputName, rc.key)
 		}
 
-		envOutputs, ok := rc.cfg.TerraformOutput.Outputs[rc.env]
-		if !ok {
-			return fmt.Errorf("no terraform outputs found for environment '%s' (referenced by key '%s')", rc.env, rc.key)
+		key := OutputKey{
+			Environment:  rc.env,
+			ResourceName: resourceName,
+			OutputName:   outputName,
 		}
 
-		resourceOutputs, ok := envOutputs[resourceName]
+		value, ok := (*rc.cfg.TerraformOutput)[key]
 		if !ok {
-			return fmt.Errorf("resource '%s' not found in terraform outputs for environment '%s' (referenced by key '%s')", resourceName, rc.env, rc.key)
-		}
-
-		value, ok := resourceOutputs[outputName]
-		if !ok {
-			return fmt.Errorf("output '%s' not found for resource '%s' in terraform outputs (referenced by key '%s')", outputName, resourceName, rc.key)
+			return fmt.Errorf("terraform output not found for environment '%s', resource '%s', output '%s' (referenced by key '%s')", rc.env, resourceName, outputName, rc.key)
 		}
 
 		rc.vars[rc.key] = appdef.EnvValue{

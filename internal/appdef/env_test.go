@@ -274,3 +274,59 @@ func TestParseResourceReference(t *testing.T) {
 		})
 	}
 }
+
+func TestEnvironment_GetVarsForEnvironment(t *testing.T) {
+	t.Parallel()
+
+	devVars := EnvVar{"DEV_VAR": {Source: EnvSourceValue, Value: "dev"}}
+	stagingVars := EnvVar{"STAGING_VAR": {Source: EnvSourceValue, Value: "staging"}}
+	prodVars := EnvVar{"PROD_VAR": {Source: EnvSourceValue, Value: "prod"}}
+
+	e := Environment{
+		Dev:        devVars,
+		Staging:    stagingVars,
+		Production: prodVars,
+	}
+
+	tt := map[string]struct {
+		environment env.Environment
+		want        EnvVar
+		wantErr     bool
+	}{
+		"Development": {
+			environment: env.Development,
+			want:        devVars,
+			wantErr:     false,
+		},
+		"Staging": {
+			environment: env.Staging,
+			want:        stagingVars,
+			wantErr:     false,
+		},
+		"Production": {
+			environment: env.Production,
+			want:        prodVars,
+			wantErr:     false,
+		},
+		"Unknown Environment": {
+			environment: env.Environment("unknown"),
+			want:        nil,
+			wantErr:     true,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := e.GetVarsForEnvironment(test.environment)
+			if test.wantErr {
+				assert.Error(t, err)
+				assert.ErrorContains(t, err, "unknown environment")
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.want, got)
+			}
+		})
+	}
+}

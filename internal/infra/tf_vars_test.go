@@ -4,7 +4,6 @@ package infra
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -623,11 +622,7 @@ func TestEncodeConfigValue(t *testing.T) {
 }
 
 func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
-	t.Parallel()
-
 	t.Run("Container app gets image tag from client", func(t *testing.T) {
-		t.Parallel()
-
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test-project",
@@ -663,13 +658,7 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 		}
 
 		// Ensure GITHUB_SHA is not set.
-		originalSHA := os.Getenv("GITHUB_SHA")
-		os.Unsetenv("GITHUB_SHA")
-		defer func() {
-			if originalSHA != "" {
-				os.Setenv("GITHUB_SHA", originalSHA)
-			}
-		}()
+		t.Setenv("GITHUB_SHA", "")
 
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		require.NoError(t, err)
@@ -679,8 +668,6 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 	})
 
 	t.Run("Non-container app does not get image tag", func(t *testing.T) {
-		t.Parallel()
-
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test-project",
@@ -711,8 +698,6 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 	})
 
 	t.Run("Uses GITHUB_SHA when set", func(t *testing.T) {
-		t.Parallel()
-
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "test-project",
@@ -737,15 +722,7 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 		tf := setupTfVars(t, input)
 
 		// Set GITHUB_SHA environment variable.
-		originalSHA := os.Getenv("GITHUB_SHA")
-		os.Setenv("GITHUB_SHA", "ci-sha-123")
-		defer func() {
-			if originalSHA == "" {
-				os.Unsetenv("GITHUB_SHA")
-			} else {
-				os.Setenv("GITHUB_SHA", originalSHA)
-			}
-		}()
+		t.Setenv("GITHUB_SHA", "ci-sha-123")
 
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		require.NoError(t, err)
