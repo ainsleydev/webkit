@@ -38,90 +38,73 @@ The `server.yaml` playbook configures a production-ready server with:
 
 All configuration is passed via variables from the workflow, sourced from the user's `app.json`.
 
-## Local Testing with Docker
+## Local Testing
 
-Test Ansible changes locally using your actual webkit-enabled repositories (like playground or production repos) without deploying to live servers.
+Test Ansible changes locally before deploying to production. Two approaches available:
 
-### Quick Start
+### Option 1: Quick Syntax Check (Recommended)
+
+Fast validation without installing packages or using Docker:
 
 ```bash
 cd platform/ansible
-./test-local.sh ~/path/to/your-webkit-repo
+
+# Syntax check only
+./test-local-simple.sh ~/projects/your-webkit-repo
+
+# Full dry-run validation (checks logic and templates)
+./test-local-simple.sh ~/projects/your-webkit-repo --check
 ```
 
-The script will:
-1. Read your repo's `app.json` configuration
-2. Spin up a Ubuntu 22.04 Docker container
-3. Run the Ansible playbook with your real config
-4. Show results and clean up
+**Requirements:** `brew install ansible jq`
 
-**That's it!** No need to set variables - it uses your actual repository configuration.
+**What it validates:**
+- Playbook syntax
+- Variable usage from your app.json
+- Template rendering
+- Task logic
+
+**What it doesn't do:**
+- Install packages
+- Start services
+- Modify your system
+
+### Option 2: Test with act (GitHub Actions locally)
+
+Test your complete deployment workflow if your webkit-enabled repo has GitHub Actions:
+
+```bash
+# Install act
+brew install act
+
+# Run your workflow locally
+./test-with-act.sh ~/projects/your-webkit-repo
+```
+
+**Note:** This tests your user repo's workflow, which uses a tagged webkit version. To test local webkit ansible changes, use Option 1.
+
+### When to Use Which
+
+**Use Option 1 (syntax check)** when:
+- You changed ansible playbooks/roles in webkit
+- You want fast feedback
+- You want to validate before committing
+
+**Use Option 2 (act)** when:
+- You want to test the full CI/CD pipeline
+- Your webkit-enabled repo has GitHub Actions
+- You want to test with real deployment conditions
 
 ### Examples
 
 ```bash
-# Test with playground repo
-./test-local.sh ~/projects/playground
+# Test webkit ansible changes before committing
+cd platform/ansible
+./test-local-simple.sh ~/projects/playground
 
-# Test with production config (safely!)
-./test-local.sh ~/projects/my-production-app
+# Validate a production config (safely)
+./test-local-simple.sh ~/projects/my-production-app --check
 
-# Keep container running for debugging
-./test-local.sh ~/projects/playground -k
-
-# Verbose Ansible output
-./test-local.sh ~/projects/playground -v
-
-# Clean rebuild
-./test-local.sh ~/projects/playground -c
+# Test full workflow with act
+./test-with-act.sh ~/projects/playground
 ```
-
-### Options
-
-- `-k, --keep-running` - Keep container running after test for inspection
-- `-c, --clean` - Remove existing container/image before starting
-- `-s, --skip-build` - Skip Docker image rebuild (faster iteration)
-- `-v, --verbose` - Show verbose Ansible output
-
-### What Gets Tested
-
-The script automatically extracts from your `app.json`:
-- Domain configuration
-- App name and port
-- GitHub repository details
-- Admin email
-- HTTPS settings
-
-Then runs the full playbook against a fresh Ubuntu container, testing:
-- All role installations (fail2ban, docker, nginx, ufw, etc.)
-- Configuration file templating
-- Service setup and management
-- Package installations
-
-### Debugging
-
-When using `-k`, inspect the container after the test:
-
-```bash
-# Connect to container
-docker exec -it webkit-ansible-test /bin/bash
-
-# Check installed services
-docker exec webkit-ansible-test systemctl status nginx
-docker exec webkit-ansible-test systemctl status docker
-
-# View webkit config
-docker exec webkit-ansible-test cat /etc/webkit/app.json
-
-# Stop when done
-docker rm -f webkit-ansible-test
-```
-
-### Expected Failures
-
-Some tasks will fail (by design - they require live infrastructure):
-- Certbot/HTTPS (requires DNS validation)
-- Docker image pulls (requires authentication)
-- Webkit env generation (requires decryption keys)
-
-These are normal and can be ignored. The script automatically sets `enable_https=false` and `skip_reboot=true`.
