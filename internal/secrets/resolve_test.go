@@ -16,9 +16,14 @@ import (
 
 func writeTempSecret(t *testing.T, content string) (tmpDir, secretPath string) {
 	t.Helper()
+	return writeTempSecretForEnv(t, content, env.Development)
+}
+
+func writeTempSecretForEnv(t *testing.T, content string, environment env.Environment) (tmpDir, secretPath string) {
+	t.Helper()
 
 	tmpDir = t.TempDir()
-	secretPath = filepath.Join(tmpDir, FilePathFromEnv(env.Development))
+	secretPath = filepath.Join(tmpDir, FilePathFromEnv(environment))
 
 	require.NoError(t, os.MkdirAll(filepath.Dir(secretPath), 0o700))
 	require.NoError(t, os.WriteFile(secretPath, []byte(content), 0o600))
@@ -276,7 +281,7 @@ DB_PASS: dbpass123
 					Name: "test-app",
 					Env: appdef.Environment{
 						Dev: map[string]appdef.EnvValue{
-							"DATABASE_URL":  {Source: appdef.EnvSourceResource, Value: "db.connection_url"},
+							"DATABASE_URL": {Source: appdef.EnvSourceResource, Value: "db.connection_url"},
 							"DATABASE_HOST": {Source: appdef.EnvSourceResource, Value: "db.host"},
 							"DATABASE_PORT": {Source: appdef.EnvSourceResource, Value: "db.port"},
 						},
@@ -317,7 +322,7 @@ DB_PASS: dbpass123
 		content := `
 API_KEY: supersecret
 `
-		tmpDir, _ := writeTempSecret(t, content)
+		tmpDir, _ := writeTempSecretForEnv(t, content, env.Production)
 
 		t.Setenv("TF_PROD_DB_CONNECTION_URL", "postgresql://prod:5432/db")
 
