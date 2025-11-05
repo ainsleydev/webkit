@@ -276,7 +276,7 @@ DB_PASS: dbpass123
 					Name: "test-app",
 					Env: appdef.Environment{
 						Dev: map[string]appdef.EnvValue{
-							"DATABASE_URL": {Source: appdef.EnvSourceResource, Value: "db.connection_url"},
+							"DATABASE_URL":  {Source: appdef.EnvSourceResource, Value: "db.connection_url"},
 							"DATABASE_HOST": {Source: appdef.EnvSourceResource, Value: "db.host"},
 							"DATABASE_PORT": {Source: appdef.EnvSourceResource, Value: "db.port"},
 						},
