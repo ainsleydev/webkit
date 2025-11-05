@@ -189,14 +189,8 @@ resource "digitalocean_project" "this" {
   description = var.project_description
   purpose     = "Web Application"
   environment = title(var.environment)
-}
-
-resource "digitalocean_project_resources" "this" {
-  project = digitalocean_project.this.id
   resources = compact(concat(
     [for r in module.resources : r.platform_provider == "digitalocean" ? try(r.urn, "") : ""],
     [for a in module.apps : a.platform_provider == "digitalocean" ? try(a.urn, "") : ""]
   ))
-
-  depends_on = [module.resources, module.apps]
 }
