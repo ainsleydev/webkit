@@ -189,6 +189,13 @@ jobs:
         with:
           terraform_version: {{ ghVar "env.TF_VERSION" }}
 
+      - name: Install SOPS
+        run: |
+          curl -LO https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64
+          sudo mv sops-v3.11.0.linux.amd64 /usr/local/bin/sops
+          sudo chmod +x /usr/local/bin/sops
+          sops --version
+
       - name: Generate production env file for {{ .Title }}
         env:
           SOPS_AGE_KEY: {{ ghSecret "ORG_AGE_SECRET" }}
