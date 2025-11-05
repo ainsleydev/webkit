@@ -99,6 +99,10 @@ func envSuffix(environment env.Environment) string {
 
 // fetchTerraformOutputs fetches Terraform outputs for the specified environment.
 // Returns a TerraformOutputProvider containing resource outputs.
+//
+// This function manages the full Terraform lifecycle (create, init, output, cleanup).
+// See also: infra/cmd.go:fetchTerraformOutputs for a similar function that uses
+// an existing Terraform instance.
 func fetchTerraformOutputs(
 	ctx context.Context,
 	input cmdtools.CommandInput,
@@ -119,17 +123,6 @@ func fetchTerraformOutputs(
 		return nil, errors.Wrap(err, "retrieving terraform outputs")
 	}
 
-	provider := make(secrets.TerraformOutputProvider)
-	for resourceName, outputs := range result.Resources {
-		for outputName, value := range outputs {
-			key := secrets.OutputKey{
-				Environment:  environment,
-				ResourceName: resourceName,
-				OutputName:   outputName,
-			}
-			provider[key] = value
-		}
-	}
-
+	provider := secrets.TransformOutputs(result, environment)
 	return &provider, nil
 }

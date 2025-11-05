@@ -29,6 +29,7 @@ type (
 		GithubConfig       tfGithubConfig `json:"github_config"`
 		Apps               []tfApp        `json:"apps"`
 		Resources          []tfResource   `json:"resources"`
+		SSHKeys            []string       `json:"ssh_keys"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -85,6 +86,7 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		Environment:        env.String(),
 		Apps:               make([]tfApp, 0, len(t.appDef.Apps)),
 		Resources:          make([]tfResource, 0, len(t.appDef.Resources)),
+		SSHKeys:            []string{"Ainsley - Mac Studio"},
 		GithubConfig: tfGithubConfig{
 			Owner: t.appDef.Project.Repo.Owner,
 			Repo:  t.appDef.Project.Repo.Name,

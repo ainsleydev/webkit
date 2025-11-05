@@ -136,28 +136,20 @@ func hasResourceReferences(def *appdef.Definition) bool {
 
 // fetchTerraformOutputs fetches Terraform outputs for the specified environment.
 // Returns a TerraformOutputProvider containing resource outputs.
+//
+// This function uses an existing, initialized Terraform instance.
+// See also: env/cmd.go:fetchTerraformOutputs for a similar function that manages
+// the full Terraform lifecycle.
 func fetchTerraformOutputs(
 	ctx context.Context,
 	tf *infra.Terraform,
 	environment env.Environment,
 ) (*secrets.TerraformOutputProvider, error) {
-
 	result, err := tf.Output(ctx, environment)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving terraform outputs")
 	}
 
-	provider := make(secrets.TerraformOutputProvider)
-	for resourceName, outputs := range result.Resources {
-		for outputName, value := range outputs {
-			key := secrets.OutputKey{
-				Environment:  environment,
-				ResourceName: resourceName,
-				OutputName:   outputName,
-			}
-			provider[key] = value
-		}
-	}
-
+	provider := secrets.TransformOutputs(result, environment)
 	return &provider, nil
 }
