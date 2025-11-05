@@ -1,0 +1,53 @@
+name: Server Maintenance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 0' # Every Sunday at 03:00 UTC
+
+jobs:
+{{- range .Apps }}
+{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "vm") }}
+  maintenance-vm-{{ .Name }}:
+    runs-on: ubuntu-latest
+    environment:
+      name: production-{{ .Name }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Read WebKit Version
+        id: read_version
+        run: |
+          WEBKIT_VERSION=$(jq -r '.webkit_version // "latest"' "app.json")
+          echo "version=$WEBKIT_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected WebKit version: $WEBKIT_VERSION"
+
+      - name: Checkout WebKit Repository
+        uses: actions/checkout@v5
+        with:
+          repository: 'ainsleydev/webkit'
+          ref: {{ ghVar "steps.read_version.outputs.version" }}
+          path: '.webkit-repo'
+
+      - name: Copy Ansible Files
+        run: |
+          cp -r .webkit-repo/platform/ansible ./
+          echo "Copied ansible files from WebKit {{ ghVar "steps.read_version.outputs.version" }}"
+
+      - name: Run Ansible Maintenance Playbook for {{ .Title }}
+        uses: dawidd6/action-ansible-playbook@v4
+        with:
+          playbook: playbooks/maintenance.yaml
+          directory: ansible
+          key: {{ ghSecret (printf "TF_PROD_%s_SSH_PRIVATE_KEY" (.Name | upper | replace "-" "_")) }}
+          inventory: |
+            [all]
+            {{ .Name }} ansible_host={{ ghSecret (printf "TF_PROD_%s_IP_ADDRESS" (.Name | upper | replace "-" "_")) }} ansible_user={{ ghSecret (printf "TF_PROD_%s_SERVER_USER" (.Name | upper | replace "-" "_")) }}
+          options: |
+            -e app_name={{ .Name }}
+            -e domain={{ .PrimaryDomain }}
+            -e admin_email={{ default "hello@ainsley.dev" (index .Infra.Config "admin_email") }}
+            -v
+{{- end }}
+{{- end }}
