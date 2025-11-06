@@ -171,6 +171,7 @@
             published_port: '{{ docker_port | int }}'
             protocol: tcp
             mode: host
+      no_log: true  # Prevent logging of environment variables containing secrets
 
     - name: Wait for the app to respond on localhost
       block:
