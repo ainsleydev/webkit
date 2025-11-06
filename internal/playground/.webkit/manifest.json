@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.33",
-	"generated_at": "2025-11-06T17:08:17.218252Z",
+	"version": "v0.0.35",
+	"generated_at": "2025-11-06T20:03:10.978386Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -66,37 +66,21 @@
 			"scaffolded": false,
 			"generated_at": "2025-11-06T14:48:29.592025Z"
 		},
-		".github/workflows/deploy-container.yaml": {
-			"path": ".github/workflows/deploy-container.yaml",
-			"generator": "cicd:DeployContainerWorkflow",
-			"source": "app:web",
-			"hash": "913cfc5d6161c0a5332313ddf19f08696214e2c14b9ba7e723e33112475f326e",
-			"scaffolded": false,
-			"generated_at": "2025-11-06T14:48:29.591438Z"
-		},
-		".github/workflows/deploy-vm.yaml": {
-			"path": ".github/workflows/deploy-vm.yaml",
-			"generator": "cicd:DeployVMWorkflow",
-			"source": "app:cms",
-			"hash": "265d0afc42dfc174189812ad96c78bf8c2441f4976277765d4c9d0b78cdd536f",
-			"scaffolded": false,
-			"generated_at": "2025-11-06T17:08:17.215907Z"
-		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "48e5965da01b6736bdf1375b768f429adb06f4bac46aaaf32c72198f4f50e6ea",
+			"hash": "3d31575fe54b3039b2928356b34de2691b85935353481eef2cea180e07243404",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T14:48:29.590685Z"
+			"generated_at": "2025-11-06T20:03:10.97419Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "5d8a5a900e4e79b6af93de6ca934fd90ebf0edb15bc769fa965304ee054a0d3a",
+			"hash": "2bb27f2b87a52a46df06630314e47b1565624d23f10bb68f11cafb6d39fdc822",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T14:48:29.59119Z"
+			"generated_at": "2025-11-06T20:03:10.975735Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",

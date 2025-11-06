@@ -128,19 +128,120 @@ jobs:
 
   # Deploy Web to DigitalOcean App Platform
   deploy-app-web:
+    runs-on: ubuntu-latest
     needs: build-and-push
-    uses: ./.github/workflows/deploy-container.yaml
-    with:
-      app_name: web
-      image_tag: sha-${{ github.sha }}
-    secrets: inherit
+    environment:
+      name: production-web
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Deploy Web to DigitalOcean App Platform
+        uses: digitalocean/app_action/deploy@v2
+        env:
+          IMAGE_TAG_SVELTE_KIT: sha-${{ github.sha }}
+        with:
+          token: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
+          app_name: '${{ github.event.repository.name }}-web'
 
   # Deploy CMS to DigitalOcean VM
   deploy-vm-cms:
+    runs-on: ubuntu-latest
     needs: [build-and-push, setup-webkit]
-    uses: ./.github/workflows/deploy-vm.yaml
-    with:
-      app_name: cms
-      image_tag: sha-${{ github.sha }}
-      webkit_version: ${{ needs.setup-webkit.outputs.version }}
-    secrets: inherit
+    environment:
+      name: production-cms
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Checkout WebKit Repository
+        uses: actions/checkout@v5
+        with:
+          repository: 'ainsleydev/webkit'
+          ref: ${{ needs.setup-webkit.outputs.version }}
+          path: '.webkit-repo'
+
+      - name: Copy Ansible Files
+        run: |
+          cp -r .webkit-repo/platform/ansible ./
+          echo "Copied ansible files from WebKit ${{ needs.setup-webkit.outputs.version }}"
+
+      - name: Download WebKit CLI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webkit
+          path: ./
+
+      - name: Make WebKit executable
+        run: chmod +x ./webkit
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Install SOPS
+        run: |
+          curl -LO https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64
+          sudo mv sops-v3.11.0.linux.amd64 /usr/local/bin/sops
+          sudo chmod +x /usr/local/bin/sops
+          sops --version
+
+      - name: Generate production env file for CMS
+        env:
+          SOPS_AGE_KEY: ${{ secrets.ORG_AGE_SECRET }}
+          DO_API_KEY: ${{ secrets.ORG_DO_ACCESS_TOKEN }}
+          DO_SPACES_ACCESS_KEY: ${{ secrets.ORG_DO_SPACES_ACCESS_KEY }}
+          DO_SPACES_SECRET_KEY: ${{ secrets.ORG_DO_SPACES_SECRET_KEY }}
+          BACK_BLAZE_BUCKET: ${{ secrets.ORG_BACK_BLAZE_TF_BUCKET }}
+          BACK_BLAZE_KEY_ID: ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}
+          BACK_BLAZE_APPLICATION_KEY: ${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}
+          GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+          GITHUB_TOKEN_CLASSIC: ${{ secrets.ORG_GITHUB_TOKEN_CLASSIC }}
+        run: |
+          ./webkit env generate \
+            --app cms \
+            --environment production \
+            --output /tmp/cms.env
+          echo "Generated .env file for cms"
+
+      - name: Verify env file was generated
+        run: |
+          if [ ! -f /tmp/cms.env ]; then
+            echo "ERROR: Environment file was not generated at /tmp/cms.env"
+            exit 1
+          fi
+          echo "✓ Environment file exists at /tmp/cms.env"
+          echo "✓ Environment file size: $(wc -l < /tmp/cms.env) lines"
+          echo "✓ Environment file contains $(grep -c '=' /tmp/cms.env || echo 0) variables"
+
+      - name: Determine SHA
+        id: determine_sha
+        run: |
+          echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Run Ansible playbook for CMS
+        uses: dawidd6/action-ansible-playbook@v4
+        with:
+          playbook: playbooks/server.yaml
+          directory: ansible
+          key: ${{ secrets.TF_PROD_CMS_SSH_PRIVATE_KEY }}
+          inventory: |
+            [all]
+            cms ansible_host=${{ secrets.TF_PROD_CMS_IP_ADDRESS }} ansible_user=${{ secrets.TF_PROD_CMS_SERVER_USER }}
+          options: |
+            -e webkit_version=${{ needs.setup-webkit.outputs.version }}
+            -e age_secret_key=${{ secrets.ORG_AGE_SECRET }}
+            -e app_name=cms
+            -e env_name=production
+            -e git_sha=${{ steps.determine_sha.outputs.sha }}
+            -e github_user=${{ github.repository_owner }}
+            -e github_token=${{ secrets.GITHUB_TOKEN }}
+            -e domain=
+            -e docker_image=${{ github.event.repository.name }}-cms
+            -e docker_image_tag=sha-${{ steps.determine_sha.outputs.sha }}
+            -e docker_port=3000
+            -e enable_https=true
+            -e admin_email=hello@ainsley.dev
+            -e env_file_source_path=/tmp/cms.env
+            -v
