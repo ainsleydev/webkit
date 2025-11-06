@@ -6,7 +6,9 @@ import (
 
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -65,6 +67,63 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 
 	printer.Print(plan.Output)
 	printer.Success("Apply succeeded, see console output")
+
+	// Auto-update postgres firewalls with app IPs
+	if err := autoUpdateFirewalls(ctx, input, tf, filtered, env.Production); err != nil {
+		// Log warning but don't fail the apply
+		printer.Warning("Failed to auto-update postgres firewalls: " + err.Error())
+	}
+
+	return nil
+}
+
+// autoUpdateFirewalls automatically updates PostgreSQL firewall rules
+// by discovering app IPs and re-applying terraform.
+func autoUpdateFirewalls(ctx context.Context, input cmdtools.CommandInput, tf *infra.Terraform, appDef *appdef.Definition, environment env.Environment) error {
+	printer := input.Printer()
+
+	// Get terraform outputs to find app IPs
+	outputs, err := tf.Output(ctx, environment)
+	if err != nil {
+		return err
+	}
+
+	// Create firewall updater
+	tfEnv, err := infra.ParseTFEnvironment()
+	if err != nil {
+		return err
+	}
+
+	updater := infra.NewFirewallUpdater(tfEnv.DigitalOceanAPIKey)
+
+	// Discover IPs and update firewall configs
+	updates, err := updater.UpdateFirewalls(ctx, appDef, outputs, environment)
+	if err != nil {
+		return err
+	}
+
+	// If no updates were made, we're done
+	if len(updates) == 0 {
+		return nil
+	}
+
+	// Print summary of what we're updating
+	printer.Print(infra.FormatUpdateSummary(updates))
+
+	// Clear the terraform vars cache to force regeneration with updated configs
+	tf.ClearVarsCache()
+
+	// Re-apply terraform with updated firewall rules
+	spinner := input.Spinner()
+	spinner.Start()
+
+	_, err = tf.Apply(ctx, environment)
+	if err != nil {
+		return errors.New("re-applying terraform with updated firewall rules")
+	}
+
+	spinner.Stop()
+	printer.Success("Firewall rules updated successfully")
 
 	return nil
 }

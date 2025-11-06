@@ -491,6 +491,13 @@ func (t *Terraform) hasInitialised() error {
 	return nil
 }
 
+// ClearVarsCache clears the prepared variables cache, forcing
+// regeneration on the next Apply/Plan call. This is useful when
+// the app definition has been modified after initial preparation.
+func (t *Terraform) ClearVarsCache() {
+	t.varsPrepared = make(map[env.Environment]bool)
+}
+
 func (t *Terraform) prepareVars(ctx context.Context, env env.Environment) error {
 	if err := t.hasInitialised(); err != nil {
 		return err
