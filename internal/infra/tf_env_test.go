@@ -20,6 +20,8 @@ func TestParseTFEnvironment(t *testing.T) {
 		t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
 		t.Setenv("GITHUB_TOKEN", "token")
 		t.Setenv("GITHUB_TOKEN_CLASSIC", "token")
+		t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
+		t.Setenv("SLACK_USER_TOKEN", "xoxp-test-token")
 
 		cfg, err := ParseTFEnvironment()
 		assert.NoError(t, err)
@@ -31,6 +33,8 @@ func TestParseTFEnvironment(t *testing.T) {
 		assert.Equal(t, "appkey", cfg.BackBlazeApplicationKey)
 		assert.Equal(t, "token", cfg.GithubToken)
 		assert.Equal(t, "token", cfg.GithubTokenClassic)
+		assert.Equal(t, "xoxb-test-token", cfg.SlackBotToken)
+		assert.Equal(t, "xoxp-test-token", cfg.SlackUserToken)
 	})
 
 	t.Run("Failure", func(t *testing.T) {

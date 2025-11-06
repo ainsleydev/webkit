@@ -96,11 +96,11 @@ jobs:
         uses: ./.github/actions/slack-notify
         with:
           title: '{{ .Name }} Database Backup Failed'
-          message: 'The scheduled database backup has failed.'
+          message: 'The scheduled database backup has failed. This may impact disaster recovery capabilities.'
           status: 'failure'
           commit_sha: ${{"{{"}} github.sha }}
-          slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
-          channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
+          slack_bot_token: ${{"{{"}} secrets.ORG_SLACK_BOT_TOKEN {{ "}}" }}
+          channel_id: ${{"{{"}} secrets.TF_SLACK_CHANNEL_ID {{ "}}" }}
 {{- else if eq .Type "s3" }}
   backup-resource-{{ .Name }}:
     runs-on: ubuntu-latest
@@ -209,8 +209,8 @@ jobs:
           message: 'The scheduled GitHub repository backup has failed.'
           status: 'failure'
           commit_sha: ${{"{{"}} github.sha }}
-          slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
-          channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
+          slack_bot_token: ${{"{{"}} secrets.ORG_SLACK_BOT_TOKEN {{ "}}" }}
+          channel_id: ${{"{{"}} secrets.TF_SLACK_CHANNEL_ID {{ "}}" }}
 
   sync-to-gdrive:
     runs-on: ubuntu-latest
@@ -295,5 +295,5 @@ jobs:
           message: 'The backup synchronisation to Google Drive has failed.'
           status: 'failure'
           commit_sha: ${{"{{"}} github.sha }}
-          slack_bot_token: ${{"{{"}} secrets.SLACK_BOT_TOKEN {{ "}}" }}
-          channel_id: ${{"{{"}} secrets.SLACK_CHANNEL_ID {{ "}}" }}
+          slack_bot_token: ${{"{{"}} secrets.ORG_SLACK_BOT_TOKEN {{ "}}" }}
+          channel_id: ${{"{{"}} secrets.TF_SLACK_CHANNEL_ID {{ "}}" }}

@@ -18,6 +18,10 @@ terraform {
       source  = "integrations/github"
       version = "~> 5.0"
     }
+    slack = {
+      source  = "pablovarela/slack"
+      version = "~> 1.0"
+    }
   }
 }
 
@@ -38,6 +42,10 @@ provider "b2" {
 provider "github" {
   owner = var.github_config.owner
   token = var.github_token
+}
+
+provider "slack" {
+  token = var.slack_bot_token
 }
 
 #
@@ -191,8 +199,20 @@ locals {
     }
   ]...)
 
+  # Slack channel secret
+  github_secrets_slack = {
+    "TF_SLACK_CHANNEL_ID" = tomap({
+      source_type = "slack"
+      output_name = "channel_id"
+    })
+  }
+
   # Merge all GitHub secrets
-  github_secrets = merge(local.github_secrets_resources, local.github_secrets_apps)
+  github_secrets = merge(
+    local.github_secrets_resources,
+    local.github_secrets_apps,
+    local.github_secrets_slack
+  )
 }
 
 resource "github_actions_secret" "resource_outputs" {
@@ -201,10 +221,12 @@ resource "github_actions_secret" "resource_outputs" {
   repository      = var.github_config.repo
   secret_name     = each.key
   plaintext_value = try(
-    each.value["source_type"] == "resource" ? tostring(module.resources[each.value["resource_name"]][each.value["output_name"]]) : tostring(module.apps[each.value["app_name"]][each.value["output_name"]]),
+    each.value["source_type"] == "resource" ? tostring(module.resources[each.value["resource_name"]][each.value["output_name"]]) :
+    each.value["source_type"] == "app" ? tostring(module.apps[each.value["app_name"]][each.value["output_name"]]) :
+    each.value["source_type"] == "slack" ? tostring(slack_conversation.project_channel.id) :
     "NOT_SET"
   )
-  depends_on = [module.resources, module.apps]
+  depends_on = [module.resources, module.apps, slack_conversation.project_channel]
 }
 
 #
@@ -229,4 +251,22 @@ resource "digitalocean_project" "this" {
   )
 
   depends_on = [module.resources, module.apps]
+}
+
+#
+# Slack Channel
+#
+# Create a Slack channel for CI/CD alerts and notifications.
+# The channel is archived (not deleted) on destroy to preserve message history.
+#
+resource "slack_conversation" "project_channel" {
+  name              = "${var.project_name}-alerts"
+  topic             = "CI/CD alerts and notifications for ${var.project_title}"
+  is_private        = false
+  action_on_destroy = "archive"
+
+  # Permanent members (you + bot).
+  permanent_members = [
+    "U035SMG9XFG" # Ainsley Clark
+  ]
 }
