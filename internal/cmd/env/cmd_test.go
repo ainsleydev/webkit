@@ -84,7 +84,74 @@ func TestWriteMapToFileCustomPath(t *testing.T) {
 
 			content, err := afero.ReadFile(input.FS, test.wantPath)
 			require.NoError(t, err)
-			assert.Contains(t, string(content), "FOO=\"bar\"")
+			// Updated: our custom marshaller doesn't quote simple values
+			assert.Contains(t, string(content), "FOO=bar")
+		})
+	}
+}
+
+func TestMarshalEnvWithoutQuotes(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input map[string]string
+		want  map[string]string // key -> expected format in output
+	}{
+		"Simple values without quotes": {
+			input: map[string]string{
+				"DATABASE_URI": "postgresql://user:pass@host:5432/db?sslmode=require",
+				"API_KEY":      "abc123xyz",
+				"PORT":         "3000",
+			},
+			want: map[string]string{
+				"DATABASE_URI": "DATABASE_URI=postgresql://user:pass@host:5432/db?sslmode=require",
+				"API_KEY":      "API_KEY=abc123xyz",
+				"PORT":         "PORT=3000",
+			},
+		},
+		"Values with spaces need quotes": {
+			input: map[string]string{
+				"MESSAGE":     "hello world",
+				"DESCRIPTION": "This is a description with spaces",
+			},
+			want: map[string]string{
+				"MESSAGE":     "MESSAGE=\"hello world\"",
+				"DESCRIPTION": "DESCRIPTION=\"This is a description with spaces\"",
+			},
+		},
+		"Empty values need quotes": {
+			input: map[string]string{
+				"EMPTY": "",
+			},
+			want: map[string]string{
+				"EMPTY": "EMPTY=\"\"",
+			},
+		},
+		"Mixed values": {
+			input: map[string]string{
+				"SIMPLE":     "value",
+				"WITH_SPACE": "value with space",
+				"EMPTY":      "",
+				"URL":        "https://example.com/path?query=value",
+			},
+			want: map[string]string{
+				"SIMPLE":     "SIMPLE=value",
+				"WITH_SPACE": "WITH_SPACE=\"value with space\"",
+				"EMPTY":      "EMPTY=\"\"",
+				"URL":        "URL=https://example.com/path?query=value",
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := marshalEnvWithoutQuotes(test.input)
+			for key, expectedLine := range test.want {
+				assert.Contains(t, got, expectedLine,
+					fmt.Sprintf("Expected %s to be formatted as: %s", key, expectedLine))
+			}
 		})
 	}
 }
