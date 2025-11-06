@@ -68,6 +68,33 @@ locals {
 }
 
 #
+# SSH Keys
+# Lookup personal SSH keys at plan time to avoid deferred reads
+# Data sources are evaluated here (outside modules) to prevent deferred reads
+#
+
+# Determine which providers are actually being used for VMs
+locals {
+  uses_digitalocean_vms = anytrue([for a in var.apps : a.platform_provider == "digitalocean" && a.platform_type == "vm"])
+  # Future providers can be added here:
+  # uses_hetzner_vms = anytrue([for a in var.apps : a.platform_provider == "hetzner" && a.platform_type == "vm"])
+}
+
+# DigitalOcean SSH Keys (only lookup if DO VMs are in use)
+data "digitalocean_ssh_key" "personal_keys" {
+  for_each = local.uses_digitalocean_vms ? toset(var.ssh_keys) : []
+  name     = each.value
+}
+
+locals {
+  # Provider-specific SSH key ID lists
+  do_ssh_key_ids = [for k in data.digitalocean_ssh_key.personal_keys : k.id]
+
+  # Future providers:
+  # hetzner_ssh_key_ids = [for k in data.hcloud_ssh_key.personal_keys : k.id]
+}
+
+#
 # Default B2 Bucket (always provisioned for every project)
 #
 module "default_b2_bucket" {
@@ -114,7 +141,7 @@ module "apps" {
     repo  = var.github_config.repo
     token = var.github_token_classic
   }
-  ssh_keys = try(var.ssh_keys, [])
+  do_ssh_key_ids = local.do_ssh_key_ids
   domains = try(each.value.domains, [])
   env_vars = try(each.value.env_vars, [])
   tags = local.common_tags

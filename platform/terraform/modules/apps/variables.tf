@@ -85,11 +85,18 @@ variable "github_config" {
   })
 }
 
-variable "ssh_keys" {
-  description = "List of SSH key names to apply to VMs"
+variable "do_ssh_key_ids" {
+  description = "List of DigitalOcean SSH key IDs to apply to VMs"
   type        = list(string)
   default     = []
 }
+
+# Future providers can add their own SSH key variables here:
+# variable "hetzner_ssh_key_ids" {
+#   description = "List of Hetzner SSH key IDs to apply to VMs"
+#   type        = list(string)
+#   default     = []
+# }
 
 variable "tags" {
   description = "Additional tags"

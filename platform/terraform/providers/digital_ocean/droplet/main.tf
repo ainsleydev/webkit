@@ -1,9 +1,3 @@
-# Lookup all existing SSH keys from DigitalOcean based on the names provided
-data "digitalocean_ssh_key" "this" {
-  for_each = toset(var.ssh_keys)
-  name     = each.value
-}
-
 resource "tls_private_key" "this" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -24,9 +18,9 @@ resource "digitalocean_droplet" "this" {
   tags   = var.tags
 
   # Sort to ensure deterministic ordering across Terraform runs
-  # Without sort(), for_each iteration order is not guaranteed
+  # Combine personal SSH keys (passed as IDs) with the Terraform-generated key
   ssh_keys = sort(concat(
-    [for k in data.digitalocean_ssh_key.this : k.id],
+    var.ssh_key_ids,
     [digitalocean_ssh_key.this.id]
   ))
 

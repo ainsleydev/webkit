@@ -15,8 +15,8 @@ variable "droplet_region" {
   default     = "lon1"
 }
 
-variable "ssh_keys" {
-  description = "List of SSH key names to apply to the droplet"
+variable "ssh_key_ids" {
+  description = "List of SSH key IDs to apply to the droplet"
   type        = list(string)
   default     = []
 }
