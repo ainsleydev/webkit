@@ -18,7 +18,7 @@ resource "digitalocean_ssh_key" "this" {
 # Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet
 resource "digitalocean_droplet" "this" {
   name   = var.name
-  image  = "ubuntu-22-04-x64"
+  image  = "ubuntu-24-04-x64"
   size   = var.droplet_size
   region = var.droplet_region
   tags   = var.tags
