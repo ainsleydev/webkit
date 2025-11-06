@@ -195,7 +195,7 @@ func TestDeployAppWorkflow(t *testing.T) {
 
 		t.Log("Conditional setup-webkit")
 		{
-			assert.Contains(t, content, "if: ${{ github.event_name }} == 'workflow_dispatch'")
+			assert.Contains(t, content, "if: github.event_name == 'workflow_dispatch'")
 		}
 	})
 

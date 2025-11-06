@@ -74,7 +74,7 @@ jobs:
   # When called from release.yaml, skip this job as webkit artifact is already uploaded
   setup-webkit:
     runs-on: ubuntu-latest
-    if: {{ ghVar "github.event_name" }} == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     outputs:
       version: {{ ghVar "steps.version.outputs.version" }}
     steps:
@@ -114,7 +114,7 @@ jobs:
   # Deploy {{ .Title }} Container App
   deploy-{{ .Name }}:
     runs-on: ubuntu-latest
-    if: {{ ghVar "github.event.inputs.app_name" }} == '{{ .Name }}'
+    if: github.event.inputs.app_name == '{{ .Name }}'
     environment:
       name: production-{{ .Name }}
       {{- if .PrimaryDomain }}
@@ -174,7 +174,7 @@ jobs:
   deploy-{{ .Name }}:
     runs-on: ubuntu-latest
     needs: [setup-webkit]
-    if: {{ ghVar "github.event.inputs.app_name" }} == '{{ .Name }}' && ({{ ghVar "github.event_name" }} == 'workflow_dispatch' || needs.setup-webkit.result == 'skipped')
+    if: github.event.inputs.app_name == '{{ .Name }}' && (github.event_name == 'workflow_dispatch' || needs.setup-webkit.result == 'skipped')
     environment:
       name: production-{{ .Name }}
       {{- if .PrimaryDomain }}
