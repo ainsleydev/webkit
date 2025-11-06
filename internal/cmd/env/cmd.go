@@ -61,10 +61,7 @@ func writeMapToFile(args writeArgs) error {
 
 	// Use custom marshaller that doesn't quote unnecessarily
 	// This prevents Docker Swarm from including quotes in the actual env var values
-	buf, err := marshalEnvWithoutQuotes(envMap)
-	if err != nil {
-		return err
-	}
+	buf := marshalEnvWithoutQuotes(envMap)
 
 	var envPath string
 	if args.CustomOutputPath != "" {
@@ -78,7 +75,7 @@ func writeMapToFile(args writeArgs) error {
 	}
 
 	outputDir := filepath.Dir(envPath)
-	err = args.Input.FS.MkdirAll(outputDir, os.ModePerm)
+	err := args.Input.FS.MkdirAll(outputDir, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -133,7 +130,7 @@ func fetchTerraformOutputs(
 // marshalEnvWithoutQuotes marshals environment variables without adding quotes.
 // This is necessary for Docker Swarm env_files which don't strip quotes like docker-compose does.
 // Only adds quotes when the value contains spaces, newlines, or is empty.
-func marshalEnvWithoutQuotes(envMap map[string]string) (string, error) {
+func marshalEnvWithoutQuotes(envMap map[string]string) string {
 	var builder strings.Builder
 	for key, value := range envMap {
 		// Only quote if value contains spaces, newlines, or is empty
@@ -146,5 +143,5 @@ func marshalEnvWithoutQuotes(envMap map[string]string) (string, error) {
 			builder.WriteString(fmt.Sprintf("%s=%s\n", key, value))
 		}
 	}
-	return builder.String(), nil
+	return builder.String()
 }

@@ -147,11 +147,9 @@ func TestMarshalEnvWithoutQuotes(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, err := marshalEnvWithoutQuotes(test.input)
-			require.NoError(t, err)
-
+			got := marshalEnvWithoutQuotes(test.input)
 			for key, expectedLine := range test.want {
-				assert.Contains(t, result, expectedLine,
+				assert.Contains(t, got, expectedLine,
 					fmt.Sprintf("Expected %s to be formatted as: %s", key, expectedLine))
 			}
 		})
