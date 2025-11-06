@@ -23,10 +23,12 @@ resource "digitalocean_droplet" "this" {
   region = var.droplet_region
   tags   = var.tags
 
-  ssh_keys = concat(
+  # Sort to ensure deterministic ordering across Terraform runs
+  # Without sort(), for_each iteration order is not guaranteed
+  ssh_keys = sort(concat(
     [for k in data.digitalocean_ssh_key.this : k.id],
     [digitalocean_ssh_key.this.id]
-  )
+  ))
 
   lifecycle {
     create_before_destroy = true
