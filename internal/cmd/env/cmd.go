@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"github.com/spf13/cast"
 	"github.com/urfave/cli/v3"
@@ -49,8 +48,6 @@ type writeArgs struct {
 	IsScaffold       bool
 	CustomOutputPath string
 }
-
-var dotEnvMarshaller = godotenv.Marshal
 
 // writeMapToFile writes environment variables to dotenv file.
 func writeMapToFile(args writeArgs) error {
