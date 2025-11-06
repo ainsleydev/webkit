@@ -1,0 +1,8 @@
+---
+# DigitalOcean Metrics Agent - Handlers
+
+- name: Restart do-agent
+  ansible.builtin.systemd:
+    name: do-agent
+    state: restarted
+  when: ansible_service_mgr == "systemd"

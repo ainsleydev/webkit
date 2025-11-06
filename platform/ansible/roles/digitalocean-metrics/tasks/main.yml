@@ -1,0 +1,83 @@
+---
+# DigitalOcean Metrics Agent Installation
+
+- name: Check if running on DigitalOcean
+  ansible.builtin.uri:
+    url: http://169.254.169.254/metadata/v1/id
+    timeout: 2
+    status_code: [200, -1]
+  register: do_metadata_check
+  failed_when: false
+  changed_when: false
+
+- name: Set DigitalOcean detection fact
+  ansible.builtin.set_fact:
+    is_digitalocean: "{{ do_metadata_check.status == 200 }}"
+
+- name: Skip metrics agent installation (not on DigitalOcean)
+  ansible.builtin.debug:
+    msg: "Skipping DigitalOcean metrics agent installation - not running on DigitalOcean"
+  when: not is_digitalocean
+
+- name: Check if do-agent is already installed
+  ansible.builtin.systemd:
+    name: do-agent
+  register: do_agent_status
+  failed_when: false
+  changed_when: false
+  when: is_digitalocean
+
+- name: Download metrics agent installation script
+  ansible.builtin.get_url:
+    url: "{{ do_metrics_install_url }}"
+    dest: /tmp/do-agent-install.sh
+    mode: '0755'
+    timeout: 30
+  register: download_result
+  retries: 3
+  delay: 2
+  until: download_result is succeeded
+  when:
+    - is_digitalocean
+    - do_agent_status.status is not defined or do_agent_status.status.ActiveState != "active"
+
+- name: Install DigitalOcean metrics agent
+  ansible.builtin.shell: |
+    bash /tmp/do-agent-install.sh
+  args:
+    creates: /opt/digitalocean/bin/do-agent
+  register: agent_install
+  when:
+    - is_digitalocean
+    - do_agent_status.status is not defined or do_agent_status.status.ActiveState != "active"
+
+- name: Remove installation script
+  ansible.builtin.file:
+    path: /tmp/do-agent-install.sh
+    state: absent
+  when:
+    - is_digitalocean
+    - download_result is succeeded
+
+- name: Ensure do-agent service is started and enabled
+  ansible.builtin.systemd:
+    name: do-agent
+    state: started
+    enabled: true
+  when:
+    - is_digitalocean
+    - do_metrics_start_service
+
+- name: Verify do-agent is running
+  ansible.builtin.command: systemctl is-active do-agent
+  register: agent_active
+  changed_when: false
+  failed_when: agent_active.rc != 0
+  when:
+    - is_digitalocean
+    - do_metrics_verify_installation
+
+- name: Display metrics agent status
+  ansible.builtin.debug:
+    msg: "DigitalOcean metrics agent is {{ 'installed and running' if is_digitalocean and agent_active is defined and agent_active.rc == 0 else 'not applicable (not on DigitalOcean)' }}"
+  when: is_digitalocean or not is_digitalocean

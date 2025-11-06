@@ -1,0 +1,11 @@
+---
+# DigitalOcean Metrics Agent - Default Variables
+
+# Installation script URL
+do_metrics_install_url: "https://repos.insights.digitalocean.com/install.sh"
+
+# Verify installation after completion
+do_metrics_verify_installation: true
+
+# Start service after installation
+do_metrics_start_service: true
