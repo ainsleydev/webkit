@@ -186,7 +186,7 @@ resource "github_actions_secret" "resource_outputs" {
 # Create the project and assign all DigitalOcean resources to it.
 # Only includes resources where platform_provider is "digitalocean".
 resource "digitalocean_project" "this" {
-  name        = var.project_name
+  name        = var.project_title
   description = var.project_description
   purpose     = "Web Application"
   environment = title(var.environment)

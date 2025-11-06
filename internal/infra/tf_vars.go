@@ -24,6 +24,7 @@ type (
 	// that will be written to webkit.auto.tfvars.json
 	tfVars struct {
 		ProjectName        string         `json:"project_name"`
+		ProjectTitle       string         `json:"project_title"`
 		ProjectDescription string         `json:"project_description"`
 		Environment        string         `json:"environment"`
 		GithubConfig       tfGithubConfig `json:"github_config"`
@@ -82,6 +83,7 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 
 	vars := tfVars{
 		ProjectName:        t.appDef.Project.Name,
+		ProjectTitle:       t.appDef.Project.Title,
 		ProjectDescription: t.appDef.Project.Description,
 		Environment:        env.String(),
 		Apps:               make([]tfApp, 0, len(t.appDef.Apps)),

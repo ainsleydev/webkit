@@ -8,6 +8,16 @@ variable "project_name" {
   }
 }
 
+variable "project_title" {
+  type        = string
+  description = "Human-readable title of the project"
+
+  validation {
+    condition     = length(var.project_title) > 0
+    error_message = "The project_title variable is required and cannot be empty."
+  }
+}
+
 variable "project_description" {
   type        = string
   description = "Description of the project"

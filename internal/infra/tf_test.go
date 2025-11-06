@@ -176,7 +176,8 @@ func TestTerraform_Plan(t *testing.T) {
 
 	appDef := &appdef.Definition{
 		Project: appdef.Project{
-			Name: "project",
+			Name:  "project",
+			Title: "Project",
 			Repo: appdef.GitHubRepo{
 				Owner: "ainsley-dev",
 				Name:  "project",
@@ -339,7 +340,8 @@ func TestTerraform_Apply(t *testing.T) {
 	// a shitload. Let's mock it instead.
 	appDef := &appdef.Definition{
 		Project: appdef.Project{
-			Name: "project",
+			Name:  "project",
+			Title: "Project",
 			Repo: appdef.GitHubRepo{
 				Owner: "ainsley-dev",
 				Name:  "project",
@@ -405,7 +407,8 @@ func TestTerraform_Destroy(t *testing.T) {
 
 	appDef := &appdef.Definition{
 		Project: appdef.Project{
-			Name: "project",
+			Name:  "project",
+			Title: "Project",
 			Repo: appdef.GitHubRepo{
 				Owner: "ainsley-dev",
 				Name:  "project",
@@ -486,7 +489,8 @@ func TestTerraform_Destroy(t *testing.T) {
 func TestTerraform_Output(t *testing.T) {
 	appDef := &appdef.Definition{
 		Project: appdef.Project{
-			Name: "project",
+			Name:  "project",
+			Title: "Project",
 			Repo: appdef.GitHubRepo{
 				Owner: "ainsley-dev",
 				Name:  "project",
