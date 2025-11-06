@@ -71,20 +71,20 @@ jobs:
           name: webkit
           path: webkit
           if-no-files-found: error
-  # Route to DigitalOcean VM deployment workflow
+  # Route to VM deployment workflow
   deploy-vm:
     needs: [setup-webkit]
     if: github.event.inputs.app_name == 'cms'
-    uses: ./.github/workflows/deploy-digitalocean-vm.yaml
+    uses: ./.github/workflows/deploy-vm.yaml
     with:
       app_name: ${{ github.event.inputs.app_name }}
       image_tag: ${{ github.event.inputs.image_tag }}
       webkit_version: ${{ needs.setup-webkit.outputs.version }}
     secrets: inherit
-  # Route to DigitalOcean Container deployment workflow
+  # Route to Container deployment workflow
   deploy-container:
     if: github.event.inputs.app_name == 'web'
-    uses: ./.github/workflows/deploy-digitalocean-container.yaml
+    uses: ./.github/workflows/deploy-container.yaml
     with:
       app_name: ${{ github.event.inputs.app_name }}
       image_tag: ${{ github.event.inputs.image_tag }}

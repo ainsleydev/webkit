@@ -88,11 +88,11 @@ jobs:
 {{- end }}
 
 {{- if gt (len $vmApps) 0 }}
-  # Route to DigitalOcean VM deployment workflow
+  # Route to VM deployment workflow
   deploy-vm:
     needs: [setup-webkit]
     if: {{ range $i, $name := $vmApps }}{{ if $i }} || {{ end }}github.event.inputs.app_name == '{{ $name }}'{{ end }}
-    uses: ./.github/workflows/deploy-digitalocean-vm.yaml
+    uses: ./.github/workflows/deploy-vm.yaml
     with:
       app_name: {{ ghVar "github.event.inputs.app_name" }}
       image_tag: {{ ghVar "github.event.inputs.image_tag" }}
@@ -101,10 +101,10 @@ jobs:
 {{- end }}
 
 {{- if gt (len $containerApps) 0 }}
-  # Route to DigitalOcean Container deployment workflow
+  # Route to Container deployment workflow
   deploy-container:
     if: {{ range $i, $name := $containerApps }}{{ if $i }} || {{ end }}github.event.inputs.app_name == '{{ $name }}'{{ end }}
-    uses: ./.github/workflows/deploy-digitalocean-container.yaml
+    uses: ./.github/workflows/deploy-container.yaml
     with:
       app_name: {{ ghVar "github.event.inputs.app_name" }}
       image_tag: {{ ghVar "github.event.inputs.image_tag" }}

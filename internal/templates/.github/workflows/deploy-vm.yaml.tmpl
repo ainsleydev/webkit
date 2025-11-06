@@ -1,27 +1,6 @@
-name: Deploy DigitalOcean VM
+name: Deploy VM
 
 on:
-  workflow_dispatch:
-    inputs:
-      app_name:
-        description: 'Application to deploy'
-        required: true
-        type: choice
-        options:
-{{- range .Apps }}
-{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "vm") }}
-          - {{ .Name }}
-{{- end }}
-{{- end }}
-      image_tag:
-        description: 'Image tag to deploy (e.g., sha-abc123 or latest)'
-        required: false
-        type: string
-        default: 'latest'
-      webkit_version:
-        description: 'WebKit version (defaults to version in app.json)'
-        required: false
-        type: string
   workflow_call:
     inputs:
       app_name:

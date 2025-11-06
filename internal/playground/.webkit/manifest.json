@@ -1,6 +1,6 @@
 {
 	"version": "v0.0.35",
-	"generated_at": "2025-11-06T18:50:54.624161Z",
+	"generated_at": "2025-11-06T19:05:31.065756Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -70,25 +70,25 @@
 			"path": ".github/workflows/deploy-app.yaml",
 			"generator": "cicd:DeployAppWorkflow",
 			"source": "app:web",
-			"hash": "40493543ff13340bcb23b83e0f487dbfe6a3e24911f90b9469f7076c0bace3ce",
+			"hash": "0b7861a5aee4d1817ea1a704489e547eec1c13e130249ba5ab15b87f5f00f2ca",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T18:49:04.972189Z"
+			"generated_at": "2025-11-06T19:05:31.06302Z"
 		},
-		".github/workflows/deploy-digitalocean-container.yaml": {
-			"path": ".github/workflows/deploy-digitalocean-container.yaml",
-			"generator": "cicd:DeployDigitalOceanContainerWorkflow",
+		".github/workflows/deploy-container.yaml": {
+			"path": ".github/workflows/deploy-container.yaml",
+			"generator": "cicd:DeployContainerWorkflow",
 			"source": "app:web",
-			"hash": "e9e764c90faad8bede603f3faefa75642f82687a50cb11d4bde114c965429a49",
+			"hash": "95a64ef29ce67af92b67b6605407c8218f3eb249dfee91cfa19f06d5547b886e",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T18:50:54.621878Z"
+			"generated_at": "2025-11-06T19:05:31.063971Z"
 		},
-		".github/workflows/deploy-digitalocean-vm.yaml": {
-			"path": ".github/workflows/deploy-digitalocean-vm.yaml",
-			"generator": "cicd:DeployDigitalOceanVMWorkflow",
+		".github/workflows/deploy-vm.yaml": {
+			"path": ".github/workflows/deploy-vm.yaml",
+			"generator": "cicd:DeployVMWorkflow",
 			"source": "app:cms",
-			"hash": "9c9ccfa295b6520d346269db14bef5644a9bcef9b6eb384746083b2562f36df2",
+			"hash": "77eb6061bc82bfa64087280ea31c02a2b1f22b4bcf02c9d2d667d95c19cb9b3d",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T18:50:54.621205Z"
+			"generated_at": "2025-11-06T19:05:31.063638Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
@@ -102,9 +102,9 @@
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "f075803d16d8c356a8050018f403347d5d43d986b7a9747659855b31a4820bfd",
+			"hash": "05df0e0081a8e544de04ca9fe7bb5294c11ab5192bf2da8b182545232cb63555",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T18:49:04.971027Z"
+			"generated_at": "2025-11-06T19:05:31.06277Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",

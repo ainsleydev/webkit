@@ -124,10 +124,10 @@ jobs:
 {{- range .Apps }}
 {{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "vm") }}
 
-  # Deploy {{ .Title }} to DigitalOcean VM
+  # Deploy {{ .Title }} to VM
   deploy-{{ .Name }}:
     needs: [build-and-push, setup-webkit]
-    uses: ./.github/workflows/deploy-digitalocean-vm.yaml
+    uses: ./.github/workflows/deploy-vm.yaml
     with:
       app_name: {{ .Name }}
       image_tag: sha-{{ ghVar "github.sha" }}
@@ -135,10 +135,10 @@ jobs:
     secrets: inherit
 {{- else if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "container") }}
 
-  # Deploy {{ .Title }} to DigitalOcean App Platform
+  # Deploy {{ .Title }} to Container
   deploy-{{ .Name }}:
     needs: [build-and-push]
-    uses: ./.github/workflows/deploy-digitalocean-container.yaml
+    uses: ./.github/workflows/deploy-container.yaml
     with:
       app_name: {{ .Name }}
       image_tag: sha-{{ ghVar "github.sha" }}

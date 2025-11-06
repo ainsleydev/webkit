@@ -126,20 +126,20 @@ jobs:
           min-versions-to-keep: 5
           delete-only-untagged-versions: false
 
-  # Deploy CMS to DigitalOcean VM
+  # Deploy CMS to VM
   deploy-cms:
     needs: [build-and-push, setup-webkit]
-    uses: ./.github/workflows/deploy-digitalocean-vm.yaml
+    uses: ./.github/workflows/deploy-vm.yaml
     with:
       app_name: cms
       image_tag: sha-${{ github.sha }}
       webkit_version: ${{ needs.setup-webkit.outputs.version }}
     secrets: inherit
 
-  # Deploy Web to DigitalOcean App Platform
+  # Deploy Web to Container
   deploy-web:
     needs: [build-and-push]
-    uses: ./.github/workflows/deploy-digitalocean-container.yaml
+    uses: ./.github/workflows/deploy-container.yaml
     with:
       app_name: web
       image_tag: sha-${{ github.sha }}

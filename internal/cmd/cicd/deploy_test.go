@@ -118,7 +118,7 @@ func TestDeployAppWorkflow(t *testing.T) {
 		t.Log("Router job for container deployment")
 		{
 			assert.Contains(t, content, "deploy-container:")
-			assert.Contains(t, content, "uses: ./.github/workflows/deploy-digitalocean-container.yaml")
+			assert.Contains(t, content, "uses: ./.github/workflows/deploy-container.yaml")
 			assert.Contains(t, content, "app_name: ${{ github.event.inputs.app_name }}")
 		}
 
@@ -197,7 +197,7 @@ func TestDeployAppWorkflow(t *testing.T) {
 		t.Log("Router job for VM deployment")
 		{
 			assert.Contains(t, content, "deploy-vm:")
-			assert.Contains(t, content, "uses: ./.github/workflows/deploy-digitalocean-vm.yaml")
+			assert.Contains(t, content, "uses: ./.github/workflows/deploy-vm.yaml")
 			assert.Contains(t, content, "webkit_version: ${{ needs.setup-webkit.outputs.version }}")
 		}
 
@@ -280,14 +280,14 @@ func TestDeployAppWorkflow(t *testing.T) {
 		t.Log("Router job for container deployments")
 		{
 			assert.Contains(t, content, "deploy-container:")
-			assert.Contains(t, content, "uses: ./.github/workflows/deploy-digitalocean-container.yaml")
+			assert.Contains(t, content, "uses: ./.github/workflows/deploy-container.yaml")
 			assert.Contains(t, content, "if: github.event.inputs.app_name == 'web' || github.event.inputs.app_name == 'api'")
 		}
 
 		t.Log("Router job for VM deployments")
 		{
 			assert.Contains(t, content, "deploy-vm:")
-			assert.Contains(t, content, "uses: ./.github/workflows/deploy-digitalocean-vm.yaml")
+			assert.Contains(t, content, "uses: ./.github/workflows/deploy-vm.yaml")
 			assert.Contains(t, content, "if: github.event.inputs.app_name == 'cms'")
 		}
 
