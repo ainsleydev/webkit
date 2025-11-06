@@ -1,0 +1,105 @@
+name: Deploy DigitalOcean Container
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'Application to deploy'
+        required: true
+        type: choice
+        options:
+{{- range .Apps }}
+{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "container") }}
+          - {{ .Name }}
+{{- end }}
+{{- end }}
+      image_tag:
+        description: 'Image tag to deploy (e.g., sha-abc123 or latest)'
+        required: false
+        type: string
+        default: 'latest'
+  workflow_call:
+    inputs:
+      app_name:
+        description: 'Application to deploy'
+        required: true
+        type: string
+      image_tag:
+        description: 'Image tag to deploy (e.g., sha-abc123 or latest)'
+        required: false
+        type: string
+        default: 'latest'
+    secrets:
+      REPO_DO_ACCESS_TOKEN:
+        required: false
+      ORG_DO_ACCESS_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+  packages: read
+
+# Prevent concurrent deployments for the same app.
+concurrency:
+  group: deploy-do-container-{{ ghVar "github.event.inputs.app_name || inputs.app_name" }}-{{ ghVar "github.ref" }}
+  cancel-in-progress: true
+
+jobs:
+{{- range .Apps }}
+{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "container") }}
+  # Deploy {{ .Title }} to DigitalOcean App Platform
+  deploy-{{ .Name }}:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.app_name == '{{ .Name }}' || inputs.app_name == '{{ .Name }}'
+    environment:
+      name: production-{{ .Name }}
+      {{- if .PrimaryDomain }}
+      url: https://{{ .PrimaryDomain }}
+      {{- end }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Set DO Token
+        id: do-token
+        shell: bash
+        run: |
+          # Use repo-level token if available, otherwise use org-level token.
+          if [ -n "{{ ghSecret "REPO_DO_ACCESS_TOKEN" }}" ]; then
+            echo "token={{ ghSecret "REPO_DO_ACCESS_TOKEN" }}" >> $GITHUB_OUTPUT
+            echo "Using repository-level DigitalOcean token"
+          elif [ -n "{{ ghSecret "ORG_DO_ACCESS_TOKEN" }}" ]; then
+            echo "token={{ ghSecret "ORG_DO_ACCESS_TOKEN" }}" >> $GITHUB_OUTPUT
+            echo "Using organization-level DigitalOcean token"
+          else
+            echo "Error: No DigitalOcean access token available"
+            exit 1
+          fi
+
+      - name: Deploy {{ .Title }} to DigitalOcean App Platform
+        shell: bash
+        env:
+          DO_API_TOKEN: {{ ghVar "steps.do-token.outputs.token" }}
+          APP_ID: {{ ghSecret (printf "DO_APP_%s_ID" (.Name | upper | replace "-" "_")) }}
+        run: |
+          # Get the app ID for {{ .Name }}.
+          echo "Deploying {{ .Name }} with image tag {{ ghVar "inputs.image_tag" }}"
+
+          # Trigger deployment for the app.
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $DO_API_TOKEN" \
+            -d '{
+              "force_build": false,
+              "image": {
+                "registry_type": "GHCR",
+                "registry": "ghcr.io",
+                "repository": "{{ ghVar "github.repository" }}/{{ ghVar "github.event.repository.name" }}-{{ .Name }}",
+                "tag": "{{ ghVar "inputs.image_tag" }}"
+              }
+            }' \
+            "https://api.digitalocean.com/v2/apps/$APP_ID/deployments"
+
+          echo "Deployment triggered for {{ .Name }}"
+{{- end }}
+{{- end }}

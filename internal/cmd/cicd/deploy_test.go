@@ -101,7 +101,6 @@ func TestDeployAppWorkflow(t *testing.T) {
 		{
 			assert.Contains(t, content, "name: Deploy App")
 			assert.Contains(t, content, "workflow_dispatch:")
-			assert.Contains(t, content, "workflow_call:")
 		}
 
 		t.Log("Inputs")
@@ -116,16 +115,21 @@ func TestDeployAppWorkflow(t *testing.T) {
 			assert.Contains(t, content, "- web")
 		}
 
-		t.Log("Container deploy job")
+		t.Log("Router job for container deployment")
 		{
-			assert.Contains(t, content, "deploy-web:")
-			assert.Contains(t, content, "Deploy Web Container App")
-			assert.Contains(t, content, "curl -X POST")
-			assert.Contains(t, content, "api.digitalocean.com/v2/apps")
+			assert.Contains(t, content, "deploy-container:")
+			assert.Contains(t, content, "uses: ./.github/workflows/deploy-digitalocean-container.yaml")
+			assert.Contains(t, content, "app_name: ${{ github.event.inputs.app_name }}")
 		}
 
-		t.Log("No VM-specific content")
+		t.Log("No setup-webkit job for container-only apps")
 		{
+			assert.NotContains(t, content, "setup-webkit:")
+		}
+
+		t.Log("No direct deployment logic (router pattern)")
+		{
+			assert.NotContains(t, content, "curl -X POST")
 			assert.NotContains(t, content, "dawidd6/action-ansible-playbook")
 		}
 	})
@@ -169,7 +173,6 @@ func TestDeployAppWorkflow(t *testing.T) {
 		{
 			assert.Contains(t, content, "name: Deploy App")
 			assert.Contains(t, content, "workflow_dispatch:")
-			assert.Contains(t, content, "workflow_call:")
 		}
 
 		t.Log("Inputs")
@@ -185,17 +188,22 @@ func TestDeployAppWorkflow(t *testing.T) {
 			assert.Contains(t, content, "- cms")
 		}
 
-		t.Log("Setup and deploy jobs")
+		t.Log("Setup webkit job for VM apps")
 		{
 			assert.Contains(t, content, "setup-webkit:")
-			assert.Contains(t, content, "deploy-cms:")
-			assert.Contains(t, content, "Deploy Cms VM App")
-			assert.Contains(t, content, "uses: dawidd6/action-ansible-playbook@v4")
+			assert.Contains(t, content, "if: github.event.inputs.app_name == 'cms'")
 		}
 
-		t.Log("Conditional setup-webkit")
+		t.Log("Router job for VM deployment")
 		{
-			assert.Contains(t, content, "if: github.event_name == 'workflow_dispatch'")
+			assert.Contains(t, content, "deploy-vm:")
+			assert.Contains(t, content, "uses: ./.github/workflows/deploy-digitalocean-vm.yaml")
+			assert.Contains(t, content, "webkit_version: ${{ needs.setup-webkit.outputs.version }}")
+		}
+
+		t.Log("No direct deployment logic (router pattern)")
+		{
+			assert.NotContains(t, content, "dawidd6/action-ansible-playbook@v4")
 		}
 	})
 
@@ -269,26 +277,30 @@ func TestDeployAppWorkflow(t *testing.T) {
 			assert.Contains(t, content, "- api")
 		}
 
-		t.Log("Container deploy jobs")
+		t.Log("Router job for container deployments")
 		{
-			assert.Contains(t, content, "deploy-web:")
-			assert.Contains(t, content, "deploy-api:")
-			assert.Contains(t, content, "Deploy Web Container App")
-			assert.Contains(t, content, "Deploy Api Container App")
-			assert.Contains(t, content, "curl -X POST")
-			assert.Contains(t, content, "api.digitalocean.com/v2/apps")
+			assert.Contains(t, content, "deploy-container:")
+			assert.Contains(t, content, "uses: ./.github/workflows/deploy-digitalocean-container.yaml")
+			assert.Contains(t, content, "if: github.event.inputs.app_name == 'web' || github.event.inputs.app_name == 'api'")
 		}
 
-		t.Log("VM deploy jobs")
+		t.Log("Router job for VM deployments")
 		{
-			assert.Contains(t, content, "deploy-cms:")
-			assert.Contains(t, content, "Deploy Cms VM App")
-			assert.Contains(t, content, "uses: dawidd6/action-ansible-playbook@v4")
+			assert.Contains(t, content, "deploy-vm:")
+			assert.Contains(t, content, "uses: ./.github/workflows/deploy-digitalocean-vm.yaml")
+			assert.Contains(t, content, "if: github.event.inputs.app_name == 'cms'")
 		}
 
-		t.Log("Setup webkit job exists")
+		t.Log("Setup webkit job exists for VM apps")
 		{
 			assert.Contains(t, content, "setup-webkit:")
+			assert.Contains(t, content, "if: github.event.inputs.app_name == 'cms'")
+		}
+
+		t.Log("No direct deployment logic (router pattern)")
+		{
+			assert.NotContains(t, content, "curl -X POST")
+			assert.NotContains(t, content, "dawidd6/action-ansible-playbook@v4")
 		}
 	})
 

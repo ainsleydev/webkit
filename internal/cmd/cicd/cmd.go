@@ -16,6 +16,8 @@ var Command = &cli.Command{
 		ActionsCmd,
 		BackupCmd,
 		DeployAppCmd,
+		DeployDigitalOceanVMCmd,
+		DeployDigitalOceanContainerCmd,
 		PRCmd,
 		ReleaseCmd,
 		VMMaintenanceCmd,
