@@ -12,7 +12,7 @@ module "do_droplet" {
   name           = "${var.project_name}-${var.name}"
   droplet_size   = try(var.platform_config.size, "s-1vcpu-1gb")
   droplet_region = try(var.platform_config.region, "lon1")
-  ssh_keys       = try(var.ssh_keys, [])
+  ssh_key_ids    = var.do_ssh_key_ids
   tags           = try(var.tags, [])
   server_user    = var.server_user
 }

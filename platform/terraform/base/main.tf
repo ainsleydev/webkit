@@ -68,6 +68,33 @@ locals {
 }
 
 #
+# SSH Keys
+# Lookup personal SSH keys at plan time to avoid deferred reads
+# Data sources are evaluated here (outside modules) to prevent deferred reads
+#
+
+# Determine which providers are actually being used for VMs
+locals {
+  uses_digitalocean_vms = anytrue([for a in var.apps : a.platform_provider == "digitalocean" && a.platform_type == "vm"])
+  # Future providers can be added here:
+  # uses_hetzner_vms = anytrue([for a in var.apps : a.platform_provider == "hetzner" && a.platform_type == "vm"])
+}
+
+# DigitalOcean SSH Keys (only lookup if DO VMs are in use)
+data "digitalocean_ssh_key" "personal_keys" {
+  for_each = local.uses_digitalocean_vms ? toset(var.ssh_keys) : toset([])
+  name     = each.value
+}
+
+locals {
+  # Provider-specific SSH key ID lists
+  do_ssh_key_ids = [for k in data.digitalocean_ssh_key.personal_keys : k.id]
+
+  # Future providers:
+  # hetzner_ssh_key_ids = [for k in data.hcloud_ssh_key.personal_keys : k.id]
+}
+
+#
 # Default B2 Bucket (always provisioned for every project)
 #
 module "default_b2_bucket" {
@@ -114,7 +141,7 @@ module "apps" {
     repo  = var.github_config.repo
     token = var.github_token_classic
   }
-  ssh_keys = try(var.ssh_keys, [])
+  do_ssh_key_ids = local.do_ssh_key_ids
   domains = try(each.value.domains, [])
   env_vars = try(each.value.env_vars, [])
   tags = local.common_tags
@@ -185,14 +212,21 @@ resource "github_actions_secret" "resource_outputs" {
 #
 # Create the project and assign all DigitalOcean resources to it.
 # Only includes resources where platform_provider is "digitalocean".
+#
+# Important: We use direct URN references (not try/compact) to maintain a static
+# list structure. This allows Terraform to properly track changes even when URN
+# values are unknown at plan time, preventing the two-apply cycle.
 resource "digitalocean_project" "this" {
   name        = var.project_title
   description = var.project_description
   purpose     = "Web Application"
   environment = title(var.environment)
+
+  # Direct references maintain static list structure even with unknown URN values
+  resources = concat(
+    [for r in module.resources : r.urn if r.platform_provider == "digitalocean"],
+    [for a in module.apps : a.urn if a.platform_provider == "digitalocean"]
+  )
+
   depends_on = [module.resources, module.apps]
-  resources = compact(concat(
-    [for r in module.resources : r.platform_provider == "digitalocean" ? try(r.urn, "") : ""],
-    [for a in module.apps : a.platform_provider == "digitalocean" ? try(a.urn, "") : ""]
-  ))
 }
