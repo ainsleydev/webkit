@@ -143,6 +143,14 @@
         msg: 'Environment file was not created at {{ env_file_path }}. Check that app.json and secrets exist in /etc/webkit or that env_file_source_path was provided'
       when: not env_file_stat.stat.exists
 
+    - name: Ensure NODE_ENV is set in env file
+      lineinfile:
+        path: '{{ env_file_path }}'
+        regexp: '^NODE_ENV='
+        line: 'NODE_ENV={{ env_name }}'
+        create: no
+      when: env_name is defined
+
     - name: Debug image tag
       debug:
         msg: 'Deploying image: ghcr.io/{{ github_user }}/{{ docker_image }}:{{ docker_image_tag }}'
