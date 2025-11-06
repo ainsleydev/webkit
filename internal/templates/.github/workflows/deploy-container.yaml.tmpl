@@ -1,0 +1,67 @@
+name: Deploy Container App
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'Application to deploy'
+        required: true
+        type: choice
+        options:
+{{- range .Apps }}
+          - {{ .Name }}
+{{- end }}
+      image_tag:
+        description: 'Image tag to deploy (e.g., sha-abc123 or latest)'
+        required: false
+        type: string
+        default: 'latest'
+  workflow_call:
+    inputs:
+      app_name:
+        description: 'Application to deploy'
+        required: true
+        type: string
+      image_tag:
+        description: 'Image tag to deploy (e.g., sha-abc123 or latest)'
+        required: false
+        type: string
+        default: 'latest'
+    secrets:
+      REPO_DO_ACCESS_TOKEN:
+        required: false
+      ORG_DO_ACCESS_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+  packages: read
+
+# Prevent concurrent deployments.
+concurrency:
+  group: deploy-container-{{ ghVar "github.event.inputs.app_name" }}-{{ ghVar "github.ref" }}
+  cancel-in-progress: true
+
+jobs:
+{{- range .Apps }}
+  # Deploy {{ .Title }} to DigitalOcean App Platform
+  deploy-{{ .Name }}:
+    runs-on: ubuntu-latest
+    if: {{ ghVar "github.event.inputs.app_name" }} == '{{ .Name }}'
+    environment:
+      name: production-{{ .Name }}
+      {{- if .PrimaryDomain }}
+      url: https://{{ .PrimaryDomain }}
+      {{- end }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Deploy {{ .Title }} to DigitalOcean App Platform
+        uses: digitalocean/app_action/deploy@v2
+        env:
+          IMAGE_TAG_{{ printf "%s" .Type  | upper | replace "-" "_" }}: {{ ghVar "github.event.inputs.image_tag" }}
+        with:
+          token: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
+          app_name: '{{ ghVar "github.event.repository.name" }}-{{ .Name }}'
+{{- end }}

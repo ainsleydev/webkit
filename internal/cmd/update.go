@@ -46,6 +46,8 @@ var updateOps = []runner{
 	{files.TurboJSON, "Files: Create turbo.json"},
 	{cicd.PR, "CICD: Create PR workflows"},
 	{cicd.ReleaseWorkflow, "CICD: Create release workflow"},
+	{cicd.DeployContainerWorkflow, "CICD: Create deploy-container workflow"},
+	{cicd.DeployVMWorkflow, "CICD: Create deploy-vm workflow"},
 	{cicd.BackupWorkflow, "CICD: Create backup workflows"},
 	{cicd.VMMaintenanceWorkflow, "CICD: Create maintenance workflow"},
 	{cicd.ActionTemplates, "CICD: Create action templates"},
