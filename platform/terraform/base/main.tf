@@ -213,27 +213,20 @@ resource "github_actions_secret" "resource_outputs" {
 # Create the project and assign all DigitalOcean resources to it.
 # Only includes resources where platform_provider is "digitalocean".
 #
-# Note: We use terraform_data to capture URNs after resources are created.
-# This forces the project resource to wait for URNs to be known, preventing
-# a two-apply cycle where the project is updated separately after initial creation.
-resource "terraform_data" "digitalocean_urns" {
-  input = {
-    resource_urns = [for r in module.resources : r.platform_provider == "digitalocean" ? try(r.urn, null) : null]
-    app_urns      = [for a in module.apps : a.platform_provider == "digitalocean" ? try(a.urn, null) : null]
-  }
-}
-
+# Important: We use direct URN references (not try/compact) to maintain a static
+# list structure. This allows Terraform to properly track changes even when URN
+# values are unknown at plan time, preventing the two-apply cycle.
 resource "digitalocean_project" "this" {
   name        = var.project_name
   description = var.project_description
   purpose     = "Web Application"
   environment = title(var.environment)
 
-  # Use the terraform_data output to ensure URNs are resolved
-  resources = compact(concat(
-    [for urn in terraform_data.digitalocean_urns.output.resource_urns : urn != null ? urn : ""],
-    [for urn in terraform_data.digitalocean_urns.output.app_urns : urn != null ? urn : ""]
-  ))
+  # Direct references maintain static list structure even with unknown URN values
+  resources = concat(
+    [for r in module.resources : r.urn if r.platform_provider == "digitalocean"],
+    [for a in module.apps : a.urn if a.platform_provider == "digitalocean"]
+  )
 
-  depends_on = [terraform_data.digitalocean_urns]
+  depends_on = [module.resources, module.apps]
 }
