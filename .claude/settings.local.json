@@ -10,7 +10,6 @@
 			"Bash(pnpm lint:go:*)",
 			"Bash(cat:*)",
 			"Bash(go run:*)",
-			"Bash(git commit -m \"$(cat <<''EOF''\nfeat: Ensure NODE_ENV is always set in env file\n\nAdd a task to ensure NODE_ENV is set in the environment file based on\nthe env_name variable (production, staging, development). This prevents\nissues where applications rely on NODE_ENV to determine which database\nadapter or configuration to use.\n\nThis acts as a safety net even when NODE_ENV is defined in app.json,\nensuring it''s always present in the generated env file.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
 			"Bash(pnpm format:go:*)",
 			"Bash(git branch:*)",
 			"Bash(git commit:*)"
