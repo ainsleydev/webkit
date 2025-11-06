@@ -12,7 +12,15 @@
 			"Bash(go run:*)",
 			"Bash(pnpm format:go:*)",
 			"Bash(git branch:*)",
-			"Bash(git commit:*)"
+			"Bash(git commit:*)",
+			"Bash(pnpm build:*)",
+			"Bash(./webkit:*)",
+			"Bash(webkit:*)",
+			"Bash(sh -c 'cd /Users/ainsley.clark/Desktop/WebKit/internal/playground && webkit cicd pr')",
+			"Bash(sh -c 'webkit cicd deploy-app && webkit cicd deploy-digitalocean-vm && webkit cicd deploy-digitalocean-container')",
+			"Bash(sh -c 'cd internal/playground && /Users/ainsley.clark/go/bin/webkit update')",
+			"Bash(find:*)",
+			"Bash(git mv:*)"
 		],
 		"deny": [],
 		"ask": []
