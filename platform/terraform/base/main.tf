@@ -82,7 +82,7 @@ locals {
 
 # DigitalOcean SSH Keys (only lookup if DO VMs are in use)
 data "digitalocean_ssh_key" "personal_keys" {
-  for_each = local.uses_digitalocean_vms ? toset(var.ssh_keys) : []
+  for_each = local.uses_digitalocean_vms ? toset(var.ssh_keys) : toset([])
   name     = each.value
 }
 
