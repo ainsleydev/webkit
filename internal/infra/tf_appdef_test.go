@@ -18,7 +18,8 @@ func TestTerraform_Resources(t *testing.T) {
 
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
-				Name: "project",
+				Name:  "project",
+				Title: "Project",
 				Repo: appdef.GitHubRepo{
 					Owner: "ainsley-dev",
 					Name:  "project",
@@ -163,7 +164,8 @@ func TestTerraform_Resources(t *testing.T) {
 
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
-				Name: "project",
+				Name:  "project",
+				Title: "Project",
 				Repo: appdef.GitHubRepo{
 					Owner: "ainsley-dev",
 					Name:  "project",
@@ -302,7 +304,8 @@ func TestTerraform_Resources(t *testing.T) {
 func TestTerraform_DefaultB2Bucket(t *testing.T) {
 	appDef := &appdef.Definition{
 		Project: appdef.Project{
-			Name: "project",
+			Name:  "project",
+			Title: "Project",
 			Repo: appdef.GitHubRepo{
 				Owner: "ainsley-dev",
 				Name:  "project",
@@ -360,7 +363,8 @@ func TestTerraform_Apps(t *testing.T) {
 	t.Run("Digital Ocean - VM", func(t *testing.T) {
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
-				Name: "project",
+				Name:  "project",
+				Title: "Project",
 				Repo: appdef.GitHubRepo{
 					Owner: "ainsley-dev",
 					Name:  "project",
@@ -417,7 +421,8 @@ func TestTerraform_Apps(t *testing.T) {
 	t.Run("Digital Ocean - App", func(t *testing.T) {
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
-				Name: "project",
+				Name:  "project",
+				Title: "Project",
 				Repo: appdef.GitHubRepo{
 					Owner: "ainsley-dev",
 					Name:  "project",

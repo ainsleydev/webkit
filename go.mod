@@ -1,6 +1,6 @@
 module github.com/ainsleydev/webkit
 
-go 1.25.3
+go 1.24.7
 
 tool (
 	github.com/atombender/go-jsonschema
