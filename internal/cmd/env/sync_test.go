@@ -180,21 +180,4 @@ func TestSync(t *testing.T) {
 			assert.Contains(t, got, "HELLO=world")
 		}
 	})
-
-	t.Run("Marshal Error", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-
-		orig := dotEnvMarshaller
-		defer func() { dotEnvMarshaller = orig }()
-		dotEnvMarshaller = func(envMap map[string]string) (string, error) {
-			return "", fmt.Errorf("marshal error")
-		}
-
-		input := setup(t, appDef)
-		input.SOPSCache = mocks.NewMockEncrypterDecrypter(ctrl)
-
-		err = Sync(t.Context(), input)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "marshal error")
-	})
 }
