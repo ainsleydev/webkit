@@ -11,36 +11,23 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 )
 
-func TestDeployContainerWorkflow(t *testing.T) {
+func TestDeployAppWorkflow(t *testing.T) {
 	t.Parallel()
 
-	t.Run("No Container Apps", func(t *testing.T) {
+	t.Run("No Apps", func(t *testing.T) {
 		t.Parallel()
 
 		appDef := &appdef.Definition{
-			Apps: []appdef.App{
-				{
-					Name: "api",
-					Type: appdef.AppTypeGoLang,
-					Build: appdef.Build{
-						Dockerfile: "Dockerfile",
-						Port:       8080,
-					},
-					Infra: appdef.Infra{
-						Provider: "digitalocean",
-						Type:     "vm",
-					},
-				},
-			},
+			Apps: []appdef.App{},
 		}
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		err := DeployContainerWorkflow(t.Context(), input)
+		err := DeployAppWorkflow(t.Context(), input)
 		assert.NoError(t, err)
 
-		// No workflow should be created when no container apps exist.
-		exists, err := afero.Exists(input.FS, filepath.Join(workflowsPath, "deploy-container.yaml"))
+		// No workflow should be created when no apps exist.
+		exists, err := afero.Exists(input.FS, filepath.Join(workflowsPath, "deploy-app.yaml"))
 		assert.NoError(t, err)
 		assert.False(t, exists)
 	})
@@ -66,11 +53,11 @@ func TestDeployContainerWorkflow(t *testing.T) {
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		err := DeployContainerWorkflow(t.Context(), input)
+		err := DeployAppWorkflow(t.Context(), input)
 		assert.NoError(t, err)
 
 		// No workflow should be created when app has no Dockerfile.
-		exists, err := afero.Exists(input.FS, filepath.Join(workflowsPath, "deploy-container.yaml"))
+		exists, err := afero.Exists(input.FS, filepath.Join(workflowsPath, "deploy-app.yaml"))
 		assert.NoError(t, err)
 		assert.False(t, exists)
 	})
@@ -81,9 +68,10 @@ func TestDeployContainerWorkflow(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name: "web",
-					Type: appdef.AppTypeSvelteKit,
-					Path: "web",
+					Name:  "web",
+					Title: "Web",
+					Type:  appdef.AppTypeSvelteKit,
+					Path:  "web",
 					Build: appdef.Build{
 						Dockerfile: "Dockerfile",
 						Port:       3000,
@@ -98,10 +86,10 @@ func TestDeployContainerWorkflow(t *testing.T) {
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		err := DeployContainerWorkflow(t.Context(), input)
+		err := DeployAppWorkflow(t.Context(), input)
 		require.NoError(t, err)
 
-		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "deploy-container.yaml"))
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "deploy-app.yaml"))
 		require.NoError(t, err)
 
 		err = validateGithubYaml(t, file, false)
@@ -111,7 +99,7 @@ func TestDeployContainerWorkflow(t *testing.T) {
 
 		t.Log("Workflow metadata")
 		{
-			assert.Contains(t, content, "name: Deploy Container App")
+			assert.Contains(t, content, "name: Deploy App")
 			assert.Contains(t, content, "workflow_dispatch:")
 			assert.Contains(t, content, "workflow_call:")
 		}
@@ -128,161 +116,18 @@ func TestDeployContainerWorkflow(t *testing.T) {
 			assert.Contains(t, content, "- web")
 		}
 
-		t.Log("Deploy job")
+		t.Log("Container deploy job")
 		{
 			assert.Contains(t, content, "deploy-web:")
-			assert.Contains(t, content, "uses: digitalocean/app_action/deploy@v2")
-		}
-	})
-
-	t.Run("Multiple Container Apps", func(t *testing.T) {
-		t.Parallel()
-
-		appDef := &appdef.Definition{
-			Apps: []appdef.App{
-				{
-					Name: "web",
-					Type: appdef.AppTypeSvelteKit,
-					Path: "web",
-					Build: appdef.Build{
-						Dockerfile: "Dockerfile",
-						Port:       3000,
-					},
-					Infra: appdef.Infra{
-						Provider: "digitalocean",
-						Type:     "container",
-					},
-				},
-				{
-					Name: "api",
-					Type: appdef.AppTypeGoLang,
-					Path: "api",
-					Build: appdef.Build{
-						Dockerfile: "Dockerfile",
-						Port:       8080,
-					},
-					Infra: appdef.Infra{
-						Provider: "digitalocean",
-						Type:     "container",
-					},
-				},
-			},
+			assert.Contains(t, content, "Deploy Web Container App")
+			assert.Contains(t, content, "curl -X POST")
+			assert.Contains(t, content, "api.digitalocean.com/v2/apps")
 		}
 
-		input := setup(t, afero.NewMemMapFs(), appDef)
-
-		err := DeployContainerWorkflow(t.Context(), input)
-		require.NoError(t, err)
-
-		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "deploy-container.yaml"))
-		require.NoError(t, err)
-
-		err = validateGithubYaml(t, file, false)
-		assert.NoError(t, err)
-
-		content := string(file)
-
-		t.Log("All apps in options")
+		t.Log("No VM-specific content")
 		{
-			assert.Contains(t, content, "- web")
-			assert.Contains(t, content, "- api")
+			assert.NotContains(t, content, "dawidd6/action-ansible-playbook")
 		}
-
-		t.Log("All deploy jobs")
-		{
-			assert.Contains(t, content, "deploy-web:")
-			assert.Contains(t, content, "deploy-api:")
-		}
-	})
-
-	t.Run("FS Failure", func(t *testing.T) {
-		t.Parallel()
-
-		appDef := &appdef.Definition{
-			Apps: []appdef.App{
-				{
-					Name: "web",
-					Type: appdef.AppTypeSvelteKit,
-					Build: appdef.Build{
-						Dockerfile: "Dockerfile",
-					},
-					Infra: appdef.Infra{
-						Provider: "digitalocean",
-						Type:     "container",
-					},
-				},
-			},
-		}
-
-		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), appDef)
-
-		err := DeployContainerWorkflow(t.Context(), input)
-		assert.Error(t, err)
-	})
-}
-
-func TestDeployVMWorkflow(t *testing.T) {
-	t.Parallel()
-
-	t.Run("No VM Apps", func(t *testing.T) {
-		t.Parallel()
-
-		appDef := &appdef.Definition{
-			Apps: []appdef.App{
-				{
-					Name: "web",
-					Type: appdef.AppTypeSvelteKit,
-					Build: appdef.Build{
-						Dockerfile: "Dockerfile",
-						Port:       3000,
-					},
-					Infra: appdef.Infra{
-						Provider: "digitalocean",
-						Type:     "container",
-					},
-				},
-			},
-		}
-
-		input := setup(t, afero.NewMemMapFs(), appDef)
-
-		err := DeployVMWorkflow(t.Context(), input)
-		assert.NoError(t, err)
-
-		// No workflow should be created when no VM apps exist.
-		exists, err := afero.Exists(input.FS, filepath.Join(workflowsPath, "deploy-vm.yaml"))
-		assert.NoError(t, err)
-		assert.False(t, exists)
-	})
-
-	t.Run("App Without Dockerfile", func(t *testing.T) {
-		t.Parallel()
-
-		appDef := &appdef.Definition{
-			Apps: []appdef.App{
-				{
-					Name: "cms",
-					Type: appdef.AppTypePayload,
-					Build: appdef.Build{
-						Port: 3000,
-					},
-					Infra: appdef.Infra{
-						Provider: "digitalocean",
-						Type:     "vm",
-					},
-				},
-			},
-		}
-
-		input := setup(t, afero.NewMemMapFs(), appDef)
-
-		err := DeployVMWorkflow(t.Context(), input)
-		assert.NoError(t, err)
-
-		// No workflow should be created when app has no Dockerfile.
-		exists, err := afero.Exists(input.FS, filepath.Join(workflowsPath, "deploy-vm.yaml"))
-		assert.NoError(t, err)
-		assert.False(t, exists)
 	})
 
 	t.Run("Single VM App", func(t *testing.T) {
@@ -291,9 +136,10 @@ func TestDeployVMWorkflow(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name: "cms",
-					Type: appdef.AppTypePayload,
-					Path: "cms",
+					Name:  "cms",
+					Title: "Cms",
+					Type:  appdef.AppTypePayload,
+					Path:  "cms",
 					Build: appdef.Build{
 						Dockerfile: "Dockerfile",
 						Port:       3000,
@@ -308,10 +154,10 @@ func TestDeployVMWorkflow(t *testing.T) {
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		err := DeployVMWorkflow(t.Context(), input)
+		err := DeployAppWorkflow(t.Context(), input)
 		require.NoError(t, err)
 
-		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "deploy-vm.yaml"))
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "deploy-app.yaml"))
 		require.NoError(t, err)
 
 		err = validateGithubYaml(t, file, false)
@@ -321,7 +167,7 @@ func TestDeployVMWorkflow(t *testing.T) {
 
 		t.Log("Workflow metadata")
 		{
-			assert.Contains(t, content, "name: Deploy VM App")
+			assert.Contains(t, content, "name: Deploy App")
 			assert.Contains(t, content, "workflow_dispatch:")
 			assert.Contains(t, content, "workflow_call:")
 		}
@@ -343,32 +189,40 @@ func TestDeployVMWorkflow(t *testing.T) {
 		{
 			assert.Contains(t, content, "setup-webkit:")
 			assert.Contains(t, content, "deploy-cms:")
+			assert.Contains(t, content, "Deploy Cms VM App")
 			assert.Contains(t, content, "uses: dawidd6/action-ansible-playbook@v4")
+		}
+
+		t.Log("Conditional setup-webkit")
+		{
+			assert.Contains(t, content, "if: ${{ github.event_name }} == 'workflow_dispatch'")
 		}
 	})
 
-	t.Run("Multiple VM Apps", func(t *testing.T) {
+	t.Run("Mixed Container and VM Apps", func(t *testing.T) {
 		t.Parallel()
 
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name: "cms",
-					Type: appdef.AppTypePayload,
-					Path: "cms",
+					Name:  "web",
+					Title: "Web",
+					Type:  appdef.AppTypeSvelteKit,
+					Path:  "web",
 					Build: appdef.Build{
 						Dockerfile: "Dockerfile",
 						Port:       3000,
 					},
 					Infra: appdef.Infra{
 						Provider: "digitalocean",
-						Type:     "vm",
+						Type:     "container",
 					},
 				},
 				{
-					Name: "admin",
-					Type: appdef.AppTypePayload,
-					Path: "admin",
+					Name:  "cms",
+					Title: "Cms",
+					Type:  appdef.AppTypePayload,
+					Path:  "cms",
 					Build: appdef.Build{
 						Dockerfile: "Dockerfile",
 						Port:       3001,
@@ -378,15 +232,29 @@ func TestDeployVMWorkflow(t *testing.T) {
 						Type:     "vm",
 					},
 				},
+				{
+					Name:  "api",
+					Title: "Api",
+					Type:  appdef.AppTypeGoLang,
+					Path:  "api",
+					Build: appdef.Build{
+						Dockerfile: "Dockerfile",
+						Port:       8080,
+					},
+					Infra: appdef.Infra{
+						Provider: "digitalocean",
+						Type:     "container",
+					},
+				},
 			},
 		}
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
-		err := DeployVMWorkflow(t.Context(), input)
+		err := DeployAppWorkflow(t.Context(), input)
 		require.NoError(t, err)
 
-		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "deploy-vm.yaml"))
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "deploy-app.yaml"))
 		require.NoError(t, err)
 
 		err = validateGithubYaml(t, file, false)
@@ -396,15 +264,63 @@ func TestDeployVMWorkflow(t *testing.T) {
 
 		t.Log("All apps in options")
 		{
+			assert.Contains(t, content, "- web")
 			assert.Contains(t, content, "- cms")
-			assert.Contains(t, content, "- admin")
+			assert.Contains(t, content, "- api")
 		}
 
-		t.Log("All deploy jobs")
+		t.Log("Container deploy jobs")
+		{
+			assert.Contains(t, content, "deploy-web:")
+			assert.Contains(t, content, "deploy-api:")
+			assert.Contains(t, content, "Deploy Web Container App")
+			assert.Contains(t, content, "Deploy Api Container App")
+			assert.Contains(t, content, "curl -X POST")
+			assert.Contains(t, content, "api.digitalocean.com/v2/apps")
+		}
+
+		t.Log("VM deploy jobs")
 		{
 			assert.Contains(t, content, "deploy-cms:")
-			assert.Contains(t, content, "deploy-admin:")
+			assert.Contains(t, content, "Deploy Cms VM App")
+			assert.Contains(t, content, "uses: dawidd6/action-ansible-playbook@v4")
 		}
+
+		t.Log("Setup webkit job exists")
+		{
+			assert.Contains(t, content, "setup-webkit:")
+		}
+	})
+
+	t.Run("Non-DigitalOcean Provider", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Build: appdef.Build{
+						Dockerfile: "Dockerfile",
+						Port:       3000,
+					},
+					Infra: appdef.Infra{
+						Provider: "aws",
+						Type:     "container",
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := DeployAppWorkflow(t.Context(), input)
+		assert.NoError(t, err)
+
+		// No workflow should be created for non-DigitalOcean providers.
+		exists, err := afero.Exists(input.FS, filepath.Join(workflowsPath, "deploy-app.yaml"))
+		assert.NoError(t, err)
+		assert.False(t, exists)
 	})
 
 	t.Run("FS Failure", func(t *testing.T) {
@@ -413,14 +329,14 @@ func TestDeployVMWorkflow(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name: "cms",
-					Type: appdef.AppTypePayload,
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
 					Build: appdef.Build{
 						Dockerfile: "Dockerfile",
 					},
 					Infra: appdef.Infra{
 						Provider: "digitalocean",
-						Type:     "vm",
+						Type:     "container",
 					},
 				},
 			},
@@ -428,7 +344,7 @@ func TestDeployVMWorkflow(t *testing.T) {
 
 		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), appDef)
 
-		err := DeployVMWorkflow(t.Context(), input)
+		err := DeployAppWorkflow(t.Context(), input)
 		assert.Error(t, err)
 	})
 }

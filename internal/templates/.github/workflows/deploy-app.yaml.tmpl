@@ -1,4 +1,4 @@
-name: Deploy VM App
+name: Deploy App
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ on:
         type: string
         default: 'latest'
       webkit_version:
-        description: 'WebKit version (defaults to version in app.json)'
+        description: 'WebKit version (only for VM apps, defaults to version in app.json)'
         required: false
         type: string
   workflow_call:
@@ -32,45 +32,49 @@ on:
         type: string
         default: 'latest'
       webkit_version:
-        description: 'WebKit version'
-        required: true
+        description: 'WebKit version (only for VM apps)'
+        required: false
         type: string
     secrets:
-      ORG_AGE_SECRET:
-        required: true
+      REPO_DO_ACCESS_TOKEN:
+        required: false
       ORG_DO_ACCESS_TOKEN:
-        required: true
+        required: false
+      ORG_AGE_SECRET:
+        required: false
       ORG_DO_SPACES_ACCESS_KEY:
-        required: true
+        required: false
       ORG_DO_SPACES_SECRET_KEY:
-        required: true
+        required: false
       ORG_BACK_BLAZE_TF_BUCKET:
-        required: true
+        required: false
       ORG_BACK_BLAZE_KEY_ID:
-        required: true
+        required: false
       ORG_BACK_BLAZE_APPLICATION_KEY:
-        required: true
+        required: false
       ORG_GITHUB_TOKEN:
-        required: true
+        required: false
       ORG_GITHUB_TOKEN_CLASSIC:
-        required: true
+        required: false
 
 permissions:
   contents: read
   packages: read
 
-# Prevent concurrent deployments.
+# Prevent concurrent deployments for the same app.
 concurrency:
-  group: deploy-vm-{{ ghVar "github.event.inputs.app_name" }}-{{ ghVar "github.ref" }}
+  group: deploy-app-{{ ghVar "github.event.inputs.app_name" }}-{{ ghVar "github.ref" }}
   cancel-in-progress: true
 
 env:
   TF_VERSION: '{{ .TerraformVersion }}'
 
 jobs:
-  # Setup WebKit CLI
+  # Setup WebKit CLI (only for manual triggers or VM deployments)
+  # When called from release.yaml, skip this job as webkit artifact is already uploaded
   setup-webkit:
     runs-on: ubuntu-latest
+    if: {{ ghVar "github.event_name" }} == 'workflow_dispatch'
     outputs:
       version: {{ ghVar "steps.version.outputs.version" }}
     steps:
@@ -106,11 +110,71 @@ jobs:
           if-no-files-found: error
 
 {{- range .Apps }}
-  # Deploy {{ .Title }} to DigitalOcean VM
+{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "container") }}
+  # Deploy {{ .Title }} Container App
+  deploy-{{ .Name }}:
+    runs-on: ubuntu-latest
+    if: {{ ghVar "github.event.inputs.app_name" }} == '{{ .Name }}'
+    environment:
+      name: production-{{ .Name }}
+      {{- if .PrimaryDomain }}
+      url: https://{{ .PrimaryDomain }}
+      {{- end }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Set DO Token
+        id: do-token
+        shell: bash
+        run: |
+          # Use repo-level token if available, otherwise use org-level token.
+          if [ -n "{{ ghSecret "REPO_DO_ACCESS_TOKEN" }}" ]; then
+            echo "token={{ ghSecret "REPO_DO_ACCESS_TOKEN" }}" >> $GITHUB_OUTPUT
+            echo "Using repository-level DigitalOcean token"
+          elif [ -n "{{ ghSecret "ORG_DO_ACCESS_TOKEN" }}" ]; then
+            echo "token={{ ghSecret "ORG_DO_ACCESS_TOKEN" }}" >> $GITHUB_OUTPUT
+            echo "Using organization-level DigitalOcean token"
+          else
+            echo "Error: No DigitalOcean access token available"
+            exit 1
+          fi
+
+      - name: Deploy {{ .Title }} to DigitalOcean
+        shell: bash
+        env:
+          DO_API_TOKEN: {{ ghVar "steps.do-token.outputs.token" }}
+          APP_ID: {{ ghSecret (printf "DO_APP_%s_ID" (.Name | upper | replace "-" "_")) }}
+        run: |
+          # Get the app ID for {{ .Name }}.
+          echo "Deploying {{ .Name }} with image tag {{ ghVar "github.event.inputs.image_tag" }}"
+
+          # Trigger deployment for the app.
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $DO_API_TOKEN" \
+            -d '{
+              "force_build": false,
+              "image": {
+                "registry_type": "GHCR",
+                "registry": "ghcr.io",
+                "repository": "{{ ghVar "github.repository" }}/{{ ghVar "github.event.repository.name" }}-{{ .Name }}",
+                "tag": "{{ ghVar "github.event.inputs.image_tag" }}"
+              }
+            }' \
+            "https://api.digitalocean.com/v2/apps/$APP_ID/deployments"
+
+          echo "Deployment triggered for {{ .Name }}"
+{{- end }}
+{{- end }}
+
+{{- range .Apps }}
+{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "vm") }}
+  # Deploy {{ .Title }} VM App
   deploy-{{ .Name }}:
     runs-on: ubuntu-latest
     needs: [setup-webkit]
-    if: {{ ghVar "github.event.inputs.app_name" }} == '{{ .Name }}'
+    if: {{ ghVar "github.event.inputs.app_name" }} == '{{ .Name }}' && ({{ ghVar "github.event_name" }} == 'workflow_dispatch' || needs.setup-webkit.result == 'skipped')
     environment:
       name: production-{{ .Name }}
       {{- if .PrimaryDomain }}
@@ -124,13 +188,13 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: 'ainsleydev/webkit'
-          ref: {{ ghVar "needs.setup-webkit.outputs.version" }}
+          ref: {{ ghVar "inputs.webkit_version || needs.setup-webkit.outputs.version" }}
           path: '.webkit-repo'
 
       - name: Copy Ansible Files
         run: |
           cp -r .webkit-repo/platform/ansible ./
-          echo "Copied ansible files from WebKit {{ ghVar "needs.setup-webkit.outputs.version" }}"
+          echo "Copied ansible files from WebKit"
 
       - name: Download WebKit CLI Artifact
         uses: actions/download-artifact@v4
@@ -191,7 +255,7 @@ jobs:
             [all]
             {{ .Name }} ansible_host={{ ghSecret (printf "TF_PROD_%s_IP_ADDRESS" (.Name | upper | replace "-" "_")) }} ansible_user={{ ghSecret (printf "TF_PROD_%s_SERVER_USER" (.Name | upper | replace "-" "_")) }}
           options: |
-            -e webkit_version={{ ghVar "needs.setup-webkit.outputs.version" }}
+            -e webkit_version={{ ghVar "inputs.webkit_version || needs.setup-webkit.outputs.version" }}
             -e age_secret_key={{ ghSecret "ORG_AGE_SECRET" }}
             -e app_name={{ .Name }}
             -e env_name=production
@@ -206,4 +270,5 @@ jobs:
             -e admin_email={{ default "hello@ainsley.dev" (index .Infra.Config "admin_email") }}
             -e env_file_source_path=/tmp/{{ .Name }}.env
             -v
+{{- end }}
 {{- end }}

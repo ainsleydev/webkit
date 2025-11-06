@@ -15,8 +15,7 @@ var Command = &cli.Command{
 	Commands: []*cli.Command{
 		ActionsCmd,
 		BackupCmd,
-		DeployContainerCmd,
-		DeployVMCmd,
+		DeployAppCmd,
 		PRCmd,
 		ReleaseCmd,
 		VMMaintenanceCmd,
