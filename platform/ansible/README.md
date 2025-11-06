@@ -15,23 +15,25 @@ This directory is automatically copied to user repositories during VM deployment
 
 ```
 platform/ansible/
-├── ansible.cfg          # Ansible configuration
+├── ansible.cfg             # Ansible configuration
 ├── playbooks/
-│   └── server.yaml     # Main deployment playbook
-└── roles/              # Ansible roles
-    ├── certbot/        # SSL certificate management
-    ├── docker/         # Docker installation and setup
-    ├── fail2ban/       # Security and intrusion prevention
-    ├── nginx/          # Reverse proxy configuration
-    ├── tools/          # System utilities
-    ├── ufw/            # Firewall configuration
-    └── webkit/         # WebKit app deployment
+│   └── server.yaml        # Main deployment playbook
+└── roles/                 # Ansible roles
+    ├── certbot/           # SSL certificate management
+    ├── digitalocean-metrics/ # DigitalOcean monitoring agent
+    ├── docker/            # Docker installation and setup
+    ├── fail2ban/          # Security and intrusion prevention
+    ├── nginx/             # Reverse proxy configuration
+    ├── tools/             # System utilities
+    ├── ufw/               # Firewall configuration
+    └── webkit/            # WebKit app deployment
 ```
 
 ## The Playbook
 
 The `server.yaml` playbook configures a production-ready server with:
 - System updates and security hardening (UFW, fail2ban)
+- DigitalOcean metrics agent (auto-detects DigitalOcean, skips installation on other platforms)
 - Docker and container orchestration
 - Nginx reverse proxy with SSL (certbot)
 - Application deployment with environment variable decryption (SOPS/Age)

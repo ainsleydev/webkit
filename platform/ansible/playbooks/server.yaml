@@ -48,6 +48,7 @@
   roles:
     - fail2ban
     - tools
+    - digitalocean-metrics
     - docker
     - sops
     - webkit
