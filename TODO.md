@@ -24,6 +24,15 @@ Leaning towards the latter as it's a bit more verbose.
 - Validate that terraform-managed VM apps (.Infra.Type == "vm" (or app) && .IsTerraformManaged())
   must have at least one domain in .Domains array.
 - Validate that domain names in .Domains should not contain protocol prefixes (e.g., "https://").
+- Validate these issues with env.
+- 
+```
+Run ./webkit env generate \
+Fetching Terraform outputs...
+resolving app "cms" env: terraform output not found for environment 'production', resource 'https://ams3', output 'digitaloceanspaces.com' (referenced by key 'S3_ENDPOINT')
+Generated .env file for cms
+****
+```
 
 ## Documentation
 
