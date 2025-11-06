@@ -52,25 +52,6 @@ type writeArgs struct {
 
 var dotEnvMarshaller = godotenv.Marshal
 
-// marshalEnvWithoutQuotes marshals environment variables without adding quotes.
-// This is necessary for Docker Swarm env_files which don't strip quotes like docker-compose does.
-// Only adds quotes when the value contains spaces, newlines, or is empty.
-func marshalEnvWithoutQuotes(envMap map[string]string) (string, error) {
-	var builder strings.Builder
-	for key, value := range envMap {
-		// Only quote if value contains spaces, newlines, or is empty
-		// Docker Swarm env_files doesn't handle quotes like docker-compose
-		if strings.ContainsAny(value, " \n\t") || value == "" {
-			// Escape any quotes in the value
-			escapedValue := strings.ReplaceAll(value, `"`, `\"`)
-			builder.WriteString(fmt.Sprintf("%s=\"%s\"\n", key, escapedValue))
-		} else {
-			builder.WriteString(fmt.Sprintf("%s=%s\n", key, value))
-		}
-	}
-	return builder.String(), nil
-}
-
 // writeMapToFile writes environment variables to dotenv file.
 func writeMapToFile(args writeArgs) error {
 	envMap := make(map[string]string)
@@ -147,4 +128,23 @@ func fetchTerraformOutputs(
 
 	provider := secrets.TransformOutputs(result, environment)
 	return &provider, nil
+}
+
+// marshalEnvWithoutQuotes marshals environment variables without adding quotes.
+// This is necessary for Docker Swarm env_files which don't strip quotes like docker-compose does.
+// Only adds quotes when the value contains spaces, newlines, or is empty.
+func marshalEnvWithoutQuotes(envMap map[string]string) (string, error) {
+	var builder strings.Builder
+	for key, value := range envMap {
+		// Only quote if value contains spaces, newlines, or is empty
+		// Docker Swarm env_files doesn't handle quotes like docker-compose
+		if strings.ContainsAny(value, " \n\t") || value == "" {
+			// Escape any quotes in the value
+			escapedValue := strings.ReplaceAll(value, `"`, `\"`)
+			builder.WriteString(fmt.Sprintf("%s=\"%s\"\n", key, escapedValue))
+		} else {
+			builder.WriteString(fmt.Sprintf("%s=%s\n", key, value))
+		}
+	}
+	return builder.String(), nil
 }

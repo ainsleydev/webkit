@@ -91,6 +91,8 @@ func TestWriteMapToFileCustomPath(t *testing.T) {
 }
 
 func TestMarshalEnvWithoutQuotes(t *testing.T) {
+	t.Parallel()
+
 	tt := map[string]struct {
 		input map[string]string
 		want  map[string]string // key -> expected format in output
@@ -143,6 +145,8 @@ func TestMarshalEnvWithoutQuotes(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			result, err := marshalEnvWithoutQuotes(test.input)
 			require.NoError(t, err)
 
