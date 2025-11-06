@@ -148,8 +148,8 @@ func TestSync(t *testing.T) {
 
 			got := string(content)
 
-			assert.Contains(t, got, "BAZ=\"qux\"")
-			assert.Contains(t, got, "FOO=\"bar\"")
+			assert.Contains(t, got, "BAZ=qux")
+			assert.Contains(t, got, "FOO=bar")
 
 			// App 2
 			path = filepath.Join("app2/nested", ".env")
@@ -157,7 +157,7 @@ func TestSync(t *testing.T) {
 			require.NoError(t, err)
 
 			got = string(content)
-			assert.Contains(t, got, "HELLO=\"world\"")
+			assert.Contains(t, got, "HELLO=world")
 		}
 
 		t.Log("Production")
@@ -168,8 +168,8 @@ func TestSync(t *testing.T) {
 			require.NoError(t, err)
 
 			got := string(content)
-			assert.Contains(t, got, "BAZ=\"qux\"")
-			assert.Contains(t, got, "FOO=\"bar\"")
+			assert.Contains(t, got, "BAZ=qux")
+			assert.Contains(t, got, "FOO=bar")
 
 			// App 2
 			path = filepath.Join("app2/nested", ".env.production")
@@ -177,7 +177,7 @@ func TestSync(t *testing.T) {
 			require.NoError(t, err)
 
 			got = string(content)
-			assert.Contains(t, got, "HELLO=\"world\"")
+			assert.Contains(t, got, "HELLO=world")
 		}
 	})
 
