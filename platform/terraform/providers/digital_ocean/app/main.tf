@@ -3,8 +3,19 @@
 
 # Track env var changes to trigger app replacement when they change
 # This allows us to ignore DO's encryption drift while still detecting real changes
+locals {
+  # Create a stable, sorted map of env vars for consistent hashing
+  # Only include key, value, and type (ignore scope as it doesn't affect the env var value)
+  env_vars_for_hash = {
+    for env in var.envs : env.key => {
+      value = env.value
+      type  = lookup(env, "type", "GENERAL")
+    }
+  }
+}
+
 resource "terraform_data" "env_vars_hash" {
-  input = sha256(jsonencode(var.envs))
+  input = sha256(jsonencode(local.env_vars_for_hash))
 }
 
 resource "digitalocean_app" "this" {
