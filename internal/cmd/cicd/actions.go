@@ -22,6 +22,7 @@ var actionTemplates = map[string]string{
 	"db-add-ip/action.yaml":    "db-add-ip/action.yaml",
 	"db-remove-ip/action.yaml": "db-remove-ip/action.yaml",
 	"pr-comment/action.yaml":   "pr-comment/action.yaml",
+	"slack-notify/action.yaml": "slack-notify/action.yaml",
 }
 
 // ActionTemplates copies action.yaml files from the templates folder
