@@ -5,8 +5,8 @@
     update_cache: yes
 
 - name: Install Docker Python SDK
-  pip:
-    name: docker>=5.0.0
+  apt:
+    name: python3-docker
     state: present
 
 - name: Ensure Docker is started and enabled
