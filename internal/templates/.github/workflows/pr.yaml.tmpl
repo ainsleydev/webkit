@@ -63,6 +63,40 @@ jobs:
         env:
           GITHUB_TOKEN: {{ ghSecret "GITHUB_TOKEN" }}
           GITLEAKS_LICENSE: {{ ghSecret "ORG_GITLEAKS_LICENSE" }}
+
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+{{- range .Apps }}
+      {{ .Name }}-changed: {{ ghVar (printf "steps.filter.outputs.%s" .Name) }}
+{{- end }}
+      shared-changed: {{ ghVar "steps.filter.outputs.shared" }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Detect Path Changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+{{- range .Apps }}
+{{- if .Path }}
+            {{ .Name }}:
+              - '{{ .Path }}/**'
+{{- end }}
+{{- end }}
+            shared:
+              - 'app.json'
+              - '.github/workflows/**'
+              - '.github/actions/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'go.mod'
+              - 'go.sum'
+              - 'turbo.json'
+
   drift-detection:
     runs-on: ubuntu-latest
     needs: setup-webkit
@@ -169,6 +203,8 @@ jobs:
 	{{- range $app := .Apps }}
   app-{{ .Name | lower }}:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: {{ ghVar (printf "needs.detect-changes.outputs.%s-changed" .Name) }} == 'true' || {{ ghVar "needs.detect-changes.outputs.shared-changed" }} == 'true'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -210,6 +246,8 @@ jobs:
 {{- range $app := .PayloadPostgresApps }}
   migration-check-{{ $app.App.Name }}:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: {{ ghVar (printf "needs.detect-changes.outputs.%s-changed" $app.App.Name) }} == 'true' || {{ ghVar "needs.detect-changes.outputs.shared-changed" }} == 'true'
     env:
       DO_ACCESS_TOKEN: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
     steps:
