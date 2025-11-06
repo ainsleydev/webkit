@@ -160,6 +160,24 @@ module "apps" {
 }
 
 #
+# Slack Channel
+#
+# Create a Slack channel for CI/CD alerts and notifications.
+# The channel is archived (not deleted) on destroy to preserve message history.
+#
+resource "slack_conversation" "project_channel" {
+  name              = "${var.project_name}-alerts"
+  topic             = "CI/CD alerts and notifications for ${var.project_title}"
+  is_private        = false
+  action_on_destroy = "archive"
+
+  # Permanent members (you + bot).
+  permanent_members = [
+    "U035SMG9XFG" # Ainsley Clark
+  ]
+}
+
+#
 # Secrets (GitHub)
 #
 locals {
@@ -251,22 +269,4 @@ resource "digitalocean_project" "this" {
   )
 
   depends_on = [module.resources, module.apps]
-}
-
-#
-# Slack Channel
-#
-# Create a Slack channel for CI/CD alerts and notifications.
-# The channel is archived (not deleted) on destroy to preserve message history.
-#
-resource "slack_conversation" "project_channel" {
-  name              = "${var.project_name}-alerts"
-  topic             = "CI/CD alerts and notifications for ${var.project_title}"
-  is_private        = false
-  action_on_destroy = "archive"
-
-  # Permanent members (you + bot).
-  permanent_members = [
-    "U035SMG9XFG" # Ainsley Clark
-  ]
 }
