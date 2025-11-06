@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.32",
-	"generated_at": "2025-11-06T14:48:29.595469Z",
+	"version": "v0.0.33",
+	"generated_at": "2025-11-06T17:08:17.218252Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -78,9 +78,9 @@
 			"path": ".github/workflows/deploy-vm.yaml",
 			"generator": "cicd:DeployVMWorkflow",
 			"source": "app:cms",
-			"hash": "4307ec0376f78bc0ec40d1e0be8347063540654f85d0b505f449c515634029e8",
+			"hash": "265d0afc42dfc174189812ad96c78bf8c2441f4976277765d4c9d0b78cdd536f",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T14:48:29.591721Z"
+			"generated_at": "2025-11-06T17:08:17.215907Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
