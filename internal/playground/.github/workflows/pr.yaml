@@ -64,6 +64,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.ORG_GITLEAKS_LICENSE }}
+
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      cms-changed: ${{ steps.filter.outputs.cms }}
+      web-changed: ${{ steps.filter.outputs.web }}
+      api-changed: ${{ steps.filter.outputs.api }}
+      shared-changed: ${{ steps.filter.outputs.shared }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Detect Path Changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            cms:
+              - 'cms/**'
+            web:
+              - 'web/**'
+            api:
+              - 'api/**'
+            shared:
+              - 'app.json'
+              - '.github/workflows/**'
+              - '.github/actions/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'go.mod'
+              - 'go.sum'
+              - 'turbo.json'
+
   drift-detection:
     runs-on: ubuntu-latest
     needs: setup-webkit
@@ -168,6 +202,8 @@ jobs:
           private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
   app-cms:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.cms-changed }} == 'true' || ${{ needs.detect-changes.outputs.shared-changed }} == 'true'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -203,6 +239,8 @@ jobs:
         run: pnpm build
   app-web:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.web-changed }} == 'true' || ${{ needs.detect-changes.outputs.shared-changed }} == 'true'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -238,6 +276,8 @@ jobs:
         run: pnpm build
   app-api:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.api-changed }} == 'true' || ${{ needs.detect-changes.outputs.shared-changed }} == 'true'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -266,6 +306,8 @@ jobs:
         run: go build main.go
   migration-check-cms:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.cms-changed }} == 'true' || ${{ needs.detect-changes.outputs.shared-changed }} == 'true'
     env:
       DO_ACCESS_TOKEN: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
     steps:
