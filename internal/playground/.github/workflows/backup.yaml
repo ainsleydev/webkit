@@ -7,8 +7,7 @@ on:
     - cron: '0 2 * * *' # Runs daily at 2 AM
 
 jobs:
-  backup-db:
-    name: Backup db Database to BackBlaze
+  backup-resource-db:
     runs-on: ubuntu-latest
     env:
       BUCKET_NAME: 'my-website'
@@ -28,7 +27,7 @@ jobs:
         uses: ./.github/actions/db-add-ip
         with:
           database-id: ${{ secrets.TF_PROD_DB_ID }}
-          doctl-token: ${{ secrets.DO_ACCESS_TOKEN }}
+          doctl-token: ${{ env.DO_ACCESS_TOKEN }}
 
       - name: Install rclone
         run: |
@@ -77,10 +76,7 @@ jobs:
 
       - name: Upload Backup to B2
         run: |
-          # TODO: The name of the bucket needs to somehow be dynamic, how can we tell what bucket to use and where? Do we do a global one?
-          # Upload backup file to B2
-          rclone copy $BACKUP_FILE b2_backup:${BUCKET_NAME}${BACKUP_PATH} \
-            --progress
+          rclone copy $BACKUP_FILE b2_backup:${BUCKET_NAME}${BACKUP_PATH} --progress
 
       - name: Retain only 30 latest backups
         run: |
@@ -104,8 +100,7 @@ jobs:
           commit_sha: ${{ github.sha }}
           slack_bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
           channel_id: ${{ secrets.SLACK_CHANNEL_ID }}
-  backup-store:
-    name: Backup store Bucket to Backblaze B2
+  backup-resource-store:
     runs-on: ubuntu-latest
     timeout-minutes: 60 # 1 Hour
     env:
@@ -147,7 +142,6 @@ jobs:
           echo "Backup completed successfully!"
 
   backup-codebase:
-    name: Backup GitHub Repository to Backblaze B2
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -215,16 +209,14 @@ jobs:
           channel_id: ${{ secrets.SLACK_CHANNEL_ID }}
 
   sync-to-gdrive:
-    name: Sync Backblaze B2 to Google Drive
     runs-on: ubuntu-latest
     timeout-minutes: 120 # 2 Hours
     needs:
+      - backup-resource-db
+      - backup-resource-store
       - backup-codebase
-      - backup-db
-      - backup-store
     env:
       BUCKET_NAME: 'my-website'
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
