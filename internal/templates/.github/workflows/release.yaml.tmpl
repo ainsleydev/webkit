@@ -122,26 +122,12 @@ jobs:
           delete-only-untagged-versions: false
 
 {{- range .Apps }}
-{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "container") }}
+{{- if eq .Infra.Provider "digitalocean" }}
 
-  # Deploy {{ .Title }} to DigitalOcean App Platform
+  # Deploy {{ .Title }} to DigitalOcean
   deploy-app-{{ .Name }}:
-    needs: build-and-push
-    uses: ./.github/workflows/deploy-container.yaml
-    with:
-      app_name: {{ .Name }}
-      image_tag: sha-{{ ghVar "github.sha" }}
-    secrets: inherit
-{{- end }}
-{{- end }}
-
-{{- range .Apps }}
-{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "vm") }}
-
-  # Deploy {{ .Title }} to DigitalOcean VM
-  deploy-vm-{{ .Name }}:
     needs: [build-and-push, setup-webkit]
-    uses: ./.github/workflows/deploy-vm.yaml
+    uses: ./.github/workflows/deploy-app.yaml
     with:
       app_name: {{ .Name }}
       image_tag: sha-{{ ghVar "github.sha" }}
