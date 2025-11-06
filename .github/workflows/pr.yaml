@@ -38,6 +38,13 @@ jobs:
       - name: Biome
         run: biome ci .
 
+      - name: Lint Terraform
+        run: |
+          export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+          brew install tflint
+          make lint
+        working-directory: ./platform/terraform
+
       - name: Diff
         run: git diff
 
