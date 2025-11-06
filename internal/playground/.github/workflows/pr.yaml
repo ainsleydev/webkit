@@ -50,7 +50,6 @@ jobs:
           name: webkit
           path: webkit
           if-no-files-found: error
-
   secret-scan:
     name: gitleaks
     runs-on: ubuntu-latest
@@ -65,7 +64,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.ORG_GITLEAKS_LICENSE }}
-
   drift-detection:
     runs-on: ubuntu-latest
     needs: setup-webkit
@@ -114,7 +112,6 @@ jobs:
           echo "❌ Drift detected in WebKit-generated files"
           echo "Run 'webkit update' to sync your project with the latest templates"
           exit 1
-
   app-json-diff:
     runs-on: ubuntu-latest
     needs: setup-webkit
@@ -267,3 +264,95 @@ jobs:
       - name: Build
         working-directory: api
         run: go build main.go
+  migration-check-cms:
+    runs-on: ubuntu-latest
+    env:
+      DO_ACCESS_TOKEN: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies (Dependabot)
+        if: github.actor == 'dependabot[bot]'
+        working-directory: cms
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Install dependencies (Regular)
+        if: github.actor != 'dependabot[bot]'
+        working-directory: cms
+        run: pnpm install
+
+      - name: Add Runner IP to Database
+        uses: ./.github/actions/db-add-ip
+        with:
+          database-id: ${{ secrets.TF_PROD_DB_ID }}
+          doctl-token: ${{ env.DO_ACCESS_TOKEN }}
+
+      - name: Check for pending migrations
+        id: migration
+        env:
+          DATABASE_URL: ${{ secrets.TF_PROD_DB_CONNECTION_URL }}
+          # PAYLOAD_SECRET is required by Payload but doesn't need to be the real value
+          # for migration generation. A random value per run is sufficient.
+          PAYLOAD_SECRET: migration-check-${{ github.run_id }}-${{ github.run_attempt }}
+        working-directory: cms
+        run: |
+          echo "🔎 Checking for pending migrations..."
+          output=$(pnpm migrate:create 2>&1 || true)
+          echo "$output"
+
+          if echo "$output" | grep -q "No schema changes detected"; then
+            echo "✅ No pending migrations detected"
+            echo "result=pass" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Schema changes detected! Please run migrations locally."
+            echo "result=fail" >> $GITHUB_OUTPUT
+
+            echo "---- Generated Migration Files ----"
+            ls -t src/migrations | head -n 1 | while read file; do
+              echo "📄 $file"
+              echo "---------------------------------"
+              cat "src/migrations/$file"
+              echo "---------------------------------"
+            done
+            exit 1
+          fi
+
+      - name: Format Migration Comment
+        if: always()
+        id: format-comment
+        run: |
+          result="${{ steps.migration.outputs.result }}"
+          if [[ "$result" == "fail" ]]; then
+            message="❌ **Schema changes detected!** Please run \`pnpm migrate:create\`, commit the migration, and push."
+          elif [[ "$result" == "pass" ]]; then
+            message="✅ **No pending migrations detected.** All clear to merge!"
+          else
+            message="⚠️ Migration check did not run correctly."
+          fi
+
+          {
+            echo 'comment_body<<EOF'
+            echo "### Migration Check - CMS"
+            echo "$message"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: ./.github/actions/pr-comment
+        with:
+          body-includes: 'Migration Check - CMS'
+          comment-body: ${{ steps.format-comment.outputs.comment_body }}
+          issue-number: ${{ github.event.pull_request.number }}
+          private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Remove Runner IP from Database
+        if: always()
+        uses: ./.github/actions/db-remove-ip
+        with:
+          database-id: ${{ secrets.TF_PROD_DB_ID }}
+          doctl-token: ${{ env.DO_ACCESS_TOKEN }}

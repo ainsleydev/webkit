@@ -2,6 +2,7 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -15,10 +16,45 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  TF_VERSION: '1.13.0'
+
 jobs:
+  # Setup WebKit CLI
+  setup-webkit:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Read WebKit Version
+        id: version
+        shell: bash
+        run: |
+          WEBKIT_VERSION=$(jq -r '.webkit_version // "latest"' "app.json")
+          echo "version=$WEBKIT_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected WebKit version: $WEBKIT_VERSION"
+
+      - name: Download WebKit Release Asset
+        id: setup
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: 'ainsleydev/webkit'
+          tag: ${{ steps.version.outputs.version }}
+          fileName: 'webkit_linux_x86_64.tar.gz'
+          extract: true
+
+      - name: Upload WebKit CLI Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webkit
+          path: webkit
+          if-no-files-found: error
+
   # Build Containers
   build-and-push:
-    name: Build and Push to GHCR
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -35,8 +71,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -75,8 +109,7 @@ jobs:
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-${{ matrix.service.name }}:cache,mode=max
 
   # Remove Unwanted Containers
-  cleanup:
-    name: Cleanup Containers
+  cleanup-containers:
     runs-on: ubuntu-latest
     needs: build-and-push
     permissions:
@@ -94,20 +127,20 @@ jobs:
           delete-only-untagged-versions: false
 
   # Deploy Web to DigitalOcean App Platform
-  deploy-web:
-    runs-on: ubuntu-latest
+  deploy-app-web:
     needs: build-and-push
-    environment:
-      name: production-web
-      url: https://www.my-website.com
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+    uses: ./.github/workflows/deploy-container.yaml
+    with:
+      app_name: web
+      image_tag: sha-${{ github.sha }}
+    secrets: inherit
 
-      - name: Deploy Web to DigitalOcean App Platform
-        uses: digitalocean/app_action/deploy@v2
-        with:
-          token: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
-          app_name: '${{ github.event.repository.name }}-web'
+  # Deploy CMS to DigitalOcean VM
+  deploy-vm-cms:
+    needs: [build-and-push, setup-webkit]
+    uses: ./.github/workflows/deploy-vm.yaml
+    with:
+      app_name: cms
+      image_tag: sha-${{ github.sha }}
+      webkit_version: ${{ needs.setup-webkit.outputs.version }}
+    secrets: inherit

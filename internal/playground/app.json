@@ -1,5 +1,5 @@
 {
-	"webkit_version": "v0.0.12",
+	"webkit_version": "v0.0.32",
 	"project": {
 		"name": "my-website",
 		"title": "My Website",
@@ -12,30 +12,15 @@
 	"shared": {
 		"env": {
 			"dev": {
-				"FRONTEND_URL": {
-					"source": "value",
-					"value": "http://localhost:3000"
-				}
+				"FRONTEND_URL": {"source": "value", "value": "http://localhost:3000"}
 			},
 			"staging": {
-				"FRONTEND_URL": {
-					"source": "value",
-					"value": "https://staging.my-website.com"
-				}
+				"FRONTEND_URL": {"source": "value", "value": "https://staging.my-website.com"}
 			},
 			"production": {
-				"FRONTEND_URL": {
-					"source": "value",
-					"value": "https://my-website.com"
-				},
-				"SENTRY_DSN": {
-					"source": "sops",
-					"value": "SENTRY_DSN"
-				},
-				"TODO": {
-					"source": "sops",
-					"value": "TODO"
-				}
+				"FRONTEND_URL": {"source": "value", "value": "https://my-website.com"},
+				"SENTRY_DSN": {"source": "sops", "value": "SENTRY_DSN"},
+				"TODO": {"source": "sops", "value": "TODO"}
 			}
 		}
 	},
@@ -88,46 +73,23 @@
 			},
 			"env": {
 				"dev": {
-					"DATABASE_URL": {
-						"source": "resource",
-						"value": "db.connection_url"
-					},
-					"PAYLOAD_SECRET": {
-						"source": "sops",
-						"value": "PAYLOAD_SECRET"
-					}
+					"DATABASE_URL": {"source": "resource", "value": "db.connection_url"},
+					"PAYLOAD_SECRET": {"source": "sops", "value": "PAYLOAD_SECRET"}
 				},
 				"staging": {
-					"DATABASE_URL": {
-						"source": "resource",
-						"value": "db.connection_url"
-					}
+					"DATABASE_URL": {"source": "resource", "value": "db.connection_url"}
 				},
 				"production": {
-					"DATABASE_URL": {
-						"source": "resource",
-						"value": "db.connection_url"
-					},
-					"PAYLOAD_SECRET": {
-						"source": "sops",
-						"value": "PAYLOAD_SECRET"
-					}
+					"DATABASE_URL": {"source": "resource", "value": "db.connection_url"},
+					"PAYLOAD_SECRET": {"source": "sops", "value": "PAYLOAD_SECRET"}
 				}
 			},
 			"usesNPM": null,
 			"commands": {
-				"build": {
-					"command": "pnpm build"
-				},
-				"format": {
-					"command": "pnpm format"
-				},
-				"lint": {
-					"command": "pnpm lint"
-				},
-				"test": {
-					"command": "pnpm test"
-				}
+				"build": {"command": "pnpm build"},
+				"format": {"command": "pnpm format"},
+				"lint": {"command": "pnpm lint"},
+				"test": {"command": "pnpm test"}
 			}
 		},
 		{
@@ -151,36 +113,19 @@
 			},
 			"env": {
 				"dev": {
-					"PUBLIC_API_URL": {
-						"source": "value",
-						"value": "http://localhost:3000"
-					}
+					"PUBLIC_API_URL": {"source": "value", "value": "http://localhost:3000"}
 				},
 				"production": {
-					"ASSETS_BUCKET": {
-						"source": "resource",
-						"value": "store.bucket_name"
-					},
-					"PUBLIC_API_URL": {
-						"source": "value",
-						"value": "https://api.my-website.com"
-					}
+					"ASSETS_BUCKET": {"source": "resource", "value": "store.bucket_name"},
+					"PUBLIC_API_URL": {"source": "value", "value": "https://api.my-website.com"}
 				}
 			},
 			"usesNPM": null,
 			"commands": {
-				"build": {
-					"command": "pnpm build"
-				},
-				"format": {
-					"command": "pnpm format"
-				},
-				"lint": {
-					"command": "pnpm lint"
-				},
-				"test": {
-					"command": "pnpm test"
-				}
+				"build": {"command": "pnpm build"},
+				"format": {"command": "pnpm format"},
+				"lint": {"command": "pnpm lint"},
+				"test": {"command": "pnpm test"}
 			}
 		},
 		{
@@ -201,18 +146,10 @@
 			"env": {},
 			"usesNPM": null,
 			"commands": {
-				"build": {
-					"command": "go build main.go"
-				},
-				"format": {
-					"command": "gofmt -w ."
-				},
-				"lint": {
-					"command": "golangci-lint run"
-				},
-				"test": {
-					"command": "go test ./..."
-				}
+				"build": {"command": "go build main.go"},
+				"format": {"command": "gofmt -w ."},
+				"lint": {"command": "golangci-lint run"},
+				"test": {"command": "go test ./..."}
 			}
 		}
 	]
