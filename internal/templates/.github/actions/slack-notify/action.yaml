@@ -41,27 +41,22 @@ runs:
         # Fail on errors, undefined vars, and fail if any part of a pipe fails
         set -euo pipefail
 
-        # Determine colour and emoji based on status
+        # Determine colour based on status
         case "$STATUS" in
           success)
             COLOR="#36a64f"
-            EMOJI="✅"
             ;;
           failure)
             COLOR="#ff0000"
-            EMOJI="❌"
             ;;
           warning)
             COLOR="#ffaa00"
-            EMOJI="⚠️"
             ;;
           info)
             COLOR="#2196F3"
-            EMOJI="ℹ️"
             ;;
           *)
             COLOR="#808080"
-            EMOJI="📢"
             ;;
         esac
 
@@ -87,7 +82,7 @@ runs:
         PAYLOAD=$(cat <<EOF
         {
           "channel": "${CHANNEL_ID}",
-          "text": "${TITLE}",
+          "text": "",
           "attachments": [
             {
               "color": "${COLOR}",
@@ -96,7 +91,7 @@ runs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "${EMOJI} ${TITLE}"
+                    "text": "${TITLE}"
                   }
                 },
                 {
@@ -104,7 +99,7 @@ runs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "*Status:*\n${EMOJI} ${STATUS^}"
+                      "text": "*Status:*\n${STATUS^}"
                     },
                     {
                       "type": "mrkdwn",
