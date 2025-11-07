@@ -155,3 +155,10 @@ variable "slack_user_token" {
   description = "Slack user token for CI/CD notifications"
   sensitive   = true
 }
+
+variable "slack_webhook_url" {
+  type        = string
+  description = "Slack incoming webhook URL for DigitalOcean app alerts (optional)"
+  sensitive   = true
+  default     = ""
+}

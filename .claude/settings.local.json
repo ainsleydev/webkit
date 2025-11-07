@@ -17,7 +17,9 @@
 			"Bash(./webkit:*)",
 			"Bash(webkit:*)",
 			"Bash(find:*)",
-			"Bash(git mv:*)"
+			"Bash(git mv:*)",
+			"WebFetch(domain:registry.terraform.io)",
+			"Bash(curl:*)"
 		],
 		"deny": [],
 		"ask": []

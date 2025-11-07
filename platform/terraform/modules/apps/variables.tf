@@ -109,3 +109,10 @@ variable "server_user" {
   type        = string
   default     = "root"
 }
+
+variable "slack_webhook_url" {
+  description = "Slack webhook URL for DigitalOcean app alerts (optional)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

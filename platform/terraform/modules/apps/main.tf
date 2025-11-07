@@ -31,6 +31,7 @@ module "do_app" {
   image_tag          = var.image_tag
   github_config      = var.github_config
   health_check_path  = try(var.platform_config.health_check_path, "/")
+  slack_webhook_url  = var.slack_webhook_url
 
   envs = [
     for env in var.env_vars : {

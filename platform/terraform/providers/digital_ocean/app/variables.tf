@@ -74,3 +74,10 @@ variable "envs" {
   }))
   default = []
 }
+
+variable "slack_webhook_url" {
+  description = "Slack webhook URL for alert notifications (optional)."
+  type        = string
+  default     = ""
+  sensitive   = true
+}

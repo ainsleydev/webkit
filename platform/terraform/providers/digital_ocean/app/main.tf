@@ -43,6 +43,16 @@ resource "digitalocean_app" "this" {
       }
     }
 
+    # Configure Slack webhook for infrastructure alerts (optional)
+    dynamic "alert_destination" {
+      for_each = var.slack_webhook_url != "" ? [1] : []
+      content {
+        slack {
+          webhook_url = var.slack_webhook_url
+        }
+      }
+    }
+
     service {
       name               = var.service_name
       instance_size_slug = var.instance_size_slug
