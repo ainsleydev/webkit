@@ -49,5 +49,16 @@ jobs:
             -e domain={{ .PrimaryDomain }}
             -e admin_email={{ default "hello@ainsley.dev" (index .Infra.Config "admin_email") }}
             -v
+
+      - name: Notify Slack of Maintenance Failure
+        if: failure()
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Server Maintenance Failed - {{ .Title }}'
+          message: 'Weekly maintenance tasks failed for {{ .Title }}. Server updates may not have been applied.'
+          status: 'failure'
+          commit_sha: {{ ghVar "github.sha" }}
+          slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
 {{- end }}
 {{- end }}

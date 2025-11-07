@@ -99,3 +99,18 @@ output "github_secrets_count" {
   description = "Number of GitHub secrets created"
   value = length(local.github_secrets)
 }
+
+#
+# Slack
+#
+output "slack_channel_id" {
+  description = "Slack channel ID for CI/CD notifications"
+  value       = slack_conversation.project_channel.id
+  sensitive   = false
+}
+
+output "slack_channel_name" {
+  description = "Slack channel name"
+  value       = slack_conversation.project_channel.name
+  sensitive   = false
+}

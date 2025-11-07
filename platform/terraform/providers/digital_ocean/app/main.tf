@@ -43,9 +43,6 @@ resource "digitalocean_app" "this" {
       }
     }
 
-    alert { rule = "DEPLOYMENT_FAILED" }
-    alert { rule = "DEPLOYMENT_LIVE" }
-
     service {
       name               = var.service_name
       instance_size_slug = var.instance_size_slug

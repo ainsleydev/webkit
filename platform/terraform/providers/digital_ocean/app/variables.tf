@@ -74,3 +74,10 @@ variable "envs" {
   }))
   default = []
 }
+
+variable "notifications_webhook_url" {
+  description = "Webhook URL for notifications (Slack, Discord, etc.) - sourced from app.json"
+  type        = string
+  default     = ""
+  sensitive   = false
+}

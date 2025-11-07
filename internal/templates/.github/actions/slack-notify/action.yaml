@@ -1,0 +1,180 @@
+name: 'Slack Notification'
+description: 'Send rich notifications to Slack with Block Kit formatting'
+
+inputs:
+  slack_bot_token:
+    description: 'Slack bot token (xoxb-...)'
+    required: true
+  channel_id:
+    description: 'Slack channel ID to post to'
+    required: true
+  title:
+    description: 'Notification title (no emojis - added automatically based on status)'
+    required: true
+  message:
+    description: 'Main message body'
+    required: true
+  status:
+    description: 'Notification status: success, failure, warning, or info'
+    required: true
+  commit_sha:
+    description: 'Commit SHA for linking'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Send Slack Notification
+      shell: bash
+      env:
+        SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
+        CHANNEL_ID: ${{ inputs.channel_id }}
+        TITLE: ${{ inputs.title }}
+        MESSAGE: ${{ inputs.message }}
+        STATUS: ${{ inputs.status }}
+        COMMIT_SHA: ${{ inputs.commit_sha }}
+        WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        ACTOR: ${{ github.actor }}
+      run: |
+        # Fail on errors, undefined vars, and fail if any part of a pipe fails
+        set -euo pipefail
+
+        # Determine colour based on status
+        case "$STATUS" in
+          success)
+            COLOR="#36a64f"
+            ;;
+          failure)
+            COLOR="#ff0000"
+            ;;
+          warning)
+            COLOR="#ffaa00"
+            ;;
+          info)
+            COLOR="#2196F3"
+            ;;
+          *)
+            COLOR="#808080"
+            ;;
+        esac
+
+        # Get short SHA if commit_sha is provided
+        SHORT_SHA=""
+        COMMIT_LINK_FIELD=""
+        if [ -n "$COMMIT_SHA" ]; then
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_LINK_FIELD=$(cat <<EOF
+        ,
+        {
+          "type": "mrkdwn",
+          "text": "*Commit:*\n<${REPO_URL}/commit/${COMMIT_SHA}|${SHORT_SHA}>"
+        }
+        EOF
+        )
+        fi
+
+        # Get current timestamp
+        TIMESTAMP=$(date +%s)
+
+        # Build Slack message with Block Kit
+        PAYLOAD=$(cat <<EOF
+        {
+          "channel": "${CHANNEL_ID}",
+          "text": "",
+          "attachments": [
+            {
+              "color": "${COLOR}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${TITLE}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\n${STATUS^}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Triggered By:*\n${ACTOR}"
+                    }${COMMIT_LINK_FIELD}
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "${MESSAGE}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Workflow"
+                      },
+                      "url": "${WORKFLOW_URL}"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Repository"
+                      },
+                      "url": "${REPO_URL}"
+                    }
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "Workflow: ${GITHUB_WORKFLOW} | Time: <!date^${TIMESTAMP}^{date_short_pretty} at {time}|$(date)>"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        EOF
+        )
+
+        # Send to Slack
+        RESPONSE=$(curl -X POST https://slack.com/api/chat.postMessage \
+          -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" \
+          -H "Content-Type: application/json; charset=utf-8" \
+          -d "${PAYLOAD}" \
+          -w "\n%{http_code}" \
+          -s)
+
+        # Extract HTTP status code and response body
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        RESPONSE_BODY=$(echo "$RESPONSE" | head -n-1)
+
+        # Check if the request was successful
+        if [ "$HTTP_CODE" != "200" ]; then
+          echo "Error: Failed to send Slack notification (HTTP ${HTTP_CODE})"
+          echo "Response: ${RESPONSE_BODY}"
+          exit 1
+        fi
+
+        # Check if Slack API returned ok: true
+        if ! echo "$RESPONSE_BODY" | grep -q '"ok":true'; then
+          echo "Error: Slack API returned an error"
+          echo "Response: ${RESPONSE_BODY}"
+          exit 1
+        fi
+
+        echo "✓ Slack notification sent successfully"

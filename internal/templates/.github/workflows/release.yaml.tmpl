@@ -256,3 +256,41 @@ jobs:
             -v
 {{- end }}
 {{- end }}
+
+  # Notify Slack on successful release
+  notify-success:
+    runs-on: ubuntu-latest
+    needs: [{{- range $i, $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (or (eq $app.Infra.Type "container") (eq $app.Infra.Type "vm")) }}{{- if $i }}, {{ end }}{{- if eq $app.Infra.Type "container" }}deploy-app-{{ $app.Name }}{{- else }}deploy-vm-{{ $app.Name }}{{- end }}{{- end }}{{- end }}]
+    if: success()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Send Success Notification
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Release Successful'
+          message: 'All applications have been successfully deployed to production.\n\n*Deployed Apps:*\n{{ range .Apps }}- {{ .Title }}\n{{ end }}'
+          status: 'success'
+          commit_sha: {{ ghVar "github.sha" }}
+          slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
+
+  # Notify Slack on release failure
+  notify-failure:
+    runs-on: ubuntu-latest
+    needs: [build-and-push{{- range $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (or (eq $app.Infra.Type "container") (eq $app.Infra.Type "vm")) }}, {{- if eq $app.Infra.Type "container" }}deploy-app-{{ $app.Name }}{{- else }}deploy-vm-{{ $app.Name }}{{- end }}{{- end }}{{- end }}]
+    if: failure()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Send Failure Notification
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Release Failed'
+          message: 'One or more steps in the release pipeline failed. The release pipeline has been halted and applications may not be running the latest code.'
+          status: 'failure'
+          commit_sha: {{ ghVar "github.sha" }}
+          slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}

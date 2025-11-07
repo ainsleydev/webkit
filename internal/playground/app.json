@@ -1,5 +1,5 @@
 {
-	"webkit_version": "v0.0.33",
+	"webkit_version": "v0.0.35",
 	"project": {
 		"name": "my-website",
 		"title": "My Website",
@@ -9,6 +9,7 @@
 			"name": ""
 		}
 	},
+	"notifications": {},
 	"shared": {
 		"env": {
 			"dev": {
