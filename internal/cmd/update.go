@@ -43,6 +43,7 @@ var updateOps = []runner{
 	{files.GitSettings, "Files: Create git settings"},
 	{files.PackageJSON, "Files: Create package.json"},
 	{files.PackageJSONApp, "Files: Manipulate app package.json files"},
+	{files.PublicFolder, "Files: Create public folder for Payload apps"},
 	{files.TurboJSON, "Files: Create turbo.json"},
 	{cicd.PR, "CICD: Create PR workflows"},
 	{cicd.ReleaseWorkflow, "CICD: Create release workflow"},
