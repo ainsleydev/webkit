@@ -12,14 +12,6 @@ locals {
       type  = lookup(env, "type", "GENERAL")
     }
   }
-
-  # Construct names used throughout the resource
-  # DigitalOcean App name: project-name-app-name (e.g., "player-2-clubs-cms")
-  app_name = "${var.project_name}-${var.name}"
-
-  # GHCR image repository name: repo-name-app-name (e.g., "player2clubs-cms")
-  # This matches what GitHub Actions publishes: ghcr.io/{owner}/{repo-name}-{app-name}
-  repository_name = "${var.github_config.repo}-${var.name}"
 }
 
 resource "terraform_data" "env_vars_hash" {
@@ -38,7 +30,7 @@ resource "terraform_data" "registry_credentials_hash" {
 resource "digitalocean_app" "this" {
 
   spec {
-    name   = local.app_name
+    name   = var.name
     region = var.region
 
     dynamic "domain" {
@@ -58,16 +50,10 @@ resource "digitalocean_app" "this" {
       http_port          = var.http_port
 
       image {
-        registry_type = "GHCR"
-        registry      = "ghcr.io"
-        # Use the constructed repository name to match what GitHub Actions publishes
-        # GitHub Actions publishes as: ghcr.io/{owner}/{repo-name}-{app-name}
-        # For example: ghcr.io/ainsleydev/player2clubs-cms
-        repository = "${var.github_config.owner}/${local.repository_name}"
-        tag        = var.image_tag
-        # We have to use a classic token here as packages don't support fine-grained
-        # PATs right now, so this should use ghp_ token formats.
-        # See: https://github.com/github/roadmap/issues/558
+        registry_type        = "GHCR"
+        registry             = "ghcr.io"
+        repository           = var.repository
+        tag                  = var.image_tag
         registry_credentials = "${var.github_config.owner}:${var.github_config.token}"
       }
 

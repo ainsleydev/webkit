@@ -1,10 +1,10 @@
-variable "project_name" {
-  description = "Project name for constructing the DigitalOcean App name."
+variable "name" {
+  description = "The full name of the DigitalOcean App (e.g., 'player-2-clubs-cms')."
   type        = string
 }
 
-variable "name" {
-  description = "App name from app.json (e.g., 'cms', 'web')."
+variable "repository" {
+  description = "The full GHCR repository path (e.g., 'ainsleydev/player2clubs-cms')."
   type        = string
 }
 
