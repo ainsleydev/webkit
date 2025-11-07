@@ -116,6 +116,25 @@ module "default_b2_bucket" {
 }
 
 #
+# Slack Channel
+#
+# Create a Slack channel for CI/CD alerts and notifications.
+# The channel is archived (not deleted) on destroy to preserve message history.
+# This is created before resources/apps so the channel ID is available for alert configuration.
+#
+resource "slack_conversation" "project_channel" {
+  name              = "${var.project_name}-alerts"
+  topic             = "CI/CD alerts and notifications for ${var.project_title}"
+  is_private        = false
+  action_on_destroy = "archive"
+
+  # Permanent members (you + bot).
+  permanent_members = [
+    "U035SMG9XFG" # Ainsley Clark
+  ]
+}
+
+#
 # Resources (databases, storage, etc.)
 #
 module "resources" {
@@ -158,24 +177,6 @@ module "apps" {
   # Apps may depend on resources being created first.
   resource_outputs = module.resources
   depends_on = [module.resources]
-}
-
-#
-# Slack Channel
-#
-# Create a Slack channel for CI/CD alerts and notifications.
-# The channel is archived (not deleted) on destroy to preserve message history.
-#
-resource "slack_conversation" "project_channel" {
-  name              = "${var.project_name}-alerts"
-  topic             = "CI/CD alerts and notifications for ${var.project_title}"
-  is_private        = false
-  action_on_destroy = "archive"
-
-  # Permanent members (you + bot).
-  permanent_members = [
-    "U035SMG9XFG" # Ainsley Clark
-  ]
 }
 
 #
