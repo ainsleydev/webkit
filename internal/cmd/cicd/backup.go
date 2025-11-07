@@ -26,10 +26,6 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	enviro := env.Production
 
-	if len(appDef.Resources) == 0 {
-		return nil
-	}
-
 	tpl := templates.MustLoadTemplate(filepath.Join(workflowsPath, "backup.yaml.tmpl"))
 	path := filepath.Join(workflowsPath, "backup.yaml")
 

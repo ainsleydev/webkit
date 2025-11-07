@@ -28,6 +28,13 @@ func TestBackupWorkflow(t *testing.T) {
 
 		got := BackupWorkflow(t.Context(), input)
 		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+		require.NotEmpty(t, file)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
 	})
 
 	t.Run("Postgres", func(t *testing.T) {
