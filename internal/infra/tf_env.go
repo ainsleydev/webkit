@@ -19,7 +19,6 @@ type TFEnvironment struct {
 	GithubTokenClassic          string `env:"GITHUB_TOKEN_CLASSIC,required"`
 	SlackBotToken               string `env:"SLACK_BOT_TOKEN,required"`
 	SlackUserToken              string `env:"SLACK_USER_TOKEN,required"`
-	SlackWebhookURL             string `env:"SLACK_WEBHOOK_URL"` // Optional
 }
 
 // ParseTFEnvironment reads and validates Terraform-related
@@ -45,6 +44,5 @@ func (t *TFEnvironment) varStrings() []string {
 		"github_token_classic=" + t.GithubTokenClassic,
 		"slack_bot_token=" + t.SlackBotToken,
 		"slack_user_token=" + t.SlackUserToken,
-		"slack_webhook_url=" + t.SlackWebhookURL,
 	}
 }

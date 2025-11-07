@@ -110,9 +110,9 @@ variable "server_user" {
   default     = "root"
 }
 
-variable "slack_webhook_url" {
-  description = "Slack webhook URL for DigitalOcean app alerts (optional)"
+variable "notifications_webhook_url" {
+  description = "Webhook URL for notifications (Slack, Discord, etc.) - sourced from app.json"
   type        = string
   default     = ""
-  sensitive   = true
+  sensitive   = false
 }

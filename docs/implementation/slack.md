@@ -93,9 +93,17 @@ DigitalOcean requires a webhook URL for alerts, and Slack's incoming webhooks ca
    https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX
    ```
 
-5. **Set as environment variable:**
-   ```bash
-   export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
+5. **Add to your `app.json`:**
+   ```json
+   {
+     "project": {
+       "name": "my-project",
+       "title": "My Project",
+       "notifications": {
+         "webhook_url": "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
+       }
+     }
+   }
    ```
 
 6. **Run Terraform again:**
@@ -103,7 +111,12 @@ DigitalOcean requires a webhook URL for alerts, and Slack's incoming webhooks ca
    webkit infra apply
    ```
 
-Terraform will now configure DigitalOcean App Platform to send alerts to your Slack channel.
+Terraform will now configure DigitalOcean App Platform to send alerts to your Slack channel via the webhook URL from your `app.json`.
+
+**Note:** The webhook URL is stored in `app.json` (not as a secret) because:
+- Webhook URLs are designed to be embedded in applications.
+- They can only POST messages to a specific channel (limited blast radius).
+- This approach works for both Slack and Discord (Discord supports Slack-compatible webhooks by appending `/slack` to the URL).
 
 ## What gets notified?
 

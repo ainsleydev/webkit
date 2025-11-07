@@ -172,7 +172,7 @@ module "apps" {
   domains = try(each.value.domains, [])
   env_vars = try(each.value.env_vars, [])
   tags = local.common_tags
-  slack_webhook_url = var.slack_webhook_url
+  notifications_webhook_url = var.notifications_webhook_url
 
   # Apps may depend on resources being created first.
   resource_outputs = module.resources

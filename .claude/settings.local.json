@@ -19,7 +19,8 @@
 			"Bash(find:*)",
 			"Bash(git mv:*)",
 			"WebFetch(domain:registry.terraform.io)",
-			"Bash(curl:*)"
+			"Bash(curl:*)",
+			"WebSearch"
 		],
 		"deny": [],
 		"ask": []
