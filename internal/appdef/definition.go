@@ -17,11 +17,12 @@ const (
 
 type (
 	Definition struct {
-		WebkitVersion string     `json:"webkit_version"`
-		Project       Project    `json:"project"`
-		Shared        Shared     `json:"shared"`
-		Resources     []Resource `json:"resources"`
-		Apps          []App      `json:"apps"`
+		WebkitVersion string        `json:"webkit_version"`
+		Project       Project       `json:"project"`
+		Notifications Notifications `json:"notifications"`
+		Shared        Shared        `json:"shared"`
+		Resources     []Resource    `json:"resources"`
+		Apps          []App         `json:"apps"`
 	}
 	Shared struct {
 		Env Environment `json:"env"`

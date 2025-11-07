@@ -90,7 +90,7 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		Apps:                    make([]tfApp, 0, len(t.appDef.Apps)),
 		Resources:               make([]tfResource, 0, len(t.appDef.Resources)),
 		SSHKeys:                 []string{"Ainsley - Mac Studio"},
-		NotificationsWebhookURL: t.appDef.Project.Notifications.WebhookURL,
+		NotificationsWebhookURL: t.appDef.Notifications.WebhookURL,
 		GithubConfig: tfGithubConfig{
 			Owner: t.appDef.Project.Repo.Owner,
 			Repo:  t.appDef.Project.Repo.Name,
