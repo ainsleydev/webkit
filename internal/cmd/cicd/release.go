@@ -44,6 +44,7 @@ func ReleaseWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	data := map[string]any{
 		"Apps":             appsToRelease,
 		"TerraformVersion": infra.TerraformVersion,
+		"ProjectName":      appDef.Project.Name,
 	}
 
 	// Track all apps as sources for this workflow.

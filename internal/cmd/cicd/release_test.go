@@ -306,4 +306,66 @@ func TestReleaseWorkflow(t *testing.T) {
 		err := ReleaseWorkflow(t.Context(), input)
 		assert.Error(t, err)
 	})
+
+	t.Run("DigitalOcean App Name Uses Project Name", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "my-awesome-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "acme",
+					Name:  "myawesomeproject",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name:  "api",
+					Title: "API",
+					Type:  appdef.AppTypeGoLang,
+					Path:  "api",
+					Build: appdef.Build{
+						Dockerfile: "Dockerfile",
+						Port:       8080,
+					},
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Type:     "container",
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := ReleaseWorkflow(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "release.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		content := string(file)
+
+		t.Log("DigitalOcean app_name uses project.name, NOT repo name")
+		{
+			// The app_name should use project.name (my-awesome-project) to match Terraform
+			// Terraform constructs the app name as: "${var.project_name}-${var.name}"
+			// This ensures GitHub Actions and Terraform use the same naming convention
+			assert.Contains(t, content, "app_name: 'my-awesome-project-api'")
+
+			// Should NOT use the GitHub repo name (myawesomeproject)
+			assert.NotContains(t, content, "app_name: 'myawesomeproject-api'")
+		}
+
+		t.Log("Docker image repository uses repo name variable")
+		{
+			// The image repository should use github.event.repository.name to match GHCR
+			// GitHub Actions publishes to: ghcr.io/{owner}/{repo-name}-{app-name}
+			// We check for the template variable, not the hardcoded value
+			assert.Contains(t, content, "images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-${{ matrix.service.name }}")
+		}
+	})
 }

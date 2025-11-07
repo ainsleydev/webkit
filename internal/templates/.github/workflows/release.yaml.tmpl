@@ -143,7 +143,7 @@ jobs:
           IMAGE_TAG_{{ printf "%s" .Type  | upper | replace "-" "_" }}: sha-{{ ghVar "github.sha" }}
         with:
           token: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
-          app_name: '{{ ghVar "github.event.repository.name" }}-{{ .Name }}'
+          app_name: '{{ $.ProjectName }}-{{ .Name }}'
 {{- end }}
 {{- end }}
 

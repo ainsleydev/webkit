@@ -60,12 +60,12 @@ variable "b2_application_key_id" {
 }
 
 variable "github_token" {
-  type = string
+  type      = string
   sensitive = true
 }
 
 variable "github_token_classic" {
-  type = string
+  type      = string
   sensitive = true
 }
 
