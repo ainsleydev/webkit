@@ -50,3 +50,4 @@ Create beautiful looking README's from the `app.json` data.
 - Create an infra plan —destroy command. So we can see whats destroyed?
 - Add .dockerignore to all apps.
 - If the app is Payload, add or make a public folder so Next doesnt fail builds.
+- If the app is Payload, add migrate scripts.
