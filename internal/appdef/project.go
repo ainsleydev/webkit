@@ -18,6 +18,6 @@ type (
 	// Notifications defines alert and notification settings for the project.
 	// Provider-agnostic configuration supporting Slack, Discord, and other webhook-based services.
 	Notifications struct {
-		WebhookURL string `json:"webhook_url"`
+		WebhookURL string `json:"webhook_url,omitzero"`
 	}
 )
