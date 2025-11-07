@@ -51,7 +51,7 @@ output "bucket_url" {
   description = "S3 bucket URL"
   value = (
     var.platform_provider == "digitalocean" && var.platform_type == "s3" ? module.do_bucket[0].domain_name :
-      null
+    null
   )
 }
 
@@ -78,9 +78,9 @@ output "id" {
   description = "Resource ID (database cluster ID, bucket ID, etc.) - Required for all resources"
   value = (
     var.platform_type == "postgres" && var.platform_provider == "digitalocean" ? module.do_postgres[0].id :
-      var.platform_type == "s3" && var.platform_provider == "digitalocean" ? module.do_bucket[0].id :
-        var.platform_type == "s3" && var.platform_provider == "b2" ? module.b2_bucket[0].id :
-        null
+    var.platform_type == "s3" && var.platform_provider == "digitalocean" ? module.do_bucket[0].id :
+    var.platform_type == "s3" && var.platform_provider == "b2" ? module.b2_bucket[0].id :
+    null
   )
 }
 
@@ -88,8 +88,8 @@ output "urn" {
   description = "Resource URN (DigitalOcean specific)"
   value = (
     var.platform_type == "postgres" && var.platform_provider == "digitalocean" ? module.do_postgres[0].urn :
-      var.platform_type == "s3" && var.platform_provider == "digitalocean" ? module.do_bucket[0].urn :
-      null
+    var.platform_type == "s3" && var.platform_provider == "digitalocean" ? module.do_bucket[0].urn :
+    null
   )
 }
 

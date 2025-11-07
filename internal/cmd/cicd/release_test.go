@@ -306,4 +306,65 @@ func TestReleaseWorkflow(t *testing.T) {
 		err := ReleaseWorkflow(t.Context(), input)
 		assert.Error(t, err)
 	})
+
+	t.Run("DigitalOcean App Name Uses Project Name", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "player-2-clubs",
+				Repo: appdef.GitHubRepo{
+					Owner: "ainsleydev",
+					Name:  "player2clubs",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name:  "cms",
+					Title: "CMS",
+					Type:  appdef.AppTypePayload,
+					Path:  "cms",
+					Build: appdef.Build{
+						Dockerfile: "Dockerfile",
+						Port:       3000,
+					},
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Type:     "container",
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := ReleaseWorkflow(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "release.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		content := string(file)
+
+		t.Log("DigitalOcean app_name uses project.name, NOT repo name")
+		{
+			// The app_name should use project.name (player-2-clubs) to match Terraform
+			// Terraform constructs the app name as: "${var.project_name}-${var.name}"
+			// This ensures GitHub Actions and Terraform use the same naming convention
+			assert.Contains(t, content, "app_name: 'player-2-clubs-cms'")
+
+			// Should NOT use the GitHub repo name (player2clubs)
+			assert.NotContains(t, content, "app_name: 'player2clubs-cms'")
+		}
+
+		t.Log("Docker image repository uses repo name")
+		{
+			// The image repository should use repo name to match GHCR
+			// GitHub Actions publishes to: ghcr.io/{owner}/{repo-name}-{app-name}
+			assert.Contains(t, content, "images: ghcr.io/${{ github.repository_owner }}/player2clubs-cms")
+		}
+	})
 }
