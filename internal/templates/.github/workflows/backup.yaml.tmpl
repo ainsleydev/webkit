@@ -95,7 +95,7 @@ jobs:
         if: failure()
         uses: ./.github/actions/slack-notify
         with:
-          title: '{{ .Name }} Database Backup Failed'
+          title: 'Resource {{ .Name }} Database Backup Failed'
           message: 'The scheduled database backup has failed. This may impact disaster recovery capabilities.'
           status: 'failure'
           commit_sha: {{ ghVar "github.sha" }}

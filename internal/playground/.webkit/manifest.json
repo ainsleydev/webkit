@@ -1,6 +1,6 @@
 {
 	"version": "v0.0.35",
-	"generated_at": "2025-11-06T20:03:10.978386Z",
+	"generated_at": "2025-11-07T11:37:31.523724Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -42,6 +42,14 @@
 			"scaffolded": false,
 			"generated_at": "2025-10-23T14:29:04.752022+01:00"
 		},
+		".github/actions/slack-notify/action.yaml": {
+			"path": ".github/actions/slack-notify/action.yaml",
+			"generator": "cicd:ActionTemplates",
+			"source": "project",
+			"hash": "d61e76f857f0b9332145b5f0616a53ec3a236aa96f16fcafb65751beca130bda",
+			"scaffolded": false,
+			"generated_at": "2025-11-07T11:37:31.520961Z"
+		},
 		".github/dependabot.yaml": {
 			"path": ".github/dependabot.yaml",
 			"generator": "files:GitSettings",
@@ -62,9 +70,9 @@
 			"path": ".github/workflows/backup.yaml",
 			"generator": "cicd:BackupWorkflow",
 			"source": "resource:store",
-			"hash": "a4e9b98e88f99d56d0afff0b9146c5fd6dfccc7adc61d7ada7b5859279dbc43d",
+			"hash": "2392509183b46ba90ed13bfe4de27c340ed5bac8c3040a0c7f39005905eaef19",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T14:48:29.592025Z"
+			"generated_at": "2025-11-07T11:37:31.520048Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
@@ -78,17 +86,17 @@
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "2bb27f2b87a52a46df06630314e47b1565624d23f10bb68f11cafb6d39fdc822",
+			"hash": "dc5bb283b554a4139a935bbbd1283432fd3b7e8b99b1711539f97e3201b61933",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T20:03:10.975735Z"
+			"generated_at": "2025-11-07T11:37:31.519749Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",
 			"generator": "cicd:VMMaintenanceWorkflow",
 			"source": "app:cms",
-			"hash": "15f05966282d0b887766ddde705e9f1b37f3f3b3dda9ae4c1ebf70ef0b450bff",
+			"hash": "59fa51ac1c6bf8e545bdfb470e3475a4055df90a0d0f6fde83d7dc667a628b11",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T14:48:29.592926Z"
+			"generated_at": "2025-11-07T11:37:31.520305Z"
 		},
 		".gitignore": {
 			"path": ".gitignore",
