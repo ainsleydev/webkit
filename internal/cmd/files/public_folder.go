@@ -41,7 +41,7 @@ func PublicFolder(_ context.Context, input cmdtools.CommandInput) error {
 		gitkeepPath := filepath.Join(publicPath, ".gitkeep")
 		err = input.Generator().Bytes(gitkeepPath, []byte{},
 			scaffold.WithTracking(manifest.SourceApp(app.Name)),
-			scaffold.WithMode(scaffold.ModeGenerate),
+			scaffold.WithoutNotice(),
 		)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("creating public folder for app %s", app.Name))
