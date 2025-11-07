@@ -1,5 +1,10 @@
 variable "name" {
-  description = "The name of the DigitalOcean App."
+  description = "The full name of the DigitalOcean App (e.g., 'player-2-clubs-cms')."
+  type        = string
+}
+
+variable "repository" {
+  description = "The full GHCR repository path (e.g., 'ainsleydev/player2clubs-cms')."
   type        = string
 }
 
