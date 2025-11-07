@@ -3,6 +3,12 @@ variable "name" {
   type        = string
 }
 
+variable "image_name" {
+  description = "The name of the container image on GHCR (without owner prefix). Defaults to 'name' for backward compatibility."
+  type        = string
+  default     = ""
+}
+
 variable "domains" {
   description = "List of domains to associate with the app."
   type = list(object({

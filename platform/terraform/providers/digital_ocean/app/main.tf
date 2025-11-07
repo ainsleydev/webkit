@@ -12,6 +12,8 @@ locals {
       type  = lookup(env, "type", "GENERAL")
     }
   }
+  # Use image_name if provided, otherwise fall back to name for backward compatibility
+  image_repository_name = var.image_name != "" ? var.image_name : var.name
 }
 
 resource "terraform_data" "env_vars_hash" {
@@ -52,9 +54,10 @@ resource "digitalocean_app" "this" {
       image {
         registry_type = "GHCR"
         registry      = "ghcr.io"
-        # The var.name variable should match the name of the image on GHCR.
-        # For example: ainsleydev/search-spares-web
-        repository = "${var.github_config.owner}/${var.name}"
+        # Use the image repository name (based on repo name) to match what GitHub Actions publishes
+        # GitHub Actions publishes as: ghcr.io/{owner}/{repo-name}-{app-name}
+        # For example: ghcr.io/ainsleydev/player2clubs-cms
+        repository = "${var.github_config.owner}/${local.image_repository_name}"
         tag        = var.image_tag
         # We have to use a classic token here as packages don't support fine-grained
         # PATs right now, so this should use ghp_ token formats.
