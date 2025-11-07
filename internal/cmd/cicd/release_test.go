@@ -312,21 +312,21 @@ func TestReleaseWorkflow(t *testing.T) {
 
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
-				Name: "player-2-clubs",
+				Name: "my-awesome-project",
 				Repo: appdef.GitHubRepo{
-					Owner: "ainsleydev",
-					Name:  "player2clubs",
+					Owner: "acme",
+					Name:  "myawesomeproject",
 				},
 			},
 			Apps: []appdef.App{
 				{
-					Name:  "cms",
-					Title: "CMS",
-					Type:  appdef.AppTypePayload,
-					Path:  "cms",
+					Name:  "api",
+					Title: "API",
+					Type:  appdef.AppTypeGoLang,
+					Path:  "api",
 					Build: appdef.Build{
 						Dockerfile: "Dockerfile",
-						Port:       3000,
+						Port:       8080,
 					},
 					Infra: appdef.Infra{
 						Provider: appdef.ResourceProviderDigitalOcean,
@@ -351,20 +351,21 @@ func TestReleaseWorkflow(t *testing.T) {
 
 		t.Log("DigitalOcean app_name uses project.name, NOT repo name")
 		{
-			// The app_name should use project.name (player-2-clubs) to match Terraform
+			// The app_name should use project.name (my-awesome-project) to match Terraform
 			// Terraform constructs the app name as: "${var.project_name}-${var.name}"
 			// This ensures GitHub Actions and Terraform use the same naming convention
-			assert.Contains(t, content, "app_name: 'player-2-clubs-cms'")
+			assert.Contains(t, content, "app_name: 'my-awesome-project-api'")
 
-			// Should NOT use the GitHub repo name (player2clubs)
-			assert.NotContains(t, content, "app_name: 'player2clubs-cms'")
+			// Should NOT use the GitHub repo name (myawesomeproject)
+			assert.NotContains(t, content, "app_name: 'myawesomeproject-api'")
 		}
 
-		t.Log("Docker image repository uses repo name")
+		t.Log("Docker image repository uses repo name variable")
 		{
-			// The image repository should use repo name to match GHCR
+			// The image repository should use github.event.repository.name to match GHCR
 			// GitHub Actions publishes to: ghcr.io/{owner}/{repo-name}-{app-name}
-			assert.Contains(t, content, "images: ghcr.io/${{ github.repository_owner }}/player2clubs-cms")
+			// We check for the template variable, not the hardcoded value
+			assert.Contains(t, content, "images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-${{ matrix.service.name }}")
 		}
 	})
 }
