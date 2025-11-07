@@ -207,6 +207,8 @@ jobs:
           BACK_BLAZE_APPLICATION_KEY: {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
           GITHUB_TOKEN: {{ ghSecret "ORG_GITHUB_TOKEN" }}
           GITHUB_TOKEN_CLASSIC: {{ ghSecret "ORG_GITHUB_TOKEN_CLASSIC" }}
+          SLACK_BOT_TOKEN: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          SLACK_USER_TOKEN: {{ ghSecret "ORG_SLACK_USER_TOKEN" }}
         run: |
           ./webkit env generate \
             --app {{ .Name }} \
