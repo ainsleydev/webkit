@@ -12,8 +12,14 @@ locals {
       type  = lookup(env, "type", "GENERAL")
     }
   }
-  # Use image_name if provided, otherwise fall back to name for backward compatibility
-  repository_name = var.image_name != "" ? var.image_name : var.name
+
+  # Construct names used throughout the resource
+  # DigitalOcean App name: project-name-app-name (e.g., "player-2-clubs-cms")
+  app_name = "${var.project_name}-${var.name}"
+
+  # GHCR image repository name: repo-name-app-name (e.g., "player2clubs-cms")
+  # This matches what GitHub Actions publishes: ghcr.io/{owner}/{repo-name}-{app-name}
+  repository_name = "${var.github_config.repo}-${var.name}"
 }
 
 resource "terraform_data" "env_vars_hash" {
@@ -32,7 +38,7 @@ resource "terraform_data" "registry_credentials_hash" {
 resource "digitalocean_app" "this" {
 
   spec {
-    name   = var.name
+    name   = local.app_name
     region = var.region
 
     dynamic "domain" {
@@ -54,7 +60,7 @@ resource "digitalocean_app" "this" {
       image {
         registry_type = "GHCR"
         registry      = "ghcr.io"
-        # Use the image repository name (based on repo name) to match what GitHub Actions publishes
+        # Use the constructed repository name to match what GitHub Actions publishes
         # GitHub Actions publishes as: ghcr.io/{owner}/{repo-name}-{app-name}
         # For example: ghcr.io/ainsleydev/player2clubs-cms
         repository = "${var.github_config.owner}/${local.repository_name}"

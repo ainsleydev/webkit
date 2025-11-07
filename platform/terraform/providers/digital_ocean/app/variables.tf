@@ -1,12 +1,11 @@
-variable "name" {
-  description = "The name of the DigitalOcean App."
+variable "project_name" {
+  description = "Project name for constructing the DigitalOcean App name."
   type        = string
 }
 
-variable "image_name" {
-  description = "The name of the container image on GHCR (without owner prefix). Defaults to 'name' for backward compatibility."
+variable "name" {
+  description = "App name from app.json (e.g., 'cms', 'web')."
   type        = string
-  default     = ""
 }
 
 variable "domains" {

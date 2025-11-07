@@ -22,10 +22,8 @@ module "do_app" {
   count  = var.platform_provider == "digitalocean" && var.platform_type == "container" ? 1 : 0
   source = "../../providers/digital_ocean/app"
 
-  name               = "${var.project_name}-${var.name}"
-  # Use repo name for image path to match what GitHub Actions publishes
-  # GitHub Actions uses: ghcr.io/{owner}/{repo-name}-{app-name}
-  image_name         = "${var.github_config.repo}-${var.name}"
+  project_name       = var.project_name
+  name               = var.name
   service_name       = var.app_type
   region             = try(var.platform_config.region, "lon")
   instance_size_slug = try(var.platform_config.size, "apps-s-1vcpu-1gb")
