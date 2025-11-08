@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/ghapi"
 	"github.com/ainsleydev/webkit/internal/pkgjson"
@@ -20,9 +18,10 @@ var BumpCmd = &cli.Command{
 	Name:  "bump",
 	Usage: "Bump Payload CMS and associated dependencies to the latest version",
 	Description: "Fetches the latest stable Payload CMS release from GitHub and updates all " +
-		"Payload-related dependencies in package.json files for Payload apps. " +
+		"Payload-related dependencies in the current directory's package.json. " +
 		"This includes payload, @payloadcms/* packages, AND all dependencies that Payload itself uses " +
-		"(e.g., lexical, @lexical/headless, etc.) to ensure version compatibility.",
+		"(e.g., lexical, @lexical/headless, etc.) to ensure version compatibility. " +
+		"Run this command from within a Payload project directory.",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "dry-run",
@@ -49,17 +48,30 @@ var BumpCmd = &cli.Command{
 // Bump updates all Payload CMS and associated dependencies to the latest version.
 // It fetches Payload's template package.json to determine which dependencies to update,
 // ensuring compatibility with the target Payload version.
+// This command should be run from within a Payload project directory.
 func Bump(ctx context.Context, input cmdtools.CommandInput) error {
-	appDef := input.AppDef()
 	printer := input.Printer()
 
-	payloadApps := findPayloadApps(appDef)
-	if len(payloadApps) == 0 {
-		printer.Println("No Payload CMS apps found in app.json")
-		return nil
+	// Check if we're in a Payload project directory
+	pkgPath := "package.json"
+	if !pkgjson.Exists(input.FS, pkgPath) {
+		return errors.New("package.json not found in current directory. Please run this command from a Payload project directory")
 	}
 
-	printer.Printf("Found %d Payload app(s)\n\n", len(payloadApps))
+	// Read package.json to verify it's a Payload project
+	pkg, err := pkgjson.Read(input.FS, pkgPath)
+	if err != nil {
+		return errors.Wrap(err, "reading package.json")
+	}
+
+	// Check if this is a Payload project by looking for Payload dependencies
+	hasPayloadDeps := pkg.HasAnyDependency(func(name string) bool {
+		return name == "payload" || (len(name) > len("@payloadcms/") && name[0:len("@payloadcms/")] == "@payloadcms/")
+	})
+
+	if !hasPayloadDeps {
+		return errors.New("no Payload dependencies found in package.json. This doesn't appear to be a Payload project")
+	}
 
 	// Create GitHub client with the token that comes
 	// out of the box with Terraform.
@@ -100,21 +112,15 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 		printer.LineBreak()
 	}
 
-	// Process each Payload app and track which ones changed.
-	var changedApps []appdef.App
-	for _, app := range payloadApps {
-		changed, err := bumpAppDependencies(ctx, input, app, targetVersion, payloadDeps, isDryRun)
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("bumping dependencies for app %s", app.Name))
-		}
-		if changed {
-			changedApps = append(changedApps, app)
-		}
+	// Process the current directory's Payload app
+	changed, err := bumpAppDependencies(input, targetVersion, payloadDeps, isDryRun)
+	if err != nil {
+		return errors.Wrap(err, "bumping dependencies")
 	}
 
 	printer.LineBreak()
 
-	if len(changedApps) == 0 {
+	if !changed {
 		printer.Println("All Payload dependencies are already up to date!")
 		return nil
 	}
@@ -126,20 +132,17 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 
 	printer.Success("Successfully bumped Payload dependencies!")
 
-	// Run pnpm install and migrate for each changed app
-	for _, app := range changedApps {
-		// Run pnpm install unless --no-install is specified
-		if !input.Command.Bool("no-install") {
-			if err := runPnpmInstall(ctx, input, app); err != nil {
-				return errors.Wrap(err, fmt.Sprintf("running pnpm install for %s", app.Name))
-			}
+	// Run pnpm install unless --no-install is specified
+	if !input.Command.Bool("no-install") {
+		if err := runPnpmInstall(ctx, input); err != nil {
+			return errors.Wrap(err, "running pnpm install")
 		}
+	}
 
-		// Run pnpm migrate:create unless --no-migrate is specified
-		if !input.Command.Bool("no-migrate") {
-			if err := runPnpmMigrate(ctx, input, app); err != nil {
-				return errors.Wrap(err, fmt.Sprintf("running pnpm migrate:create for %s", app.Name))
-			}
+	// Run pnpm migrate:create unless --no-migrate is specified
+	if !input.Command.Bool("no-migrate") {
+		if err := runPnpmMigrate(ctx, input); err != nil {
+			return errors.Wrap(err, "running pnpm migrate:create")
 		}
 	}
 
@@ -167,17 +170,6 @@ type payloadDependencies struct {
 // ============================================================================
 // Helpers
 // ============================================================================
-
-// findPayloadApps returns all apps with type "payload".
-func findPayloadApps(appDef *appdef.Definition) []appdef.App {
-	var apps []appdef.App
-	for _, app := range appDef.Apps {
-		if app.Type == appdef.AppTypePayload {
-			apps = append(apps, app)
-		}
-	}
-	return apps
-}
 
 // fetchPayloadDependencies fetches Payload CMS's template package.json from GitHub
 // and extracts all its dependencies (excluding workspace:* versions).
@@ -212,24 +204,16 @@ func fetchPayloadDependencies(ctx context.Context) (*payloadDependencies, error)
 	}, nil
 }
 
-// bumpAppDependencies updates Payload and associated dependencies for a single app.
+// bumpAppDependencies updates Payload and associated dependencies in the current directory.
 // Returns true if any changes were made.
 func bumpAppDependencies(
-	_ context.Context,
 	input cmdtools.CommandInput,
-	app appdef.App,
 	version string,
 	payloadDeps *payloadDependencies,
 	dryRun bool,
 ) (bool, error) {
 	printer := input.Printer()
-	pkgPath := filepath.Join(app.Path, "package.json")
-
-	// Check if package.json exists.
-	if !pkgjson.Exists(input.FS, pkgPath) {
-		printer.Printf("⚠️  Skipping %s - package.json not found at %s\n", app.Name, pkgPath)
-		return false, nil
-	}
+	pkgPath := "package.json"
 
 	// Read package.json.
 	pkg, err := pkgjson.Read(input.FS, pkgPath)
@@ -249,12 +233,6 @@ func bumpAppDependencies(
 			return true
 		}
 		return false
-	}
-
-	// Check if this package has any matchable dependencies.
-	if !pkg.HasAnyDependency(matcher) {
-		printer.Printf("• %s - no Payload-related dependencies found\n", app.Name)
-		return false, nil
 	}
 
 	// Create a version formatter that:
@@ -282,12 +260,12 @@ func bumpAppDependencies(
 	result := pkgjson.UpdateDependencies(pkg, matcher, versionFormatter)
 
 	if len(result.Updated) == 0 {
-		printer.Printf("✓ %s - already up to date\n", app.Name)
+		printer.Println("✓ All dependencies already up to date")
 		return false, nil
 	}
 
 	// Display changes.
-	printer.Printf("📦 %s (%s)\n", app.Name, pkgPath)
+	printer.Printf("📦 Updating dependencies in %s\n", pkgPath)
 	for i, dep := range result.Updated {
 		oldVer := result.OldVersions[dep]
 		newVer := versionFormatter(dep, oldVer)
@@ -314,60 +292,58 @@ func bumpAppDependencies(
 	return true, nil
 }
 
-// runPnpmInstall runs pnpm install in the app directory to update the lockfile.
-func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput, app appdef.App) error {
+// runPnpmInstall runs pnpm install in the current directory to update the lockfile.
+func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
 
 	printer.LineBreak()
-	printer.Printf("Installing dependencies for %s...\n", app.Name)
+	printer.Println("Installing dependencies...")
 	spinner.Start()
 	defer spinner.Stop()
 
-	appDir := filepath.Join(input.BaseDir, app.Path)
 	cmd := executil.NewCommand("pnpm", "install")
-	cmd.Dir = appDir
+	cmd.Dir = input.BaseDir
 
 	result, err := input.Runner.Run(ctx, cmd)
 	spinner.Stop()
 
 	if err != nil {
-		printer.Error(fmt.Sprintf("Failed to run pnpm install for %s", app.Name))
+		printer.Error("Failed to run pnpm install")
 		if result.Output != "" {
 			printer.Println(result.Output)
 		}
 		return err
 	}
 
-	printer.Success(fmt.Sprintf("Dependencies installed for %s", app.Name))
+	printer.Success("Dependencies installed")
 	return nil
 }
 
-// runPnpmMigrate runs pnpm migrate:create in the app directory to create database migrations.
-func runPnpmMigrate(ctx context.Context, input cmdtools.CommandInput, app appdef.App) error {
+// runPnpmMigrate runs pnpm migrate:create in the current directory to create database migrations.
+func runPnpmMigrate(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
 
 	printer.LineBreak()
-	printer.Printf("Creating database migrations for %s...\n", app.Name)
+	printer.Println("Creating database migrations...")
 	spinner.Start()
 	defer spinner.Stop()
 
-	appDir := filepath.Join(input.BaseDir, app.Path)
 	cmd := executil.NewCommand("pnpm", "migrate:create")
-	cmd.Dir = appDir
+	cmd.Dir = input.BaseDir
 
 	result, err := input.Runner.Run(ctx, cmd)
 	spinner.Stop()
 
 	if err != nil {
-		printer.Error(fmt.Sprintf("Failed to run pnpm migrate:create for %s", app.Name))
+		printer.Error("Failed to run pnpm migrate:create")
 		if result.Output != "" {
 			printer.Println(result.Output)
 		}
 		return err
 	}
 
-	printer.Success(fmt.Sprintf("Database migrations created for %s", app.Name))
+	printer.Success("Database migrations created")
 	return nil
 }
