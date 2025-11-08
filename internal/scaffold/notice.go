@@ -37,12 +37,5 @@ func noticeForFile(path string) string {
 		return fmt.Sprintf(comment, noticeText) + "\n"
 	}
 
-	notice := fmt.Sprintf("%s %s\n", comment, noticeText)
-
-	// Add extra blank line for .dockerignore files
-	if filepath.Base(path) == ".dockerignore" {
-		notice += "\n"
-	}
-
-	return notice
+	return fmt.Sprintf("%s %s\n", comment, noticeText)
 }

@@ -1,4 +1,5 @@
 # Lefthook configuration for {{ .Project.Name }}
+#
 # See: https://github.com/evilmartians/lefthook
 #
 # Installation:
