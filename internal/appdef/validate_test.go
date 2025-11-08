@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 func TestDefinition_Validate(t *testing.T) {
@@ -80,7 +82,7 @@ func TestDefinition_Validate(t *testing.T) {
 						Name:             "test-app",
 						Path:             "/apps/test",
 						Infra:            Infra{Type: "vm"},
-						TerraformManaged: boolPtr(true),
+						TerraformManaged: ptr.BoolPtr(true),
 						Domains:          []Domain{},
 					},
 				},
@@ -340,7 +342,7 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					{
 						Name:             "test-app",
 						Infra:            Infra{Type: "vm"},
-						TerraformManaged: boolPtr(true),
+						TerraformManaged: ptr.BoolPtr(true),
 						Domains:          []Domain{{Name: "example.com"}},
 					},
 				},
@@ -353,7 +355,7 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					{
 						Name:             "test-app",
 						Infra:            Infra{Type: "vm"},
-						TerraformManaged: boolPtr(true),
+						TerraformManaged: ptr.BoolPtr(true),
 						Domains:          []Domain{},
 					},
 				},
@@ -367,7 +369,7 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					{
 						Name:             "test-app",
 						Infra:            Infra{Type: "app"},
-						TerraformManaged: boolPtr(true),
+						TerraformManaged: ptr.BoolPtr(true),
 						Domains:          []Domain{},
 					},
 				},
@@ -381,7 +383,7 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					{
 						Name:             "test-app",
 						Infra:            Infra{Type: "vm"},
-						TerraformManaged: boolPtr(false),
+						TerraformManaged: ptr.BoolPtr(false),
 						Domains:          []Domain{},
 					},
 				},
@@ -394,7 +396,7 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					{
 						Name:             "test-app",
 						Infra:            Infra{Type: "other"},
-						TerraformManaged: boolPtr(true),
+						TerraformManaged: ptr.BoolPtr(true),
 						Domains:          []Domain{},
 					},
 				},
@@ -603,9 +605,4 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 			}
 		})
 	}
-}
-
-// boolPtr is a helper function for tests that returns a pointer to a bool.
-func boolPtr(b bool) *bool {
-	return &b
 }
