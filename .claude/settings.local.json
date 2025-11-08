@@ -20,7 +20,8 @@
 			"Bash(git mv:*)",
 			"WebFetch(domain:registry.terraform.io)",
 			"Bash(curl:*)",
-			"WebSearch"
+			"WebSearch",
+			"Bash(go build:*)"
 		],
 		"deny": [],
 		"ask": []

@@ -16,6 +16,8 @@ Leaning towards the latter as it's a bit more verbose.
 - Create a new `webkit validate` command which will ensure the `app.json` is valid and true.
 - Add the same validation to `wekit update`, so it's validate every time a user updates.
 - Ensure proper testing.
+- We need to add a go:generate command that will generate the schema so Payload repos can use it for
+  nice linting
 
 **Required Validation**:
 
@@ -25,7 +27,8 @@ Leaning towards the latter as it's a bit more verbose.
   must have at least one domain in .Domains array.
 - Validate that domain names in .Domains should not contain protocol prefixes (e.g., "https://").
 - Validate these issues with env.
-- 
+-
+
 ```
 Run ./webkit env generate \
 Fetching Terraform outputs...

@@ -15,6 +15,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 	"github.com/ainsleydev/webkit/internal/secrets/sops"
+	"github.com/ainsleydev/webkit/internal/util/executil"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
@@ -30,6 +31,7 @@ type CommandInput struct {
 	BaseDir     string
 	SOPSCache   sops.EncrypterDecrypter
 	Manifest    *manifest.Tracker
+	Runner      executil.Runner
 	printer     *printer.Console
 }
 
@@ -51,6 +53,7 @@ func Wrap(command RunCommand) cli.ActionFunc {
 			FS:       fs,
 			BaseDir:  dir,
 			Manifest: manifest.NewTracker(),
+			Runner:   executil.DefaultRunner(),
 		}
 
 		return command(ctx, input)

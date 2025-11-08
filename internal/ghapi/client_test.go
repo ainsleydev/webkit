@@ -20,11 +20,19 @@ func TestNew(t *testing.T) {
 
 type mockClient struct {
 	versions []mockVersion
+	releases []mockRelease
+	files    map[string][]byte // map of "path@ref" -> content
 }
 
 type mockVersion struct {
 	tags      []string
 	createdAt time.Time
+}
+
+type mockRelease struct {
+	tagName    string
+	draft      bool
+	preRelease bool
 }
 
 func (m *mockClient) GetLatestSHATag(_ context.Context, _, _, _ string) (string, error) {
@@ -58,6 +66,28 @@ func (m *mockClient) GetLatestSHATag(_ context.Context, _, _, _ string) (string,
 	}
 
 	return shaTags[0].tag, nil
+}
+
+func (m *mockClient) GetLatestRelease(_ context.Context, _, _ string) (string, error) {
+	// Find the first stable release (not draft, not pre-release).
+	for _, release := range m.releases {
+		if !release.draft && !release.preRelease {
+			// Remove 'v' prefix if present.
+			if len(release.tagName) > 0 && release.tagName[0] == 'v' {
+				return release.tagName[1:], nil
+			}
+			return release.tagName, nil
+		}
+	}
+	return "", nil
+}
+
+func (m *mockClient) GetFileContent(_ context.Context, _, _, path, ref string) ([]byte, error) {
+	key := path + "@" + ref
+	if content, ok := m.files[key]; ok {
+		return content, nil
+	}
+	return nil, nil
 }
 
 func TestGetLatestSHATag(t *testing.T) {
@@ -104,5 +134,140 @@ func TestGetLatestSHATag(t *testing.T) {
 		tag, err := mock.GetLatestSHATag(context.Background(), "owner", "repo", "app")
 		assert.NoError(t, err)
 		assert.Equal(t, "", tag)
+	})
+}
+
+func TestGetLatestRelease(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Returns latest stable release", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			releases: []mockRelease{
+				{tagName: "v3.2.0", draft: false, preRelease: false},
+				{tagName: "v3.1.0", draft: false, preRelease: false},
+			},
+		}
+
+		version, err := mock.GetLatestRelease(context.Background(), "payloadcms", "payload")
+		assert.NoError(t, err)
+		assert.Equal(t, "3.2.0", version)
+	})
+
+	t.Run("Skips draft releases", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			releases: []mockRelease{
+				{tagName: "v3.3.0", draft: true, preRelease: false},
+				{tagName: "v3.2.0", draft: false, preRelease: false},
+			},
+		}
+
+		version, err := mock.GetLatestRelease(context.Background(), "payloadcms", "payload")
+		assert.NoError(t, err)
+		assert.Equal(t, "3.2.0", version)
+	})
+
+	t.Run("Skips pre-release versions", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			releases: []mockRelease{
+				{tagName: "v3.3.0-beta.1", draft: false, preRelease: true},
+				{tagName: "v3.2.0", draft: false, preRelease: false},
+			},
+		}
+
+		version, err := mock.GetLatestRelease(context.Background(), "payloadcms", "payload")
+		assert.NoError(t, err)
+		assert.Equal(t, "3.2.0", version)
+	})
+
+	t.Run("Handles version without v prefix", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			releases: []mockRelease{
+				{tagName: "3.2.0", draft: false, preRelease: false},
+			},
+		}
+
+		version, err := mock.GetLatestRelease(context.Background(), "payloadcms", "payload")
+		assert.NoError(t, err)
+		assert.Equal(t, "3.2.0", version)
+	})
+
+	t.Run("Returns empty string if no stable releases", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			releases: []mockRelease{
+				{tagName: "v3.3.0", draft: true, preRelease: false},
+				{tagName: "v3.2.0-beta", draft: false, preRelease: true},
+			},
+		}
+
+		version, err := mock.GetLatestRelease(context.Background(), "payloadcms", "payload")
+		assert.NoError(t, err)
+		assert.Equal(t, "", version)
+	})
+
+	t.Run("Returns empty string for empty releases", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			releases: []mockRelease{},
+		}
+
+		version, err := mock.GetLatestRelease(context.Background(), "payloadcms", "payload")
+		assert.NoError(t, err)
+		assert.Equal(t, "", version)
+	})
+}
+
+func TestGetFileContent(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Returns file content", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			files: map[string][]byte{
+				"package.json@v3.0.0": []byte(`{"name":"payload","version":"3.0.0"}`),
+			},
+		}
+
+		content, err := mock.GetFileContent(context.Background(), "payloadcms", "payload", "package.json", "v3.0.0")
+		assert.NoError(t, err)
+		assert.Equal(t, []byte(`{"name":"payload","version":"3.0.0"}`), content)
+	})
+
+	t.Run("Returns nil for missing file", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			files: map[string][]byte{},
+		}
+
+		content, err := mock.GetFileContent(context.Background(), "payloadcms", "payload", "package.json", "v3.0.0")
+		assert.NoError(t, err)
+		assert.Nil(t, content)
+	})
+
+	t.Run("Handles different refs", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			files: map[string][]byte{
+				"package.json@v3.0.0": []byte(`{"version":"3.0.0"}`),
+				"package.json@v3.1.0": []byte(`{"version":"3.1.0"}`),
+			},
+		}
+
+		content, err := mock.GetFileContent(context.Background(), "payloadcms", "payload", "package.json", "v3.1.0")
+		assert.NoError(t, err)
+		assert.Contains(t, string(content), "3.1.0")
 	})
 }

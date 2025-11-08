@@ -12,6 +12,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmd/docs"
 	"github.com/ainsleydev/webkit/internal/cmd/env"
 	"github.com/ainsleydev/webkit/internal/cmd/infra"
+	"github.com/ainsleydev/webkit/internal/cmd/payload"
 	"github.com/ainsleydev/webkit/internal/cmd/secrets"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/pkg/log"
@@ -33,6 +34,7 @@ func Run() {
 			infra.Command,
 			cicd.Command,
 			docs.Command,
+			payload.Command,
 			driftCmd,
 			printCmd,
 			scratchCmd,
