@@ -14,6 +14,41 @@ import (
 	"github.com/ainsleydev/webkit/internal/pkgjson"
 )
 
+func TestBump(t *testing.T) {
+	t.Parallel()
+
+	t.Run("No Payload apps found", func(t *testing.T) {
+		t.Parallel()
+
+		fs, input := setup(t)
+		input.AppDefCache = &appdef.Definition{
+			Apps: []appdef.App{
+				{Name: "web", Type: appdef.AppTypeSvelteKit},
+				{Name: "api", Type: appdef.AppTypeGoLang},
+			},
+		}
+
+		err := Bump(t.Context(), input)
+		require.NoError(t, err)
+
+		// Verify no files were created or modified
+		exists, _ := afero.Exists(fs, "apps/cms/package.json")
+		assert.False(t, exists)
+	})
+
+	t.Run("Empty apps list", func(t *testing.T) {
+		t.Parallel()
+
+		_, input := setup(t)
+		input.AppDefCache = &appdef.Definition{
+			Apps: []appdef.App{},
+		}
+
+		err := Bump(t.Context(), input)
+		require.NoError(t, err)
+	})
+}
+
 func TestBumpAppDependencies(t *testing.T) {
 	t.Parallel()
 
