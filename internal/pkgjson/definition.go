@@ -4,8 +4,8 @@ package pkgjson
 // This type preserves all fields during read/write operations while providing
 // strongly-typed access to common fields.
 //
-// The raw map stores the complete JSON structure, ensuring that fields
-// not explicitly defined in the struct are preserved when writing back to disk.
+// Unknown fields are automatically captured by marshmallow during unmarshaling
+// and merged back during marshaling, ensuring complete preservation.
 type PackageJSON struct {
 	// Strongly-typed fields for common package.json properties.
 	Name             string            `json:"name,omitempty"`
@@ -41,9 +41,9 @@ type PackageJSON struct {
 	Overrides        any               `json:"overrides,omitempty"`
 	Resolutions      any               `json:"resolutions,omitempty"`
 
-	// raw stores the complete JSON as a map to preserve all fields.
-	// This is particularly important for preserving fields that are not
-	// explicitly defined in the struct above.
+	// raw stores the complete JSON map from marshmallow.
+	// This includes all fields (both known and unknown) and is used for
+	// merging back during marshaling to preserve field order and unknown fields.
 	raw map[string]any
 }
 

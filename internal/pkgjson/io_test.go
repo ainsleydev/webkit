@@ -53,7 +53,6 @@ func TestRead(t *testing.T) {
 
 			if !test.wantErr {
 				assert.NotNil(t, pkg)
-				assert.NotNil(t, pkg.raw)
 			}
 		})
 	}
@@ -71,18 +70,13 @@ func TestWrite(t *testing.T) {
 		Dependencies: map[string]string{
 			"payload": "3.0.0",
 		},
-		raw: map[string]interface{}{
-			"name":    "test-app",
-			"version": "1.0.0",
-		},
 	}
 
 	err := Write(fs, path, pkg)
 	require.NoError(t, err)
 
 	// Verify file was written.
-	exists, err := afero.Exists(fs, path)
-	require.NoError(t, err)
+	exists := Exists(fs, path)
 	assert.True(t, exists)
 
 	// Verify content is valid JSON.
@@ -104,8 +98,7 @@ func TestExists(t *testing.T) {
 		err := afero.WriteFile(fs, path, []byte(`{}`), 0o644)
 		require.NoError(t, err)
 
-		exists, err := Exists(fs, path)
-		require.NoError(t, err)
+		exists := Exists(fs, path)
 		assert.True(t, exists)
 	})
 
@@ -114,8 +107,7 @@ func TestExists(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 
-		exists, err := Exists(fs, "package.json")
-		require.NoError(t, err)
+		exists := Exists(fs, "package.json")
 		assert.False(t, exists)
 	})
 }

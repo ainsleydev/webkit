@@ -147,11 +147,7 @@ func bumpAppDependencies(
 	pkgPath := filepath.Join(app.Path, "package.json")
 
 	// Check if package.json exists.
-	exists, err := pkgjson.Exists(input.FS, pkgPath)
-	if err != nil {
-		return false, err
-	}
-	if !exists {
+	if !pkgjson.Exists(input.FS, pkgPath) {
 		printer.Printf("⚠️  Skipping %s - package.json not found at %s\n", app.Name, pkgPath)
 		return false, nil
 	}
