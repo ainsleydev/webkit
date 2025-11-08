@@ -16,35 +16,6 @@ import (
 	"github.com/ainsleydev/webkit/internal/pkgjson"
 )
 
-// ============================================================================
-// Constants
-// ============================================================================
-
-const (
-	// payloadOwner is the GitHub organisation that owns the Payload repository.
-	payloadOwner = "payloadcms"
-	// payloadRepo is the GitHub repository name for Payload CMS.
-	payloadRepo = "payload"
-	// payloadTemplateURL is the URL to Payload's blank template package.json.
-	payloadTemplateURL = "https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/blank/package.json"
-)
-
-// ============================================================================
-// Types
-// ============================================================================
-
-// payloadDependencies contains all dependencies from Payload's package.json.
-// This is used to determine which dependencies should be bumped when updating.
-type payloadDependencies struct {
-	Dependencies    map[string]string
-	DevDependencies map[string]string
-	AllDeps         map[string]string // Combined for easier lookup
-}
-
-// ============================================================================
-// Command
-// ============================================================================
-
 var BumpCmd = &cli.Command{
 	Name:  "bump",
 	Usage: "Bump Payload CMS and associated dependencies to the latest version",
@@ -75,10 +46,6 @@ var BumpCmd = &cli.Command{
 	Action: cmdtools.Wrap(Bump),
 }
 
-// ============================================================================
-// Main bump function
-// ============================================================================
-
 // Bump updates all Payload CMS and associated dependencies to the latest version.
 // It fetches Payload's template package.json to determine which dependencies to update,
 // ensuring compatibility with the target Payload version.
@@ -86,7 +53,6 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	printer := input.Printer()
 
-	// Find all Payload apps.
 	payloadApps := findPayloadApps(appDef)
 	if len(payloadApps) == 0 {
 		printer.Println("No Payload CMS apps found in app.json")
@@ -180,8 +146,22 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 	return nil
 }
 
+const (
+	payloadOwner            = "payloadcms"
+	payloadRepo             = "payload"
+	payloadBlankTemplateURL = "https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/blank/package.json"
+)
+
+// payloadDependencies contains all dependencies from Payload's package.json.
+// This is used to determine which dependencies should be bumped when updating.
+type payloadDependencies struct {
+	Dependencies    map[string]string
+	DevDependencies map[string]string
+	AllDeps         map[string]string // Combined for easier lookup
+}
+
 // ============================================================================
-// Helper functions
+// Helpers
 // ============================================================================
 
 // findPayloadApps returns all apps with type "payload".
@@ -203,7 +183,7 @@ func findPayloadApps(appDef *appdef.Definition) []appdef.App {
 // workspace:*, we'll fetch the actual version from GitHub releases.
 func fetchPayloadDependencies(ctx context.Context) (*payloadDependencies, error) {
 	// Fetch template package.json from GitHub (always use main branch).
-	pkg, err := pkgjson.FetchFromRemote(ctx, payloadTemplateURL)
+	pkg, err := pkgjson.FetchFromRemote(ctx, payloadBlankTemplateURL)
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching template package.json")
 	}

@@ -290,7 +290,7 @@ func TestFetchPayloadDependencies(t *testing.T) {
 		defer server.Close()
 
 		// Temporarily override the URL for testing
-		// In a real scenario, we'd need to make payloadTemplateURL configurable
+		// In a real scenario, we'd need to make payloadBlankTemplateURL configurable
 		ctx := context.Background()
 		deps, err := fetchPayloadDependencies(ctx)
 
