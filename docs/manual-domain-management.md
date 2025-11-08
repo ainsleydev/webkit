@@ -22,18 +22,13 @@ The configuration uses an external data source to query the DigitalOcean API and
 Before using this in Terraform, you can test the domain fetching functionality:
 
 ```bash
-DO_API_KEY="your-api-key" PROJECT_NAME="Search Spares" make test-domains
+DO_API_KEY="your-api-key" PROJECT_ID="1f726d4d-1d77-4ee0-a4b6-a1a66720209a" make test-domains
 ```
 
 Example output:
 ```
 searchspares.co.uk
 searchspares.com
-```
-
-If no domains are found:
-```
-No domains found
 ```
 
 ## Setup Instructions
@@ -122,15 +117,15 @@ The `get_project_domains.sh` script:
 
 ### Testing the Script
 
-Use the test script to verify everything works:
+Use the test command to verify everything works:
 
 ```bash
-DO_API_KEY="your-api-key" PROJECT_NAME="Your Project Name" make test-domains
+DO_API_KEY="your-api-key" PROJECT_ID="1f726d4d-..." make test-domains
 ```
 
 If the test fails, check:
 - DO_API_KEY is set correctly
-- PROJECT_NAME matches exactly (case-sensitive)
+- PROJECT_ID is the correct UUID (get it from `terraform output digitalocean_project_id`)
 - jq and curl are installed
 - API token has project read permissions
 

@@ -31,8 +31,8 @@ setup: # Install all dev tools (Homebrew packages + Go tools + action-validator)
 	@echo "Setup complete."
 .PHONY: setup
 
-test-domains: ## Test domain fetching from DigitalOcean project (requires DO_API_KEY env var and PROJECT_NAME)
-	@./platform/terraform/base/scripts/test_domains.sh -p "$$PROJECT_NAME"
+test-domains: ## Test domain fetching from DigitalOcean project (requires DO_API_KEY and PROJECT_ID env vars)
+	@echo '{"project_id":"$(PROJECT_ID)","do_token":"$(DO_API_KEY)"}' | ./platform/terraform/base/scripts/get_project_domains.sh | jq -r '.domain_urns' | tr ',' '\n' | sed 's/do:domain://'
 .PHONY: test-domains
 
 help: # Show available commands
