@@ -59,7 +59,7 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 		return nil
 	}
 
-	printer.Printf("Found %d Payload app(s)\n", len(payloadApps))
+	printer.Printf("Found %d Payload app(s)\n\n", len(payloadApps))
 
 	// Create GitHub client with the token that comes
 	// out of the box with Terraform.
@@ -77,7 +77,8 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 			return errors.Wrap(err, "fetching latest Payload version")
 		}
 		targetVersion = version
-		printer.Success(fmt.Sprintf("Latest version: %s", targetVersion))
+
+		printer.Success(fmt.Sprintf("Latest version: %s\n", targetVersion))
 	}
 
 	// Fetch Payload's dependencies from the template to know what to bump.
@@ -86,9 +87,7 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 	if err != nil {
 		return errors.Wrap(err, "fetching Payload dependencies")
 	}
-	printer.Success(fmt.Sprintf("Found %d dependencies in Payload template", len(payloadDeps.AllDeps)))
-
-	printer.LineBreak()
+	printer.Success(fmt.Sprintf("Found %d dependencies in Payload template\n", len(payloadDeps.AllDeps)))
 
 	isDryRun := input.Command.Bool("dry-run")
 	if isDryRun {
@@ -284,13 +283,19 @@ func bumpAppDependencies(
 
 	// Display changes.
 	printer.Printf("📦 %s (%s)\n", app.Name, pkgPath)
-	for _, dep := range result.Updated {
+	for i, dep := range result.Updated {
 		oldVer := result.OldVersions[dep]
 		newVer := versionFormatter(dep, oldVer)
+
+		lineBreak := "\n"
+		if i == len(result.Updated)-1 {
+			lineBreak = "" // no line break for the last one
+		}
+
 		if dryRun {
-			printer.Printf("   %s: %s → %s\n", dep, oldVer, newVer)
+			printer.Printf("   %s: %s → %s%s", dep, oldVer, newVer, lineBreak)
 		} else {
-			printer.Printf("   ✓ %s: %s → %s\n", dep, oldVer, newVer)
+			printer.Printf("   ✓ %s: %s → %s%s", dep, oldVer, newVer, lineBreak)
 		}
 	}
 
