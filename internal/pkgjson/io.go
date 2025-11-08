@@ -15,7 +15,7 @@ func Read(fs afero.Fs, path string) (*PackageJSON, error) {
 		return nil, errors.Wrap(err, "reading package.json")
 	}
 
-	var raw map[string]interface{}
+	var raw map[string]any
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return nil, errors.Wrap(err, "parsing package.json")
 	}
@@ -88,8 +88,8 @@ func Write(fs afero.Fs, path string, pkg *PackageJSON) error {
 }
 
 // extractDependencies extracts dependencies from the raw map into the target map.
-func extractDependencies(raw map[string]interface{}, key string, target map[string]string) {
-	if deps, ok := raw[key].(map[string]interface{}); ok {
+func extractDependencies(raw map[string]any, key string, target map[string]string) {
+	if deps, ok := raw[key].(map[string]any); ok {
 		for k, v := range deps {
 			if str, ok := v.(string); ok {
 				target[k] = str

@@ -2,7 +2,6 @@ package files
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"path/filepath"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/pkgjson"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
@@ -159,14 +159,10 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 			continue
 		}
 
-		data, err := afero.ReadFile(input.FS, pkgPath)
+		// Use shared pkgjson package for reading existing files.
+		pkg, err := pkgjson.Read(input.FS, pkgPath)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("reading %s", pkgPath))
-		}
-
-		var pkg packageJSON
-		if err = json.Unmarshal(data, &pkg); err != nil {
-			return errors.Wrap(err, fmt.Sprintf("parsing %s", pkgPath))
 		}
 
 		// Get or create the scripts section.
@@ -188,12 +184,8 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 			pkg.Scripts[scriptName] = scriptCommand
 		}
 
-		// Write back the modified package.json.
-		err = input.Generator().JSON(
-			pkgPath,
-			pkg,
-		)
-		if err != nil {
+		// Write back the modified package.json using shared pkgjson package.
+		if err = pkgjson.Write(input.FS, pkgPath, pkg); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("writing %s", pkgPath))
 		}
 	}

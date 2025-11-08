@@ -6,8 +6,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/ainsleydev/webkit/internal/ghapi"
 )
 
 type mockGHClient struct {
@@ -50,7 +48,7 @@ func TestFetchPayloadDependencies(t *testing.T) {
 			},
 		}
 
-		deps, err := FetchPayloadDependencies(context.Background(), mock, "3.0.0")
+		deps, err := fetchPayloadDependencies(context.Background(), mock, "3.0.0")
 		require.NoError(t, err)
 		require.NotNil(t, deps)
 
@@ -76,7 +74,7 @@ func TestFetchPayloadDependencies(t *testing.T) {
 			},
 		}
 
-		deps, err := FetchPayloadDependencies(context.Background(), mock, "3.0.0")
+		deps, err := fetchPayloadDependencies(context.Background(), mock, "3.0.0")
 		require.NoError(t, err)
 		require.NotNil(t, deps)
 
@@ -94,7 +92,7 @@ func TestFetchPayloadDependencies(t *testing.T) {
 			},
 		}
 
-		_, err := FetchPayloadDependencies(context.Background(), mock, "3.0.0")
+		_, err := fetchPayloadDependencies(context.Background(), mock, "3.0.0")
 		assert.Error(t, err)
 	})
 }

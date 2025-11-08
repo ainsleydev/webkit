@@ -80,7 +80,7 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Fetch Payload's dependencies from GitHub to know what to bump.
 	printer.Println("Fetching Payload's dependencies...")
-	payloadDeps, err := FetchPayloadDependencies(ctx, ghClient, targetVersion)
+	payloadDeps, err := fetchPayloadDependencies(ctx, ghClient, targetVersion)
 	if err != nil {
 		return errors.Wrap(err, "fetching Payload dependencies")
 	}

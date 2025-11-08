@@ -22,13 +22,13 @@ type PayloadDependencies struct {
 	AllDeps         map[string]string // Combined for easier lookup
 }
 
-// FetchPayloadDependencies fetches Payload CMS's package.json from GitHub
+// fetchPayloadDependencies fetches Payload CMS's package.json from GitHub
 // and extracts all its dependencies.
 //
 // This allows us to bump ALL dependencies that Payload uses, not just
 // payload and @payloadcms/* packages. For example, if Payload depends on
 // lexical@0.28.0, we can update the user's lexical to match.
-func FetchPayloadDependencies(ctx context.Context, client ghapi.Client, version string) (*PayloadDependencies, error) {
+func fetchPayloadDependencies(ctx context.Context, client ghapi.Client, version string) (*PayloadDependencies, error) {
 	// Fetch package.json content from GitHub.
 	// Use the version tag (with v prefix) as the ref.
 	ref := "v" + version

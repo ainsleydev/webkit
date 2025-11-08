@@ -44,5 +44,5 @@ type PackageJSON struct {
 	// raw stores the complete JSON as a map to preserve all fields.
 	// This is particularly important for preserving fields that are not
 	// explicitly defined in the struct above.
-	raw map[string]interface{}
+	raw map[string]any
 }
