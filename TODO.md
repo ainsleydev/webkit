@@ -46,9 +46,8 @@ Create beautiful looking README's from the `app.json` data.
 
 - BetterStack/OneUptime Providers for Infra.
 - Improve Coverage.
-- Improve path matching for GitHub. Why should we run test and lint if it’s not?
+- Improve path matching for GitHub. Why should we run test and lint if it's not?
 - Create an infra plan —destroy command. So we can see whats destroyed?
 - Add .dockerignore to all apps.
-- If the app is Payload, add or make a public folder so Next doesnt fail builds.
 - If the app is Payload, add migrate scripts.
 - Seed utilities for Payload, it's a pain having to do it all the time.
