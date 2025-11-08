@@ -130,21 +130,21 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 		printer.LineBreak()
 	}
 
-	// Process each Payload app.
-	var hasChanges bool
+	// Process each Payload app and track which ones changed.
+	var changedApps []appdef.App
 	for _, app := range payloadApps {
 		changed, err := bumpAppDependencies(ctx, input, app, targetVersion, payloadDeps, isDryRun)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("bumping dependencies for app %s", app.Name))
 		}
 		if changed {
-			hasChanges = true
+			changedApps = append(changedApps, app)
 		}
 	}
 
 	printer.LineBreak()
 
-	if !hasChanges {
+	if len(changedApps) == 0 {
 		printer.Println("All Payload dependencies are already up to date!")
 		return nil
 	}
@@ -156,20 +156,25 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 
 	printer.Success("Successfully bumped Payload dependencies!")
 
-	// Run pnpm install unless --no-install is specified
-	if !input.Command.Bool("no-install") {
-		if err := runPnpmInstall(ctx, input); err != nil {
-			return errors.Wrap(err, "running pnpm install")
+	// Run pnpm install and migrate for each changed app
+	for _, app := range changedApps {
+		// Run pnpm install unless --no-install is specified
+		if !input.Command.Bool("no-install") {
+			if err := runPnpmInstall(ctx, input, app); err != nil {
+				return errors.Wrap(err, fmt.Sprintf("running pnpm install for %s", app.Name))
+			}
 		}
 
 		// Run pnpm migrate:create unless --no-migrate is specified
 		if !input.Command.Bool("no-migrate") {
-			if err := runPnpmMigrate(ctx, input); err != nil {
-				return errors.Wrap(err, "running pnpm migrate:create")
+			if err := runPnpmMigrate(ctx, input, app); err != nil {
+				return errors.Wrap(err, fmt.Sprintf("running pnpm migrate:create for %s", app.Name))
 			}
 		}
-	} else {
-		printer.Println("\n💡 Run 'pnpm install' to update your lockfile")
+	}
+
+	if input.Command.Bool("no-install") {
+		printer.Println("\n💡 Run 'pnpm install' in each app directory to update your lockfile")
 	}
 
 	return nil
@@ -319,58 +324,60 @@ func bumpAppDependencies(
 	return true, nil
 }
 
-// runPnpmInstall runs pnpm install to update the lockfile.
-func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput) error {
+// runPnpmInstall runs pnpm install in the app directory to update the lockfile.
+func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput, app appdef.App) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
 
 	printer.LineBreak()
-	printer.Println("Installing dependencies...")
+	printer.Printf("Installing dependencies for %s...\n", app.Name)
 	spinner.Start()
 	defer spinner.Stop()
 
+	appDir := filepath.Join(input.BaseDir, app.Path)
 	cmd := exec.CommandContext(ctx, "pnpm", "install")
-	cmd.Dir = input.BaseDir
+	cmd.Dir = appDir
 
 	output, err := cmd.CombinedOutput()
 	spinner.Stop()
 
 	if err != nil {
-		printer.Error("Failed to run pnpm install")
+		printer.Error(fmt.Sprintf("Failed to run pnpm install for %s", app.Name))
 		if len(output) > 0 {
 			printer.Println(string(output))
 		}
 		return err
 	}
 
-	printer.Success("Dependencies installed successfully")
+	printer.Success(fmt.Sprintf("Dependencies installed for %s", app.Name))
 	return nil
 }
 
-// runPnpmMigrate runs pnpm migrate:create to create database migrations.
-func runPnpmMigrate(ctx context.Context, input cmdtools.CommandInput) error {
+// runPnpmMigrate runs pnpm migrate:create in the app directory to create database migrations.
+func runPnpmMigrate(ctx context.Context, input cmdtools.CommandInput, app appdef.App) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
 
 	printer.LineBreak()
-	printer.Println("Creating database migrations...")
+	printer.Printf("Creating database migrations for %s...\n", app.Name)
 	spinner.Start()
 	defer spinner.Stop()
 
+	appDir := filepath.Join(input.BaseDir, app.Path)
 	cmd := exec.CommandContext(ctx, "pnpm", "migrate:create")
-	cmd.Dir = input.BaseDir
+	cmd.Dir = appDir
 
 	output, err := cmd.CombinedOutput()
 	spinner.Stop()
 
 	if err != nil {
-		printer.Error("Failed to run pnpm migrate:create")
+		printer.Error(fmt.Sprintf("Failed to run pnpm migrate:create for %s", app.Name))
 		if len(output) > 0 {
 			printer.Println(string(output))
 		}
 		return err
 	}
 
-	printer.Success("Database migrations created successfully")
+	printer.Success(fmt.Sprintf("Database migrations created for %s", app.Name))
 	return nil
 }
