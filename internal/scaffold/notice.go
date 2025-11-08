@@ -21,7 +21,7 @@ var commentMap = map[string]string{
 	".md":           "<!-- %s -->",
 }
 
-// noticeForFile prepends a file-type-appropriate “do not edit”
+// noticeForFile prepends a file-type-appropriate "do not edit"
 // header to generated files dependent on the file type.
 func noticeForFile(path string) string {
 	ext := filepath.Ext(path)
@@ -37,5 +37,12 @@ func noticeForFile(path string) string {
 		return fmt.Sprintf(comment, noticeText) + "\n"
 	}
 
-	return fmt.Sprintf("%s %s\n", comment, noticeText)
+	notice := fmt.Sprintf("%s %s\n", comment, noticeText)
+
+	// Add extra blank line for .dockerignore files
+	if filepath.Base(path) == ".dockerignore" {
+		notice += "\n"
+	}
+
+	return notice
 }
