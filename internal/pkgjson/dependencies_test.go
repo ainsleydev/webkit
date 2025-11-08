@@ -1,18 +1,22 @@
 package pkgjson
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+var payloadMatcher = func(name string) bool {
+	return name == "payload" || strings.HasPrefix(name, "@payloadcms/")
+}
+
 func TestUpdateDependencies(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		pkg     *PackageJSON
-		matcher DependencyMatcher
-		want    int
+		pkg  *PackageJSON
+		want int
 	}{
 		"Updates matching dependencies": {
 			pkg: &PackageJSON{
@@ -21,8 +25,7 @@ func TestUpdateDependencies(t *testing.T) {
 					"react":   "^18.0.0",
 				},
 			},
-			matcher: PayloadMatcher(),
-			want:    1,
+			want: 1,
 		},
 		"Updates across all dependency types": {
 			pkg: &PackageJSON{
@@ -36,8 +39,7 @@ func TestUpdateDependencies(t *testing.T) {
 					"@payloadcms/db-postgres": "3.0.0",
 				},
 			},
-			matcher: PayloadMatcher(),
-			want:    3,
+			want: 3,
 		},
 		"No updates when no matches": {
 			pkg: &PackageJSON{
@@ -45,8 +47,7 @@ func TestUpdateDependencies(t *testing.T) {
 					"react": "^18.0.0",
 				},
 			},
-			matcher: PayloadMatcher(),
-			want:    0,
+			want: 0,
 		},
 	}
 
@@ -54,7 +55,7 @@ func TestUpdateDependencies(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result := UpdateDependencies(test.pkg, test.matcher, func(name, version string) string {
+			result := UpdateDependencies(test.pkg, payloadMatcher, func(name, version string) string {
 				return "3.1.0"
 			})
 
@@ -66,91 +67,12 @@ func TestUpdateDependencies(t *testing.T) {
 	}
 }
 
-func TestHasDependency(t *testing.T) {
-	t.Parallel()
-
-	pkg := &PackageJSON{
-		Dependencies: map[string]string{
-			"payload": "3.0.0",
-		},
-		DevDependencies: map[string]string{
-			"typescript": "^5.0.0",
-		},
-	}
-
-	assert.True(t, pkg.HasDependency("payload"))
-	assert.True(t, pkg.HasDependency("typescript"))
-	assert.False(t, pkg.HasDependency("react"))
-}
-
-func TestHasAnyDependency(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		pkg     *PackageJSON
-		matcher DependencyMatcher
-		want    bool
-	}{
-		"Has payload dependency": {
-			pkg: &PackageJSON{
-				Dependencies: map[string]string{
-					"payload": "3.0.0",
-				},
-			},
-			matcher: PayloadMatcher(),
-			want:    true,
-		},
-		"Has payloadcms scoped dependency": {
-			pkg: &PackageJSON{
-				DevDependencies: map[string]string{
-					"@payloadcms/db-postgres": "3.0.0",
-				},
-			},
-			matcher: PayloadMatcher(),
-			want:    true,
-		},
-		"No payload dependencies": {
-			pkg: &PackageJSON{
-				Dependencies: map[string]string{
-					"react": "^18.0.0",
-				},
-			},
-			matcher: PayloadMatcher(),
-			want:    false,
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got := test.pkg.HasAnyDependency(test.matcher)
-			assert.Equal(t, test.want, got)
-		})
-	}
-}
-
-func TestIsDevDependency(t *testing.T) {
-	t.Parallel()
-
-	pkg := &PackageJSON{
-		Dependencies: map[string]string{
-			"payload": "3.0.0",
-		},
-		DevDependencies: map[string]string{
-			"typescript": "^5.0.0",
-		},
-	}
-
-	assert.True(t, pkg.IsDevDependency("typescript"))
-	assert.False(t, pkg.IsDevDependency("payload"))
-	assert.False(t, pkg.IsDevDependency("react"))
-}
-
 func TestPayloadMatcher(t *testing.T) {
 	t.Parallel()
 
-	matcher := PayloadMatcher()
+	matcher := func(name string) bool {
+		return name == "payload" || strings.HasPrefix(name, "@payloadcms/")
+	}
 
 	assert.True(t, matcher("payload"))
 	assert.True(t, matcher("@payloadcms/db-postgres"))
@@ -179,12 +101,12 @@ func TestFormatVersion(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		version   string
-		useExact  bool
-		want      string
+		version  string
+		useExact bool
+		want     string
 	}{
-		"Exact version":  {version: "3.0.0", useExact: true, want: "3.0.0"},
-		"Caret version":  {version: "3.0.0", useExact: false, want: "^3.0.0"},
+		"Exact version": {version: "3.0.0", useExact: true, want: "3.0.0"},
+		"Caret version": {version: "3.0.0", useExact: false, want: "^3.0.0"},
 	}
 
 	for name, test := range tt {

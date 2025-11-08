@@ -2,17 +2,18 @@ package pkgjson
 
 import (
 	"fmt"
-	"strings"
 )
 
-// DependencyMatcher is a function that determines whether a dependency should be updated.
-type DependencyMatcher func(name string) bool
-
-// UpdateResult contains information about what dependencies were updated.
-type UpdateResult struct {
-	Updated     []string
-	OldVersions map[string]string
-}
+type (
+	// UpdateResult contains information about what dependencies were updated.
+	UpdateResult struct {
+		Updated     []string
+		OldVersions map[string]string
+	}
+	// DependencyMatcher is a function that determines whether
+	// a dependency should be updated.
+	DependencyMatcher func(name string) bool
+)
 
 // UpdateDependencies updates dependencies that match the provided matcher function.
 // It updates dependencies across all dependency types (dependencies, devDependencies, peerDependencies).
@@ -57,53 +58,6 @@ func UpdateDependencies(
 	}
 
 	return result
-}
-
-// HasDependency checks if the package has a specific dependency in any dependency type.
-func (pkg *PackageJSON) HasDependency(name string) bool {
-	if _, ok := pkg.Dependencies[name]; ok {
-		return true
-	}
-	if _, ok := pkg.DevDependencies[name]; ok {
-		return true
-	}
-	if _, ok := pkg.PeerDependencies[name]; ok {
-		return true
-	}
-	return false
-}
-
-// HasAnyDependency checks if the package has any dependencies matching the matcher.
-func (pkg *PackageJSON) HasAnyDependency(matcher DependencyMatcher) bool {
-	for name := range pkg.Dependencies {
-		if matcher(name) {
-			return true
-		}
-	}
-	for name := range pkg.DevDependencies {
-		if matcher(name) {
-			return true
-		}
-	}
-	for name := range pkg.PeerDependencies {
-		if matcher(name) {
-			return true
-		}
-	}
-	return false
-}
-
-// IsDevDependency checks if a package is in devDependencies.
-func (pkg *PackageJSON) IsDevDependency(name string) bool {
-	_, ok := pkg.DevDependencies[name]
-	return ok
-}
-
-// PayloadMatcher returns a matcher that matches payload and @payloadcms/* packages.
-func PayloadMatcher() DependencyMatcher {
-	return func(name string) bool {
-		return name == "payload" || strings.HasPrefix(name, "@payloadcms/")
-	}
 }
 
 // SetMatcher returns a matcher that matches any dependency in the provided set.

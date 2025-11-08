@@ -46,3 +46,45 @@ type PackageJSON struct {
 	// explicitly defined in the struct above.
 	raw map[string]any
 }
+
+// HasDependency checks if the package has a specific dependency
+// in any dependency type.
+func (pkg *PackageJSON) HasDependency(name string) bool {
+	if _, ok := pkg.Dependencies[name]; ok {
+		return true
+	}
+	if _, ok := pkg.DevDependencies[name]; ok {
+		return true
+	}
+	if _, ok := pkg.PeerDependencies[name]; ok {
+		return true
+	}
+	return false
+}
+
+// HasAnyDependency checks if the package has any dependencies
+// matching the matcher.
+func (pkg *PackageJSON) HasAnyDependency(matcher DependencyMatcher) bool {
+	for name := range pkg.Dependencies {
+		if matcher(name) {
+			return true
+		}
+	}
+	for name := range pkg.DevDependencies {
+		if matcher(name) {
+			return true
+		}
+	}
+	for name := range pkg.PeerDependencies {
+		if matcher(name) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsDevDependency checks if a package is in devDependencies.
+func (pkg *PackageJSON) IsDevDependency(name string) bool {
+	_, ok := pkg.DevDependencies[name]
+	return ok
+}

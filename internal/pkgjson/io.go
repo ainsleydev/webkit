@@ -25,7 +25,7 @@ func Read(fs afero.Fs, path string) (*PackageJSON, error) {
 	}
 
 	var raw map[string]any
-	if err := json.Unmarshal(data, &raw); err != nil {
+	if err = json.Unmarshal(data, &raw); err != nil {
 		return nil, errors.Wrap(err, "parsing package.json")
 	}
 
