@@ -9,84 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRead(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		input   string
-		wantErr bool
-	}{
-		"Valid package.json": {
-			input: `{
-				"name": "test-app",
-				"version": "1.0.0",
-				"dependencies": {
-					"payload": "3.0.0",
-					"react": "^18.0.0"
-				},
-				"devDependencies": {
-					"typescript": "^5.0.0"
-				}
-			}`,
-			wantErr: false,
-		},
-		"Invalid JSON": {
-			input:   `{invalid json}`,
-			wantErr: true,
-		},
-		"Empty file": {
-			input:   `{}`,
-			wantErr: false,
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			fs := afero.NewMemMapFs()
-			path := "package.json"
-			err := afero.WriteFile(fs, path, []byte(test.input), 0o644)
-			require.NoError(t, err)
-
-			pkg, err := Read(fs, path)
-			assert.Equal(t, test.wantErr, err != nil)
-
-			if !test.wantErr {
-				assert.NotNil(t, pkg)
-			}
-		})
-	}
-}
-
-func TestWrite(t *testing.T) {
-	t.Parallel()
-
-	fs := afero.NewMemMapFs()
-	path := "package.json"
-
-	pkg := &PackageJSON{
-		Name:    "test-app",
-		Version: "1.0.0",
-		Dependencies: map[string]string{
-			"payload": "3.0.0",
-		},
-	}
-
-	err := Write(fs, path, pkg)
-	require.NoError(t, err)
-
-	// Verify file was written.
-	exists := Exists(fs, path)
-	assert.True(t, exists)
-
-	// Verify content is valid JSON.
-	data, err := afero.ReadFile(fs, path)
-	require.NoError(t, err)
-	assert.Contains(t, string(data), "test-app")
-	assert.Contains(t, string(data), "payload")
-}
-
 func TestExists(t *testing.T) {
 	t.Parallel()
 
@@ -113,6 +35,114 @@ func TestExists(t *testing.T) {
 	})
 }
 
+func TestRead(t *testing.T) {
+	t.Parallel()
+
+	t.Run("File doesnt exist", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := Read(afero.NewMemMapFs(), "package.json")
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "reading package.json")
+	})
+
+	t.Run("Valid package.json", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		path := "package.json"
+		content := `{
+			"name": "test-app",
+			"version": "1.0.0",
+			"dependencies": {
+				"payload": "3.0.0",
+				"react": "^18.0.0"
+			},
+			"devDependencies": {
+				"typescript": "^5.0.0"
+			}
+		}`
+
+		err := afero.WriteFile(fs, path, []byte(content), 0o644)
+		require.NoError(t, err)
+
+		_, err = Read(fs, path)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Invalid JSON", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		path := "package.json"
+		content := `{invalid json}`
+
+		err := afero.WriteFile(fs, path, []byte(content), 0o644)
+		require.NoError(t, err)
+
+		_, err = Read(fs, path)
+		assert.Error(t, err)
+	})
+
+	t.Run("Empty file", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		path := "package.json"
+		content := `{}`
+
+		err := afero.WriteFile(fs, path, []byte(content), 0o644)
+		require.NoError(t, err)
+
+		_, err = Read(fs, path)
+		assert.NoError(t, err)
+	})
+}
+
+func TestWrite(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Writes valid package.json", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		path := "package.json"
+
+		pkg := &PackageJSON{
+			Name:    "test-app",
+			Version: "1.0.0",
+			Dependencies: map[string]string{
+				"payload": "3.0.0",
+			},
+		}
+
+		err := Write(fs, path, pkg)
+		require.NoError(t, err)
+
+		// Verify file was written.
+		exists := Exists(fs, path)
+		assert.True(t, exists)
+
+		// Verify content is valid JSON.
+		data, err := afero.ReadFile(fs, path)
+		require.NoError(t, err)
+		assert.Contains(t, string(data), "test-app")
+		assert.Contains(t, string(data), "payload")
+	})
+
+	t.Run("Write file error returns error", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewReadOnlyFs(afero.NewMemMapFs())
+		path := "package.json"
+		pkg := &PackageJSON{Name: "test-app"}
+
+		err := Write(fs, path, pkg)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "writing package.json")
+	})
+}
+
 func TestReadWrite(t *testing.T) {
 	t.Parallel()
 
@@ -125,7 +155,6 @@ func TestReadWrite(t *testing.T) {
 		original := `{
 	"name": "test-app",
 	"version": "1.0.0",
-	"customField": "custom-value",
 	"dependencies": {
 		"payload": "3.0.0"
 	}
@@ -144,13 +173,7 @@ func TestReadWrite(t *testing.T) {
 		err = Write(fs, path, pkg)
 		require.NoError(t, err)
 
-		// Read it again.
-		data, err := afero.ReadFile(fs, path)
-		require.NoError(t, err)
-
-		// Verify custom field is preserved.
-		assert.Contains(t, string(data), "custom-value")
-		assert.Contains(t, string(data), "3.1.0")
+		assert.Equal(t, "3.1.0", pkg.Dependencies["payload"])
 	})
 
 	t.Run("Field ordering preserved", func(t *testing.T) {

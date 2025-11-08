@@ -42,9 +42,7 @@ type (
 		Overrides        any               `json:"overrides,omitempty"`
 		Resolutions      any               `json:"resolutions,omitempty"`
 
-		// raw stores the complete JSON map from marshmallow.
-		// This includes all fields (both known and unknown) and is used for
-		// merging back during marshaling to preserve field order and unknown fields.
+		// Raw stores unknown fields
 		raw map[string]any
 	}
 	// PnpmConfig represents pnpm-specific configuration in package.json.
