@@ -38,7 +38,7 @@ func schema(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 
 	// Write to file
-	err = afero.WriteFile(input.FS, outputPath, schemaData, 0644)
+	err = afero.WriteFile(input.FS, outputPath, schemaData, 0o644)
 	if err != nil {
 		return errors.Wrap(err, "writing schema file")
 	}

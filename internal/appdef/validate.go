@@ -199,7 +199,6 @@ func (d *Definition) validateEnvVarReferences(
 
 		return nil
 	})
-
 	if err != nil {
 		errs = append(errs, errors.Wrap(err, "walking env variables"))
 	}

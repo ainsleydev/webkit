@@ -12,13 +12,13 @@ func TestDefinition_Validate(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		def         *Definition
-		setupFS     func(afero.Fs)
-		expectError bool
-		errorCount  int
+		Input        *Definition
+		SetupFS      func(afero.Fs)
+		WantErr      bool
+		WantErrCount int
 	}{
-		"valid definition": {
-			def: &Definition{
+		"Valid Definition": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name:  "test-app",
@@ -37,13 +37,13 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			setupFS: func(fs afero.Fs) {
-				fs.MkdirAll("/apps/test", 0755)
+			SetupFS: func(fs afero.Fs) {
+				require.NoError(t, fs.MkdirAll("/apps/test", 0755))
 			},
-			expectError: false,
+			WantErr: false,
 		},
-		"domain with protocol": {
-			def: &Definition{
+		"Domain With Protocol": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -54,14 +54,14 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			setupFS: func(fs afero.Fs) {
-				fs.MkdirAll("/apps/test", 0755)
+			SetupFS: func(fs afero.Fs) {
+				require.NoError(t, fs.MkdirAll("/apps/test", 0755))
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"non-existent app path": {
-			def: &Definition{
+		"Non-existent App Path": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -69,12 +69,12 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			setupFS:     func(fs afero.Fs) {},
-			expectError: true,
-			errorCount:  1,
+			SetupFS:      func(fs afero.Fs) {},
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"terraform-managed VM without domains": {
-			def: &Definition{
+		"Terraform-managed VM Without Domains": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name:             "test-app",
@@ -85,14 +85,14 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			setupFS: func(fs afero.Fs) {
-				fs.MkdirAll("/apps/test", 0755)
+			SetupFS: func(fs afero.Fs) {
+				require.NoError(t, fs.MkdirAll("/apps/test", 0755))
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"invalid env resource reference": {
-			def: &Definition{
+		"Invalid Env Resource Reference": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -115,14 +115,14 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			setupFS: func(fs afero.Fs) {
-				fs.MkdirAll("/apps/test", 0755)
+			SetupFS: func(fs afero.Fs) {
+				require.NoError(t, fs.MkdirAll("/apps/test", 0755))
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"multiple validation errors": {
-			def: &Definition{
+		"Multiple Validation Errors": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name:  "test-app",
@@ -134,9 +134,9 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			setupFS:     func(fs afero.Fs) {},
-			expectError: true,
-			errorCount:  2, // path + domain
+			SetupFS:      func(fs afero.Fs) {},
+			WantErr:      true,
+			WantErrCount: 2, // path + domain
 		},
 	}
 
@@ -145,15 +145,15 @@ func TestDefinition_Validate(t *testing.T) {
 			t.Parallel()
 
 			fs := afero.NewMemMapFs()
-			if test.setupFS != nil {
-				test.setupFS(fs)
+			if test.SetupFS != nil {
+				test.SetupFS(fs)
 			}
 
-			errs := test.def.Validate(fs)
+			errs := test.Input.Validate(fs)
 
-			if test.expectError {
+			if test.WantErr {
 				require.NotNil(t, errs)
-				assert.Len(t, errs, test.errorCount)
+				assert.Len(t, errs, test.WantErrCount)
 			} else {
 				assert.Nil(t, errs)
 			}
@@ -165,12 +165,12 @@ func TestDefinition_validateDomains(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		def         *Definition
-		expectError bool
-		errorCount  int
+		Input        *Definition
+		WantErr      bool
+		WantErrCount int
 	}{
-		"valid domains": {
-			def: &Definition{
+		"Valid Domains": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -181,10 +181,10 @@ func TestDefinition_validateDomains(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
+			WantErr: false,
 		},
-		"domain with https protocol": {
-			def: &Definition{
+		"Domain With HTTPS Protocol": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -194,11 +194,11 @@ func TestDefinition_validateDomains(t *testing.T) {
 					},
 				},
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"domain with http protocol": {
-			def: &Definition{
+		"Domain With HTTP Protocol": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -208,11 +208,11 @@ func TestDefinition_validateDomains(t *testing.T) {
 					},
 				},
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"multiple apps with protocol errors": {
-			def: &Definition{
+		"Multiple Apps With Protocol Errors": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "app1",
@@ -228,8 +228,8 @@ func TestDefinition_validateDomains(t *testing.T) {
 					},
 				},
 			},
-			expectError: true,
-			errorCount:  2,
+			WantErr:      true,
+			WantErrCount: 2,
 		},
 	}
 
@@ -237,11 +237,11 @@ func TestDefinition_validateDomains(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			errs := test.def.validateDomains()
+			errs := test.Input.validateDomains()
 
-			if test.expectError {
+			if test.WantErr {
 				require.NotEmpty(t, errs)
-				assert.Len(t, errs, test.errorCount)
+				assert.Len(t, errs, test.WantErrCount)
 			} else {
 				assert.Empty(t, errs)
 			}
@@ -253,55 +253,55 @@ func TestDefinition_validateAppPaths(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		def         *Definition
-		setupFS     func(afero.Fs)
-		expectError bool
-		errorCount  int
+		Input        *Definition
+		SetupFS      func(afero.Fs)
+		WantErr      bool
+		WantErrCount int
 	}{
-		"valid paths": {
-			def: &Definition{
+		"Valid Paths": {
+			Input: &Definition{
 				Apps: []App{
 					{Name: "app1", Path: "/apps/app1"},
 					{Name: "app2", Path: "/apps/app2"},
 				},
 			},
-			setupFS: func(fs afero.Fs) {
-				fs.MkdirAll("/apps/app1", 0755)
-				fs.MkdirAll("/apps/app2", 0755)
+			SetupFS: func(fs afero.Fs) {
+				require.NoError(t, fs.MkdirAll("/apps/app1", 0755))
+				require.NoError(t, fs.MkdirAll("/apps/app2", 0755))
 			},
-			expectError: false,
+			WantErr: false,
 		},
-		"non-existent path": {
-			def: &Definition{
+		"Non-existent Path": {
+			Input: &Definition{
 				Apps: []App{
 					{Name: "app1", Path: "/apps/nonexistent"},
 				},
 			},
-			setupFS:     func(fs afero.Fs) {},
-			expectError: true,
-			errorCount:  1,
+			SetupFS:      func(fs afero.Fs) {},
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"empty path is skipped": {
-			def: &Definition{
+		"Empty Path Is Skipped": {
+			Input: &Definition{
 				Apps: []App{
 					{Name: "app1", Path: ""},
 				},
 			},
-			setupFS:     func(fs afero.Fs) {},
-			expectError: false,
+			SetupFS: func(fs afero.Fs) {},
+			WantErr: false,
 		},
-		"mixed valid and invalid paths": {
-			def: &Definition{
+		"Mixed Valid And Invalid Paths": {
+			Input: &Definition{
 				Apps: []App{
 					{Name: "app1", Path: "/apps/app1"},
 					{Name: "app2", Path: "/apps/nonexistent"},
 				},
 			},
-			setupFS: func(fs afero.Fs) {
-				fs.MkdirAll("/apps/app1", 0755)
+			SetupFS: func(fs afero.Fs) {
+				require.NoError(t, fs.MkdirAll("/apps/app1", 0755))
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
 	}
 
@@ -310,15 +310,15 @@ func TestDefinition_validateAppPaths(t *testing.T) {
 			t.Parallel()
 
 			fs := afero.NewMemMapFs()
-			if test.setupFS != nil {
-				test.setupFS(fs)
+			if test.SetupFS != nil {
+				test.SetupFS(fs)
 			}
 
-			errs := test.def.validateAppPaths(fs)
+			errs := test.Input.validateAppPaths(fs)
 
-			if test.expectError {
+			if test.WantErr {
 				require.NotEmpty(t, errs)
-				assert.Len(t, errs, test.errorCount)
+				assert.Len(t, errs, test.WantErrCount)
 			} else {
 				assert.Empty(t, errs)
 			}
@@ -330,12 +330,12 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		def         *Definition
-		expectError bool
-		errorCount  int
+		Input        *Definition
+		WantErr      bool
+		WantErrCount int
 	}{
-		"terraform-managed VM with domains": {
-			def: &Definition{
+		"Terraform-managed VM With Domains": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name:             "test-app",
@@ -345,10 +345,10 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
+			WantErr: false,
 		},
-		"terraform-managed VM without domains": {
-			def: &Definition{
+		"Terraform-managed VM Without Domains": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name:             "test-app",
@@ -358,11 +358,11 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					},
 				},
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"terraform-managed app without domains": {
-			def: &Definition{
+		"Terraform-managed App Without Domains": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name:             "test-app",
@@ -372,11 +372,11 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					},
 				},
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"non-terraform-managed VM without domains": {
-			def: &Definition{
+		"Non-terraform-managed VM Without Domains": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name:             "test-app",
@@ -386,10 +386,10 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
+			WantErr: false,
 		},
-		"terraform-managed non-VM type without domains": {
-			def: &Definition{
+		"Terraform-managed Non-VM Type Without Domains": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name:             "test-app",
@@ -399,10 +399,10 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
+			WantErr: false,
 		},
-		"default terraform-managed (nil) VM without domains": {
-			def: &Definition{
+		"Default Terraform-managed (Nil) VM Without Domains": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name:             "test-app",
@@ -412,8 +412,8 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 					},
 				},
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
 	}
 
@@ -421,11 +421,11 @@ func TestDefinition_validateTerraformManagedVMs(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			errs := test.def.validateTerraformManagedVMs()
+			errs := test.Input.validateTerraformManagedVMs()
 
-			if test.expectError {
+			if test.WantErr {
 				require.NotEmpty(t, errs)
-				assert.Len(t, errs, test.errorCount)
+				assert.Len(t, errs, test.WantErrCount)
 			} else {
 				assert.Empty(t, errs)
 			}
@@ -437,12 +437,12 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		def         *Definition
-		expectError bool
-		errorCount  int
+		Input        *Definition
+		WantErr      bool
+		WantErrCount int
 	}{
-		"valid resource reference": {
-			def: &Definition{
+		"Valid Resource Reference": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -464,10 +464,10 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
+			WantErr: false,
 		},
-		"non-existent resource": {
-			def: &Definition{
+		"Non-existent Resource": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -489,11 +489,11 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 					},
 				},
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"invalid output for resource type": {
-			def: &Definition{
+		"Invalid Output For Resource Type": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -515,11 +515,11 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 					},
 				},
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"invalid reference format": {
-			def: &Definition{
+		"Invalid Reference Format": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -541,11 +541,11 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 					},
 				},
 			},
-			expectError: true,
-			errorCount:  1,
+			WantErr:      true,
+			WantErrCount: 1,
 		},
-		"value source not validated": {
-			def: &Definition{
+		"Value Source Not Validated": {
+			Input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -560,10 +560,10 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
+			WantErr: false,
 		},
-		"shared env with valid reference": {
-			def: &Definition{
+		"Shared Env With Valid Reference": {
+			Input: &Definition{
 				Shared: Shared{
 					Env: Environment{
 						Production: EnvVar{
@@ -585,7 +585,7 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
+			WantErr: false,
 		},
 	}
 
@@ -593,11 +593,11 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			errs := test.def.validateEnvReferences()
+			errs := test.Input.validateEnvReferences()
 
-			if test.expectError {
+			if test.WantErr {
 				require.NotEmpty(t, errs)
-				assert.Len(t, errs, test.errorCount)
+				assert.Len(t, errs, test.WantErrCount)
 			} else {
 				assert.Empty(t, errs)
 			}
@@ -605,7 +605,7 @@ func TestDefinition_validateEnvReferences(t *testing.T) {
 	}
 }
 
-// Helper function for tests
+// boolPtr is a helper function for tests that returns a pointer to a bool.
 func boolPtr(b bool) *bool {
 	return &b
 }
