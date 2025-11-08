@@ -12,6 +12,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/ghapi"
+	"github.com/ainsleydev/webkit/internal/pkgjson"
 )
 
 const (
@@ -23,9 +24,11 @@ const (
 
 var BumpCmd = &cli.Command{
 	Name:  "bump",
-	Usage: "Bump Payload CMS dependencies to the latest version",
+	Usage: "Bump Payload CMS and associated dependencies to the latest version",
 	Description: "Fetches the latest stable Payload CMS release from GitHub and updates all " +
-		"payload and @payloadcms/* dependencies in package.json files for Payload apps.",
+		"Payload-related dependencies in package.json files for Payload apps. " +
+		"This includes payload, @payloadcms/* packages, AND all dependencies that Payload itself uses " +
+		"(e.g., lexical, @lexical/headless, etc.) to ensure version compatibility.",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "dry-run",
@@ -41,9 +44,9 @@ var BumpCmd = &cli.Command{
 	Action: cmdtools.Wrap(Bump),
 }
 
-// Bump updates all Payload CMS dependencies to the latest version across all Payload apps.
-// It fetches the latest stable release from GitHub (or uses a specified version) and updates
-// all package.json files for apps with type "payload".
+// Bump updates all Payload CMS and associated dependencies to the latest version.
+// It fetches Payload's package.json from GitHub to determine which dependencies to update,
+// ensuring compatibility with the target Payload version.
 func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	printer := input.Printer()
@@ -57,6 +60,9 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 
 	printer.Printf("Found %d Payload app(s)\n", len(payloadApps))
 
+	// Create GitHub client.
+	ghClient := ghapi.New("")
+
 	// Determine target version.
 	var targetVersion string
 	if v := input.Command.String("version"); v != "" {
@@ -64,14 +70,21 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 		printer.Printf("Using specified version: %s\n", targetVersion)
 	} else {
 		printer.Println("Fetching latest Payload CMS version from GitHub...")
-		client := ghapi.New("")
-		version, err := client.GetLatestRelease(ctx, payloadOwner, payloadRepo)
+		version, err := ghClient.GetLatestRelease(ctx, payloadOwner, payloadRepo)
 		if err != nil {
 			return errors.Wrap(err, "fetching latest Payload version")
 		}
 		targetVersion = version
 		printer.Success(fmt.Sprintf("Latest version: %s", targetVersion))
 	}
+
+	// Fetch Payload's dependencies from GitHub to know what to bump.
+	printer.Println("Fetching Payload's dependencies...")
+	payloadDeps, err := FetchPayloadDependencies(ctx, ghClient, targetVersion)
+	if err != nil {
+		return errors.Wrap(err, "fetching Payload dependencies")
+	}
+	printer.Success(fmt.Sprintf("Found %d dependencies in Payload %s", len(payloadDeps.AllDeps), targetVersion))
 
 	printer.LineBreak()
 
@@ -84,7 +97,7 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 	// Process each Payload app.
 	var hasChanges bool
 	for _, app := range payloadApps {
-		changed, err := bumpAppDependencies(ctx, input, app, targetVersion, isDryRun)
+		changed, err := bumpAppDependencies(ctx, input, app, targetVersion, payloadDeps, isDryRun)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("bumping dependencies for app %s", app.Name))
 		}
@@ -121,13 +134,14 @@ func findPayloadApps(appDef *appdef.Definition) []appdef.App {
 	return apps
 }
 
-// bumpAppDependencies updates Payload dependencies for a single app.
+// bumpAppDependencies updates Payload and associated dependencies for a single app.
 // Returns true if any changes were made.
 func bumpAppDependencies(
 	_ context.Context,
 	input cmdtools.CommandInput,
 	app appdef.App,
 	version string,
+	payloadDeps *PayloadDependencies,
 	dryRun bool,
 ) (bool, error) {
 	printer := input.Printer()
@@ -144,31 +158,68 @@ func bumpAppDependencies(
 	}
 
 	// Read package.json.
-	pkg, err := ReadPackageJSON(input.FS, pkgPath)
+	pkg, err := pkgjson.Read(input.FS, pkgPath)
 	if err != nil {
 		return false, err
 	}
 
-	// Check if this package has any Payload dependencies.
-	if !HasPayloadDependencies(pkg) {
-		printer.Printf("• %s - no Payload dependencies found\n", app.Name)
+	// Create a matcher that matches:
+	// 1. payload and @payloadcms/* packages (always update to target version)
+	// 2. Any dependency that Payload itself uses (update to Payload's version)
+	matcher := func(name string) bool {
+		// Always match payload and @payloadcms/* packages.
+		if name == "payload" {
+			return true
+		}
+		if len(name) > len("@payloadcms/") && name[0:len("@payloadcms/")] == "@payloadcms/" {
+			return true
+		}
+		// Match if this dependency is in Payload's package.json.
+		_, inPayload := payloadDeps.AllDeps[name]
+		return inPayload
+	}
+
+	// Check if this package has any matchable dependencies.
+	if !pkgjson.HasAnyDependency(pkg, matcher) {
+		printer.Printf("• %s - no Payload-related dependencies found\n", app.Name)
 		return false, nil
 	}
 
-	// Bump dependencies.
-	result := BumpPayloadDependencies(pkg, version)
-	result.Path = pkgPath
+	// Create a version formatter that:
+	// - Uses the target version for payload and @payloadcms/* packages
+	// - Uses Payload's version for other dependencies
+	// - Respects exact vs caret formatting based on dependency type
+	versionFormatter := func(name, _ string) string {
+		// For payload and @payloadcms/* packages, use the target version.
+		isPayloadPackage := name == "payload" || (len(name) > len("@payloadcms/") && name[0:len("@payloadcms/")] == "@payloadcms/")
+		if isPayloadPackage {
+			useExact := pkgjson.IsDevDependency(pkg, name)
+			return pkgjson.FormatVersion(version, useExact)
+		}
 
-	if len(result.Bumped) == 0 {
-		printer.Printf("✓ %s - already at version %s\n", app.Name, version)
+		// For other dependencies, use Payload's version.
+		if payloadVer, ok := payloadDeps.AllDeps[name]; ok {
+			// Preserve exact versions from Payload (they know what they're doing).
+			return payloadVer
+		}
+
+		// This shouldn't happen since matcher should prevent this.
+		return ""
+	}
+
+	// Update dependencies.
+	result := pkgjson.UpdateDependencies(pkg, matcher, versionFormatter)
+
+	if len(result.Updated) == 0 {
+		printer.Printf("✓ %s - already up to date\n", app.Name)
 		return false, nil
 	}
 
 	// Display changes.
 	printer.Printf("📦 %s (%s)\n", app.Name, pkgPath)
-	for _, dep := range result.Bumped {
+	for _, dep := range result.Updated {
 		oldVer := result.OldVersions[dep]
-		newVer := formatVersion(version, isDevDependency(pkg, dep))
+		newVer := versionFormatter(dep, oldVer)
 		if dryRun {
 			printer.Printf("   %s: %s → %s\n", dep, oldVer, newVer)
 		} else {
@@ -178,16 +229,10 @@ func bumpAppDependencies(
 
 	// Write updated package.json if not a dry run.
 	if !dryRun {
-		if err := WritePackageJSON(input.FS, pkgPath, pkg); err != nil {
+		if err := pkgjson.Write(input.FS, pkgPath, pkg); err != nil {
 			return false, err
 		}
 	}
 
 	return true, nil
-}
-
-// isDevDependency checks if a package is in devDependencies.
-func isDevDependency(pkg *PackageJSON, name string) bool {
-	_, ok := pkg.DevDependencies[name]
-	return ok
 }

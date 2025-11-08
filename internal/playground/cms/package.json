@@ -7,6 +7,8 @@
 		"payload": "3.50.0",
 		"@payloadcms/db-sqlite": "3.50.0",
 		"@payloadcms/richtext-lexical": "3.50.0",
+		"lexical": "0.27.0",
+		"@lexical/headless": "0.27.0",
 		"react": "^18.0.0"
 	},
 	"devDependencies": {
