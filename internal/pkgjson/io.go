@@ -44,7 +44,6 @@ func Read(fs afero.Fs, path string) (*PackageJSON, error) {
 // Write saves PackageJSON to disk with npm-standard field order,
 // pretty-printed JSON & no HTML escaping.
 func Write(fs afero.Fs, path string, pkg *PackageJSON) error {
-
 	// Encode JSON with indentation and no HTML escaping
 	buf := &bytes.Buffer{}
 	encoder := json.NewEncoder(buf)
