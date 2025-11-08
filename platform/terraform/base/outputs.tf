@@ -99,3 +99,8 @@ output "github_secrets_count" {
   description = "Number of GitHub secrets created"
   value = length(local.github_secrets)
 }
+
+output "digitalocean_project_id" {
+  description = "DigitalOcean project ID (add this to your variables after first apply to preserve manual domains)"
+  value       = digitalocean_project.this.id
+}
