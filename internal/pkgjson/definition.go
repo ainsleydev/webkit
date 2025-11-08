@@ -1,18 +1,5 @@
 package pkgjson
 
-// Author represents a package.json author or contributor.
-// Can be used for author, contributors, and maintainers fields.
-type Author struct {
-	Name  string `json:"name"`
-	Email string `json:"email,omitempty"`
-	URL   string `json:"url,omitempty"`
-}
-
-// PnpmConfig represents pnpm-specific configuration in package.json.
-type PnpmConfig struct {
-	OnlyBuiltDependencies []string `json:"onlyBuiltDependencies,omitempty"`
-}
-
 type (
 	// PackageJSON represents a package.json file structure.
 	// This type preserves all fields during read/write operations while providing
@@ -59,6 +46,17 @@ type (
 		// This includes all fields (both known and unknown) and is used for
 		// merging back during marshaling to preserve field order and unknown fields.
 		raw map[string]any
+	}
+	// PnpmConfig represents pnpm-specific configuration in package.json.
+	PnpmConfig struct {
+		OnlyBuiltDependencies []string `json:"onlyBuiltDependencies,omitempty"`
+	}
+	// Author represents a package.json author or contributor.
+	// Can be used for author, contributors, and maintainers fields.
+	Author struct {
+		Name  string `json:"name"`
+		Email string `json:"email,omitempty"`
+		URL   string `json:"url,omitempty"`
 	}
 )
 
