@@ -54,3 +54,18 @@ func (mr *GHClientMockRecorder) GetLatestSHATag(ctx, owner, repo, appName any) *
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestSHATag", reflect.TypeOf((*GHClient)(nil).GetLatestSHATag), ctx, owner, repo, appName)
 }
+
+// GetLatestRelease mocks base method.
+func (m *GHClient) GetLatestRelease(ctx context.Context, owner, repo string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLatestRelease", ctx, owner, repo)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLatestRelease indicates an expected call of GetLatestRelease.
+func (mr *GHClientMockRecorder) GetLatestRelease(ctx, owner, repo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestRelease", reflect.TypeOf((*GHClient)(nil).GetLatestRelease), ctx, owner, repo)
+}
