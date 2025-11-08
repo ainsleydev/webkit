@@ -12,7 +12,15 @@
 			"Bash(go run:*)",
 			"Bash(pnpm format:go:*)",
 			"Bash(git branch:*)",
-			"Bash(git commit:*)"
+			"Bash(git commit:*)",
+			"Bash(pnpm build:*)",
+			"Bash(./webkit:*)",
+			"Bash(webkit:*)",
+			"Bash(find:*)",
+			"Bash(git mv:*)",
+			"WebFetch(domain:registry.terraform.io)",
+			"Bash(curl:*)",
+			"WebSearch"
 		],
 		"deny": [],
 		"ask": []

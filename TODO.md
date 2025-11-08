@@ -38,14 +38,14 @@ Generated .env file for cms
 
 Create and update the `docs` folder with coherent documentation for WebKit.
 
-
 ## README Generation
 
 Create beautiful looking README's from the `app.json` data.
 
 ## Misc
 
-- Slack and BetterStack Providers for Infra.
+- BetterStack/OneUptime Providers for Infra.
 - Improve Coverage.
-- Improve path matching for GitHub. Why should we run test and lint if it’s not?
 - Create an infra plan —destroy command. So we can see whats destroyed?
+- Seed utilities for Payload, it's a pain having to do it all the time.
+

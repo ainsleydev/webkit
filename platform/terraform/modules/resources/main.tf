@@ -40,9 +40,9 @@ module "b2_bucket" {
   count  = var.platform_provider == "b2" && var.platform_type == "s3" ? 1 : 0
   source = "../../providers/b2/bucket"
 
-  bucket_name                        = var.name
-  acl                                = try(var.platform_config.acl, null)
-  days_from_hiding_to_deleting       = try(var.platform_config.days_from_hiding_to_deleting, null)
-  days_from_uploading_to_hiding      = try(var.platform_config.days_from_uploading_to_hiding, null)
-  lifecycle_rule_file_name_prefix    = try(var.platform_config.lifecycle_rule_file_name_prefix, null)
+  bucket_name                     = var.name
+  acl                             = try(var.platform_config.acl, null)
+  days_from_hiding_to_deleting    = try(var.platform_config.days_from_hiding_to_deleting, null)
+  days_from_uploading_to_hiding   = try(var.platform_config.days_from_uploading_to_hiding, null)
+  lifecycle_rule_file_name_prefix = try(var.platform_config.lifecycle_rule_file_name_prefix, null)
 }

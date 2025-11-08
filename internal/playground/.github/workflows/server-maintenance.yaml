@@ -48,3 +48,14 @@ jobs:
             -e domain=
             -e admin_email=hello@ainsley.dev
             -v
+
+      - name: Notify Slack of Maintenance Failure
+        if: failure()
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Server Maintenance Failed - CMS'
+          message: 'Weekly maintenance tasks failed for CMS. Server updates may not have been applied.'
+          status: 'failure'
+          commit_sha: ${{ github.sha }}
+          slack_bot_token: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
+          channel_id: ${{ secrets.TF_SLACK_CHANNEL_ID }}

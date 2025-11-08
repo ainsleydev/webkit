@@ -18,6 +18,10 @@ terraform {
       source  = "integrations/github"
       version = "~> 5.0"
     }
+    slack = {
+      source  = "pablovarela/slack"
+      version = "~> 1.0"
+    }
   }
 }
 
@@ -38,6 +42,10 @@ provider "b2" {
 provider "github" {
   owner = var.github_config.owner
   token = var.github_token
+}
+
+provider "slack" {
+  token = var.slack_bot_token
 }
 
 #
@@ -100,18 +108,52 @@ locals {
 module "default_b2_bucket" {
   source = "../providers/b2/bucket"
 
-  bucket_name                        = var.project_name
-  acl                                = "allPrivate"
-  days_from_hiding_to_deleting       = 1
-  days_from_uploading_to_hiding      = 0
-  lifecycle_rule_file_name_prefix    = ""
+  bucket_name                     = var.project_name
+  acl                             = "allPrivate"
+  days_from_hiding_to_deleting    = 1
+  days_from_uploading_to_hiding   = 0
+  lifecycle_rule_file_name_prefix = ""
+}
+
+#
+# Slack Channel
+#
+# Create a Slack channel for CI/CD alerts and notifications.
+# The channel is archived (not deleted) on destroy to preserve message history.
+# This is created before resources/apps so the channel ID is available for alert configuration.
+#
+resource "slack_conversation" "project_channel" {
+  name              = "${var.project_name}-alerts"
+  topic             = "CI/CD alerts and notifications for ${var.project_title}"
+  is_private        = false
+  action_on_destroy = "archive"
+
+  # Permanent members (you + bot).
+  permanent_members = [
+    "U035SMG9XFG" # Ainsley Clark
+  ]
+}
+
+#
+# Slack Channel GitHub Secret
+#
+# Create the Slack channel ID secret immediately after channel creation.
+# This ensures the channel ID is available in GitHub Actions even if resource/app
+# provisioning fails later, allowing CI/CD pipelines to send notifications.
+#
+resource "github_actions_secret" "slack_channel_id" {
+  repository      = var.github_config.repo
+  secret_name     = "TF_SLACK_CHANNEL_ID"
+  plaintext_value = slack_conversation.project_channel.id
+
+  depends_on = [slack_conversation.project_channel]
 }
 
 #
 # Resources (databases, storage, etc.)
 #
 module "resources" {
-  for_each = {for r in var.resources : r.name => r}
+  for_each = { for r in var.resources : r.name => r }
   source   = "../modules/resources"
 
   project_name      = var.project_name
@@ -126,7 +168,7 @@ module "resources" {
 # Apps (services, applications)
 #
 module "apps" {
-  for_each = {for a in var.apps : a.name => a}
+  for_each = { for a in var.apps : a.name => a }
   source   = "../modules/apps"
 
   project_name      = var.project_name
@@ -135,30 +177,35 @@ module "apps" {
   platform_type     = each.value.platform_type
   platform_provider = each.value.platform_provider
   platform_config   = each.value.config
-  image_tag = try(each.value.image_tag, "latest")
+  image_tag         = try(each.value.image_tag, "latest")
   github_config = {
     owner = var.github_config.owner
     repo  = var.github_config.repo
     token = var.github_token_classic
   }
-  do_ssh_key_ids = local.do_ssh_key_ids
-  domains = try(each.value.domains, [])
-  env_vars = try(each.value.env_vars, [])
-  tags = local.common_tags
+  do_ssh_key_ids            = local.do_ssh_key_ids
+  domains                   = try(each.value.domains, [])
+  env_vars                  = try(each.value.env_vars, [])
+  tags                      = local.common_tags
+  notifications_webhook_url = var.notifications_webhook_url
 
   # Apps may depend on resources being created first.
   resource_outputs = module.resources
-  depends_on = [module.resources]
+  depends_on       = [module.resources]
 }
 
 #
-# Secrets (GitHub)
+# Resource and App GitHub Secrets
+#
+# These secrets are created after resources/apps are provisioned.
+# The Slack channel secret is created separately (earlier) to ensure it's available
+# even if resource/app provisioning fails.
 #
 locals {
   # Define which outputs each resource type has (known at plan time)
   resource_output_map = {
     postgres = ["id", "urn", "connection_url"]
-    s3 = ["id", "urn", "bucket_name", "bucket_url", "region", "endpoint"]
+    s3       = ["id", "urn", "bucket_name", "bucket_url", "region", "endpoint"]
   }
 
   # Define which outputs each app type has (known at plan time)
@@ -191,17 +238,21 @@ locals {
     }
   ]...)
 
-  # Merge all GitHub secrets
-  github_secrets = merge(local.github_secrets_resources, local.github_secrets_apps)
+  # Merge resource and app GitHub secrets (Slack channel secret created separately)
+  github_secrets = merge(
+    local.github_secrets_resources,
+    local.github_secrets_apps
+  )
 }
 
 resource "github_actions_secret" "resource_outputs" {
   for_each = local.github_secrets
 
-  repository      = var.github_config.repo
-  secret_name     = each.key
+  repository  = var.github_config.repo
+  secret_name = each.key
   plaintext_value = try(
-    each.value["source_type"] == "resource" ? tostring(module.resources[each.value["resource_name"]][each.value["output_name"]]) : tostring(module.apps[each.value["app_name"]][each.value["output_name"]]),
+    each.value["source_type"] == "resource" ? tostring(module.resources[each.value["resource_name"]][each.value["output_name"]]) :
+    each.value["source_type"] == "app" ? tostring(module.apps[each.value["app_name"]][each.value["output_name"]]) :
     "NOT_SET"
   )
   depends_on = [module.resources, module.apps]

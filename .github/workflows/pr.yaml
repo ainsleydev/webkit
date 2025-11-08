@@ -4,6 +4,24 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [main]
+    paths-ignore:
+      # Documentation
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+      # GitHub repository configuration
+      - '.github/dependabot.yaml'
+      - '.github/settings.yml'
+      - '.github/SECURITY.md'
+      - '.github/release-header.md'
+      # Editor and formatting configuration
+      - '.editorconfig'
+      - '.prettierrc'
+      - '.prettierignore'
+      # Playground (has its own workflows)
+      - 'internal/playground/**'
+      # Ansible infrastructure
+      - 'platform/ansible/**'
 
 # Only allow one of these to run per branch
 concurrency:

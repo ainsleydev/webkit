@@ -7,7 +7,7 @@ import (
 )
 
 // Command defines the env commands for interacting and generating
-// github workflow/action file artifacts.
+// GitHub workflow/action file artifacts.
 var Command = &cli.Command{
 	Name:        "cicd",
 	Usage:       "Manage github workflows",
@@ -15,8 +15,6 @@ var Command = &cli.Command{
 	Commands: []*cli.Command{
 		ActionsCmd,
 		BackupCmd,
-		DeployContainerCmd,
-		DeployVMCmd,
 		PRCmd,
 		ReleaseCmd,
 		VMMaintenanceCmd,

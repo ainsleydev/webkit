@@ -126,12 +126,24 @@ jobs:
 
   # Deploy {{ .Title }} to DigitalOcean App Platform
   deploy-app-{{ .Name }}:
+    runs-on: ubuntu-latest
     needs: build-and-push
-    uses: ./.github/workflows/deploy-container.yaml
-    with:
-      app_name: {{ .Name }}
-      image_tag: sha-{{ ghVar "github.sha" }}
-    secrets: inherit
+    environment:
+      name: production-{{ .Name }}
+      {{- if .PrimaryDomain }}
+      url: https://{{ .PrimaryDomain }}
+      {{- end }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Deploy {{ .Title }} to DigitalOcean App Platform
+        uses: digitalocean/app_action/deploy@v2
+        env:
+          IMAGE_TAG_{{ printf "%s" .Type  | upper | replace "-" "_" }}: sha-{{ ghVar "github.sha" }}
+        with:
+          token: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
+          app_name: '{{ $.ProjectName }}-{{ .Name }}'
 {{- end }}
 {{- end }}
 
@@ -140,12 +152,147 @@ jobs:
 
   # Deploy {{ .Title }} to DigitalOcean VM
   deploy-vm-{{ .Name }}:
+    runs-on: ubuntu-latest
     needs: [build-and-push, setup-webkit]
-    uses: ./.github/workflows/deploy-vm.yaml
-    with:
-      app_name: {{ .Name }}
-      image_tag: sha-{{ ghVar "github.sha" }}
-      webkit_version: {{ ghVar "needs.setup-webkit.outputs.version" }}
-    secrets: inherit
+    environment:
+      name: production-{{ .Name }}
+      {{- if .PrimaryDomain }}
+      url: https://{{ .PrimaryDomain }}
+      {{- end }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Checkout WebKit Repository
+        uses: actions/checkout@v5
+        with:
+          repository: 'ainsleydev/webkit'
+          ref: {{ ghVar "needs.setup-webkit.outputs.version" }}
+          path: '.webkit-repo'
+
+      - name: Copy Ansible Files
+        run: |
+          cp -r .webkit-repo/platform/ansible ./
+          echo "Copied ansible files from WebKit {{ ghVar "needs.setup-webkit.outputs.version" }}"
+
+      - name: Download WebKit CLI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webkit
+          path: ./
+
+      - name: Make WebKit executable
+        run: chmod +x ./webkit
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: {{ ghVar "env.TF_VERSION" }}
+
+      - name: Install SOPS
+        run: |
+          curl -LO https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64
+          sudo mv sops-v3.11.0.linux.amd64 /usr/local/bin/sops
+          sudo chmod +x /usr/local/bin/sops
+          sops --version
+
+      - name: Generate production env file for {{ .Title }}
+        env:
+          SOPS_AGE_KEY: {{ ghSecret "ORG_AGE_SECRET" }}
+          DO_API_KEY: {{ ghSecret "ORG_DO_ACCESS_TOKEN" }}
+          DO_SPACES_ACCESS_KEY: {{ ghSecret "ORG_DO_SPACES_ACCESS_KEY" }}
+          DO_SPACES_SECRET_KEY: {{ ghSecret "ORG_DO_SPACES_SECRET_KEY" }}
+          BACK_BLAZE_BUCKET: {{ ghSecret "ORG_BACK_BLAZE_TF_BUCKET" }}
+          BACK_BLAZE_KEY_ID: {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }}
+          BACK_BLAZE_APPLICATION_KEY: {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+          GITHUB_TOKEN: {{ ghSecret "ORG_GITHUB_TOKEN" }}
+          GITHUB_TOKEN_CLASSIC: {{ ghSecret "ORG_GITHUB_TOKEN_CLASSIC" }}
+          SLACK_BOT_TOKEN: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          SLACK_USER_TOKEN: {{ ghSecret "ORG_SLACK_USER_TOKEN" }}
+        run: |
+          ./webkit env generate \
+            --app {{ .Name }} \
+            --environment production \
+            --output /tmp/{{ .Name }}.env
+          echo "Generated .env file for {{ .Name }}"
+
+      - name: Verify env file was generated
+        run: |
+          if [ ! -f /tmp/{{ .Name }}.env ]; then
+            echo "ERROR: Environment file was not generated at /tmp/{{ .Name }}.env"
+            exit 1
+          fi
+          echo "✓ Environment file exists at /tmp/{{ .Name }}.env"
+          echo "✓ Environment file size: $(wc -l < /tmp/{{ .Name }}.env) lines"
+          echo "✓ Environment file contains $(grep -c '=' /tmp/{{ .Name }}.env || echo 0) variables"
+
+      - name: Determine SHA
+        id: determine_sha
+        run: |
+          echo "sha={{ ghVar "github.sha" }}" >> $GITHUB_OUTPUT
+
+      - name: Run Ansible playbook for {{ .Title }}
+        uses: dawidd6/action-ansible-playbook@v4
+        with:
+          playbook: playbooks/server.yaml
+          directory: ansible
+          key: {{ ghSecret (printf "TF_PROD_%s_SSH_PRIVATE_KEY" (.Name | upper | replace "-" "_")) }}
+          inventory: |
+            [all]
+            {{ .Name }} ansible_host={{ ghSecret (printf "TF_PROD_%s_IP_ADDRESS" (.Name | upper | replace "-" "_")) }} ansible_user={{ ghSecret (printf "TF_PROD_%s_SERVER_USER" (.Name | upper | replace "-" "_")) }}
+          options: |
+            -e webkit_version={{ ghVar "needs.setup-webkit.outputs.version" }}
+            -e age_secret_key={{ ghSecret "ORG_AGE_SECRET" }}
+            -e app_name={{ .Name }}
+            -e env_name=production
+            -e git_sha={{ ghVar "steps.determine_sha.outputs.sha" }}
+            -e github_user={{ ghVar "github.repository_owner" }}
+            -e github_token={{ ghSecret "GITHUB_TOKEN" }}
+            -e domain={{ .PrimaryDomain }}
+            -e docker_image={{ ghVar "github.event.repository.name" }}-{{ .Name }}
+            -e docker_image_tag=sha-{{ ghVar "steps.determine_sha.outputs.sha" }}
+            -e docker_port={{ .Build.Port }}
+            -e enable_https={{ if eq (index .Infra.Config "https") false }}false{{ else }}{{ default "true" (index .Infra.Config "https") }}{{ end }}
+            -e admin_email={{ default "hello@ainsley.dev" (index .Infra.Config "admin_email") }}
+            -e env_file_source_path=/tmp/{{ .Name }}.env
+            -v
 {{- end }}
 {{- end }}
+
+  # Notify Slack on successful release
+  notify-success:
+    runs-on: ubuntu-latest
+    needs: [{{- range $i, $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (or (eq $app.Infra.Type "container") (eq $app.Infra.Type "vm")) }}{{- if $i }}, {{ end }}{{- if eq $app.Infra.Type "container" }}deploy-app-{{ $app.Name }}{{- else }}deploy-vm-{{ $app.Name }}{{- end }}{{- end }}{{- end }}]
+    if: success()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Send Success Notification
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Release Successful'
+          message: 'All applications have been successfully deployed to production.\n\n*Deployed Apps:*\n{{ range .Apps }}- {{ .Title }}\n{{ end }}'
+          status: 'success'
+          commit_sha: {{ ghVar "github.sha" }}
+          slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
+
+  # Notify Slack on release failure
+  notify-failure:
+    runs-on: ubuntu-latest
+    needs: [build-and-push{{- range $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (or (eq $app.Infra.Type "container") (eq $app.Infra.Type "vm")) }}, {{- if eq $app.Infra.Type "container" }}deploy-app-{{ $app.Name }}{{- else }}deploy-vm-{{ $app.Name }}{{- end }}{{- end }}{{- end }}]
+    if: failure()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Send Failure Notification
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Release Failed'
+          message: 'One or more steps in the release pipeline failed. The release pipeline has been halted and applications may not be running the latest code.'
+          status: 'failure'
+          commit_sha: {{ ghVar "github.sha" }}
+          slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}

@@ -23,14 +23,15 @@ type (
 	// tfVars represents the root structure of Terraform variables
 	// that will be written to webkit.auto.tfvars.json
 	tfVars struct {
-		ProjectName        string         `json:"project_name"`
-		ProjectTitle       string         `json:"project_title"`
-		ProjectDescription string         `json:"project_description"`
-		Environment        string         `json:"environment"`
-		GithubConfig       tfGithubConfig `json:"github_config"`
-		Apps               []tfApp        `json:"apps"`
-		Resources          []tfResource   `json:"resources"`
-		SSHKeys            []string       `json:"ssh_keys"`
+		ProjectName             string         `json:"project_name"`
+		ProjectTitle            string         `json:"project_title"`
+		ProjectDescription      string         `json:"project_description"`
+		Environment             string         `json:"environment"`
+		GithubConfig            tfGithubConfig `json:"github_config"`
+		Apps                    []tfApp        `json:"apps"`
+		Resources               []tfResource   `json:"resources"`
+		SSHKeys                 []string       `json:"ssh_keys"`
+		NotificationsWebhookURL string         `json:"notifications_webhook_url"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -82,13 +83,14 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 	}
 
 	vars := tfVars{
-		ProjectName:        t.appDef.Project.Name,
-		ProjectTitle:       t.appDef.Project.Title,
-		ProjectDescription: t.appDef.Project.Description,
-		Environment:        env.String(),
-		Apps:               make([]tfApp, 0, len(t.appDef.Apps)),
-		Resources:          make([]tfResource, 0, len(t.appDef.Resources)),
-		SSHKeys:            []string{"Ainsley - Mac Studio"},
+		ProjectName:             t.appDef.Project.Name,
+		ProjectTitle:            t.appDef.Project.Title,
+		ProjectDescription:      t.appDef.Project.Description,
+		Environment:             env.String(),
+		Apps:                    make([]tfApp, 0, len(t.appDef.Apps)),
+		Resources:               make([]tfResource, 0, len(t.appDef.Resources)),
+		SSHKeys:                 []string{"Ainsley - Mac Studio"},
+		NotificationsWebhookURL: t.appDef.Notifications.WebhookURL,
 		GithubConfig: tfGithubConfig{
 			Owner: t.appDef.Project.Repo.Owner,
 			Repo:  t.appDef.Project.Repo.Name,

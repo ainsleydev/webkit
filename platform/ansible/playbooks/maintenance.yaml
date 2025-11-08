@@ -125,7 +125,7 @@
       changed_when: false
 
     - name: Get Docker Swarm status
-      command: docker info --format '{{`{{.Swarm.LocalNodeState}}`}}'
+      shell: docker info --format '{% raw %}{{.Swarm.LocalNodeState}}{% endraw %}'
       register: swarm_status
       changed_when: false
       when: docker_check.rc == 0

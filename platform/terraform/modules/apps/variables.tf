@@ -79,7 +79,7 @@ variable "image_tag" {
 variable "github_config" {
   description = "GitHub Container Registry configuration"
   type = object({
-    owner  = string
+    owner = string
     repo  = string
     token = string
   })
@@ -108,4 +108,11 @@ variable "server_user" {
   description = "SSH user for VM deployments"
   type        = string
   default     = "root"
+}
+
+variable "notifications_webhook_url" {
+  description = "Webhook URL for notifications (Slack, Discord, etc.) - sourced from app.json"
+  type        = string
+  default     = ""
+  sensitive   = false
 }

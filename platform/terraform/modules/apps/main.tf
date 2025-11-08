@@ -22,15 +22,22 @@ module "do_app" {
   count  = var.platform_provider == "digitalocean" && var.platform_type == "container" ? 1 : 0
   source = "../../providers/digital_ocean/app"
 
-  name               = "${var.project_name}-${var.name}"
-  service_name       = var.app_type
-  region             = try(var.platform_config.region, "lon")
-  instance_size_slug = try(var.platform_config.size, "apps-s-1vcpu-1gb")
-  instance_count     = try(var.platform_config.instance_count, 1)
-  http_port          = try(var.platform_config.port, 3000)
-  image_tag          = var.image_tag
-  github_config      = var.github_config
-  health_check_path  = try(var.platform_config.health_check_path, "/")
+  # Construct the DigitalOcean App name: project-name-app-name
+  name = "${var.project_name}-${var.name}"
+
+  # Construct the GHCR repository path to match what GitHub Actions publishes
+  # GitHub Actions publishes as: ghcr.io/{owner}/{repo-name}-{app-name}
+  repository = "${var.github_config.owner}/${var.github_config.repo}-${var.name}"
+
+  service_name              = var.app_type
+  region                    = try(var.platform_config.region, "lon")
+  instance_size_slug        = try(var.platform_config.size, "apps-s-1vcpu-1gb")
+  instance_count            = try(var.platform_config.instance_count, 1)
+  http_port                 = try(var.platform_config.port, 3000)
+  image_tag                 = var.image_tag
+  github_config             = var.github_config
+  health_check_path         = try(var.platform_config.health_check_path, "/")
+  notifications_webhook_url = var.notifications_webhook_url
 
   envs = [
     for env in var.env_vars : {

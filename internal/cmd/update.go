@@ -40,14 +40,16 @@ var updateOps = []runner{
 
 	// Alphabetically
 	{files.CodeStyle, "Files: Create code style files"},
+	{files.DockerIgnore, "Files: Create .dockerignore files"},
 	{files.GitSettings, "Files: Create git settings"},
+	{files.Hooks, "Files: Create lefthook.yaml"},
 	{files.PackageJSON, "Files: Create package.json"},
 	{files.PackageJSONApp, "Files: Manipulate app package.json files"},
+	{files.PnpmWorkspace, "Files: Create pnpm-workspace.yaml"},
+	{files.PublicFolder, "Files: Create public folder for Payload apps"},
 	{files.TurboJSON, "Files: Create turbo.json"},
 	{cicd.PR, "CICD: Create PR workflows"},
 	{cicd.ReleaseWorkflow, "CICD: Create release workflow"},
-	{cicd.DeployContainerWorkflow, "CICD: Create deploy-container workflow"},
-	{cicd.DeployVMWorkflow, "CICD: Create deploy-vm workflow"},
 	{cicd.BackupWorkflow, "CICD: Create backup workflows"},
 	{cicd.VMMaintenanceWorkflow, "CICD: Create maintenance workflow"},
 	{cicd.ActionTemplates, "CICD: Create action templates"},

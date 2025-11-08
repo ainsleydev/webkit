@@ -66,12 +66,12 @@ variable "b2_application_key_id" {
 }
 
 variable "github_token" {
-  type = string
+  type      = string
   sensitive = true
 }
 
 variable "github_token_classic" {
-  type = string
+  type      = string
   sensitive = true
 }
 
@@ -149,12 +149,22 @@ variable "github_config" {
 #   type      = string
 #   sensitive = true
 # }
-#
-# variable "slack_config" {
-#   type = object({
-#     base_user  = string
-#     bot_token  = string
-#     user_token = string
-#   })
-#   description = "Configuration for Slack"
-# }
+
+variable "slack_bot_token" {
+  type        = string
+  description = "Slack bot token for CI/CD notifications"
+  sensitive   = true
+}
+
+variable "slack_user_token" {
+  type        = string
+  description = "Slack user token for CI/CD notifications"
+  sensitive   = true
+}
+
+variable "notifications_webhook_url" {
+  type        = string
+  description = "Webhook URL for notifications (Slack, Discord, etc.) - sourced from app.json"
+  sensitive   = false
+  default     = ""
+}
