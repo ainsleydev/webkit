@@ -46,7 +46,7 @@ destroy: # Destroy Terraform-managed infrastructure
 	terraform destroy -var-file=$(TFVARS)
 .PHONY: destroy
 
-# Example: DO_API_KEY="dop_..." PROJECT_TITLE="Search Spares" make test-domains
+# Example: DO_API_KEY="dop_..." PROJECT_TITLE="Project Name" make test-domains
 test-domains: # Test domain fetching from DigitalOcean project (requires DO_API_KEY and PROJECT_TITLE env vars)
 	@echo '{"project_id":"","project_title":"$(PROJECT_TITLE)","do_token":"$(DO_API_KEY)"}' | ./base/scripts/get_project_domains.sh | jq -r '.domain_urns' | tr ',' '\n' | sed 's/do:domain://'
 .PHONY: test-domains
