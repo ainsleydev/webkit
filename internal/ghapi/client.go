@@ -36,13 +36,20 @@ type DefaultClient struct {
 	client *github.Client
 }
 
-// New creates a new GitHub API client.
-// If token is empty, the client will be unauthenticated (rate limited).
+// New creates a new GitHub API client with authentication.
 func New(token string) Client {
 	enforce.NotEqual(token, "", "github token cannot be empty")
 
 	return &DefaultClient{
 		client: github.NewClient(nil).WithAuthToken(token),
+	}
+}
+
+// NewWithoutAuth creates a new unauthenticated GitHub API client.
+// Useful for accessing public repositories in tests or rate-limited scenarios.
+func NewWithoutAuth() Client {
+	return &DefaultClient{
+		client: github.NewClient(nil),
 	}
 }
 

@@ -31,8 +31,8 @@ type CommandInput struct {
 	BaseDir     string
 	SOPSCache   sops.EncrypterDecrypter
 	Manifest    *manifest.Tracker
+	Runner      executil.Runner
 	printer     *printer.Console
-	runner      executil.Runner
 }
 
 // Wrap wraps a RunCommand to work with urfave/cli.
@@ -53,7 +53,7 @@ func Wrap(command RunCommand) cli.ActionFunc {
 			FS:       fs,
 			BaseDir:  dir,
 			Manifest: manifest.NewTracker(),
-			runner:   executil.DefaultRunner(),
+			Runner:   executil.DefaultRunner(),
 		}
 
 		return command(ctx, input)
@@ -114,12 +114,4 @@ func (c *CommandInput) SOPSClient() sops.EncrypterDecrypter {
 
 func (c *CommandInput) Spinner() *spinner.Spinner {
 	return spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-}
-
-// Runner returns the command runner for executing external commands.
-func (c *CommandInput) Runner() executil.Runner {
-	if c.runner == nil {
-		c.runner = executil.DefaultRunner()
-	}
-	return c.runner
 }

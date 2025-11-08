@@ -63,7 +63,12 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Create GitHub client with the token that comes
 	// out of the box with Terraform.
-	ghClient := ghapi.New(os.Getenv("GITHUB_TOKEN_CLASSIC"))
+	var ghClient ghapi.Client
+	if token := os.Getenv("GITHUB_TOKEN_CLASSIC"); token != "" {
+		ghClient = ghapi.New(token)
+	} else {
+		ghClient = ghapi.NewWithoutAuth()
+	}
 
 	// Determine target version.
 	var targetVersion string
@@ -313,7 +318,6 @@ func bumpAppDependencies(
 func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput, app appdef.App) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
-	runner := input.Runner()
 
 	printer.LineBreak()
 	printer.Printf("Installing dependencies for %s...\n", app.Name)
@@ -324,7 +328,7 @@ func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput, app appdef
 	cmd := executil.NewCommand("pnpm", "install")
 	cmd.Dir = appDir
 
-	result, err := runner.Run(ctx, cmd)
+	result, err := input.Runner.Run(ctx, cmd)
 	spinner.Stop()
 
 	if err != nil {
@@ -343,7 +347,6 @@ func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput, app appdef
 func runPnpmMigrate(ctx context.Context, input cmdtools.CommandInput, app appdef.App) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
-	runner := input.Runner()
 
 	printer.LineBreak()
 	printer.Printf("Creating database migrations for %s...\n", app.Name)
@@ -354,7 +357,7 @@ func runPnpmMigrate(ctx context.Context, input cmdtools.CommandInput, app appdef
 	cmd := executil.NewCommand("pnpm", "migrate:create")
 	cmd.Dir = appDir
 
-	result, err := runner.Run(ctx, cmd)
+	result, err := input.Runner.Run(ctx, cmd)
 	spinner.Stop()
 
 	if err != nil {
