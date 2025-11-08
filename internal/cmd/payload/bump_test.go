@@ -15,128 +15,6 @@ import (
 	"github.com/ainsleydev/webkit/internal/pkgjson"
 )
 
-func TestFindPayloadApps(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		appDef *appdef.Definition
-		want   int
-	}{
-		"Single payload app": {
-			appDef: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "cms", Type: appdef.AppTypePayload},
-				},
-			},
-			want: 1,
-		},
-		"Multiple payload apps": {
-			appDef: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "cms", Type: appdef.AppTypePayload},
-					{Name: "admin", Type: appdef.AppTypePayload},
-				},
-			},
-			want: 2,
-		},
-		"Mixed app types": {
-			appDef: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "cms", Type: appdef.AppTypePayload},
-					{Name: "web", Type: appdef.AppTypeSvelteKit},
-					{Name: "api", Type: appdef.AppTypeGoLang},
-				},
-			},
-			want: 1,
-		},
-		"No payload apps": {
-			appDef: &appdef.Definition{
-				Apps: []appdef.App{
-					{Name: "web", Type: appdef.AppTypeSvelteKit},
-				},
-			},
-			want: 0,
-		},
-		"Empty apps": {
-			appDef: &appdef.Definition{
-				Apps: []appdef.App{},
-			},
-			want: 0,
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got := findPayloadApps(test.appDef)
-			assert.Len(t, got, test.want)
-		})
-	}
-}
-
-func TestFetchPayloadDependencies(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Fetches and parses template dependencies", func(t *testing.T) {
-		t.Parallel()
-
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`{
-				"name": "blank-template",
-				"version": "1.0.0",
-				"dependencies": {
-					"payload": "workspace:*",
-					"@payloadcms/richtext-lexical": "workspace:*",
-					"react": "^18.3.1",
-					"lexical": "0.28.0"
-				},
-				"devDependencies": {
-					"@payloadcms/eslint-config": "workspace:*",
-					"typescript": "^5.6.3"
-				}
-			}`))
-		}))
-		defer server.Close()
-
-		// Temporarily override the URL for testing
-		// In a real scenario, we'd need to make payloadTemplateURL configurable
-		ctx := context.Background()
-		deps, err := fetchPayloadDependencies(ctx)
-
-		// For now, this test will fail because we can't override the const URL
-		// We should refactor fetchPayloadDependencies to accept a URL parameter
-		_ = deps
-		_ = err
-	})
-
-	t.Run("Filters out workspace dependencies", func(t *testing.T) {
-		t.Parallel()
-
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`{
-				"dependencies": {
-					"payload": "workspace:*",
-					"react": "^18.0.0",
-					"axios": "^1.0.0"
-				}
-			}`))
-		}))
-		defer server.Close()
-
-		ctx := context.Background()
-		deps, err := fetchPayloadDependencies(ctx)
-
-		_ = deps
-		_ = err
-		// Should only have react and axios in AllDeps, not payload with workspace:*
-	})
-}
-
 func TestBumpAppDependencies(t *testing.T) {
 	t.Parallel()
 
@@ -342,5 +220,127 @@ func TestBumpAppDependencies(t *testing.T) {
 		changed, err := bumpAppDependencies(context.Background(), input, app, "3.0.0", payloadDeps, false)
 		assert.NoError(t, err) // Should not error, just skip
 		assert.False(t, changed)
+	})
+}
+
+func TestFindPayloadApps(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		appDef *appdef.Definition
+		want   int
+	}{
+		"Single payload app": {
+			appDef: &appdef.Definition{
+				Apps: []appdef.App{
+					{Name: "cms", Type: appdef.AppTypePayload},
+				},
+			},
+			want: 1,
+		},
+		"Multiple payload apps": {
+			appDef: &appdef.Definition{
+				Apps: []appdef.App{
+					{Name: "cms", Type: appdef.AppTypePayload},
+					{Name: "admin", Type: appdef.AppTypePayload},
+				},
+			},
+			want: 2,
+		},
+		"Mixed app types": {
+			appDef: &appdef.Definition{
+				Apps: []appdef.App{
+					{Name: "cms", Type: appdef.AppTypePayload},
+					{Name: "web", Type: appdef.AppTypeSvelteKit},
+					{Name: "api", Type: appdef.AppTypeGoLang},
+				},
+			},
+			want: 1,
+		},
+		"No payload apps": {
+			appDef: &appdef.Definition{
+				Apps: []appdef.App{
+					{Name: "web", Type: appdef.AppTypeSvelteKit},
+				},
+			},
+			want: 0,
+		},
+		"Empty apps": {
+			appDef: &appdef.Definition{
+				Apps: []appdef.App{},
+			},
+			want: 0,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := findPayloadApps(test.appDef)
+			assert.Len(t, got, test.want)
+		})
+	}
+}
+
+func TestFetchPayloadDependencies(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Fetches and parses template dependencies", func(t *testing.T) {
+		t.Parallel()
+
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{
+				"name": "blank-template",
+				"version": "1.0.0",
+				"dependencies": {
+					"payload": "workspace:*",
+					"@payloadcms/richtext-lexical": "workspace:*",
+					"react": "^18.3.1",
+					"lexical": "0.28.0"
+				},
+				"devDependencies": {
+					"@payloadcms/eslint-config": "workspace:*",
+					"typescript": "^5.6.3"
+				}
+			}`))
+		}))
+		defer server.Close()
+
+		// Temporarily override the URL for testing
+		// In a real scenario, we'd need to make payloadTemplateURL configurable
+		ctx := context.Background()
+		deps, err := fetchPayloadDependencies(ctx)
+
+		// For now, this test will fail because we can't override the const URL
+		// We should refactor fetchPayloadDependencies to accept a URL parameter
+		_ = deps
+		_ = err
+	})
+
+	t.Run("Filters out workspace dependencies", func(t *testing.T) {
+		t.Parallel()
+
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{
+				"dependencies": {
+					"payload": "workspace:*",
+					"react": "^18.0.0",
+					"axios": "^1.0.0"
+				}
+			}`))
+		}))
+		defer server.Close()
+
+		ctx := context.Background()
+		deps, err := fetchPayloadDependencies(ctx)
+
+		_ = deps
+		_ = err
+		// Should only have react and axios in AllDeps, not payload with workspace:*
 	})
 }
