@@ -21,6 +21,7 @@ func TestNew(t *testing.T) {
 type mockClient struct {
 	versions []mockVersion
 	releases []mockRelease
+	files    map[string][]byte // map of "path@ref" -> content
 }
 
 type mockVersion struct {
@@ -79,6 +80,14 @@ func (m *mockClient) GetLatestRelease(_ context.Context, _, _ string) (string, e
 		}
 	}
 	return "", nil
+}
+
+func (m *mockClient) GetFileContent(_ context.Context, _, _, path, ref string) ([]byte, error) {
+	key := path + "@" + ref
+	if content, ok := m.files[key]; ok {
+		return content, nil
+	}
+	return nil, nil
 }
 
 func TestGetLatestSHATag(t *testing.T) {
@@ -215,5 +224,50 @@ func TestGetLatestRelease(t *testing.T) {
 		version, err := mock.GetLatestRelease(context.Background(), "payloadcms", "payload")
 		assert.NoError(t, err)
 		assert.Equal(t, "", version)
+	})
+}
+
+func TestGetFileContent(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Returns file content", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			files: map[string][]byte{
+				"package.json@v3.0.0": []byte(`{"name":"payload","version":"3.0.0"}`),
+			},
+		}
+
+		content, err := mock.GetFileContent(context.Background(), "payloadcms", "payload", "package.json", "v3.0.0")
+		assert.NoError(t, err)
+		assert.Equal(t, []byte(`{"name":"payload","version":"3.0.0"}`), content)
+	})
+
+	t.Run("Returns nil for missing file", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			files: map[string][]byte{},
+		}
+
+		content, err := mock.GetFileContent(context.Background(), "payloadcms", "payload", "package.json", "v3.0.0")
+		assert.NoError(t, err)
+		assert.Nil(t, content)
+	})
+
+	t.Run("Handles different refs", func(t *testing.T) {
+		t.Parallel()
+
+		mock := &mockClient{
+			files: map[string][]byte{
+				"package.json@v3.0.0": []byte(`{"version":"3.0.0"}`),
+				"package.json@v3.1.0": []byte(`{"version":"3.1.0"}`),
+			},
+		}
+
+		content, err := mock.GetFileContent(context.Background(), "payloadcms", "payload", "package.json", "v3.1.0")
+		assert.NoError(t, err)
+		assert.Contains(t, string(content), "3.1.0")
 	})
 }

@@ -25,6 +25,10 @@ type Client interface {
 	// GetLatestRelease returns the latest stable release tag for a repository.
 	// Excludes draft and pre-release versions.
 	GetLatestRelease(ctx context.Context, owner, repo string) (string, error)
+
+	// GetFileContent fetches the content of a file from a repository at a specific ref (tag/branch/commit).
+	// Returns the decoded file content as bytes.
+	GetFileContent(ctx context.Context, owner, repo, path, ref string) ([]byte, error)
 }
 
 // DefaultClient implements the Client interface using the official go-github library.
@@ -132,4 +136,34 @@ func (c *DefaultClient) GetLatestRelease(ctx context.Context, owner, repo string
 	}
 
 	return "", errors.New("no stable releases found")
+}
+
+// GetFileContent fetches a file's content from a GitHub repository.
+// The ref parameter can be a tag, branch name, or commit SHA.
+//
+// Returns an error if the file doesn't exist or cannot be fetched.
+func (c *DefaultClient) GetFileContent(ctx context.Context, owner, repo, path, ref string) ([]byte, error) {
+	fileContent, _, _, err := c.client.Repositories.GetContents(
+		ctx,
+		owner,
+		repo,
+		path,
+		&github.RepositoryContentGetOptions{
+			Ref: ref,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if fileContent == nil {
+		return nil, errors.New("file content is nil")
+	}
+
+	content, err := fileContent.GetContent()
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(content), nil
 }
