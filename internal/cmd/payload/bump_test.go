@@ -14,6 +14,8 @@ import (
 	"github.com/ainsleydev/webkit/internal/pkgjson"
 )
 
+// TODO: Success path not tested due to hard-to-mock dependencies (GitHub client, HTTP calls, command runner).
+// Consider refactoring Bump to accept injectable dependencies for better testability.
 func TestBump(t *testing.T) {
 	t.Parallel()
 
