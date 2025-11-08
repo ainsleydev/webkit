@@ -1,5 +1,18 @@
 package pkgjson
 
+// Author represents a package.json author or contributor.
+// Can be used for author, contributors, and maintainers fields.
+type Author struct {
+	Name  string `json:"name"`
+	Email string `json:"email,omitempty"`
+	URL   string `json:"url,omitempty"`
+}
+
+// PnpmConfig represents pnpm-specific configuration in package.json.
+type PnpmConfig struct {
+	OnlyBuiltDependencies []string `json:"onlyBuiltDependencies,omitempty"`
+}
+
 // PackageJSON represents a package.json file structure.
 // This type preserves all fields during read/write operations while providing
 // strongly-typed access to common fields.
