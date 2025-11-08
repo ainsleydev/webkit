@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -61,6 +62,14 @@ var BumpCmd = &cli.Command{
 			Name:    "version",
 			Aliases: []string{"v"},
 			Usage:   "Bump to a specific version instead of fetching the latest",
+		},
+		&cli.BoolFlag{
+			Name:  "no-install",
+			Usage: "Skip running pnpm install after bumping dependencies",
+		},
+		&cli.BoolFlag{
+			Name:  "no-migrate",
+			Usage: "Skip running pnpm migrate:create after installing dependencies",
 		},
 	},
 	Action: cmdtools.Wrap(Bump),
@@ -142,8 +151,24 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 
 	if isDryRun {
 		printer.Println("Dry run complete. Run without --dry-run to apply changes.")
+		return nil
+	}
+
+	printer.Success("Successfully bumped Payload dependencies!")
+
+	// Run pnpm install unless --no-install is specified
+	if !input.Command.Bool("no-install") {
+		if err := runPnpmInstall(ctx, input); err != nil {
+			return errors.Wrap(err, "running pnpm install")
+		}
+
+		// Run pnpm migrate:create unless --no-migrate is specified
+		if !input.Command.Bool("no-migrate") {
+			if err := runPnpmMigrate(ctx, input); err != nil {
+				return errors.Wrap(err, "running pnpm migrate:create")
+			}
+		}
 	} else {
-		printer.Success("Successfully bumped Payload dependencies!")
 		printer.Println("\n💡 Run 'pnpm install' to update your lockfile")
 	}
 
@@ -292,4 +317,60 @@ func bumpAppDependencies(
 	}
 
 	return true, nil
+}
+
+// runPnpmInstall runs pnpm install to update the lockfile.
+func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput) error {
+	printer := input.Printer()
+	spinner := input.Spinner()
+
+	printer.LineBreak()
+	printer.Println("Installing dependencies...")
+	spinner.Start()
+	defer spinner.Stop()
+
+	cmd := exec.CommandContext(ctx, "pnpm", "install")
+	cmd.Dir = input.BaseDir
+
+	output, err := cmd.CombinedOutput()
+	spinner.Stop()
+
+	if err != nil {
+		printer.Error("Failed to run pnpm install")
+		if len(output) > 0 {
+			printer.Println(string(output))
+		}
+		return err
+	}
+
+	printer.Success("Dependencies installed successfully")
+	return nil
+}
+
+// runPnpmMigrate runs pnpm migrate:create to create database migrations.
+func runPnpmMigrate(ctx context.Context, input cmdtools.CommandInput) error {
+	printer := input.Printer()
+	spinner := input.Spinner()
+
+	printer.LineBreak()
+	printer.Println("Creating database migrations...")
+	spinner.Start()
+	defer spinner.Stop()
+
+	cmd := exec.CommandContext(ctx, "pnpm", "migrate:create")
+	cmd.Dir = input.BaseDir
+
+	output, err := cmd.CombinedOutput()
+	spinner.Stop()
+
+	if err != nil {
+		printer.Error("Failed to run pnpm migrate:create")
+		if len(output) > 0 {
+			printer.Println(string(output))
+		}
+		return err
+	}
+
+	printer.Success("Database migrations created successfully")
+	return nil
 }
