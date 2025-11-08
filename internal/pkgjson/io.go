@@ -43,16 +43,14 @@ func Read(fs afero.Fs, path string) (*PackageJSON, error) {
 }
 
 // Write writes a PackageJSON back to disk with proper formatting.
-// Merges struct fields back into the raw map to preserve unknown fields.
-// Note: Field order from the original file is not preserved due to Go map iteration being random.
+// Fields are written in npm-standard order: name, description, license, private, type, version, etc.
 func Write(fs afero.Fs, path string, pkg *PackageJSON) error {
-	// Start with raw map (contains all fields including unknown ones)
-	output := pkg.raw
-	if output == nil {
-		output = make(map[string]any)
+	// Update raw map with current struct values
+	if pkg.raw == nil {
+		pkg.raw = make(map[string]any)
 	}
 
-	// Marshal struct to get updated field values, then merge into output
+	// Marshal struct to get updated field values
 	structData, err := json.Marshal(pkg)
 	if err != nil {
 		return errors.Wrap(err, "marshalling struct")
@@ -63,24 +61,16 @@ func Write(fs afero.Fs, path string, pkg *PackageJSON) error {
 		return errors.Wrap(err, "unmarshalling struct map")
 	}
 
-	// Merge struct fields into output (updates modified fields, preserves unknown fields)
+	// Merge struct fields into raw map (preserves unknown fields)
 	for key, value := range structMap {
-		output[key] = value
+		pkg.raw[key] = value
 	}
 
-	// Marshal final map with indentation and without HTML escaping
-	buffer := &bytes.Buffer{}
-	encoder := json.NewEncoder(buffer)
-	encoder.SetIndent("", "\t")
-	encoder.SetEscapeHTML(false)
-
-	if err := encoder.Encode(output); err != nil {
+	// Marshal with field ordering preserved
+	data, err := marshalOrdered(pkg.raw)
+	if err != nil {
 		return errors.Wrap(err, "marshalling package.json")
 	}
-
-	data := buffer.Bytes()
-	// Encoder adds a newline, but we'll add our own after removing it
-	data = bytes.TrimSuffix(data, []byte("\n"))
 
 	// Add trailing newline (standard convention)
 	data = append(data, '\n')
@@ -90,4 +80,140 @@ func Write(fs afero.Fs, path string, pkg *PackageJSON) error {
 	}
 
 	return nil
+}
+
+// marshalOrdered marshals a package.json map with fields in standard npm order.
+// Standard order: name, description, license, private, type, version, scripts, dependencies, etc.
+func marshalOrdered(m map[string]any) ([]byte, error) {
+	// Define the standard field order for package.json
+	fieldOrder := []string{
+		"name",
+		"description",
+		"license",
+		"private",
+		"type",
+		"version",
+		"scripts",
+		"dependencies",
+		"devDependencies",
+		"peerDependencies",
+		"packageManager",
+		"engines",
+		"workspaces",
+		"repository",
+		"keywords",
+		"author",
+		"contributors",
+		"maintainers",
+		"homepage",
+		"bugs",
+		"funding",
+		"files",
+		"main",
+		"module",
+		"browser",
+		"bin",
+		"man",
+		"directories",
+		"config",
+		"pnpm",
+		"overrides",
+		"resolutions",
+	}
+
+	buffer := &bytes.Buffer{}
+	buffer.WriteString("{\n")
+
+	written := make(map[string]bool)
+	first := true
+
+	// Write fields in defined order
+	for _, key := range fieldOrder {
+		if value, exists := m[key]; exists {
+			if !first {
+				buffer.WriteString(",\n")
+			}
+			first = false
+
+			// Marshal the key
+			keyJSON, err := json.Marshal(key)
+			if err != nil {
+				return nil, err
+			}
+
+			// Marshal the value without HTML escaping
+			var valueJSON []byte
+			valueBuf := &bytes.Buffer{}
+			encoder := json.NewEncoder(valueBuf)
+			encoder.SetEscapeHTML(false)
+			if err := encoder.Encode(value); err != nil {
+				return nil, err
+			}
+			valueJSON = bytes.TrimSuffix(valueBuf.Bytes(), []byte("\n"))
+
+			// Write field with proper indentation
+			buffer.WriteString("\t")
+			buffer.Write(keyJSON)
+			buffer.WriteString(": ")
+
+			// Handle multiline values (objects and arrays)
+			if bytes.Contains(valueJSON, []byte("\n")) {
+				// Add indentation to each line
+				lines := bytes.Split(valueJSON, []byte("\n"))
+				for i, line := range lines {
+					if i > 0 {
+						buffer.WriteString("\n\t")
+					}
+					buffer.Write(line)
+				}
+			} else {
+				buffer.Write(valueJSON)
+			}
+
+			written[key] = true
+		}
+	}
+
+	// Write any remaining fields not in the standard order
+	for key, value := range m {
+		if !written[key] {
+			if !first {
+				buffer.WriteString(",\n")
+			}
+			first = false
+
+			keyJSON, err := json.Marshal(key)
+			if err != nil {
+				return nil, err
+			}
+
+			var valueJSON []byte
+			valueBuf := &bytes.Buffer{}
+			encoder := json.NewEncoder(valueBuf)
+			encoder.SetEscapeHTML(false)
+			if err := encoder.Encode(value); err != nil {
+				return nil, err
+			}
+			valueJSON = bytes.TrimSuffix(valueBuf.Bytes(), []byte("\n"))
+
+			buffer.WriteString("\t")
+			buffer.Write(keyJSON)
+			buffer.WriteString(": ")
+
+			if bytes.Contains(valueJSON, []byte("\n")) {
+				lines := bytes.Split(valueJSON, []byte("\n"))
+				for i, line := range lines {
+					if i > 0 {
+						buffer.WriteString("\n\t")
+					}
+					buffer.Write(line)
+				}
+			} else {
+				buffer.Write(valueJSON)
+			}
+		}
+	}
+
+	buffer.WriteString("\n}")
+	return buffer.Bytes(), nil
 }
