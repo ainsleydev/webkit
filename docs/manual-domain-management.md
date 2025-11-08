@@ -22,6 +22,7 @@ The configuration uses an external data source to query the DigitalOcean API and
 Before using this in Terraform, you can test the domain fetching functionality:
 
 ```bash
+cd platform/terraform
 DO_API_KEY="your-api-key" PROJECT_ID="1f726d4d-1d77-4ee0-a4b6-a1a66720209a" make test-domains
 ```
 
@@ -120,6 +121,7 @@ The `get_project_domains.sh` script:
 Use the test command to verify everything works:
 
 ```bash
+cd platform/terraform
 DO_API_KEY="your-api-key" PROJECT_ID="1f726d4d-..." make test-domains
 ```
 
