@@ -1,4 +1,5 @@
 {
+	"$schema": "../../schema.json",
 	"webkit_version": "v0.0.35",
 	"project": {
 		"name": "my-website",
@@ -72,6 +73,12 @@
 					"size": "s-2vcpu-4gb"
 				}
 			},
+			"domains": [
+				{
+					"name": "cms.my-website.com",
+					"type": "primary"
+				}
+			],
 			"env": {
 				"dev": {
 					"DATABASE_URL": {"source": "resource", "value": "db.connection_url"},

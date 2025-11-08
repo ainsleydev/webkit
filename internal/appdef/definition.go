@@ -16,16 +16,22 @@ const (
 )
 
 type (
+	// Definition represents the complete webkit application configuration.
+	// It defines the structure of the app.json file used to configure
+	// all aspects of a webkit project including apps, resources, and infrastructure.
 	Definition struct {
-		WebkitVersion string        `json:"webkit_version"`
-		Project       Project       `json:"project"`
-		Notifications Notifications `json:"notifications"`
-		Shared        Shared        `json:"shared"`
-		Resources     []Resource    `json:"resources"`
-		Apps          []App         `json:"apps"`
+		Schema        string        `json:"$schema,omitempty" jsonschema:"-" description:"JSON Schema reference for IDE validation and autocomplete"`
+		WebkitVersion string        `json:"webkit_version" jsonschema:"required" description:"The version of webkit used to generate this configuration"`
+		Project       Project       `json:"project" jsonschema:"required" description:"Project metadata including name, title, and repository information"`
+		Notifications Notifications `json:"notifications" description:"Alert and notification settings for the project"`
+		Shared        Shared        `json:"shared" description:"Shared configuration that applies to all apps"`
+		Resources     []Resource    `json:"resources" description:"Infrastructure resources such as databases and storage buckets"`
+		Apps          []App         `json:"apps" jsonschema:"required,minItems=1" description:"Application definitions for all apps in the project"`
 	}
+	// Shared contains configuration that is shared across all applications
+	// in the project, such as common environment variables.
 	Shared struct {
-		Env Environment `json:"env"`
+		Env Environment `json:"env" description:"Environment variables shared across all apps"`
 	}
 	// SkippedItems contains information about apps and resources
 	// that were filtered out due to not being Terraform managed.
@@ -51,7 +57,6 @@ func Read(root afero.Fs) (*Definition, error) {
 		return nil, err
 	}
 
-	// TODO: Apply defaults and return validation errors if the user has fucked it.
 	def := &Definition{}
 	if err = json.Unmarshal(data, def); err != nil {
 		return nil, errors.New("unmarshalling app definition: " + err.Error())
@@ -59,6 +64,11 @@ func Read(root afero.Fs) (*Definition, error) {
 
 	if err = def.ApplyDefaults(); err != nil {
 		return nil, err
+	}
+
+	// Validate the definition
+	if errs := def.Validate(root); errs != nil {
+		return nil, fmt.Errorf("validation failed with %d error(s): %w", len(errs), errs[0])
 	}
 
 	return def, nil

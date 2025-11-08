@@ -8,20 +8,22 @@ import (
 )
 
 type (
-	// Resource represents an infrastructure component that an application
-	// depends on, such as databases, storage buckets or caches.
+	// Resource represents an infrastructure component that applications
+	// depend on, such as databases, storage buckets, or caches.
+	// Resources are provisioned via Terraform and their outputs are
+	// made available to apps through environment variables.
 	Resource struct {
-		Name             string               `json:"name"`
-		Type             ResourceType         `json:"type"`
-		Provider         ResourceProvider     `json:"provider"`
-		Config           map[string]any       `json:"config"` // Conforms to Terraform
-		Backup           ResourceBackupConfig `json:"backup,omitempty"`
-		TerraformManaged *bool                `json:"terraformManaged,omitempty"`
+		Name             string               `json:"name" jsonschema:"required" description:"Unique identifier for the resource (used in environment variable references)"`
+		Type             ResourceType         `json:"type" jsonschema:"required" description:"Type of resource to provision (postgres, s3)"`
+		Provider         ResourceProvider     `json:"provider" jsonschema:"required" description:"Cloud provider hosting this resource (digitalocean, backblaze)"`
+		Config           map[string]any       `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
+		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
+		TerraformManaged *bool                `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`
 	}
-	// ResourceBackupConfig defines optional backup behavior for a resource.
-	// Backup is enabled by default.
+	// ResourceBackupConfig defines backup behaviour for a resource.
+	// Backups are enabled by default for all resources that support them.
 	ResourceBackupConfig struct {
-		Enabled bool `json:"enabled"`
+		Enabled bool `json:"enabled" description:"Whether to enable automated backups for this resource"`
 	}
 )
 

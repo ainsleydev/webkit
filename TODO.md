@@ -1,42 +1,5 @@
 # TODO
 
-## Validation
-
-We need to utilise one of the following packages to transform our `internal/appdef/definition.go` to
-a JSON schema.
-
-- https://github.com/invopop/jsonschema
-- https://github.com/swaggest/jsonschema-go
-
-Leaning towards the latter as it's a bit more verbose.
-
-**Flow**:
-
-- Add JSON schema decorations to the structures.
-- Create a new `webkit validate` command which will ensure the `app.json` is valid and true.
-- Add the same validation to `wekit update`, so it's validate every time a user updates.
-- Ensure proper testing.
-- We need to add a go:generate command that will generate the schema so Payload repos can use it for
-  nice linting
-
-**Required Validation**:
-
-- Validate domains in app specs, they should not contain https.
-- Validate .Path on App and ensure it exists.
-- Validate that terraform-managed VM apps (.Infra.Type == "vm" (or app) && .IsTerraformManaged())
-  must have at least one domain in .Domains array.
-- Validate that domain names in .Domains should not contain protocol prefixes (e.g., "https://").
-- Validate these issues with env.
--
-
-```
-Run ./webkit env generate \
-Fetching Terraform outputs...
-resolving app "cms" env: terraform output not found for environment 'production', resource 'https://ams3', output 'digitaloceanspaces.com' (referenced by key 'S3_ENDPOINT')
-Generated .env file for cms
-****
-```
-
 ## Documentation
 
 Create and update the `docs` folder with coherent documentation for WebKit.
@@ -51,4 +14,5 @@ Create beautiful looking README's from the `app.json` data.
 - Improve Coverage.
 - Create an infra plan —destroy command. So we can see whats destroyed?
 - Seed utilities for Payload, it's a pain having to do it all the time.
+
 

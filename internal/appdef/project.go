@@ -2,22 +2,24 @@ package appdef
 
 type (
 	// Project defines root metadata about the project such as business
-	// names and descriptions.
+	// names and descriptions. This information is used throughout webkit
+	// for identification, documentation generation, and CI/CD configuration.
 	Project struct {
-		Name        string     `json:"name"`
-		Title       string     `json:"title"`
-		Description string     `json:"description"`
-		Repo        GitHubRepo `json:"repo"`
+		Name        string     `json:"name" jsonschema:"required" description:"Unique identifier for the project (lowercase, hyphenated)"`
+		Title       string     `json:"title" jsonschema:"required" description:"Human-readable project name displayed in documentation and UIs"`
+		Description string     `json:"description" jsonschema:"required" description:"Brief description of the project's purpose and functionality"`
+		Repo        GitHubRepo `json:"repo" jsonschema:"required" description:"GitHub repository information for the project"`
 	}
-	// GitHubRepo defines the metadata for GitHub repositories within
-	// an app declaration.
+	// GitHubRepo defines the metadata for GitHub repositories.
+	// This information is used for CI/CD integration, secrets management,
+	// and linking documentation to the source repository.
 	GitHubRepo struct {
-		Owner string `json:"owner"`
-		Name  string `json:"name"`
+		Owner string `json:"owner" jsonschema:"required" description:"GitHub username or organisation that owns the repository"`
+		Name  string `json:"name" jsonschema:"required" description:"Repository name on GitHub"`
 	}
 	// Notifications defines alert and notification settings for the project.
 	// Provider-agnostic configuration supporting Slack, Discord, and other webhook-based services.
 	Notifications struct {
-		WebhookURL string `json:"webhook_url,omitzero"`
+		WebhookURL string `json:"webhook_url,omitzero" description:"Webhook URL for sending notifications (e.g., Slack webhook)"`
 	}
 )
