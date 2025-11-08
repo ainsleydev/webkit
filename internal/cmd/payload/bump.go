@@ -2,7 +2,6 @@ package payload
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,12 +15,34 @@ import (
 	"github.com/ainsleydev/webkit/internal/pkgjson"
 )
 
+// ============================================================================
+// Constants
+// ============================================================================
+
 const (
 	// payloadOwner is the GitHub organisation that owns the Payload repository.
 	payloadOwner = "payloadcms"
 	// payloadRepo is the GitHub repository name for Payload CMS.
 	payloadRepo = "payload"
+	// payloadTemplateURL is the URL to Payload's blank template package.json.
+	payloadTemplateURL = "https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/blank/package.json"
 )
+
+// ============================================================================
+// Types
+// ============================================================================
+
+// payloadDependencies contains all dependencies from Payload's package.json.
+// This is used to determine which dependencies should be bumped when updating.
+type payloadDependencies struct {
+	Dependencies    map[string]string
+	DevDependencies map[string]string
+	AllDeps         map[string]string // Combined for easier lookup
+}
+
+// ============================================================================
+// Command
+// ============================================================================
 
 var BumpCmd = &cli.Command{
 	Name:  "bump",
@@ -45,8 +66,12 @@ var BumpCmd = &cli.Command{
 	Action: cmdtools.Wrap(Bump),
 }
 
+// ============================================================================
+// Main bump function
+// ============================================================================
+
 // Bump updates all Payload CMS and associated dependencies to the latest version.
-// It fetches Payload's package.json from GitHub to determine which dependencies to update,
+// It fetches Payload's template package.json to determine which dependencies to update,
 // ensuring compatibility with the target Payload version.
 func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
@@ -80,18 +105,13 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 		printer.Success(fmt.Sprintf("Latest version: %s", targetVersion))
 	}
 
-	// Fetch Payload's dependencies from GitHub to know what to bump.
-	printer.Println("Fetching Payload's dependencies...")
-	payloadDeps, err := fetchPayloadDependencies(ctx, ghClient, targetVersion)
-
-	indent, _ := json.MarshalIndent(payloadDeps, "", "  ")
-	fmt.Println(string(indent))
-	return nil
-
+	// Fetch Payload's dependencies from the template to know what to bump.
+	printer.Println("Fetching Payload's template dependencies...")
+	payloadDeps, err := fetchPayloadDependencies(ctx)
 	if err != nil {
 		return errors.Wrap(err, "fetching Payload dependencies")
 	}
-	printer.Success(fmt.Sprintf("Found %d dependencies in Payload %s", len(payloadDeps.AllDeps), targetVersion))
+	printer.Success(fmt.Sprintf("Found %d dependencies in Payload template", len(payloadDeps.AllDeps)))
 
 	printer.LineBreak()
 
@@ -130,6 +150,10 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 	return nil
 }
 
+// ============================================================================
+// Helper functions
+// ============================================================================
+
 // findPayloadApps returns all apps with type "payload".
 func findPayloadApps(appDef *appdef.Definition) []appdef.App {
 	var apps []appdef.App
@@ -139,6 +163,39 @@ func findPayloadApps(appDef *appdef.Definition) []appdef.App {
 		}
 	}
 	return apps
+}
+
+// fetchPayloadDependencies fetches Payload CMS's template package.json from GitHub
+// and extracts all its dependencies (excluding workspace:* versions).
+//
+// This uses the blank template's package.json which represents the actual dependencies
+// a new Payload project would have. For payload and @payloadcms/* packages that use
+// workspace:*, we'll fetch the actual version from GitHub releases.
+func fetchPayloadDependencies(ctx context.Context) (*payloadDependencies, error) {
+	// Fetch template package.json from GitHub (always use main branch).
+	pkg, err := pkgjson.FetchFromRemote(ctx, payloadTemplateURL)
+	if err != nil {
+		return nil, errors.Wrap(err, "fetching template package.json")
+	}
+
+	// Combine all dependencies, filtering out workspace:* versions.
+	allDeps := make(map[string]string)
+	for name, version := range pkg.Dependencies {
+		if version != "workspace:*" {
+			allDeps[name] = version
+		}
+	}
+	for name, version := range pkg.DevDependencies {
+		if version != "workspace:*" {
+			allDeps[name] = version
+		}
+	}
+
+	return &payloadDependencies{
+		Dependencies:    pkg.Dependencies,
+		DevDependencies: pkg.DevDependencies,
+		AllDeps:         allDeps,
+	}, nil
 }
 
 // bumpAppDependencies updates Payload and associated dependencies for a single app.
@@ -166,10 +223,19 @@ func bumpAppDependencies(
 		return false, err
 	}
 
-	// Create a matcher that matches any dependency in Payload's package.json.
-	// This includes payload, @payloadcms/* packages, AND all other dependencies
-	// that Payload uses (e.g., lexical, @lexical/headless, etc.).
-	matcher := pkgjson.SetMatcher(payloadDeps.AllDeps)
+	// Create a matcher that matches any dependency in Payload's template.
+	// This includes all dependencies from the template, plus payload and @payloadcms/* packages.
+	matcher := func(name string) bool {
+		// Match if in template's dependencies.
+		if _, ok := payloadDeps.AllDeps[name]; ok {
+			return true
+		}
+		// Also match payload and @payloadcms/* packages (even if they had workspace:*).
+		if name == "payload" || (len(name) > len("@payloadcms/") && name[0:len("@payloadcms/")] == "@payloadcms/") {
+			return true
+		}
+		return false
+	}
 
 	// Check if this package has any matchable dependencies.
 	if !pkg.HasAnyDependency(matcher) {
@@ -179,7 +245,7 @@ func bumpAppDependencies(
 
 	// Create a version formatter that:
 	// - Uses the target version for payload and @payloadcms/* packages
-	// - Uses Payload's version for other dependencies
+	// - Uses template's version for other dependencies
 	// - Respects exact vs caret formatting based on dependency type
 	versionFormatter := func(name, _ string) string {
 		// For payload and @payloadcms/* packages, use the target version.
@@ -189,10 +255,9 @@ func bumpAppDependencies(
 			return pkgjson.FormatVersion(version, useExact)
 		}
 
-		// For other dependencies, use Payload's version.
-		if payloadVer, ok := payloadDeps.AllDeps[name]; ok {
-			// Preserve exact versions from Payload (they know what they're doing).
-			return payloadVer
+		// For other dependencies, use template's version.
+		if templateVer, ok := payloadDeps.AllDeps[name]; ok {
+			return templateVer
 		}
 
 		// This shouldn't happen since matcher should prevent this.
@@ -221,7 +286,7 @@ func bumpAppDependencies(
 
 	// Write updated package.json if not a dry run.
 	if !dryRun {
-		if err := pkgjson.Write(input.FS, pkgPath, pkg); err != nil {
+		if err = pkgjson.Write(input.FS, pkgPath, pkg); err != nil {
 			return false, err
 		}
 	}

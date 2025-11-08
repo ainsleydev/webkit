@@ -60,14 +60,6 @@ func UpdateDependencies(
 	return result
 }
 
-// SetMatcher returns a matcher that matches any dependency in the provided set.
-func SetMatcher(deps map[string]string) DependencyMatcher {
-	return func(name string) bool {
-		_, ok := deps[name]
-		return ok
-	}
-}
-
 // FormatVersion formats a version string with optional caret prefix.
 // If useExactVersion is true, returns the version as-is.
 // Otherwise, adds a caret (^) prefix.

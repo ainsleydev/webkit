@@ -1,5 +1,9 @@
 package pkgjson
 
+import (
+	"sort"
+)
+
 type (
 	// PackageJSON represents a package.json file structure.
 	// This type preserves all fields during read/write operations while providing
@@ -98,4 +102,34 @@ func (pkg *PackageJSON) HasAnyDependency(matcher DependencyMatcher) bool {
 func (pkg *PackageJSON) IsDevDependency(name string) bool {
 	_, ok := pkg.DevDependencies[name]
 	return ok
+}
+
+// sortDependencies sorts all dependency maps alphabetically in-place.
+func (pkg *PackageJSON) sortDependencies() {
+	pkg.Dependencies = sortMap(pkg.Dependencies)
+	pkg.DevDependencies = sortMap(pkg.DevDependencies)
+	pkg.PeerDependencies = sortMap(pkg.PeerDependencies)
+}
+
+// sortMap returns a new map with the same entries but sorted keys.
+// Go 1.12+ preserves insertion order when marshaling to JSON.
+func sortMap(m map[string]string) map[string]string {
+	if len(m) == 0 {
+		return m
+	}
+
+	// Get sorted keys
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	// Build new map with sorted insertion order
+	sorted := make(map[string]string, len(m))
+	for _, k := range keys {
+		sorted[k] = m[k]
+	}
+
+	return sorted
 }

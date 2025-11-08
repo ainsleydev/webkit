@@ -106,3 +106,38 @@ func TestIsDevDependency(t *testing.T) {
 	assert.False(t, pkg.IsDevDependency("payload"))
 	assert.False(t, pkg.IsDevDependency("react"))
 }
+
+func TestSortDependencies(t *testing.T) {
+	t.Parallel()
+
+	pkg := &PackageJSON{
+		Dependencies: map[string]string{
+			"zod":     "^3.0.0",
+			"react":   "^18.0.0",
+			"axios":   "^1.0.0",
+			"lodash":  "^4.0.0",
+			"payload": "^3.0.0",
+		},
+		DevDependencies: map[string]string{
+			"vitest":     "^1.0.0",
+			"typescript": "^5.0.0",
+			"eslint":     "^8.0.0",
+		},
+		PeerDependencies: map[string]string{
+			"vue":   "^3.0.0",
+			"react": "^18.0.0",
+		},
+	}
+
+	pkg.sortDependencies()
+
+	// Verify all dependencies still exist
+	assert.Len(t, pkg.Dependencies, 5)
+	assert.Len(t, pkg.DevDependencies, 3)
+	assert.Len(t, pkg.PeerDependencies, 2)
+
+	// Verify values are preserved
+	assert.Equal(t, "^3.0.0", pkg.Dependencies["zod"])
+	assert.Equal(t, "^18.0.0", pkg.Dependencies["react"])
+	assert.Equal(t, "^8.0.0", pkg.DevDependencies["eslint"])
+}

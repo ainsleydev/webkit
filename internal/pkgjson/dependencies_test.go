@@ -82,21 +82,6 @@ func TestPayloadMatcher(t *testing.T) {
 	assert.False(t, matcher("@types/node"))
 }
 
-func TestSetMatcher(t *testing.T) {
-	t.Parallel()
-
-	deps := map[string]string{
-		"payload": "3.0.0",
-		"lexical": "0.28.0",
-	}
-
-	matcher := SetMatcher(deps)
-
-	assert.True(t, matcher("payload"))
-	assert.True(t, matcher("lexical"))
-	assert.False(t, matcher("react"))
-}
-
 func TestFormatVersion(t *testing.T) {
 	t.Parallel()
 
