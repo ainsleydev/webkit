@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/pkgjson"
 )
 
@@ -21,7 +20,7 @@ func TestBumpAppDependencies(t *testing.T) {
 	t.Run("Updates matching Payload dependencies", func(t *testing.T) {
 		t.Parallel()
 
-		fs := afero.NewMemMapFs()
+		fs, input := setup(t)
 		appPath := "apps/cms"
 		pkgPath := appPath + "/package.json"
 
@@ -56,10 +55,6 @@ func TestBumpAppDependencies(t *testing.T) {
 			},
 		}
 
-		input := cmdtools.CommandInput{
-			FS: fs,
-		}
-
 		changed, err := bumpAppDependencies(context.Background(), input, app, "3.0.0", payloadDeps, false)
 		require.NoError(t, err)
 		assert.True(t, changed)
@@ -79,7 +74,7 @@ func TestBumpAppDependencies(t *testing.T) {
 	t.Run("Skips if no matching dependencies", func(t *testing.T) {
 		t.Parallel()
 
-		fs := afero.NewMemMapFs()
+		fs, input := setup(t)
 		appPath := "apps/web"
 		pkgPath := appPath + "/package.json"
 
@@ -105,10 +100,6 @@ func TestBumpAppDependencies(t *testing.T) {
 			},
 		}
 
-		input := cmdtools.CommandInput{
-			FS: fs,
-		}
-
 		changed, err := bumpAppDependencies(context.Background(), input, app, "3.0.0", payloadDeps, false)
 		require.NoError(t, err)
 		assert.False(t, changed)
@@ -117,7 +108,7 @@ func TestBumpAppDependencies(t *testing.T) {
 	t.Run("Respects dry-run mode", func(t *testing.T) {
 		t.Parallel()
 
-		fs := afero.NewMemMapFs()
+		fs, input := setup(t)
 		appPath := "apps/cms"
 		pkgPath := appPath + "/package.json"
 
@@ -142,10 +133,6 @@ func TestBumpAppDependencies(t *testing.T) {
 			AllDeps: map[string]string{},
 		}
 
-		input := cmdtools.CommandInput{
-			FS: fs,
-		}
-
 		// Run in dry-run mode
 		changed, err := bumpAppDependencies(context.Background(), input, app, "3.0.0", payloadDeps, true)
 		require.NoError(t, err)
@@ -160,7 +147,7 @@ func TestBumpAppDependencies(t *testing.T) {
 	t.Run("Uses exact versions for devDependencies", func(t *testing.T) {
 		t.Parallel()
 
-		fs := afero.NewMemMapFs()
+		fs, input := setup(t)
 		appPath := "apps/cms"
 		pkgPath := appPath + "/package.json"
 
@@ -185,10 +172,6 @@ func TestBumpAppDependencies(t *testing.T) {
 			AllDeps: map[string]string{},
 		}
 
-		input := cmdtools.CommandInput{
-			FS: fs,
-		}
-
 		changed, err := bumpAppDependencies(context.Background(), input, app, "3.0.0", payloadDeps, false)
 		require.NoError(t, err)
 		assert.True(t, changed)
@@ -206,16 +189,13 @@ func TestBumpAppDependencies(t *testing.T) {
 	t.Run("Returns error if package.json doesn't exist", func(t *testing.T) {
 		t.Parallel()
 
-		fs := afero.NewMemMapFs()
+		_, input := setup(t)
 		app := appdef.App{
 			Name: "cms",
 			Path: "apps/cms",
 		}
 
 		payloadDeps := &payloadDependencies{}
-		input := cmdtools.CommandInput{
-			FS: fs,
-		}
 
 		changed, err := bumpAppDependencies(context.Background(), input, app, "3.0.0", payloadDeps, false)
 		assert.NoError(t, err) // Should not error, just skip
