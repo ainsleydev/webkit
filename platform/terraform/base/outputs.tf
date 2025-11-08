@@ -114,3 +114,8 @@ output "slack_channel_name" {
   value       = slack_conversation.project_channel.name
   sensitive   = false
 }
+
+output "digitalocean_project_id" {
+  description = "DigitalOcean project ID (add this to your variables after first apply to preserve manual domains)"
+  value       = digitalocean_project.this.id
+}

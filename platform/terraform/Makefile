@@ -46,6 +46,11 @@ destroy: # Destroy Terraform-managed infrastructure
 	terraform destroy -var-file=$(TFVARS)
 .PHONY: destroy
 
+# Example: DO_API_KEY="dop_..." PROJECT_ID="1f726d4d-1d77-4ee0-a4b6-a1a66720209a" make test-domains
+test-domains: # Test domain fetching from DigitalOcean project (requires DO_API_KEY and PROJECT_ID env vars)
+	@echo '{"project_id":"$(PROJECT_ID)","do_token":"$(DO_API_KEY)"}' | ./base/scripts/get_project_domains.sh | jq -r '.domain_urns' | tr ',' '\n' | sed 's/do:domain://'
+.PHONY: test-domains
+
 pack: # Packs up the folder for AI.
 	npx repopack --ignore "**/*.log,tmp/,**/fixtures/**,.env,.tfvars,**/.terraform/**,.terraform.lock.hcl" --output Terraform.txt
 .PHONY: pack

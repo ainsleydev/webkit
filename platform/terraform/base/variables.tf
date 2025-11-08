@@ -49,6 +49,12 @@ variable "do_spaces_secret_key" {
   sensitive = true
 }
 
+variable "digitalocean_project_id" {
+  type        = string
+  description = "DigitalOcean project ID for preserving manually-added domains. Leave empty on first apply, then populate with project ID from output."
+  default     = ""
+}
+
 variable "b2_application_key" {
   type      = string
   sensitive = true

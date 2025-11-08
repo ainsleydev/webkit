@@ -267,17 +267,46 @@ resource "github_actions_secret" "resource_outputs" {
 # Important: We use direct URN references (not try/compact) to maintain a static
 # list structure. This allows Terraform to properly track changes even when URN
 # values are unknown at plan time, preventing the two-apply cycle.
+#
+# Additionally, we preserve manually-added domains by querying the existing project
+# via the DigitalOcean API and merging domain URNs with Terraform-managed resources.
+
+# Query existing project to get manually-added domain URNs
+# This allows manual domain management while Terraform manages other resources
+data "external" "project_domains" {
+  program = ["bash", "${path.module}/scripts/get_project_domains.sh"]
+
+  query = {
+    project_id = try(var.digitalocean_project_id, "")
+    do_token   = var.do_token
+  }
+}
+
+locals {
+  # Parse comma-separated domain URNs from external script
+  manual_domain_urns = data.external.project_domains.result.domain_urns != "" ? split(",", data.external.project_domains.result.domain_urns) : []
+
+  # Terraform-managed resources (apps, databases, buckets, etc.)
+  terraform_managed_urns = concat(
+    [for r in module.resources : r.urn if r.platform_provider == "digitalocean"],
+    [for a in module.apps : a.urn if a.platform_provider == "digitalocean"]
+  )
+
+  # Merge Terraform-managed resources with manually-added domains
+  all_project_resources = concat(
+    local.terraform_managed_urns,
+    local.manual_domain_urns
+  )
+}
+
 resource "digitalocean_project" "this" {
   name        = var.project_title
   description = var.project_description
   purpose     = "Web Application"
   environment = title(var.environment)
 
-  # Direct references maintain static list structure even with unknown URN values
-  resources = concat(
-    [for r in module.resources : r.urn if r.platform_provider == "digitalocean"],
-    [for a in module.apps : a.urn if a.platform_provider == "digitalocean"]
-  )
+  # Includes both Terraform-managed resources and manually-added domains
+  resources = local.all_project_resources
 
   depends_on = [module.resources, module.apps]
 }
