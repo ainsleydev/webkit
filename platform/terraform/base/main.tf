@@ -277,8 +277,9 @@ data "external" "project_domains" {
   program = ["bash", "${path.module}/scripts/get_project_domains.sh"]
 
   query = {
-    project_id = try(var.digitalocean_project_id, "")
-    do_token   = var.do_token
+    project_id    = try(var.digitalocean_project_id, "")
+    project_title = var.project_title
+    do_token      = var.do_token
   }
 }
 

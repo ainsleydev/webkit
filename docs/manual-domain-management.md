@@ -12,10 +12,13 @@ The configuration uses an external data source to query the DigitalOcean API and
 
 ### How It Works
 
-1. **External Script**: `platform/terraform/base/scripts/get_project_domains.sh` queries the DO API to fetch domain URNs
-2. **Data Source**: The `external` data source in `main.tf` calls the script
-3. **Merge Logic**: Domain URNs are merged with Terraform-managed resource URNs
-4. **Project Update**: The `digitalocean_project` resource receives the combined list
+1. **Project Lookup**: The script receives the `project_title` from Terraform variables
+2. **Find Project ID**: If no `project_id` is provided, the script queries `/v2/projects` to find the project by title/name
+3. **Fetch Domains**: Using the project ID, the script queries `/v2/projects/{id}/resources` to get domain URNs
+4. **Merge Logic**: Domain URNs are merged with Terraform-managed resource URNs in `main.tf`
+5. **Project Update**: The `digitalocean_project` resource receives the combined list
+
+This approach eliminates the need to manually set `digitalocean_project_id` - the script automatically finds the project by its title.
 
 ## Testing
 
@@ -23,7 +26,7 @@ Before using this in Terraform, you can test the domain fetching functionality:
 
 ```bash
 cd platform/terraform
-DO_API_KEY="your-api-key" PROJECT_ID="1f726d4d-1d77-4ee0-a4b6-a1a66720209a" make test-domains
+DO_API_KEY="your-api-key" PROJECT_TITLE="Search Spares" make test-domains
 ```
 
 Example output:
@@ -32,55 +35,28 @@ searchspares.co.uk
 searchspares.com
 ```
 
+The script will automatically find the project by its title and fetch the domains.
+
 ## Setup Instructions
 
-### First Apply (New Project)
+No special setup required! The script automatically finds your project by its title (from `project_title` variable).
 
-1. Run your first Terraform apply without setting `digitalocean_project_id`:
+**Important:** The DigitalOcean project must be created first (via initial `webkit infra apply`) before you can manually add domains to it.
 
-```bash
-terraform apply
-```
+### Workflow
 
-2. After successful apply, note the `digitalocean_project_id` output:
-
-```bash
-terraform output digitalocean_project_id
-# Output: 1f726d4d-1d77-4ee0-a4b6-a1a66720209a
-```
-
-3. Set the project ID for future applies using one of these methods:
-
-   **Option A: Environment Variable (Recommended)**
-   ```bash
-   export TF_VAR_digitalocean_project_id="1f726d4d-1d77-4ee0-a4b6-a1a66720209a"
-   ```
-
-   **Option B: terraform.tfvars file**
-   ```hcl
-   digitalocean_project_id = "1f726d4d-1d77-4ee0-a4b6-a1a66720209a"
-   ```
-
-   **Option C: Command line**
-   ```bash
-   terraform apply -var="digitalocean_project_id=1f726d4d-1d77-4ee0-a4b6-a1a66720209a"
-   ```
-
-### Subsequent Applies
-
-Once the project ID is set, you can freely:
-- ✅ Add domains to the project manually in DigitalOcean UI
-- ✅ Remove domains from the project manually
-- ✅ Add new Terraform-managed resources (databases, apps, etc.)
-- ✅ Terraform will preserve your manual domains while managing its own resources
+1. **First Apply**: Run `webkit infra apply` to create the DigitalOcean project and infrastructure
+2. **Add Domains**: Once the project exists, you can manually add domains via the DigitalOcean UI
+3. **Subsequent Applies**: Run `webkit infra plan/apply` - your manually-added domains will be preserved
 
 ### Managing Domains
 
-**To add a domain manually:**
-1. Go to DigitalOcean UI → Projects → Your Project
-2. Click "Add Resources"
-3. Select your domain(s)
-4. Run `terraform apply` - your domains will be preserved
+**To add a domain manually (after initial terraform apply):**
+1. Ensure the DigitalOcean project has been created by Terraform
+2. Go to DigitalOcean UI → Projects → Your Project
+3. Click "Add Resources"
+4. Select your domain(s)
+5. Run `webkit infra apply` - your domains will be preserved
 
 **To remove a domain manually:**
 1. Go to DigitalOcean UI → Projects → Your Project
@@ -109,10 +85,11 @@ yum install jq curl
 
 The `get_project_domains.sh` script:
 
-1. Receives `project_id` and `do_token` as JSON input from Terraform
-2. Queries the DO API: `GET /v2/projects/{project_id}/resources`
-3. Filters resources for domain URNs (format: `do:domain:example.com`)
-4. Returns comma-separated domain URNs to Terraform
+1. Receives `project_id` (optional), `project_title`, and `do_token` as JSON input from Terraform
+2. If `project_id` is empty, queries `GET /v2/projects` to find the project by title
+3. Queries the DO API: `GET /v2/projects/{project_id}/resources` to get all project resources
+4. Filters resources for domain URNs (format: `do:domain:example.com`)
+5. Returns comma-separated domain URNs to Terraform
 
 ## Troubleshooting
 
@@ -122,12 +99,12 @@ Use the test command to verify everything works:
 
 ```bash
 cd platform/terraform
-DO_API_KEY="your-api-key" PROJECT_ID="1f726d4d-..." make test-domains
+DO_API_KEY="your-api-key" PROJECT_TITLE="Your Project Name" make test-domains
 ```
 
 If the test fails, check:
 - DO_API_KEY is set correctly
-- PROJECT_ID is the correct UUID (get it from `terraform output digitalocean_project_id`)
+- PROJECT_TITLE matches the exact project name in DigitalOcean
 - jq and curl are installed
 - API token has project read permissions
 
@@ -155,9 +132,9 @@ yum install jq
 ### Domains Being Removed
 
 If domains are still being removed:
-1. Verify `digitalocean_project_id` is set correctly
-2. Check that the script is executable
-3. Verify `jq` is installed
+1. Verify your `project_title` variable matches the exact project name in DigitalOcean
+2. Check that the script is executable (`chmod +x platform/terraform/base/scripts/get_project_domains.sh`)
+3. Verify `jq` is installed (`brew install jq` on macOS)
 4. Check DO API token has project read permissions
 5. Run the test script to verify domain fetching works
 
@@ -180,16 +157,15 @@ curl -X GET \
 - ✅ **Flexible**: Manage domains manually while Terraform manages infrastructure
 - ✅ **No Conflicts**: Terraform won't remove manually-added domains
 - ✅ **Infrastructure as Code**: Apps, databases, and buckets still managed by Terraform
-- ✅ **Simple**: One-time setup after first apply
+- ✅ **Zero Configuration**: Automatically finds project by title - no manual setup required
 - ✅ **API-Driven**: Uses official DigitalOcean API for reliability
 - ✅ **Testable**: Test script validates functionality before Terraform apply
 
 ## Limitations
 
 - Requires `jq`, `curl`, and `bash` in the execution environment
-- Adds a small API call overhead on each Terraform plan/apply
-- First apply must complete before manual domain management works
-- Project ID must be set manually after first apply
+- Adds a small API call overhead on each Terraform plan/apply (queries `/v2/projects` and `/v2/projects/{id}/resources`)
+- First apply must complete before manual domain management works (project must exist before domains can be added to it)
 
 ## Files
 
