@@ -168,7 +168,7 @@ func bumpAppDependencies(
 	matcher := pkgjson.SetMatcher(payloadDeps.AllDeps)
 
 	// Check if this package has any matchable dependencies.
-	if !pkgjson.HasAnyDependency(pkg, matcher) {
+	if !pkg.HasAnyDependency(matcher) {
 		printer.Printf("• %s - no Payload-related dependencies found\n", app.Name)
 		return false, nil
 	}
@@ -181,7 +181,7 @@ func bumpAppDependencies(
 		// For payload and @payloadcms/* packages, use the target version.
 		isPayloadPackage := name == "payload" || (len(name) > len("@payloadcms/") && name[0:len("@payloadcms/")] == "@payloadcms/")
 		if isPayloadPackage {
-			useExact := pkgjson.IsDevDependency(pkg, name)
+			useExact := pkg.IsDevDependency(name)
 			return pkgjson.FormatVersion(version, useExact)
 		}
 

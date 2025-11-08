@@ -36,7 +36,7 @@ func Read(fs afero.Fs, path string) (*PackageJSON, error) {
 		raw:              raw,
 	}
 
-	// Extract strongly-typed fields.
+	// Extract all strongly-typed fields from raw map.
 	if name, ok := raw["name"].(string); ok {
 		pkg.Name = name
 	}
@@ -45,6 +45,98 @@ func Read(fs afero.Fs, path string) (*PackageJSON, error) {
 	}
 	if description, ok := raw["description"].(string); ok {
 		pkg.Description = description
+	}
+	if license, ok := raw["license"].(string); ok {
+		pkg.License = license
+	}
+	if pkgType, ok := raw["type"].(string); ok {
+		pkg.Type = pkgType
+	}
+	if packageManager, ok := raw["packageManager"].(string); ok {
+		pkg.PackageManager = packageManager
+	}
+	if homepage, ok := raw["homepage"].(string); ok {
+		pkg.Homepage = homepage
+	}
+	if main, ok := raw["main"].(string); ok {
+		pkg.Main = main
+	}
+	if module, ok := raw["module"].(string); ok {
+		pkg.Module = module
+	}
+
+	// Extract any-type fields.
+	if private, ok := raw["private"]; ok {
+		pkg.Private = private
+	}
+	if scripts, ok := raw["scripts"]; ok {
+		pkg.Scripts, _ = scripts.(map[string]any)
+	}
+	if engines, ok := raw["engines"]; ok {
+		pkg.Engines, _ = engines.(map[string]any)
+	}
+	if workspaces, ok := raw["workspaces"]; ok {
+		pkg.Workspaces = workspaces
+	}
+	if repository, ok := raw["repository"]; ok {
+		pkg.Repository = repository
+	}
+	if author, ok := raw["author"]; ok {
+		pkg.Author = author
+	}
+	if contributors, ok := raw["contributors"]; ok {
+		pkg.Contributors = contributors
+	}
+	if maintainers, ok := raw["maintainers"]; ok {
+		pkg.Maintainers = maintainers
+	}
+	if bugs, ok := raw["bugs"]; ok {
+		pkg.Bugs = bugs
+	}
+	if funding, ok := raw["funding"]; ok {
+		pkg.Funding = funding
+	}
+	if browser, ok := raw["browser"]; ok {
+		pkg.Browser = browser
+	}
+	if bin, ok := raw["bin"]; ok {
+		pkg.Bin = bin
+	}
+	if man, ok := raw["man"]; ok {
+		pkg.Man = man
+	}
+	if directories, ok := raw["directories"]; ok {
+		pkg.Directories = directories
+	}
+	if config, ok := raw["config"]; ok {
+		pkg.Config = config
+	}
+	if pnpm, ok := raw["pnpm"]; ok {
+		pkg.Pnpm = pnpm
+	}
+	if overrides, ok := raw["overrides"]; ok {
+		pkg.Overrides = overrides
+	}
+	if resolutions, ok := raw["resolutions"]; ok {
+		pkg.Resolutions = resolutions
+	}
+
+	// Extract string arrays.
+	if keywords, ok := raw["keywords"].([]interface{}); ok {
+		pkg.Keywords = make([]string, 0, len(keywords))
+		for _, kw := range keywords {
+			if str, ok := kw.(string); ok {
+				pkg.Keywords = append(pkg.Keywords, str)
+			}
+		}
+	}
+	if files, ok := raw["files"].([]interface{}); ok {
+		pkg.Files = make([]string, 0, len(files))
+		for _, f := range files {
+			if str, ok := f.(string); ok {
+				pkg.Files = append(pkg.Files, str)
+			}
+		}
 	}
 
 	// Extract dependencies.
@@ -58,7 +150,7 @@ func Read(fs afero.Fs, path string) (*PackageJSON, error) {
 // Write writes a PackageJSON back to disk with proper formatting.
 // It preserves all fields from the original raw map and updates modified fields.
 func Write(fs afero.Fs, path string, pkg *PackageJSON) error {
-	// Update the raw map with our changes.
+	// Update the raw map with all strongly-typed fields.
 	if pkg.Name != "" {
 		pkg.raw["name"] = pkg.Name
 	}
@@ -67,6 +159,88 @@ func Write(fs afero.Fs, path string, pkg *PackageJSON) error {
 	}
 	if pkg.Description != "" {
 		pkg.raw["description"] = pkg.Description
+	}
+	if pkg.License != "" {
+		pkg.raw["license"] = pkg.License
+	}
+	if pkg.Type != "" {
+		pkg.raw["type"] = pkg.Type
+	}
+	if pkg.PackageManager != "" {
+		pkg.raw["packageManager"] = pkg.PackageManager
+	}
+	if pkg.Homepage != "" {
+		pkg.raw["homepage"] = pkg.Homepage
+	}
+	if pkg.Main != "" {
+		pkg.raw["main"] = pkg.Main
+	}
+	if pkg.Module != "" {
+		pkg.raw["module"] = pkg.Module
+	}
+
+	// Update any-type fields.
+	if pkg.Private != nil {
+		pkg.raw["private"] = pkg.Private
+	}
+	if pkg.Scripts != nil {
+		pkg.raw["scripts"] = pkg.Scripts
+	}
+	if pkg.Engines != nil {
+		pkg.raw["engines"] = pkg.Engines
+	}
+	if pkg.Workspaces != nil {
+		pkg.raw["workspaces"] = pkg.Workspaces
+	}
+	if pkg.Repository != nil {
+		pkg.raw["repository"] = pkg.Repository
+	}
+	if pkg.Author != nil {
+		pkg.raw["author"] = pkg.Author
+	}
+	if pkg.Contributors != nil {
+		pkg.raw["contributors"] = pkg.Contributors
+	}
+	if pkg.Maintainers != nil {
+		pkg.raw["maintainers"] = pkg.Maintainers
+	}
+	if pkg.Bugs != nil {
+		pkg.raw["bugs"] = pkg.Bugs
+	}
+	if pkg.Funding != nil {
+		pkg.raw["funding"] = pkg.Funding
+	}
+	if pkg.Browser != nil {
+		pkg.raw["browser"] = pkg.Browser
+	}
+	if pkg.Bin != nil {
+		pkg.raw["bin"] = pkg.Bin
+	}
+	if pkg.Man != nil {
+		pkg.raw["man"] = pkg.Man
+	}
+	if pkg.Directories != nil {
+		pkg.raw["directories"] = pkg.Directories
+	}
+	if pkg.Config != nil {
+		pkg.raw["config"] = pkg.Config
+	}
+	if pkg.Pnpm != nil {
+		pkg.raw["pnpm"] = pkg.Pnpm
+	}
+	if pkg.Overrides != nil {
+		pkg.raw["overrides"] = pkg.Overrides
+	}
+	if pkg.Resolutions != nil {
+		pkg.raw["resolutions"] = pkg.Resolutions
+	}
+
+	// Update string arrays.
+	if pkg.Keywords != nil {
+		pkg.raw["keywords"] = pkg.Keywords
+	}
+	if pkg.Files != nil {
+		pkg.raw["files"] = pkg.Files
 	}
 
 	// Update dependency maps.

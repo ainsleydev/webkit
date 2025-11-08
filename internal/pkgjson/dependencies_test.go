@@ -78,9 +78,9 @@ func TestHasDependency(t *testing.T) {
 		},
 	}
 
-	assert.True(t, HasDependency(pkg, "payload"))
-	assert.True(t, HasDependency(pkg, "typescript"))
-	assert.False(t, HasDependency(pkg, "react"))
+	assert.True(t, pkg.HasDependency("payload"))
+	assert.True(t, pkg.HasDependency("typescript"))
+	assert.False(t, pkg.HasDependency("react"))
 }
 
 func TestHasAnyDependency(t *testing.T) {
@@ -124,7 +124,7 @@ func TestHasAnyDependency(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got := HasAnyDependency(test.pkg, test.matcher)
+			got := test.pkg.HasAnyDependency(test.matcher)
 			assert.Equal(t, test.want, got)
 		})
 	}
@@ -142,9 +142,9 @@ func TestIsDevDependency(t *testing.T) {
 		},
 	}
 
-	assert.True(t, IsDevDependency(pkg, "typescript"))
-	assert.False(t, IsDevDependency(pkg, "payload"))
-	assert.False(t, IsDevDependency(pkg, "react"))
+	assert.True(t, pkg.IsDevDependency("typescript"))
+	assert.False(t, pkg.IsDevDependency("payload"))
+	assert.False(t, pkg.IsDevDependency("react"))
 }
 
 func TestPayloadMatcher(t *testing.T) {
@@ -195,54 +195,4 @@ func TestFormatVersion(t *testing.T) {
 			assert.Equal(t, test.want, got)
 		})
 	}
-}
-
-func TestMergeDependencies(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Adds new dependencies", func(t *testing.T) {
-		t.Parallel()
-
-		target := map[string]string{
-			"react": "^18.0.0",
-		}
-		source := map[string]string{
-			"payload": "3.0.0",
-		}
-
-		MergeDependencies(target, source, false)
-
-		assert.Equal(t, "^18.0.0", target["react"])
-		assert.Equal(t, "3.0.0", target["payload"])
-	})
-
-	t.Run("Preserves existing without overwrite", func(t *testing.T) {
-		t.Parallel()
-
-		target := map[string]string{
-			"payload": "3.0.0",
-		}
-		source := map[string]string{
-			"payload": "3.1.0",
-		}
-
-		MergeDependencies(target, source, false)
-
-		assert.Equal(t, "3.0.0", target["payload"])
-	})
-
-	t.Run("Overwrites existing with overwrite", func(t *testing.T) {
-		t.Parallel()
-
-		target := map[string]string{
-			"payload": "3.0.0",
-		}
-		source := map[string]string{
-			"payload": "3.1.0",
-		}
-
-		MergeDependencies(target, source, true)
-
-		assert.Equal(t, "3.1.0", target["payload"])
-	})
 }

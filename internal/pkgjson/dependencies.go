@@ -59,8 +59,8 @@ func UpdateDependencies(
 	return result
 }
 
-// HasDependency checks if a package.json has a specific dependency in any dependency type.
-func HasDependency(pkg *PackageJSON, name string) bool {
+// HasDependency checks if the package has a specific dependency in any dependency type.
+func (pkg *PackageJSON) HasDependency(name string) bool {
 	if _, ok := pkg.Dependencies[name]; ok {
 		return true
 	}
@@ -73,8 +73,8 @@ func HasDependency(pkg *PackageJSON, name string) bool {
 	return false
 }
 
-// HasAnyDependency checks if a package.json has any dependencies matching the matcher.
-func HasAnyDependency(pkg *PackageJSON, matcher DependencyMatcher) bool {
+// HasAnyDependency checks if the package has any dependencies matching the matcher.
+func (pkg *PackageJSON) HasAnyDependency(matcher DependencyMatcher) bool {
 	for name := range pkg.Dependencies {
 		if matcher(name) {
 			return true
@@ -94,7 +94,7 @@ func HasAnyDependency(pkg *PackageJSON, matcher DependencyMatcher) bool {
 }
 
 // IsDevDependency checks if a package is in devDependencies.
-func IsDevDependency(pkg *PackageJSON, name string) bool {
+func (pkg *PackageJSON) IsDevDependency(name string) bool {
 	_, ok := pkg.DevDependencies[name]
 	return ok
 }
@@ -122,14 +122,4 @@ func FormatVersion(version string, useExactVersion bool) string {
 		return version
 	}
 	return fmt.Sprintf("^%s", version)
-}
-
-// MergeDependencies merges dependencies from source into target.
-// Existing dependencies in target are preserved unless overwrite is true.
-func MergeDependencies(target, source map[string]string, overwrite bool) {
-	for name, version := range source {
-		if _, exists := target[name]; !exists || overwrite {
-			target[name] = version
-		}
-	}
 }
