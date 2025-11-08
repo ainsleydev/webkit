@@ -12,10 +12,29 @@ The configuration uses an external data source to query the DigitalOcean API and
 
 ### How It Works
 
-1. **External Script**: `scripts/get_project_domains.sh` queries the DO API to fetch domain URNs
+1. **External Script**: `platform/terraform/base/scripts/get_project_domains.sh` queries the DO API to fetch domain URNs
 2. **Data Source**: The `external` data source in `main.tf` calls the script
 3. **Merge Logic**: Domain URNs are merged with Terraform-managed resource URNs
 4. **Project Update**: The `digitalocean_project` resource receives the combined list
+
+## Testing
+
+Before using this in Terraform, you can test the domain fetching functionality:
+
+```bash
+DO_API_KEY="your-api-key" PROJECT_NAME="Search Spares" make test-domains
+```
+
+Example output:
+```
+searchspares.co.uk
+searchspares.com
+```
+
+If no domains are found:
+```
+No domains found
+```
 
 ## Setup Instructions
 
@@ -78,6 +97,18 @@ Once the project ID is set, you can freely:
 - **curl**: Used to query the DigitalOcean API
 - **bash**: The script is written in bash
 
+Install dependencies:
+```bash
+# macOS
+brew install jq curl
+
+# Ubuntu/Debian
+apt-get install jq curl
+
+# CentOS/RHEL
+yum install jq curl
+```
+
 ## How the Script Works
 
 The `get_project_domains.sh` script:
@@ -88,6 +119,20 @@ The `get_project_domains.sh` script:
 4. Returns comma-separated domain URNs to Terraform
 
 ## Troubleshooting
+
+### Testing the Script
+
+Use the test script to verify everything works:
+
+```bash
+DO_API_KEY="your-api-key" PROJECT_NAME="Your Project Name" make test-domains
+```
+
+If the test fails, check:
+- DO_API_KEY is set correctly
+- PROJECT_NAME matches exactly (case-sensitive)
+- jq and curl are installed
+- API token has project read permissions
 
 ### Script Execution Error
 
@@ -117,6 +162,21 @@ If domains are still being removed:
 2. Check that the script is executable
 3. Verify `jq` is installed
 4. Check DO API token has project read permissions
+5. Run the test script to verify domain fetching works
+
+### API Permission Errors
+
+Ensure your DigitalOcean API token has:
+- Read access to projects
+- Read access to project resources
+
+You can test this with:
+```bash
+curl -X GET \
+  -H "Authorization: Bearer $DO_API_KEY" \
+  -H "Content-Type: application/json" \
+  "https://api.digitalocean.com/v2/projects"
+```
 
 ## Benefits
 
@@ -125,9 +185,19 @@ If domains are still being removed:
 - ✅ **Infrastructure as Code**: Apps, databases, and buckets still managed by Terraform
 - ✅ **Simple**: One-time setup after first apply
 - ✅ **API-Driven**: Uses official DigitalOcean API for reliability
+- ✅ **Testable**: Test script validates functionality before Terraform apply
 
 ## Limitations
 
 - Requires `jq`, `curl`, and `bash` in the execution environment
 - Adds a small API call overhead on each Terraform plan/apply
 - First apply must complete before manual domain management works
+- Project ID must be set manually after first apply
+
+## Files
+
+- `platform/terraform/base/scripts/get_project_domains.sh` - Main script called by Terraform
+- `platform/terraform/base/main.tf` - Terraform configuration with external data source
+- `platform/terraform/base/variables.tf` - Variable definition for `digitalocean_project_id`
+- `platform/terraform/base/outputs.tf` - Output for project ID after first apply
+- `Makefile` - Contains `test-domains` target for testing domain fetching
