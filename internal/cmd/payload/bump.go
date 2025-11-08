@@ -2,7 +2,9 @@ package payload
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -59,8 +61,9 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 
 	printer.Printf("Found %d Payload app(s)\n", len(payloadApps))
 
-	// Create GitHub client.
-	ghClient := ghapi.New("")
+	// Create GitHub client with the token that comes
+	// out of the box with Terraform.
+	ghClient := ghapi.New(os.Getenv("GITHUB_TOKEN_CLASSIC"))
 
 	// Determine target version.
 	var targetVersion string
@@ -80,6 +83,11 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 	// Fetch Payload's dependencies from GitHub to know what to bump.
 	printer.Println("Fetching Payload's dependencies...")
 	payloadDeps, err := fetchPayloadDependencies(ctx, ghClient, targetVersion)
+
+	indent, _ := json.MarshalIndent(payloadDeps, "", "  ")
+	fmt.Println(string(indent))
+	return nil
+
 	if err != nil {
 		return errors.Wrap(err, "fetching Payload dependencies")
 	}

@@ -47,7 +47,7 @@ func fetchPayloadDependencies(ctx context.Context, client ghapi.Client, version 
 		DevDependencies map[string]string `json:"devDependencies"`
 	}
 
-	if err := json.Unmarshal(content, &pkgJSON); err != nil {
+	if err = json.Unmarshal(content, &pkgJSON); err != nil {
 		return nil, errors.Wrap(err, "parsing package.json")
 	}
 
