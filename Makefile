@@ -31,33 +31,8 @@ setup: # Install all dev tools (Homebrew packages + Go tools + action-validator)
 	@echo "Setup complete."
 .PHONY: setup
 
-test-domains: ## Test domain fetching from DigitalOcean project (requires DO_API_KEY and PROJECT_NAME env vars)
-	@if [ -z "$$DO_API_KEY" ]; then \
-		echo "Error: DO_API_KEY not set"; \
-		echo "Usage: DO_API_KEY=\"...\" PROJECT_NAME=\"Search Spares\" make test-domains"; \
-		exit 1; \
-	fi
-	@if [ -z "$$PROJECT_NAME" ]; then \
-		echo "Error: PROJECT_NAME not set"; \
-		echo "Usage: DO_API_KEY=\"...\" PROJECT_NAME=\"Search Spares\" make test-domains"; \
-		exit 1; \
-	fi
-	@PROJECT_ID=$$(curl -s -X GET \
-		-H "Authorization: Bearer $$DO_API_KEY" \
-		"https://api.digitalocean.com/v2/projects" | \
-		jq -r --arg name "$$PROJECT_NAME" '.projects[] | select(.name == $$name) | .id'); \
-	if [ -z "$$PROJECT_ID" ] || [ "$$PROJECT_ID" = "null" ]; then \
-		echo "Error: Project '$$PROJECT_NAME' not found"; \
-		exit 1; \
-	fi; \
-	RESULT=$$(echo "{\"project_id\":\"$$PROJECT_ID\",\"do_token\":\"$$DO_API_KEY\"}" | \
-		./platform/terraform/base/scripts/get_project_domains.sh); \
-	DOMAIN_URNS=$$(echo "$$RESULT" | jq -r '.domain_urns'); \
-	if [ -z "$$DOMAIN_URNS" ] || [ "$$DOMAIN_URNS" = "" ]; then \
-		echo "No domains found"; \
-	else \
-		echo "$$DOMAIN_URNS" | tr ',' '\n' | sed 's/do:domain://'; \
-	fi
+test-domains: ## Test domain fetching from DigitalOcean project (requires DO_API_KEY env var and PROJECT_NAME)
+	@./platform/terraform/base/scripts/test_domains.sh -p "$$PROJECT_NAME"
 .PHONY: test-domains
 
 help: # Show available commands
