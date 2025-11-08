@@ -21,6 +21,10 @@ type Client interface {
 	//
 	// Returns empty string if no sha tags are found or if the query fails.
 	GetLatestSHATag(ctx context.Context, owner, repo, appName string) (string, error)
+
+	// GetLatestRelease returns the latest stable release tag for a repository.
+	// Excludes draft and pre-release versions.
+	GetLatestRelease(ctx context.Context, owner, repo string) (string, error)
 }
 
 // DefaultClient implements the Client interface using the official go-github library.
@@ -96,4 +100,36 @@ func (c *DefaultClient) GetLatestSHATag(ctx context.Context, owner, repo, appNam
 	})
 
 	return shaTags[0].Tag, nil
+}
+
+// GetLatestRelease fetches the latest stable release for a repository.
+// It excludes draft and pre-release versions.
+//
+// Returns an error if no stable releases are found or if the API request fails.
+func (c *DefaultClient) GetLatestRelease(ctx context.Context, owner, repo string) (string, error) {
+	// Fetch all releases for the repository.
+	releases, _, err := c.client.Repositories.ListReleases(
+		ctx,
+		owner,
+		repo,
+		&github.ListOptions{PerPage: 50},
+	)
+	if err != nil {
+		return "", err
+	}
+
+	if len(releases) == 0 {
+		return "", errors.New("no releases found")
+	}
+
+	// Find the first stable release (not draft, not pre-release).
+	for _, release := range releases {
+		if !release.GetDraft() && !release.GetPrerelease() {
+			tag := release.GetTagName()
+			// Remove 'v' prefix if present.
+			return strings.TrimPrefix(tag, "v"), nil
+		}
+	}
+
+	return "", errors.New("no stable releases found")
 }

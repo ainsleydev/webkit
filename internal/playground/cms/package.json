@@ -1,0 +1,20 @@
+{
+	"name": "cms",
+	"version": "1.0.0",
+	"description": "Test Payload CMS app",
+	"type": "module",
+	"dependencies": {
+		"payload": "3.50.0",
+		"@payloadcms/db-sqlite": "3.50.0",
+		"@payloadcms/richtext-lexical": "3.50.0",
+		"react": "^18.0.0"
+	},
+	"devDependencies": {
+		"@payloadcms/eslint-config": "3.50.0",
+		"typescript": "^5.0.0"
+	},
+	"scripts": {
+		"build": "pnpm payload build",
+		"dev": "pnpm payload dev"
+	}
+}
