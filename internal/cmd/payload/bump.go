@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
@@ -148,9 +147,9 @@ func bumpAppDependencies(
 	pkgPath := filepath.Join(app.Path, "package.json")
 
 	// Check if package.json exists.
-	exists, err := afero.Exists(input.FS, pkgPath)
+	exists, err := pkgjson.Exists(input.FS, pkgPath)
 	if err != nil {
-		return false, errors.Wrap(err, "checking if package.json exists")
+		return false, err
 	}
 	if !exists {
 		printer.Printf("⚠️  Skipping %s - package.json not found at %s\n", app.Name, pkgPath)
@@ -163,21 +162,10 @@ func bumpAppDependencies(
 		return false, err
 	}
 
-	// Create a matcher that matches:
-	// 1. payload and @payloadcms/* packages (always update to target version)
-	// 2. Any dependency that Payload itself uses (update to Payload's version)
-	matcher := func(name string) bool {
-		// Always match payload and @payloadcms/* packages.
-		if name == "payload" {
-			return true
-		}
-		if len(name) > len("@payloadcms/") && name[0:len("@payloadcms/")] == "@payloadcms/" {
-			return true
-		}
-		// Match if this dependency is in Payload's package.json.
-		_, inPayload := payloadDeps.AllDeps[name]
-		return inPayload
-	}
+	// Create a matcher that matches any dependency in Payload's package.json.
+	// This includes payload, @payloadcms/* packages, AND all other dependencies
+	// that Payload uses (e.g., lexical, @lexical/headless, etc.).
+	matcher := pkgjson.SetMatcher(payloadDeps.AllDeps)
 
 	// Check if this package has any matchable dependencies.
 	if !pkgjson.HasAnyDependency(pkg, matcher) {

@@ -92,6 +92,34 @@ func TestWrite(t *testing.T) {
 	assert.Contains(t, string(data), "payload")
 }
 
+func TestExists(t *testing.T) {
+	t.Parallel()
+
+	t.Run("File exists", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		path := "package.json"
+
+		err := afero.WriteFile(fs, path, []byte(`{}`), 0o644)
+		require.NoError(t, err)
+
+		exists, err := Exists(fs, path)
+		require.NoError(t, err)
+		assert.True(t, exists)
+	})
+
+	t.Run("File does not exist", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+
+		exists, err := Exists(fs, "package.json")
+		require.NoError(t, err)
+		assert.False(t, exists)
+	})
+}
+
 func TestReadWrite(t *testing.T) {
 	t.Parallel()
 

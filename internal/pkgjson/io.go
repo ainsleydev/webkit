@@ -7,6 +7,15 @@ import (
 	"github.com/spf13/afero"
 )
 
+// Exists checks if a package.json file exists at the given path.
+func Exists(fs afero.Fs, path string) (bool, error) {
+	exists, err := afero.Exists(fs, path)
+	if err != nil {
+		return false, errors.Wrap(err, "checking if package.json exists")
+	}
+	return exists, nil
+}
+
 // Read reads and parses a package.json file from the filesystem.
 // It preserves all fields in the raw map to ensure no data loss when writing back.
 func Read(fs afero.Fs, path string) (*PackageJSON, error) {
