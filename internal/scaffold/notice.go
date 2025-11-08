@@ -21,7 +21,7 @@ var commentMap = map[string]string{
 	".md":           "<!-- %s -->",
 }
 
-// noticeForFile prepends a file-type-appropriate “do not edit”
+// noticeForFile prepends a file-type-appropriate "do not edit"
 // header to generated files dependent on the file type.
 func noticeForFile(path string) string {
 	ext := filepath.Ext(path)
