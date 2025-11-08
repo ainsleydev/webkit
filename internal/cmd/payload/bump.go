@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -14,6 +13,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/ghapi"
 	"github.com/ainsleydev/webkit/internal/pkgjson"
+	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
 var BumpCmd = &cli.Command{
@@ -308,6 +308,7 @@ func bumpAppDependencies(
 func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput, app appdef.App) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
+	runner := input.Runner()
 
 	printer.LineBreak()
 	printer.Printf("Installing dependencies for %s...\n", app.Name)
@@ -315,16 +316,16 @@ func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput, app appdef
 	defer spinner.Stop()
 
 	appDir := filepath.Join(input.BaseDir, app.Path)
-	cmd := exec.CommandContext(ctx, "pnpm", "install")
+	cmd := executil.NewCommand("pnpm", "install")
 	cmd.Dir = appDir
 
-	output, err := cmd.CombinedOutput()
+	result, err := runner.Run(ctx, cmd)
 	spinner.Stop()
 
 	if err != nil {
 		printer.Error(fmt.Sprintf("Failed to run pnpm install for %s", app.Name))
-		if len(output) > 0 {
-			printer.Println(string(output))
+		if result.Output != "" {
+			printer.Println(result.Output)
 		}
 		return err
 	}
@@ -337,6 +338,7 @@ func runPnpmInstall(ctx context.Context, input cmdtools.CommandInput, app appdef
 func runPnpmMigrate(ctx context.Context, input cmdtools.CommandInput, app appdef.App) error {
 	printer := input.Printer()
 	spinner := input.Spinner()
+	runner := input.Runner()
 
 	printer.LineBreak()
 	printer.Printf("Creating database migrations for %s...\n", app.Name)
@@ -344,16 +346,16 @@ func runPnpmMigrate(ctx context.Context, input cmdtools.CommandInput, app appdef
 	defer spinner.Stop()
 
 	appDir := filepath.Join(input.BaseDir, app.Path)
-	cmd := exec.CommandContext(ctx, "pnpm", "migrate:create")
+	cmd := executil.NewCommand("pnpm", "migrate:create")
 	cmd.Dir = appDir
 
-	output, err := cmd.CombinedOutput()
+	result, err := runner.Run(ctx, cmd)
 	spinner.Stop()
 
 	if err != nil {
 		printer.Error(fmt.Sprintf("Failed to run pnpm migrate:create for %s", app.Name))
-		if len(output) > 0 {
-			printer.Println(string(output))
+		if result.Output != "" {
+			printer.Println(result.Output)
 		}
 		return err
 	}
