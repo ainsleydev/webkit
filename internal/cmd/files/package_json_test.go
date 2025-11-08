@@ -585,4 +585,140 @@ func TestPackageJSONApp(t *testing.T) {
 			assert.NotContains(t, fileContent, "\\u003c", "Should not contain escaped <")
 		}
 	})
+
+	t.Run("Payload app includes migration scripts", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{Name: "my-website"},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "cms",
+					Build: appdef.Build{
+						Port: 3000,
+					},
+				},
+			},
+		}
+		require.NoError(t, appDef.ApplyDefaults())
+
+		input := setup(t, fs, appDef)
+
+		require.NoError(t, afero.WriteFile(fs, "cms/package.json", []byte(`{
+	"name": "cms",
+	"version": "1.0.0",
+	"scripts": {
+		"dev": "payload dev"
+	}
+}`), 0o644))
+
+		err := PackageJSONApp(t.Context(), input)
+		assert.NoError(t, err)
+
+		t.Log("Payload migration scripts added")
+		{
+			data, err := afero.ReadFile(fs, "cms/package.json")
+			require.NoError(t, err)
+
+			var pkg map[string]any
+			require.NoError(t, json.Unmarshal(data, &pkg))
+
+			scripts, ok := pkg["scripts"].(map[string]any)
+			require.True(t, ok)
+
+			assert.Equal(t, "NODE_ENV=production payload migrate:create", scripts["migrate:create"])
+			assert.Equal(t, "NODE_ENV=production payload migrate:status", scripts["migrate:status"])
+		}
+	})
+
+	t.Run("SvelteKit app does not include migration scripts", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{Name: "my-website"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "web",
+					Build: appdef.Build{
+						Port: 3001,
+					},
+				},
+			},
+		}
+		require.NoError(t, appDef.ApplyDefaults())
+
+		input := setup(t, fs, appDef)
+
+		require.NoError(t, afero.WriteFile(fs, "web/package.json", []byte(`{
+	"name": "web",
+	"version": "1.0.0",
+	"scripts": {
+		"dev": "vite dev"
+	}
+}`), 0o644))
+
+		err := PackageJSONApp(t.Context(), input)
+		assert.NoError(t, err)
+
+		t.Log("No migration scripts for SvelteKit")
+		{
+			data, err := afero.ReadFile(fs, "web/package.json")
+			require.NoError(t, err)
+
+			var pkg map[string]any
+			require.NoError(t, json.Unmarshal(data, &pkg))
+
+			scripts, ok := pkg["scripts"].(map[string]any)
+			require.True(t, ok)
+
+			_, hasMigrateCreate := scripts["migrate:create"]
+			_, hasMigrateStatus := scripts["migrate:status"]
+			assert.False(t, hasMigrateCreate)
+			assert.False(t, hasMigrateStatus)
+		}
+	})
+}
+
+func TestGetAppTypeScripts(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input appdef.AppType
+		want  map[string]string
+	}{
+		"Payload includes migration scripts": {
+			input: appdef.AppTypePayload,
+			want: map[string]string{
+				"migrate:create": "NODE_ENV=production payload migrate:create",
+				"migrate:status": "NODE_ENV=production payload migrate:status",
+			},
+		},
+		"SvelteKit returns empty map": {
+			input: appdef.AppTypeSvelteKit,
+			want:  map[string]string{},
+		},
+		"GoLang returns empty map": {
+			input: appdef.AppTypeGoLang,
+			want:  map[string]string{},
+		},
+		"Unknown type returns empty map": {
+			input: appdef.AppType("unknown"),
+			want:  map[string]string{},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := getAppTypeScripts(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
 }

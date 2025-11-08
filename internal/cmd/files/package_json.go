@@ -9,10 +9,31 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
+
+// appTypeScripts maps app types to their specific package.json scripts.
+// These scripts are injected into app package.json files based on the app type.
+var appTypeScripts = map[appdef.AppType]map[string]string{
+	appdef.AppTypePayload: {
+		"migrate:create": "NODE_ENV=production payload migrate:create",
+		"migrate:status": "NODE_ENV=production payload migrate:status",
+	},
+	appdef.AppTypeSvelteKit: {},
+	appdef.AppTypeGoLang:    {},
+}
+
+// getAppTypeScripts returns the scripts for a given app type.
+// Returns an empty map if no scripts are defined for the app type.
+func getAppTypeScripts(appType appdef.AppType) map[string]string {
+	if scripts, ok := appTypeScripts[appType]; ok {
+		return scripts
+	}
+	return make(map[string]string)
+}
 
 // PackageJSON scaffolds a root JSON file to act as a
 // starting point for repos.
@@ -160,6 +181,12 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 		pkg.Scripts["docker:run"] = fmt.Sprintf("docker run -it --init --env-file .env -p %d:%d --rm -ti %s",
 			app.Build.Port, app.Build.Port, imageName)
 		pkg.Scripts["docker:remove"] = fmt.Sprintf("docker image rm %s", imageName)
+
+		// Add app-type-specific scripts.
+		typeScripts := getAppTypeScripts(app.Type)
+		for scriptName, scriptCommand := range typeScripts {
+			pkg.Scripts[scriptName] = scriptCommand
+		}
 
 		// Write back the modified package.json.
 		err = input.Generator().JSON(
