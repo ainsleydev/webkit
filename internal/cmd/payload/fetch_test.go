@@ -6,24 +6,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
+
+	"github.com/ainsleydev/webkit/internal/mocks"
 )
-
-type mockGHClient struct {
-	files map[string][]byte
-}
-
-func (m *mockGHClient) GetLatestSHATag(_ context.Context, _, _, _ string) (string, error) {
-	return "", nil
-}
-
-func (m *mockGHClient) GetLatestRelease(_ context.Context, _, _ string) (string, error) {
-	return "3.0.0", nil
-}
-
-func (m *mockGHClient) GetFileContent(_ context.Context, _, _, path, ref string) ([]byte, error) {
-	key := path + "@" + ref
-	return m.files[key], nil
-}
 
 func TestFetchPayloadDependencies(t *testing.T) {
 	t.Parallel()
@@ -31,22 +17,26 @@ func TestFetchPayloadDependencies(t *testing.T) {
 	t.Run("Fetches and parses dependencies", func(t *testing.T) {
 		t.Parallel()
 
-		mock := &mockGHClient{
-			files: map[string][]byte{
-				"package.json@v3.0.0": []byte(`{
-					"name": "payload",
-					"version": "3.0.0",
-					"dependencies": {
-						"@lexical/headless": "0.28.0",
-						"lexical": "0.28.0",
-						"react": "^18.0.0"
-					},
-					"devDependencies": {
-						"typescript": "^5.0.0"
-					}
-				}`),
+		ctrl := gomock.NewController(t)
+		mock := mocks.NewGHClient(ctrl)
+
+		packageJSON := []byte(`{
+			"name": "payload",
+			"version": "3.0.0",
+			"dependencies": {
+				"@lexical/headless": "0.28.0",
+				"lexical": "0.28.0",
+				"react": "^18.0.0"
 			},
-		}
+			"devDependencies": {
+				"typescript": "^5.0.0"
+			}
+		}`)
+
+		mock.EXPECT().
+			GetFileContent(gomock.Any(), "payloadcms", "payload", "package.json", "v3.0.0").
+			Return(packageJSON, nil).
+			Times(1)
 
 		deps, err := fetchPayloadDependencies(context.Background(), mock, "3.0.0")
 		require.NoError(t, err)
@@ -65,14 +55,18 @@ func TestFetchPayloadDependencies(t *testing.T) {
 	t.Run("Handles empty dependencies", func(t *testing.T) {
 		t.Parallel()
 
-		mock := &mockGHClient{
-			files: map[string][]byte{
-				"package.json@v3.0.0": []byte(`{
-					"name": "payload",
-					"version": "3.0.0"
-				}`),
-			},
-		}
+		ctrl := gomock.NewController(t)
+		mock := mocks.NewGHClient(ctrl)
+
+		packageJSON := []byte(`{
+			"name": "payload",
+			"version": "3.0.0"
+		}`)
+
+		mock.EXPECT().
+			GetFileContent(gomock.Any(), "payloadcms", "payload", "package.json", "v3.0.0").
+			Return(packageJSON, nil).
+			Times(1)
 
 		deps, err := fetchPayloadDependencies(context.Background(), mock, "3.0.0")
 		require.NoError(t, err)
@@ -86,11 +80,15 @@ func TestFetchPayloadDependencies(t *testing.T) {
 	t.Run("Returns error for invalid JSON", func(t *testing.T) {
 		t.Parallel()
 
-		mock := &mockGHClient{
-			files: map[string][]byte{
-				"package.json@v3.0.0": []byte(`{invalid json}`),
-			},
-		}
+		ctrl := gomock.NewController(t)
+		mock := mocks.NewGHClient(ctrl)
+
+		invalidJSON := []byte(`{invalid json}`)
+
+		mock.EXPECT().
+			GetFileContent(gomock.Any(), "payloadcms", "payload", "package.json", "v3.0.0").
+			Return(invalidJSON, nil).
+			Times(1)
 
 		_, err := fetchPayloadDependencies(context.Background(), mock, "3.0.0")
 		assert.Error(t, err)

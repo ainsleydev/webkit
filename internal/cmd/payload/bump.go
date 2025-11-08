@@ -141,7 +141,7 @@ func bumpAppDependencies(
 	input cmdtools.CommandInput,
 	app appdef.App,
 	version string,
-	payloadDeps *PayloadDependencies,
+	payloadDeps *payloadDependencies,
 	dryRun bool,
 ) (bool, error) {
 	printer := input.Printer()

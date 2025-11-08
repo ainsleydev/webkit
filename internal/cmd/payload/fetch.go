@@ -14,9 +14,9 @@ const (
 	packageJSONPath = "package.json"
 )
 
-// PayloadDependencies contains all dependencies from Payload's package.json.
+// payloadDependencies contains all dependencies from Payload's package.json.
 // This is used to determine which dependencies should be bumped when updating.
-type PayloadDependencies struct {
+type payloadDependencies struct {
 	Dependencies    map[string]string
 	DevDependencies map[string]string
 	AllDeps         map[string]string // Combined for easier lookup
@@ -28,7 +28,7 @@ type PayloadDependencies struct {
 // This allows us to bump ALL dependencies that Payload uses, not just
 // payload and @payloadcms/* packages. For example, if Payload depends on
 // lexical@0.28.0, we can update the user's lexical to match.
-func fetchPayloadDependencies(ctx context.Context, client ghapi.Client, version string) (*PayloadDependencies, error) {
+func fetchPayloadDependencies(ctx context.Context, client ghapi.Client, version string) (*payloadDependencies, error) {
 	// Fetch package.json content from GitHub.
 	// Use the version tag (with v prefix) as the ref.
 	ref := "v" + version
@@ -60,7 +60,7 @@ func fetchPayloadDependencies(ctx context.Context, client ghapi.Client, version 
 		allDeps[name] = version
 	}
 
-	return &PayloadDependencies{
+	return &payloadDependencies{
 		Dependencies:    pkgJSON.Dependencies,
 		DevDependencies: pkgJSON.DevDependencies,
 		AllDeps:         allDeps,
