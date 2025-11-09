@@ -1,10 +1,12 @@
 package appdef
 
 import (
+	"bytes"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 
-	"github.com/kaptinlin/jsonschema"
+	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
 //go:embed schema.json
@@ -30,28 +32,51 @@ var schemaJSON []byte
 func ValidateAgainstSchema(data []byte) []error {
 	compiler := jsonschema.NewCompiler()
 
-	// Load the embedded schema.
-	schema, err := compiler.Compile(schemaJSON)
+	// Unmarshal the schema JSON into a document.
+	// The library requires a parsed JSON value, not raw bytes.
+	schemaDoc, err := jsonschema.UnmarshalJSON(bytes.NewReader(schemaJSON))
+	if err != nil {
+		return []error{fmt.Errorf("unmarshaling schema: %w", err)}
+	}
+
+	// Add the schema to the compiler.
+	if err := compiler.AddResource("schema.json", schemaDoc); err != nil {
+		return []error{fmt.Errorf("adding schema resource: %w", err)}
+	}
+
+	// Compile the schema.
+	schema, err := compiler.Compile("schema.json")
 	if err != nil {
 		return []error{fmt.Errorf("compiling schema: %w", err)}
 	}
 
+	// Unmarshal the JSON data into a generic interface.
+	var v any
+	if err = json.Unmarshal(data, &v); err != nil {
+		return []error{fmt.Errorf("unmarshaling JSON: %w", err)}
+	}
+
 	// Validate the data against the schema.
-	result := schema.ValidateJSON(data)
-	if result.IsValid() {
-		return nil
+	if err = schema.Validate(v); err != nil {
+		// Convert validation error to slice.
+		if ve, ok := err.(*jsonschema.ValidationError); ok {
+			var errs []error
+			collectErrors(ve, &errs)
+			return errs
+		}
+		return []error{err}
 	}
 
-	// Collect all validation errors.
-	details := result.GetDetailedErrors()
-	if len(details) == 0 {
-		return []error{fmt.Errorf("schema validation failed with no details")}
-	}
+	return nil
+}
 
-	var errs []error
-	for _, detail := range details {
-		errs = append(errs, fmt.Errorf("%s", detail))
+// collectErrors recursively collects all validation errors from the error tree.
+func collectErrors(ve *jsonschema.ValidationError, errs *[]error) {
+	if len(ve.Causes) == 0 {
+		*errs = append(*errs, fmt.Errorf("%s: %s", ve.InstanceLocation, ve.Error()))
+		return
 	}
-
-	return errs
+	for _, cause := range ve.Causes {
+		collectErrors(cause, errs)
+	}
 }

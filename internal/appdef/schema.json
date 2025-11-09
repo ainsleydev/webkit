@@ -104,12 +104,6 @@
 			"oneOf": [
 				{
 					"type": "boolean"
-				},
-				{
-					"type": "string"
-				},
-				{
-					"$ref": "#/definitions/AppdefCommandSpec"
 				}
 			]
 		},
