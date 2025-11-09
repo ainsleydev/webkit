@@ -147,8 +147,10 @@ func TestDefinition_Validate(t *testing.T) {
 				},
 				Apps: []App{},
 			},
-			setup:    func(fs afero.Fs) {},
-			wantErrs: []string{},
+			setup: func(fs afero.Fs) {},
+			wantErrs: []string{
+				"validation failed on 'min' tag",
+			},
 		},
 		"Complex Multi-Error Scenario": {
 			input: func() *Definition {
@@ -755,6 +757,7 @@ func TestDefinition_ValidateEnvReferences(t *testing.T) {
 			},
 			wantErrs: []string{
 				`env var "DB_URL" in production references non-existent resource "missing"`,
+				`env var "CACHE_URL" in production references non-existent resource "cache"`,
 			},
 		},
 		"Dev And Staging Env References": {
