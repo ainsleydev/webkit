@@ -11,10 +11,8 @@ import (
 	"github.com/spf13/afero"
 )
 
-var (
-	// validate is the singleton validator instance with custom validators registered.
-	validate *validator.Validate
-)
+// validate is the singleton validator instance with custom validators registered.
+var validate *validator.Validate
 
 func init() {
 	validate = validator.New()
