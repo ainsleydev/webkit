@@ -21,12 +21,12 @@ type (
 	// all aspects of a webkit project including apps, resources, and infrastructure.
 	Definition struct {
 		Schema        string        `json:"$schema,omitempty" jsonschema:"-" description:"JSON Schema reference for IDE validation and autocomplete"`
-		WebkitVersion string        `json:"webkit_version" jsonschema:"required" description:"The version of webkit used to generate this configuration"`
-		Project       Project       `json:"project" jsonschema:"required" description:"Project metadata including name, title, and repository information"`
+		WebkitVersion string        `json:"webkit_version" required:"true" description:"The version of webkit used to generate this configuration"`
+		Project       Project       `json:"project" required:"true" description:"Project metadata including name, title, and repository information"`
 		Notifications Notifications `json:"notifications" description:"Alert and notification settings for the project"`
 		Shared        Shared        `json:"shared" description:"Shared configuration that applies to all apps"`
 		Resources     []Resource    `json:"resources" description:"Infrastructure resources such as databases and storage buckets"`
-		Apps          []App         `json:"apps" jsonschema:"required,minItems=1" description:"Application definitions for all apps in the project"`
+		Apps          []App         `json:"apps" required:"true" minItems:"1" description:"Application definitions for all apps in the project"`
 	}
 	// Shared contains configuration that is shared across all applications
 	// in the project, such as common environment variables.
@@ -57,6 +57,11 @@ func Read(root afero.Fs) (*Definition, error) {
 		return nil, err
 	}
 
+	// Validate against JSON schema first
+	if errs := ValidateAgainstSchema(data); errs != nil {
+		return nil, fmt.Errorf("schema validation failed with %d error(s): %w", len(errs), errs[0])
+	}
+
 	def := &Definition{}
 	if err = json.Unmarshal(data, def); err != nil {
 		return nil, errors.New("unmarshalling app definition: " + err.Error())
@@ -66,7 +71,7 @@ func Read(root afero.Fs) (*Definition, error) {
 		return nil, err
 	}
 
-	// Validate the definition
+	// Validate the definition (custom validation rules)
 	if errs := def.Validate(root); errs != nil {
 		return nil, fmt.Errorf("validation failed with %d error(s): %w", len(errs), errs[0])
 	}

@@ -40,7 +40,7 @@ func TestDefinition_Validate(t *testing.T) {
 				},
 			},
 			SetupFS: func(fs afero.Fs) {
-				require.NoError(t, fs.MkdirAll("/apps/test", 0755))
+				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
 			WantErr: false,
 		},
@@ -57,7 +57,7 @@ func TestDefinition_Validate(t *testing.T) {
 				},
 			},
 			SetupFS: func(fs afero.Fs) {
-				require.NoError(t, fs.MkdirAll("/apps/test", 0755))
+				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
 			WantErr:      true,
 			WantErrCount: 1,
@@ -88,7 +88,7 @@ func TestDefinition_Validate(t *testing.T) {
 				},
 			},
 			SetupFS: func(fs afero.Fs) {
-				require.NoError(t, fs.MkdirAll("/apps/test", 0755))
+				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
 			WantErr:      true,
 			WantErrCount: 1,
@@ -118,7 +118,7 @@ func TestDefinition_Validate(t *testing.T) {
 				},
 			},
 			SetupFS: func(fs afero.Fs) {
-				require.NoError(t, fs.MkdirAll("/apps/test", 0755))
+				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
 			WantErr:      true,
 			WantErrCount: 1,
@@ -268,8 +268,8 @@ func TestDefinition_validateAppPaths(t *testing.T) {
 				},
 			},
 			SetupFS: func(fs afero.Fs) {
-				require.NoError(t, fs.MkdirAll("/apps/app1", 0755))
-				require.NoError(t, fs.MkdirAll("/apps/app2", 0755))
+				require.NoError(t, fs.MkdirAll("/apps/app1", 0o755))
+				require.NoError(t, fs.MkdirAll("/apps/app2", 0o755))
 			},
 			WantErr: false,
 		},
@@ -300,7 +300,7 @@ func TestDefinition_validateAppPaths(t *testing.T) {
 				},
 			},
 			SetupFS: func(fs afero.Fs) {
-				require.NoError(t, fs.MkdirAll("/apps/app1", 0755))
+				require.NoError(t, fs.MkdirAll("/apps/app1", 0o755))
 			},
 			WantErr:      true,
 			WantErrCount: 1,

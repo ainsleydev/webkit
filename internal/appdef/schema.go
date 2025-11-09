@@ -6,7 +6,7 @@ import (
 	"github.com/swaggest/jsonschema-go"
 )
 
-//go:generate go run ../../cmd/webkit/main.go schema --output ../../schema.json
+//go:generate go run ../../main.go schema --output ../../schema.json
 
 // GenerateSchema generates a JSON schema for the Definition type.
 func GenerateSchema() ([]byte, error) {

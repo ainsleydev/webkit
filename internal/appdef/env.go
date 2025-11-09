@@ -24,7 +24,7 @@ type (
 	// EnvValue represents a single environment variable configuration.
 	// It specifies both the source type and the value/reference for the variable.
 	EnvValue struct {
-		Source EnvSource `json:"source" jsonschema:"required" description:"Source type for the variable value (value, resource, sops)"`
+		Source EnvSource `json:"source" required:"true" enum:"value,resource,sops" description:"Source type for the variable value (value, resource, sops)"`
 		// Value holds the actual value or reference depending on the source type:
 		// - "value": A static string (e.g., "https://api.example.com")
 		// - "resource": A Terraform resource reference (e.g., "db.connection_url")

@@ -13,9 +13,9 @@ type (
 	// Resources are provisioned via Terraform and their outputs are
 	// made available to apps through environment variables.
 	Resource struct {
-		Name             string               `json:"name" jsonschema:"required" description:"Unique identifier for the resource (used in environment variable references)"`
-		Type             ResourceType         `json:"type" jsonschema:"required" description:"Type of resource to provision (postgres, s3)"`
-		Provider         ResourceProvider     `json:"provider" jsonschema:"required" description:"Cloud provider hosting this resource (digitalocean, backblaze)"`
+		Name             string               `json:"name" required:"true" pattern:"^[a-z][a-z0-9-]*$" description:"Unique identifier for the resource (used in environment variable references)"`
+		Type             ResourceType         `json:"type" required:"true" enum:"postgres,s3" description:"Type of resource to provision (postgres, s3)"`
+		Provider         ResourceProvider     `json:"provider" required:"true" enum:"digitalocean,backblaze" description:"Cloud provider hosting this resource (digitalocean, backblaze)"`
 		Config           map[string]any       `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
 		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
 		TerraformManaged *bool                `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`

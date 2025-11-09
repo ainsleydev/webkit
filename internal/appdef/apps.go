@@ -11,13 +11,13 @@ type (
 	// environment variables, and deployment settings. Apps can be of different
 	// types (Payload CMS, SvelteKit, GoLang) and are deployed independently.
 	App struct {
-		Name             string                  `json:"name" jsonschema:"required" description:"Unique identifier for the app (lowercase, hyphenated)"`
-		Title            string                  `json:"title" jsonschema:"required" description:"Human-readable app name for display purposes"`
-		Type             AppType                 `json:"type" jsonschema:"required" description:"Application type (payload, svelte-kit, golang)"`
-		Description      string                  `json:"description,omitempty" description:"Brief description of the app's purpose and functionality"`
-		Path             string                  `json:"path" jsonschema:"required" description:"Relative file path to the app's source code directory"`
+		Name             string                  `json:"name" required:"true" pattern:"^[a-z][a-z0-9-]*$" description:"Unique identifier for the app (lowercase, hyphenated)"`
+		Title            string                  `json:"title" required:"true" description:"Human-readable app name for display purposes"`
+		Type             AppType                 `json:"type" required:"true" enum:"svelte-kit,golang,payload" description:"Application type (payload, svelte-kit, golang)"`
+		Description      string                  `json:"description,omitempty" maxLength:"200" description:"Brief description of the app's purpose and functionality"`
+		Path             string                  `json:"path" required:"true" description:"Relative file path to the app's source code directory"`
 		Build            Build                   `json:"build" description:"Build configuration for Docker containerisation"`
-		Infra            Infra                   `json:"infra" jsonschema:"required" description:"Infrastructure and deployment configuration"`
+		Infra            Infra                   `json:"infra" required:"true" description:"Infrastructure and deployment configuration"`
 		Env              Environment             `json:"env" description:"Environment variables specific to this app"`
 		UsesNPM          *bool                   `json:"usesNPM" description:"Whether this app should be included in the pnpm workspace (auto-detected if not set)"`
 		TerraformManaged *bool                   `json:"terraformManaged,omitempty" description:"Whether this app's infrastructure is managed by Terraform (defaults to true)"`
@@ -28,22 +28,22 @@ type (
 	// These settings control how the app is built and exposed in container environments.
 	Build struct {
 		Dockerfile string `json:"dockerfile" description:"Path to the Dockerfile relative to the app directory"`
-		Port       int    `json:"port,omitempty" description:"Port number the app listens on inside the container"`
+		Port       int    `json:"port,omitempty" minimum:"1" maximum:"65535" description:"Port number the app listens on inside the container"`
 		Release    *bool  `json:"release,omitempty" description:"Whether to build and release this app in CI/CD (defaults to true)"`
 	}
 	// Infra defines infrastructure and deployment configuration for an app.
 	// This includes the cloud provider, deployment type (VM, container, etc.),
 	// and provider-specific configuration options.
 	Infra struct {
-		Provider ResourceProvider `json:"provider" jsonschema:"required" description:"Cloud infrastructure provider (digitalocean, backblaze)"`
-		Type     string           `json:"type" jsonschema:"required" description:"Infrastructure type (vm, app, container, function)"`
+		Provider ResourceProvider `json:"provider" required:"true" description:"Cloud infrastructure provider (digitalocean, backblaze)"`
+		Type     string           `json:"type" required:"true" description:"Infrastructure type (vm, app, container, function)"`
 		Config   map[string]any   `json:"config" description:"Provider-specific infrastructure configuration options"`
 	}
 	// Domain represents a domain name configuration for accessing an app.
 	// Domains can be primary, aliases, or unmanaged depending on your DNS setup.
 	Domain struct {
-		Name     string     `json:"name" jsonschema:"required" description:"Domain name without protocol (e.g., 'example.com' or 'api.example.com')"`
-		Type     DomainType `json:"type" description:"Domain type (primary, alias, unmanaged)"`
+		Name     string     `json:"name" required:"true" description:"Domain name without protocol (e.g., 'example.com' or 'api.example.com')"`
+		Type     DomainType `json:"type" enum:"primary,alias,unmanaged" description:"Domain type (primary, alias, unmanaged)"`
 		Zone     string     `json:"zone,omitempty" description:"DNS zone for the domain if different from default"`
 		Wildcard bool       `json:"wildcard,omitempty" description:"Whether this is a wildcard domain (e.g., '*.example.com')"`
 	}
