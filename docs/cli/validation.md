@@ -4,10 +4,10 @@ WebKit provides comprehensive validation for `app.json` configuration files to c
 
 ## Overview
 
-WebKit uses a **two-tier validation approach** that combines JSON schema validation with custom business logic validation:
+WebKit uses a **two-tier validation approach** that combines struct validation with custom business logic validation:
 
-### Tier 1: Schema Validation
-Validates structural and type constraints using JSON schema:
+### Tier 1: Struct Validation
+Validates structural and type constraints:
 
 - **Required fields**: Ensures all critical configuration is present
 - **Data types**: Validates strings, numbers, booleans, arrays, and objects
@@ -17,8 +17,8 @@ Validates structural and type constraints using JSON schema:
 - **String length**: Enforces maximum lengths for descriptions (200 characters)
 - **Format validation**: Validates URLs and other formatted strings
 
-### Tier 2: Custom Validation
-Validates business logic and cross-field constraints:
+### Tier 2: Business Logic Validation
+Validates cross-field constraints and webkit-specific rules:
 
 - **Domain formats**: Prevents common mistakes like including protocol prefixes
 - **File paths**: Verifies that app directories actually exist on the filesystem
@@ -87,7 +87,7 @@ Validation runs automatically during:
 
 ## Validation Rules
 
-### Required Fields (Schema Validation)
+### Required Fields (Struct Validation)
 
 **Project:**
 - `name` - Unique project identifier (lowercase-hyphenated pattern)
@@ -112,7 +112,7 @@ Validation runs automatically during:
 **Environment Variables:**
 - `source` - Source type (must be: `value`, `resource`, or `sops`)
 
-### Pattern Validation (Schema Validation)
+### Pattern Validation (Struct Validation)
 
 Names must follow the lowercase-hyphenated pattern:
 
@@ -135,7 +135,7 @@ Names must follow the lowercase-hyphenated pattern:
 }
 ```
 
-### Enum Validation (Schema Validation)
+### Enum Validation (Struct Validation)
 
 Certain fields only accept predefined values:
 
@@ -162,7 +162,7 @@ Certain fields only accept predefined values:
 - `alias` - Alias/redirect domain
 - `unmanaged` - Domain not managed by webkit
 
-### Numeric Validation (Schema Validation)
+### Numeric Validation (Struct Validation)
 
 **Port numbers** must be between 1 and 65535:
 
@@ -192,7 +192,7 @@ Certain fields only accept predefined values:
 }
 ```
 
-### String Length Validation (Schema Validation)
+### String Length Validation (Struct Validation)
 
 **Descriptions** have a maximum length of 200 characters:
 
@@ -210,7 +210,7 @@ Certain fields only accept predefined values:
 }
 ```
 
-### Format Validation (Schema Validation)
+### Format Validation (Struct Validation)
 
 **Webhook URLs** must be valid URIs:
 
@@ -232,7 +232,7 @@ Certain fields only accept predefined values:
 }
 ```
 
-### Domain Validation (Custom Validation)
+### Domain Validation (Business Logic)
 
 Domains must **not** contain protocol prefixes:
 
@@ -256,7 +256,7 @@ Domains must **not** contain protocol prefixes:
 }
 ```
 
-### Path Validation (Custom Validation)
+### Path Validation (Business Logic)
 
 App paths must exist on the filesystem:
 
@@ -277,7 +277,7 @@ If the path doesn't exist, you'll get an error:
 app "cms": path "cms" does not exist
 ```
 
-### Terraform-Managed VM Validation (Custom Validation)
+### Terraform-Managed VM Validation (Business Logic)
 
 Apps with `infra.type` set to `"vm"` or `"app"` that are terraform-managed (default) **must** have at least one domain configured:
 
@@ -307,7 +307,7 @@ Apps with `infra.type` set to `"vm"` or `"app"` that are terraform-managed (defa
 }
 ```
 
-### Environment Variable Validation (Custom Validation)
+### Environment Variable Validation (Business Logic)
 
 Environment variables with `source: "resource"` must reference valid resources and outputs:
 
@@ -415,61 +415,64 @@ Validation collects **all** errors before reporting them, rather than stopping a
 
 ## Implementation Details
 
-The validation system uses a **two-tier architecture** combining JSON schema validation with custom business logic:
+The validation system uses a **two-tier architecture** combining struct validation with custom business logic:
 
-### Tier 1: Schema Validation
-- **swaggest/jsonschema-go** - Generates JSON schema from Go struct tags
-- **kaptinlin/jsonschema** - Validates JSON data against the schema at runtime
-- **Struct tags** - Define validation constraints (`required`, `pattern`, `enum`, `minimum`, `maximum`, `maxLength`, `format`)
+### Tier 1: Struct Validation
+- **go-playground/validator** - Validates Go structs using struct tags at runtime
+- **Struct tags** - Define validation constraints (`required`, `oneof`, `min`, `max`, `uri`, custom validators)
+- **Custom validators** - `lowercase`, `alphanumdash` for webkit-specific patterns
 
-### Tier 2: Custom Validation
+### Tier 2: Business Logic Validation
 - **Filesystem checks** - Verifies app paths exist
 - **Cross-field validation** - Ensures resource references are valid
 - **Business logic** - Enforces webkit-specific rules (e.g., VMs must have domains)
 
+### Schema Generation (IDE Support)
+
+While runtime validation uses go-playground/validator, we still generate JSON Schema for IDE support:
+
+- **swaggest/jsonschema-go** - Generates JSON schema from Go struct tags
+- **InterceptProperty** - Reads `validate:` tags and converts them to JSON Schema constraints
+- **schema.json** - Generated file for IDE autocomplete and validation
+
 ### Validation Flow
 
-1. **Schema Validation** (`ValidateAgainstSchema()`)
-   - Runs first to catch structural and type errors
-   - Validates against embedded `schema.json`
-   - Fast and comprehensive structural checks
+The `Validate()` method runs both validation tiers and collects all errors:
 
-2. **Custom Validation** (`Validate()`)
-   - Runs after schema validation passes
-   - Performs filesystem and cross-reference checks
-   - Enforces business logic constraints
+1. **Struct Validation** (`validateStruct()`)
+   - Validates required fields, types, patterns, enums
+   - Fast structural checks using go-playground/validator
+   - Returns field-level validation errors
+
+2. **Business Logic Validation**
+   - `validateDomains()` - Checks for protocol prefixes
+   - `validateAppPaths()` - Verifies paths exist on filesystem
+   - `validateTerraformManagedVMs()` - Ensures VMs have domains
+   - `validateEnvReferences()` - Validates resource references
 
 ### Implementation Files
 
-**Schema Validation:**
-- `internal/appdef/schema.go` - Schema generation from Go structs
-- `internal/appdef/validate_schema.go` - Runtime schema validation
-- `internal/appdef/schema.json` - Embedded JSON schema
+**Validation:**
+- `internal/appdef/validate.go` - All validation logic (struct + business logic)
+- `internal/appdef/validate_test.go` - Comprehensive validation tests
 
-**Custom Validation:**
-- `internal/appdef/validate.go` - Business logic and cross-field validation
+**Schema Generation (IDE Support):**
+- `internal/appdef/schema.go` - Generates JSON Schema from struct tags
+- `internal/cmd/schema.go` - Schema generation command
 
 **Commands:**
 - `internal/cmd/validate.go` - Explicit validation command
-- `internal/cmd/schema.go` - Schema generation command
-
-**Integration:**
-- `internal/appdef/definition.go` - Integrates both validation tiers in `Read()`
 
 ## Testing
 
-Comprehensive validation tests cover both tiers:
+Comprehensive validation tests in `internal/appdef/validate_test.go`:
 
-**Schema Validation Tests** (`internal/appdef/validate_schema_test.go`):
 - Required field validation
 - Pattern matching for names
 - Enum constraint enforcement
 - Numeric range validation
 - String length limits
 - Format validation (URLs)
-- Integration with struct marshaling
-
-**Custom Validation Tests** (`internal/appdef/validate_test.go`):
 - Domain format validation
 - File path existence checks
 - Resource reference validation
