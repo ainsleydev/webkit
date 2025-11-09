@@ -12,6 +12,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/util/testutil"
 )
@@ -265,7 +266,7 @@ func TestPackageJSONApp(t *testing.T) {
 		err := PackageJSONApp(t.Context(), input)
 		assert.NoError(t, err)
 
-		exists, _ := afero.Exists(fs, "web/package.json")
+		exists := fsext.Exists(fs, "web/package.json")
 		assert.False(t, exists)
 	})
 

@@ -10,6 +10,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
@@ -53,10 +54,7 @@ func PublicFolder(_ context.Context, input cmdtools.CommandInput) error {
 
 // folderHasFiles checks if a folder exists and contains any files other than .gitkeep.
 func folderHasFiles(fs afero.Fs, path string) (bool, error) {
-	exists, err := afero.DirExists(fs, path)
-	if err != nil {
-		return false, err
-	}
+	exists := fsext.DirExists(fs, path)
 
 	// Folder doesn't exist, so no files.
 	if !exists {

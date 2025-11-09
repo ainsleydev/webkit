@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/fsext"
 )
 
 func TestPublicFolder(t *testing.T) {
@@ -43,8 +44,7 @@ func TestPublicFolder(t *testing.T) {
 		// Verify no public folders were created.
 		for _, app := range appDef.Apps {
 			publicPath := filepath.Join(app.Path, "public")
-			exists, err := afero.DirExists(input.FS, publicPath)
-			require.NoError(t, err)
+			exists := fsext.DirExists(input.FS, publicPath)
 			assert.False(t, exists, "expected %s not to exist", publicPath)
 		}
 	})
@@ -72,8 +72,7 @@ func TestPublicFolder(t *testing.T) {
 
 		// Verify public folder was not created for SvelteKit app.
 		webPublicPath := filepath.Join("./apps/web/public")
-		exists, err = afero.DirExists(input.FS, webPublicPath)
-		require.NoError(t, err)
+		exists = fsext.DirExists(input.FS, webPublicPath)
 		assert.False(t, exists, "expected %s not to exist", webPublicPath)
 	})
 
