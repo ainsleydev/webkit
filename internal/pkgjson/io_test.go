@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ainsleydev/webkit/internal/fsext"
 )
 
 func TestRead(t *testing.T) {
@@ -94,7 +96,7 @@ func TestWrite(t *testing.T) {
 		require.NoError(t, err)
 
 		// Verify file was written.
-		exists := Exists(fs, path)
+		exists := fsext.Exists(fs, path)
 		assert.True(t, exists)
 
 		// Verify content is valid JSON.
@@ -244,7 +246,7 @@ func TestExists(t *testing.T) {
 		err := afero.WriteFile(fs, path, []byte(`{}`), 0o644)
 		require.NoError(t, err)
 
-		exists := Exists(fs, path)
+		exists := fsext.Exists(fs, path)
 		assert.True(t, exists)
 	})
 
@@ -253,7 +255,7 @@ func TestExists(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 
-		exists := Exists(fs, "package.json")
+		exists := fsext.Exists(fs, "package.json")
 		assert.False(t, exists)
 	})
 }
