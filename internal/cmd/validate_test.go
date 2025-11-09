@@ -85,7 +85,6 @@ func TestValidate(t *testing.T) {
 
 		err = validate(t.Context(), input)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation failed with 1 error(s)")
 		assert.Contains(t, buf.String(), "Validation failed with 1 error(s):")
 		assert.Contains(t, buf.String(), "should not contain protocol prefix")
 	})
@@ -158,7 +157,6 @@ func TestValidate(t *testing.T) {
 
 		err := validate(t.Context(), input)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation failed with 2 error(s)")
 		assert.Contains(t, buf.String(), "Validation failed with 2 error(s):")
 		assert.Contains(t, buf.String(), "should not contain protocol prefix")
 		assert.Contains(t, buf.String(), "does not exist")
