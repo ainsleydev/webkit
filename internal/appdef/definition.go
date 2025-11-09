@@ -84,6 +84,8 @@ func (d *Definition) GithubLabels() []string {
 // ApplyDefaults ensures all required defaults are set on the Definition.
 // This should be called after unmarshaling and before validation.
 func (d *Definition) ApplyDefaults() error {
+	d.Schema = "https://raw.githubusercontent.com/ainsleydev/webkit/main/schema.json"
+
 	for i := range d.Apps {
 		if err := d.Apps[i].applyDefaults(); err != nil {
 			return fmt.Errorf("applying defaults to app %q: %w", d.Apps[i].Name, err)
