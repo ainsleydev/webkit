@@ -19,10 +19,10 @@ const (
 	Production Environment = "production"
 )
 
-// Environment represents the type of env.
+// Environment represents an application deployment environment.
 type Environment string
 
-// String implements fmt.Stringer on Command.
+// String returns the string representation of the environment.
 func (e Environment) String() string {
 	return string(e)
 }
@@ -82,7 +82,7 @@ func ParseConfig(cfg any, filenames ...string) error {
 	return nil
 }
 
-// Get provides a default override for environment vars as a second argument.
+// Get retrieves an environment variable value or returns the fallback if not set.
 func Get(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
@@ -90,8 +90,7 @@ func Get(key, fallback string) string {
 	return fallback
 }
 
-// GetOrError will attempt to get the value from the environment variable and
-// return an error if not available.
+// GetOrError retrieves an environment variable value or returns an error if not set.
 func GetOrError(key string) (string, error) {
 	if value, ok := os.LookupEnv(key); ok {
 		return value, nil

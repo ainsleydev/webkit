@@ -6,8 +6,7 @@ import (
 	"time"
 )
 
-// String generates a random of characters only (upper or lowercase)
-// with no numbers based on the input length provided.
+// String generates a random hexadecimal string of the specified length.
 func String(length int64) string {
 	rand.Seed(time.Now().UnixNano()) //nolint
 	b := make([]byte, length)
@@ -15,20 +14,17 @@ func String(length int64) string {
 	return fmt.Sprintf("%x", b)[:length]
 }
 
-// Alpha generates a random string (with no special characters)
-// of n length with no numeric characters.
+// Alpha generates a random alphabetic string of the specified length.
 func Alpha(length int64) string {
 	return generate(length, false)
 }
 
-// AlphaNum generates a random string (with no special characters)
-// of n length with numeric characters.
+// AlphaNum generates a random alphanumeric string of the specified length.
 func AlphaNum(length int64) string {
 	return generate(length, false)
 }
 
-// Seq generates a random seeded sequence by the number of n
-// input.
+// Seq generates a random alphabetic sequence of the specified length.
 func Seq(n int) string {
 	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	rand.Seed(time.Now().UnixNano()) //nolint
