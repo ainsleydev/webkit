@@ -30,19 +30,19 @@ var schemaJSON []byte
 func ValidateAgainstSchema(data []byte) []error {
 	compiler := jsonschema.NewCompiler()
 
-	// Load the embedded schema
+	// Load the embedded schema.
 	schema, err := compiler.Compile(schemaJSON)
 	if err != nil {
 		return []error{fmt.Errorf("compiling schema: %w", err)}
 	}
 
-	// Validate the data against the schema
+	// Validate the data against the schema.
 	result := schema.ValidateJSON(data)
 	if result.IsValid() {
 		return nil
 	}
 
-	// Collect all validation errors
+	// Collect all validation errors.
 	details := result.GetDetailedErrors()
 	if len(details) == 0 {
 		return []error{fmt.Errorf("schema validation failed with no details")}

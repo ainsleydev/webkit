@@ -21,7 +21,12 @@
 			"WebFetch(domain:registry.terraform.io)",
 			"Bash(curl:*)",
 			"WebSearch",
-			"Bash(go build:*)"
+			"Bash(go build:*)",
+			"Bash(git stash:*)",
+			"Bash(APP_ENV=development go run:*)",
+			"Bash(gofumpt:*)",
+			"WebFetch(domain:github.com)",
+			"Bash(go generate:*)"
 		],
 		"deny": [],
 		"ask": []

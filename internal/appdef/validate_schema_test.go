@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
@@ -11,6 +14,8 @@ import (
 // Specifically, it validates required fields and types, but may not enforce pattern, enum, minimum/maximum,
 // or format constraints. These constraints are still included in the schema for IDE autocomplete and validation.
 func TestValidateAgainstSchema(t *testing.T) {
+	t.Parallel()
+
 	tt := map[string]struct {
 		json    string
 		wantErr bool
@@ -151,20 +156,18 @@ func TestValidateAgainstSchema(t *testing.T) {
 
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
-			errs := ValidateAgainstSchema([]byte(tc.json))
+			t.Parallel()
 
-			if tc.wantErr && errs == nil {
-				t.Fatal("expected error, got nil")
-			}
-			if !tc.wantErr && errs != nil {
-				t.Fatalf("expected no error, got: %v", errs)
-			}
+			got := ValidateAgainstSchema([]byte(tc.json))
+			assert.Equal(t, tc.wantErr, len(got) != 0)
 		})
 	}
 }
 
 func TestValidateAgainstSchema_Integration(t *testing.T) {
-	// Test with actual Definition struct to ensure schema generation matches
+	t.Parallel()
+
+	// Test with actual Definition struct to ensure schema generation matches.
 	def := &Definition{
 		WebkitVersion: "1.0.0",
 		Project: Project{
@@ -195,15 +198,9 @@ func TestValidateAgainstSchema_Integration(t *testing.T) {
 		},
 	}
 
-	// Marshal to JSON
 	data, err := json.Marshal(def)
-	if err != nil {
-		t.Fatalf("marshaling definition: %v", err)
-	}
+	require.NoError(t, err)
 
-	// Validate against schema
 	errs := ValidateAgainstSchema(data)
-	if errs != nil {
-		t.Fatalf("validation failed: %v", errs)
-	}
+	assert.Len(t, errs, 0)
 }
