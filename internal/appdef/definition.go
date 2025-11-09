@@ -57,11 +57,6 @@ func Read(root afero.Fs) (*Definition, error) {
 		return nil, err
 	}
 
-	// Validate against JSON schema first
-	if errs := ValidateAgainstSchema(data); errs != nil {
-		return nil, fmt.Errorf("schema validation failed with %d error(s): %w", len(errs), errs[0])
-	}
-
 	def := &Definition{}
 	if err = json.Unmarshal(data, def); err != nil {
 		return nil, errors.New("unmarshalling app definition: " + err.Error())
@@ -69,11 +64,6 @@ func Read(root afero.Fs) (*Definition, error) {
 
 	if err = def.ApplyDefaults(); err != nil {
 		return nil, err
-	}
-
-	// Validate the definition (custom validation rules)
-	if errs := def.Validate(root); errs != nil {
-		return nil, fmt.Errorf("validation failed with %d error(s): %w", len(errs), errs[0])
 	}
 
 	return def, nil

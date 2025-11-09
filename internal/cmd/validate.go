@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
@@ -39,11 +38,12 @@ func validate(_ context.Context, input cmdtools.CommandInput) error {
 	printer.Error(fmt.Sprintf("Validation failed with %d error(s):", len(errs)))
 	printer.LineBreak()
 
-	if len(errs) > 0 {
-		for i, err := range errs {
-			printer.Println(fmt.Sprintf("  %d. %s", i+1, err.Error()))
-		}
+	items := make([]any, len(errs))
+	for i, err := range errs {
+		items[i] = err.Error()
 	}
+	printer.List(items...)
+	printer.LineBreak()
 
-	return errors.New("validation failed")
+	return nil
 }

@@ -33,16 +33,16 @@ func run(_ context.Context, p *printer.Console, outputPath string, stdout bool) 
 	}
 
 	if stdout {
-		fmt.Println(string(schemaData))
+		fmt.Println(string(schemaData)) //nolint:forbidigo
 		return nil
 	}
 
 	dir := filepath.Dir(outputPath)
-	if err = os.MkdirAll(dir, 0755); err != nil {
+	if err = os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("creating directory %s: %w", dir, err)
 	}
 
-	if err = os.WriteFile(outputPath, schemaData, 0644); err != nil {
+	if err = os.WriteFile(outputPath, schemaData, 0o644); err != nil {
 		return fmt.Errorf("writing schema file: %w", err)
 	}
 
