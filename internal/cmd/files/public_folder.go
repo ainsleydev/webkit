@@ -10,12 +10,13 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
 // PublicFolder creates a public folder with .gitkeep for Payload CMS apps.
 // This ensures that Next.js builds do not fail due to missing public directory.
+// The .gitkeep file is not tracked in the manifest as it's meant to be temporary
+// and can be safely removed once actual files are added to the public folder.
 func PublicFolder(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 
@@ -25,28 +26,55 @@ func PublicFolder(_ context.Context, input cmdtools.CommandInput) error {
 	for _, app := range payloadApps {
 		publicPath := filepath.Join(app.Path, "public")
 
-		// Check if public folder already exists.
-		exists, err := afero.DirExists(input.FS, publicPath)
+		// Check if folder has any files (excluding .gitkeep).
+		hasFiles, err := folderHasFiles(input.FS, publicPath)
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("checking if public folder exists for app %s", app.Name))
+			return errors.Wrap(err, fmt.Sprintf("checking public folder contents for app %s", app.Name))
 		}
 
-		// Skip if folder already exists.
-		if exists {
-			input.Printer().Println(fmt.Sprintf("• skipping %s - public folder already exists", app.Name))
+		// Skip if folder already has files.
+		if hasFiles {
+			input.Printer().Println(fmt.Sprintf("• skipping %s - public folder has files", app.Name))
 			continue
 		}
 
-		// Create .gitkeep file in public folder.
+		// Create .gitkeep file to ensure empty folder is tracked by git.
 		gitkeepPath := filepath.Join(publicPath, ".gitkeep")
-		err = input.Generator().Bytes(gitkeepPath, []byte{},
-			scaffold.WithTracking(manifest.SourceApp(app.Name)),
-			scaffold.WithoutNotice(),
-		)
+		err = input.Generator().Bytes(gitkeepPath, []byte{}, scaffold.WithoutNotice())
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("creating public folder for app %s", app.Name))
+			return errors.Wrap(err, fmt.Sprintf("creating .gitkeep for app %s", app.Name))
 		}
+
+		input.Printer().Println(fmt.Sprintf("• created %s/public/.gitkeep", app.Name))
 	}
 
 	return nil
+}
+
+// folderHasFiles checks if a folder exists and contains any files other than .gitkeep.
+func folderHasFiles(fs afero.Fs, path string) (bool, error) {
+	exists, err := afero.DirExists(fs, path)
+	if err != nil {
+		return false, err
+	}
+
+	// Folder doesn't exist, so no files.
+	if !exists {
+		return false, nil
+	}
+
+	// Read folder contents.
+	entries, err := afero.ReadDir(fs, path)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if there are any files other than .gitkeep.
+	for _, entry := range entries {
+		if entry.Name() != ".gitkeep" {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
