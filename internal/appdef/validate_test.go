@@ -10,6 +10,32 @@ import (
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
+// validDefinition returns a valid Definition for testing.
+func validDefinition() *Definition {
+	return &Definition{
+		WebkitVersion: "1.0.0",
+		Project: Project{
+			Name:        "test-project",
+			Title:       "Test Project",
+			Description: "Test description",
+			Repo:        GitHubRepo{Owner: "test", Name: "repo"},
+		},
+		Apps: []App{
+			{
+				Name:  "test-app",
+				Title: "Test App",
+				Type:  AppTypeGoLang,
+				Path:  "/apps/test",
+				Infra: Infra{
+					Provider: ResourceProviderDigitalOcean,
+					Type:     "vm",
+				},
+				Domains: []Domain{{Name: "test.example.com"}},
+			},
+		},
+	}
+}
+
 func TestDefinition_Validate(t *testing.T) {
 	t.Parallel()
 
@@ -20,42 +46,27 @@ func TestDefinition_Validate(t *testing.T) {
 		WantErrCount int
 	}{
 		"Valid Definition": {
-			input: &Definition{
-				Apps: []App{
-					{
-						Name:  "test-app",
-						Path:  "/apps/test",
-						Infra: Infra{Type: "vm"},
-						Domains: []Domain{
-							{Name: "example.com"},
-						},
-					},
-				},
-				Resources: []Resource{
-					{
-						Name:     "db",
-						Type:     ResourceTypePostgres,
-						Provider: ResourceProviderDigitalOcean,
-					},
-				},
-			},
+			input: func() *Definition {
+				d := validDefinition()
+				d.Apps[0].Domains = []Domain{{Name: "example.com"}}
+				d.Resources = []Resource{{
+					Name:     "db",
+					Type:     ResourceTypePostgres,
+					Provider: ResourceProviderDigitalOcean,
+				}}
+				return d
+			}(),
 			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
 			WantErr: false,
 		},
 		"Domain With Protocol": {
-			input: &Definition{
-				Apps: []App{
-					{
-						Name: "test-app",
-						Path: "/apps/test",
-						Domains: []Domain{
-							{Name: "https://example.com"},
-						},
-					},
-				},
-			},
+			input: func() *Definition {
+				d := validDefinition()
+				d.Apps[0].Domains = []Domain{{Name: "https://example.com"}}
+				return d
+			}(),
 			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
@@ -63,30 +74,22 @@ func TestDefinition_Validate(t *testing.T) {
 			WantErrCount: 1,
 		},
 		"Non-existent App Path": {
-			input: &Definition{
-				Apps: []App{
-					{
-						Name: "test-app",
-						Path: "/apps/nonexistent",
-					},
-				},
-			},
+			input: func() *Definition {
+				d := validDefinition()
+				d.Apps[0].Path = "/apps/nonexistent"
+				return d
+			}(),
 			setup:        func(fs afero.Fs) {},
 			WantErr:      true,
 			WantErrCount: 1,
 		},
 		"Terraform-managed VM Without Domains": {
-			input: &Definition{
-				Apps: []App{
-					{
-						Name:             "test-app",
-						Path:             "/apps/test",
-						Infra:            Infra{Type: "vm"},
-						TerraformManaged: ptr.BoolPtr(true),
-						Domains:          []Domain{},
-					},
-				},
-			},
+			input: func() *Definition {
+				d := validDefinition()
+				d.Apps[0].TerraformManaged = ptr.BoolPtr(true)
+				d.Apps[0].Domains = []Domain{}
+				return d
+			}(),
 			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
@@ -94,29 +97,23 @@ func TestDefinition_Validate(t *testing.T) {
 			WantErrCount: 1,
 		},
 		"Invalid Env Resource Reference": {
-			input: &Definition{
-				Apps: []App{
-					{
-						Name: "test-app",
-						Path: "/apps/test",
-						Env: Environment{
-							Production: EnvVar{
-								"DATABASE_URL": EnvValue{
-									Source: EnvSourceResource,
-									Value:  "nonexistent.connection_url",
-								},
-							},
+			input: func() *Definition {
+				d := validDefinition()
+				d.Apps[0].Env = Environment{
+					Production: EnvVar{
+						"DATABASE_URL": EnvValue{
+							Source: EnvSourceResource,
+							Value:  "nonexistent.connection_url",
 						},
 					},
-				},
-				Resources: []Resource{
-					{
-						Name:     "db",
-						Type:     ResourceTypePostgres,
-						Provider: ResourceProviderDigitalOcean,
-					},
-				},
-			},
+				}
+				d.Resources = []Resource{{
+					Name:     "db",
+					Type:     ResourceTypePostgres,
+					Provider: ResourceProviderDigitalOcean,
+				}}
+				return d
+			}(),
 			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
@@ -124,18 +121,12 @@ func TestDefinition_Validate(t *testing.T) {
 			WantErrCount: 1,
 		},
 		"Multiple Validation Errors": {
-			input: &Definition{
-				Apps: []App{
-					{
-						Name:  "test-app",
-						Path:  "/apps/nonexistent",
-						Infra: Infra{Type: "vm"},
-						Domains: []Domain{
-							{Name: "https://example.com"},
-						},
-					},
-				},
-			},
+			input: func() *Definition {
+				d := validDefinition()
+				d.Apps[0].Path = "/apps/nonexistent"
+				d.Apps[0].Domains = []Domain{{Name: "https://example.com"}}
+				return d
+			}(),
 			setup:        func(fs afero.Fs) {},
 			WantErr:      true,
 			WantErrCount: 2, // path + domain

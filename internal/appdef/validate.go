@@ -8,7 +8,6 @@ import (
 	"unicode"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )
 
@@ -59,43 +58,11 @@ func validateStruct(def *Definition) []error {
 	var validationErrs validator.ValidationErrors
 	if errors.As(err, &validationErrs) {
 		for _, e := range validationErrs {
-			errs = append(errs, formatValidationError(e))
+			errs = append(errs, fmt.Errorf("%s: validation failed on '%s' tag", e.Field(), e.Tag()))
 		}
 	}
 
 	return errs
-}
-
-// formatValidationError converts a validator.FieldError to a human-readable error message.
-func formatValidationError(e validator.FieldError) error {
-	field := e.Field()
-	tag := e.Tag()
-	param := e.Param()
-
-	switch tag {
-	case "required":
-		return fmt.Errorf("field '%s' is required", field)
-	case "min":
-		if e.Kind().String() == "slice" || e.Kind().String() == "array" {
-			return fmt.Errorf("field '%s' must contain at least %s items", field, param)
-		}
-		return fmt.Errorf("field '%s' must be at least %s", field, param)
-	case "max":
-		if e.Kind().String() == "string" {
-			return fmt.Errorf("field '%s' must be at most %s characters", field, param)
-		}
-		return fmt.Errorf("field '%s' must be at most %s", field, param)
-	case "oneof":
-		return fmt.Errorf("field '%s' must be one of: %s", field, strings.ReplaceAll(param, " ", ", "))
-	case "uri", "url":
-		return fmt.Errorf("field '%s' must be a valid URI", field)
-	case "lowercase":
-		return fmt.Errorf("field '%s' must be lowercase", field)
-	case "alphanumdash":
-		return fmt.Errorf("field '%s' must contain only lowercase letters, numbers, and hyphens, and start with a letter", field)
-	default:
-		return fmt.Errorf("field '%s' failed validation '%s'", field, tag)
-	}
 }
 
 // validateLowercase checks if a string contains only lowercase characters.
@@ -124,7 +91,7 @@ func (d *Definition) validateDomains() []error {
 	for _, app := range d.Apps {
 		for _, domain := range app.Domains {
 			if strings.Contains(domain.Name, "://") {
-				errs = append(errs, errors.Errorf(
+				errs = append(errs, fmt.Errorf(
 					"app %q: domain %q should not contain protocol prefix (e.g., 'https://')",
 					app.Name,
 					domain.Name,
@@ -147,17 +114,17 @@ func (d *Definition) validateAppPaths(fs afero.Fs) []error {
 
 		exists, err := afero.DirExists(fs, app.Path)
 		if err != nil {
-			errs = append(errs, errors.Wrapf(
-				err,
-				"app %q: error checking path %q",
+			errs = append(errs, fmt.Errorf(
+				"app %q: error checking path %q: %w",
 				app.Name,
 				app.Path,
+				err,
 			))
 			continue
 		}
 
 		if !exists {
-			errs = append(errs, errors.Errorf(
+			errs = append(errs, fmt.Errorf(
 				"app %q: path %q does not exist",
 				app.Name,
 				app.Path,
@@ -177,7 +144,7 @@ func (d *Definition) validateTerraformManagedVMs() []error {
 		// Check if this is a terraform-managed VM/app
 		if app.IsTerraformManaged() && (app.Infra.Type == "vm" || app.Infra.Type == "app") {
 			if len(app.Domains) == 0 {
-				errs = append(errs, errors.Errorf(
+				errs = append(errs, fmt.Errorf(
 					"app %q: terraform-managed VM/app must have at least one domain configured",
 					app.Name,
 				))
@@ -233,7 +200,7 @@ func (d *Definition) validateEnvVarReferences(
 		// Parse the resource reference
 		resourceName, outputName, ok := ParseResourceReference(entry.Value)
 		if !ok {
-			errs = append(errs, errors.Errorf(
+			errs = append(errs, fmt.Errorf(
 				"%s: env var %q in %s has invalid resource reference format %q (expected 'resource_name.output_name')",
 				context,
 				entry.Key,
@@ -246,7 +213,7 @@ func (d *Definition) validateEnvVarReferences(
 		// Check if resource exists
 		resourceType, exists := resourceMap[resourceName]
 		if !exists {
-			errs = append(errs, errors.Errorf(
+			errs = append(errs, fmt.Errorf(
 				"%s: env var %q in %s references non-existent resource %q",
 				context,
 				entry.Key,
@@ -268,7 +235,7 @@ func (d *Definition) validateEnvVarReferences(
 			}
 
 			if !outputValid {
-				errs = append(errs, errors.Errorf(
+				errs = append(errs, fmt.Errorf(
 					"%s: env var %q in %s references invalid output %q for resource %q (type: %s). Valid outputs: %v",
 					context,
 					entry.Key,
@@ -284,7 +251,7 @@ func (d *Definition) validateEnvVarReferences(
 		return nil
 	})
 	if err != nil {
-		errs = append(errs, errors.Wrap(err, "walking env variables"))
+		errs = append(errs, fmt.Errorf("walking env variables: %w", err))
 	}
 
 	return errs
