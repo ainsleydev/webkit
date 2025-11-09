@@ -10,8 +10,7 @@ import (
 //go:generate mockgen -package=cachefakes -destination=cachefakes/fake.go . Store
 
 type (
-	// Options represents the cache store available options
-	// when using Set().
+	// Options configures caching behavior when storing values.
 	Options struct {
 		// Expiration allows to specify a global expiration
 		// time when setting a value.
@@ -20,8 +19,7 @@ type (
 		// current value.
 		Tags []string
 	}
-	// Store defines methods for interacting with the
-	// caching system.
+	// Store defines the interface for cache backend implementations.
 	Store interface {
 		// Ping pings the Redis cache to ensure its alive.
 		Ping(context.Context) error
