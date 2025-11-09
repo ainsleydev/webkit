@@ -6,8 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
-
-	"github.com/ainsleydev/webkit/internal/fsext"
 )
 
 // Read parses package.json from disk and preserves unknown fields in raw.
@@ -59,9 +57,4 @@ func Write(fs afero.Fs, path string, pkg *PackageJSON) error {
 	}
 
 	return nil
-}
-
-// Exists checks if a package.json file exists at the given path.
-func Exists(fs afero.Fs, path string) bool {
-	return fsext.Exists(fs, path)
 }

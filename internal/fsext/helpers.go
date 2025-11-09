@@ -6,7 +6,7 @@ import "github.com/spf13/afero"
 //
 // Returns true if the path exists, false otherwise.
 func Exists(fs afero.Fs, path string) bool {
-	exists, _ := afero.Exists(fs, path)
+	exists, _ := afero.Exists(fs, path) //nolint:errcheck
 	return exists
 }
 
@@ -14,6 +14,6 @@ func Exists(fs afero.Fs, path string) bool {
 //
 // Returns true if the directory exists, false otherwise.
 func DirExists(fs afero.Fs, path string) bool {
-	exists, _ := afero.DirExists(fs, path)
+	exists, _ := afero.DirExists(fs, path) //nolint:errcheck
 	return exists
 }
