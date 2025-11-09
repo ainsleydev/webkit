@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 )
 
