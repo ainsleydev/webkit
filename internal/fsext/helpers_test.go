@@ -99,45 +99,39 @@ func TestDirExists(t *testing.T) {
 func TestEnsureDir(t *testing.T) {
 	t.Parallel()
 
-	tt := map[string]struct {
-		filePath string
-		wantErr  bool
-	}{
-		"Creates nested directories": {
-			filePath: "path/to/nested/file.txt",
-			wantErr:  false,
-		},
-		"Creates single directory": {
-			filePath: "dir/file.txt",
-			wantErr:  false,
-		},
-		"Handles root file": {
-			filePath: "file.txt",
-			wantErr:  false,
-		},
-	}
+	t.Run("Creates nested directories", func(t *testing.T) {
+		t.Parallel()
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+		fs := afero.NewMemMapFs()
 
-			fs := afero.NewMemMapFs()
+		err := EnsureDir(fs, "path/to/nested/file.txt")
+		assert.NoError(t, err)
 
-			err := EnsureDir(fs, test.filePath)
-			assert.Equal(t, test.wantErr, err != nil)
+		exists := DirExists(fs, "path/to/nested")
+		assert.True(t, exists)
+	})
 
-			// Verify directory was created.
-			if !test.wantErr {
-				dirPath := "path/to/nested"
-				if test.filePath == "dir/file.txt" {
-					dirPath = "dir"
-				} else if test.filePath == "file.txt" {
-					dirPath = "."
-				}
+	t.Run("Creates single directory", func(t *testing.T) {
+		t.Parallel()
 
-				exists := DirExists(fs, dirPath)
-				assert.True(t, exists, "expected directory %s to exist", dirPath)
-			}
-		})
-	}
+		fs := afero.NewMemMapFs()
+
+		err := EnsureDir(fs, "dir/file.txt")
+		assert.NoError(t, err)
+
+		exists := DirExists(fs, "dir")
+		assert.True(t, exists)
+	})
+
+	t.Run("Handles root file", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+
+		err := EnsureDir(fs, "file.txt")
+		assert.NoError(t, err)
+
+		exists := DirExists(fs, ".")
+		assert.True(t, exists)
+	})
 }
