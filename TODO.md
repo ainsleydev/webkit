@@ -53,7 +53,7 @@ Create consistent test helper patterns in `internal/util/testutil/` for common t
 
 - **CommandInput setup**: Helper for creating `cmdtools.CommandInput` with MemMapFs and all required dependencies.
 - **FileGenerator setup**: Helper for creating `scaffold.FileGenerator` instances in tests.
-- **AppDef setup**: Helper for creating and validating `appdef.Definition` instances (already implemented as `NewAppDefWithDefaults`).
+- **AppDef setup**: Helper for creating and validating `appdef.Definition` instances.
 
 **Current inconsistencies:**
 
