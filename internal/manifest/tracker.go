@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/afero"
 
+	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/version"
 )
 
@@ -87,7 +88,7 @@ func (t *Tracker) Save(fs afero.Fs) error {
 		return err
 	}
 
-	err = fs.MkdirAll(filepath.Dir(Path), os.ModePerm)
+	err = fsext.EnsureDir(fs, Path)
 	if err != nil {
 		return err
 	}

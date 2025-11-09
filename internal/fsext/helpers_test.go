@@ -95,3 +95,43 @@ func TestDirExists(t *testing.T) {
 		})
 	}
 }
+
+func TestEnsureDir(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Creates nested directories", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+
+		err := EnsureDir(fs, "path/to/nested/file.txt")
+		assert.NoError(t, err)
+
+		exists := DirExists(fs, "path/to/nested")
+		assert.True(t, exists)
+	})
+
+	t.Run("Creates single directory", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+
+		err := EnsureDir(fs, "dir/file.txt")
+		assert.NoError(t, err)
+
+		exists := DirExists(fs, "dir")
+		assert.True(t, exists)
+	})
+
+	t.Run("Handles root file", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+
+		err := EnsureDir(fs, "file.txt")
+		assert.NoError(t, err)
+
+		exists := DirExists(fs, ".")
+		assert.True(t, exists)
+	})
+}

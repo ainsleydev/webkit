@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"text/template"
 	"time"
 
@@ -88,7 +87,7 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 		data = append(notice, data...)
 	}
 
-	if err := f.fs.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+	if err := fsext.EnsureDir(f.fs, path); err != nil {
 		return fmt.Errorf("creating directories: %w", err)
 	}
 
