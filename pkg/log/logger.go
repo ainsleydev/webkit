@@ -9,28 +9,32 @@ import (
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 
-// DefaultLogger is the logger that WebKit uses to log HTTP Requests and
-// info messages throughout the application.
+// DefaultLogger is the global logger instance used by WebKit for HTTP requests
+// and application-wide logging. It can be configured with Bootstrap.
 var DefaultLogger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-// Bootstrap creates a new complaint logger and sets the default.
+// Bootstrap initializes the default logger with environment-aware formatting.
+// The prefix appears in development logs to identify the application.
+// Call this once during application startup.
 func Bootstrap(prefix string) {
 	DefaultLogger = slog.New(resolveLogHandler(prefix))
 	slog.SetDefault(DefaultLogger)
 }
 
-// NewLogger creates a new WebKit compliant logger with the given prefix.
+// NewLogger creates a new logger instance with environment-aware formatting.
+// Use this to create isolated loggers with different prefixes for subsystems.
 func NewLogger(prefix string) *slog.Logger {
 	return slog.New(resolveLogHandler(prefix))
 }
 
-// NewNoOpLogger creates a logger that does nothing.
+// NewNoOpLogger creates a logger that discards all output.
+// Useful for testing or when logging should be completely suppressed.
 func NewNoOpLogger() *slog.Logger {
 	return slog.New(slog.NewTextHandler(io.Discard, nil))
 }
 
-// Discard sets the default logger to discard all logs.
-// It's an alias for log.SetOutput(io.Discard).
+// Discard configures the standard library logger to discard all output.
+// This only affects log.Print calls, not slog or DefaultLogger.
 func Discard() {
 	log.SetOutput(io.Discard)
 }

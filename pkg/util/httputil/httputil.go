@@ -30,8 +30,8 @@ func IsError(statusCode int) bool {
 	return Is4xx(statusCode) || Is5xx(statusCode)
 }
 
-// IsFileRequest returns true if the request is for a file instead
-// of a page, i.e /about.
+// IsFileRequest reports whether the request path appears to target a file
+// (contains a dot and doesn't end with slash).
 func IsFileRequest(req *http.Request) bool {
 	path := req.URL.Path
 	return strings.Contains(path, ".") && !strings.HasSuffix(path, "/")

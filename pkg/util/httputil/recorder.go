@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-// ResponseRecorder is a custom response writer that captures the
-// response body and Status code.
+// ResponseRecorder wraps an http.ResponseWriter to capture the response
+// body and status code for inspection.
 type ResponseRecorder struct {
 	http.ResponseWriter
 	Status int

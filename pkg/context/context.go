@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-// ContextKey defines the type used to set a context key.
+// ContextKey is a typed string for context keys to avoid collisions.
 type ContextKey string
 
 const (
@@ -47,8 +47,7 @@ func WithURL(ctx context.Context, url string) context.Context {
 	return context.WithValue(ctx, ContextKeyURL, url) //nolint
 }
 
-// MarkupSnippet defines the structure of a piece of HTML content that
-// is to be injected into the head or body of a document.
+// MarkupSnippet represents HTML content to be injected into a document.
 type MarkupSnippet struct {
 	Name    string
 	Content string

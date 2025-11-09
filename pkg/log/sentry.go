@@ -20,20 +20,19 @@ var severityMap = map[logrus.Level]sentry.Level{
 	logrus.PanicLevel: sentry.LevelFatal,
 }
 
-// SentryHook implements logrus.Hook to send errors to sentry
+// SentryHook captures fatal and panic logs and sends them to Sentry for error tracking.
 type SentryHook struct {
 	client *sentry.Client
 }
 
-// NewSentryHook creates a sentry hook for logrus given a sentry client
+// NewSentryHook creates a logrus hook that reports fatal and panic events to Sentry.
 func NewSentryHook(client *sentry.Client) SentryHook {
 	return SentryHook{
 		client: client,
 	}
 }
 
-// Levels returns the levels this hook is enabled for. This is a part
-// of logrus.Hook.
+// Levels returns the log levels this hook captures (fatal and panic only).
 func (h SentryHook) Levels() []logrus.Level {
 	return []logrus.Level{
 		logrus.FatalLevel,
@@ -41,8 +40,7 @@ func (h SentryHook) Levels() []logrus.Level {
 	}
 }
 
-// Fire is an event handler for logrus. This is a part of logrus.Hook.
-// Taken from: https://github.com/getsentry/sentry-go/issues/43
+// Fire captures the log entry and sends it to Sentry as an error event.
 func (h SentryHook) Fire(e *logrus.Entry) error {
 	event := sentry.NewEvent()
 	event.Message = e.Message
@@ -78,11 +76,10 @@ func (h SentryHook) Fire(e *logrus.Entry) error {
 	return nil
 }
 
-// SentryEventIdentityModifier is a sentry event modifier that simply passes
-// through the event.
+// SentryEventIdentityModifier passes Sentry events through without modification.
 type SentryEventIdentityModifier struct{}
 
-// ApplyToEvent simply returns the event (ignoring the hint).
+// ApplyToEvent returns the event unchanged.
 func (m *SentryEventIdentityModifier) ApplyToEvent(event *sentry.Event, _ *sentry.EventHint, _ *sentry.Client) *sentry.Event {
 	return event
 }

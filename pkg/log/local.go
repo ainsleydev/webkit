@@ -15,8 +15,8 @@ import (
 	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 )
 
-// LocalHandler is a handler that logs to the console in a human-readable
-// format for local development environments.
+// LocalHandler formats log output for human readability in development.
+// It displays colored levels, timestamps, and pretty-printed JSON attributes.
 type LocalHandler struct {
 	handler  slog.Handler
 	replacer func([]string, slog.Attr) slog.Attr
@@ -27,7 +27,8 @@ type LocalHandler struct {
 	opts     *slog.HandlerOptions
 }
 
-// NewLocalHandler returns a new local handler with the given options.
+// NewLocalHandler creates a development-friendly log handler.
+// The prefix identifies the application in log output.
 func NewLocalHandler(writer io.Writer, opts *slog.HandlerOptions, prefix string) *LocalHandler {
 	if opts == nil {
 		opts = &slog.HandlerOptions{}
@@ -53,12 +54,12 @@ const (
 	greyHex    = 10
 )
 
-// Enabled returns whether logging is enabled for the given level in the context.
+// Enabled reports whether the handler will log at the given level.
 func (h *LocalHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return h.handler.Enabled(ctx, level)
 }
 
-// WithAttrs returns a new handler with the provided attributes.
+// WithAttrs returns a new handler with additional attributes included in every log.
 func (h *LocalHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &LocalHandler{
 		handler:  h.handler.WithAttrs(attrs),
@@ -70,7 +71,7 @@ func (h *LocalHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	}
 }
 
-// WithGroup returns a new handler with the provided group name.
+// WithGroup returns a new handler that qualifies subsequent attributes with the group name.
 func (h *LocalHandler) WithGroup(name string) slog.Handler {
 	return &LocalHandler{
 		handler:  h.handler.WithGroup(name),
@@ -82,7 +83,7 @@ func (h *LocalHandler) WithGroup(name string) slog.Handler {
 	}
 }
 
-// Handle handles the logging record and formats it.
+// Handle processes and formats a log record for human-readable output.
 func (h *LocalHandler) Handle(ctx context.Context, r slog.Record) error {
 	if reqID, ok := ctx.Value(webkitctx.ContextKeyRequestID).(string); ok {
 		r.AddAttrs(slog.String(string(webkitctx.ContextKeyRequestID), reqID))
