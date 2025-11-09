@@ -31,7 +31,7 @@ require (
 	github.com/hashicorp/terraform-exec v0.24.0
 	github.com/hashicorp/terraform-json v0.27.2
 	github.com/joho/godotenv v1.5.1
-	github.com/kaptinlin/jsonschema v0.5.2
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.1
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/perimeterx/marshmallow v1.1.5
 	github.com/pkg/errors v0.9.1
