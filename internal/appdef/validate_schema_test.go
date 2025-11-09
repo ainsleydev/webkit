@@ -20,7 +20,7 @@ func TestValidateAgainstSchema(t *testing.T) {
 		json    string
 		wantErr bool
 	}{
-		"valid minimal definition": {
+		"Valid minimal definition": {
 			json: `{
 				"webkit_version": "1.0.0",
 				"project": {
@@ -45,7 +45,7 @@ func TestValidateAgainstSchema(t *testing.T) {
 			}`,
 			wantErr: false,
 		},
-		"missing required field webkit_version": {
+		"Missing required field webkit_version": {
 			json: `{
 				"project": {
 					"name": "test-project",
@@ -69,7 +69,7 @@ func TestValidateAgainstSchema(t *testing.T) {
 			}`,
 			wantErr: true,
 		},
-		"missing required field project": {
+		"Missing required field project": {
 			json: `{
 				"webkit_version": "1.0.0",
 				"apps": [{
@@ -85,7 +85,7 @@ func TestValidateAgainstSchema(t *testing.T) {
 			}`,
 			wantErr: true,
 		},
-		"missing required field apps": {
+		"Missing required field apps": {
 			json: `{
 				"webkit_version": "1.0.0",
 				"project": {
@@ -100,7 +100,7 @@ func TestValidateAgainstSchema(t *testing.T) {
 			}`,
 			wantErr: true,
 		},
-		"valid with all fields": {
+		"Valid with all fields": {
 			json: `{
 				"webkit_version": "1.0.0",
 				"project": {
@@ -154,12 +154,12 @@ func TestValidateAgainstSchema(t *testing.T) {
 		},
 	}
 
-	for name, tc := range tt {
+	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got := ValidateAgainstSchema([]byte(tc.json))
-			assert.Equal(t, tc.wantErr, len(got) != 0)
+			got := ValidateAgainstSchema([]byte(test.json))
+			assert.Equal(t, test.wantErr, len(got) != 0)
 		})
 	}
 }

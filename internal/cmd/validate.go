@@ -17,8 +17,11 @@ var validateCmd = &cli.Command{
 	Action:      cmdtools.Wrap(validate),
 }
 
-func validate(ctx context.Context, input cmdtools.CommandInput) error {
-	input.Printer().Info("Validating app.json...")
+func validate(_ context.Context, input cmdtools.CommandInput) error {
+	printer := input.Printer()
+
+	printer.Info("Validating app.json...")
+	printer.LineBreak()
 
 	// Load the app definition (this will parse and apply defaults)
 	def := input.AppDef()
@@ -28,19 +31,19 @@ func validate(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Display results
 	if errs == nil {
-		input.Printer().Success("✓ Validation passed! No errors found.")
+		printer.Success("Validation passed! No errors found.")
 		return nil
 	}
 
 	// Display all errors
-	input.Printer().Error(fmt.Sprintf("✗ Validation failed with %d error(s):", len(errs)))
-	input.Printer().LineBreak()
+	printer.Error(fmt.Sprintf("Validation failed with %d error(s):", len(errs)))
+	printer.LineBreak()
 
-	for i, err := range errs {
-		input.Printer().Error(fmt.Sprintf("  %d. %s", i+1, err.Error()))
+	if len(errs) > 0 {
+		for i, err := range errs {
+			printer.Println(fmt.Sprintf("  %d. %s", i+1, err.Error()))
+		}
 	}
-
-	input.Printer().LineBreak()
 
 	return errors.New("validation failed")
 }
