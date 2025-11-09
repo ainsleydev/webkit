@@ -1,6 +1,11 @@
 package fsext
 
-import "github.com/spf13/afero"
+import (
+	"os"
+	"path/filepath"
+
+	"github.com/spf13/afero"
+)
 
 // Exists checks if a path exists, ignoring any errors.
 //
@@ -16,4 +21,11 @@ func Exists(fs afero.Fs, path string) bool {
 func DirExists(fs afero.Fs, path string) bool {
 	exists, _ := afero.DirExists(fs, path) //nolint:errcheck
 	return exists
+}
+
+// EnsureDir ensures the parent directory of the given file path exists.
+//
+// Returns an error if the directory cannot be created.
+func EnsureDir(fs afero.Fs, filePath string) error {
+	return fs.MkdirAll(filepath.Dir(filePath), os.ModePerm)
 }

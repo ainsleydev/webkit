@@ -151,7 +151,7 @@ func TestPackageJSONApp(t *testing.T) {
 				},
 			},
 		}
-		require.NoError(t, appDef.ApplyDefaults())
+		appDef = testutil.NewAppDefWithDefaults(t, appDef)
 
 		input := setup(t, fs, appDef)
 
@@ -217,7 +217,7 @@ func TestPackageJSONApp(t *testing.T) {
 				},
 			},
 		}
-		require.NoError(t, appDef.ApplyDefaults())
+		appDef = testutil.NewAppDefWithDefaults(t, appDef)
 
 		input := setup(t, fs, appDef)
 
@@ -259,7 +259,7 @@ func TestPackageJSONApp(t *testing.T) {
 				},
 			},
 		}
-		require.NoError(t, appDef.ApplyDefaults())
+		appDef = testutil.NewAppDefWithDefaults(t, appDef)
 
 		input := setup(t, fs, appDef)
 
@@ -287,7 +287,7 @@ func TestPackageJSONApp(t *testing.T) {
 				},
 			},
 		}
-		require.NoError(t, appDef.ApplyDefaults())
+		appDef = testutil.NewAppDefWithDefaults(t, appDef)
 
 		input := setup(t, fs, appDef)
 
@@ -338,7 +338,7 @@ func TestPackageJSONApp(t *testing.T) {
 				},
 			},
 		}
-		require.NoError(t, appDef.ApplyDefaults())
+		appDef = testutil.NewAppDefWithDefaults(t, appDef)
 
 		input := setup(t, fs, appDef)
 
@@ -445,7 +445,7 @@ func TestPackageJSONApp(t *testing.T) {
 				},
 			},
 		}
-		require.NoError(t, appDef.ApplyDefaults())
+		appDef = testutil.NewAppDefWithDefaults(t, appDef)
 
 		input := setup(t, fs, appDef)
 
@@ -501,7 +501,7 @@ func TestPackageJSONApp(t *testing.T) {
 				},
 			},
 		}
-		require.NoError(t, appDef.ApplyDefaults())
+		appDef = testutil.NewAppDefWithDefaults(t, appDef)
 
 		input := setup(t, fs, appDef)
 
@@ -549,7 +549,7 @@ func TestPackageJSONApp(t *testing.T) {
 				},
 			},
 		}
-		require.NoError(t, appDef.ApplyDefaults())
+		appDef = testutil.NewAppDefWithDefaults(t, appDef)
 
 		input := setup(t, fs, appDef)
 
