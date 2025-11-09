@@ -39,6 +39,7 @@ var updateOps = []runner{
 	{secrets.Scaffold, "Secrets: Scaffold secret files"},
 
 	// Alphabetically
+	{files.Schema, "Files: Create WebKit JSON schema"},
 	{files.CodeStyle, "Files: Create code style files"},
 	{files.DockerIgnore, "Files: Create .dockerignore files"},
 	{files.GitSettings, "Files: Create git settings"},
