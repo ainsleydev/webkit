@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 
+	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
 	"github.com/ainsleydev/webkit/pkg/enforce"
@@ -91,7 +92,7 @@ func (f FileGenerator) Bytes(path string, data []byte, opts ...Option) error {
 		return fmt.Errorf("creating directories: %w", err)
 	}
 
-	exists, _ := afero.Exists(f.fs, path)
+	exists := fsext.Exists(f.fs, path)
 	if exists {
 		// f.Printer.Println("Updated: " + path)
 	}
@@ -186,7 +187,7 @@ func (f FileGenerator) shouldSkipScaffold(path string, mode WriteMode) bool {
 		return false
 	}
 
-	exists, _ := afero.Exists(f.fs, path) //nolint
+	exists := fsext.Exists(f.fs, path)
 	if !exists {
 		return false
 	}

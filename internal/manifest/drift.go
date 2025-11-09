@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/afero"
+
+	"github.com/ainsleydev/webkit/internal/fsext"
 )
 
 // DriftReason represents the kind of drift detected
@@ -143,7 +145,7 @@ func DetectDrift(actualFS, expectedFS afero.Fs) ([]DriftEntry, error) {
 		// File was generated before but shouldn't be generated now
 		_, existsInExpected := expectedManifest.Files[path]
 		if !existsInExpected {
-			exists, _ := afero.Exists(actualFS, path)
+			exists := fsext.Exists(actualFS, path)
 			if exists {
 				drifted = append(drifted, DriftEntry{
 					Path:      path,
