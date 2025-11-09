@@ -160,16 +160,16 @@ func (d *Definition) validateTerraformManagedVMs() []error {
 func (d *Definition) validateEnvReferences() []error {
 	var errs []error
 
-	// Build a map of resource names to their types for quick lookup
+	// Build a map of resource names to their types for quick lookup.
 	resourceMap := make(map[string]ResourceType)
 	for _, res := range d.Resources {
 		resourceMap[res.Name] = res.Type
 	}
 
-	// Validate shared env references
+	// Validate shared env references.
 	errs = append(errs, d.validateEnvVarReferences("shared", d.Shared.Env, resourceMap)...)
 
-	// Validate each app's env references
+	// Validate each app's env references.å
 	for _, app := range d.Apps {
 		errs = append(errs, d.validateEnvVarReferences(
 			fmt.Sprintf("app %q", app.Name),
