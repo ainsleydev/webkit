@@ -9,6 +9,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/fsext"
 	"github.com/ainsleydev/webkit/internal/ghapi"
 	"github.com/ainsleydev/webkit/internal/pkgjson"
 	"github.com/ainsleydev/webkit/internal/util/executil"
@@ -54,7 +55,7 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Check if we're in a Payload project directory
 	pkgPath := "package.json"
-	if !pkgjson.Exists(input.FS, pkgPath) {
+	if !fsext.Exists(input.FS, pkgPath) {
 		return errors.New("package.json not found in current directory. Please run this command from a Payload project directory")
 	}
 

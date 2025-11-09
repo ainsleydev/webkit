@@ -58,9 +58,3 @@ func Write(fs afero.Fs, path string, pkg *PackageJSON) error {
 
 	return nil
 }
-
-// Exists checks if a package.json file exists at the given path.
-func Exists(fs afero.Fs, path string) bool {
-	exists, _ := afero.Exists(fs, path)
-	return exists
-}

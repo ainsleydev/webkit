@@ -7,25 +7,25 @@ import (
 	"github.com/yosssi/gohtml"
 )
 
-// IsNotEmpty checks if a string pointer is empty.
+// IsNotEmpty reports whether the string pointer is non-nil and non-empty.
 func IsNotEmpty(in *string) bool {
 	return in != nil && *in != ""
 }
 
-// IsEmpty checks if a string pointer is empty.
+// IsEmpty reports whether the string pointer is nil or empty.
 func IsEmpty(in *string) bool {
 	return in == nil || *in == ""
 }
 
 var space = regexp.MustCompile(`\s+`)
 
-// RemoveDuplicateWhitespace removes duplicate whitespace from a string.
-// Including tab & new line characters.
+// RemoveDuplicateWhitespace collapses consecutive whitespace into single spaces
+// and trims leading/trailing whitespace.
 func RemoveDuplicateWhitespace(s string) string {
 	return strings.TrimSpace(space.ReplaceAllString(s, " "))
 }
 
-// FormatHTML parses a input HTML string, formats it and returns the result.
+// FormatHTML formats HTML content with proper indentation and structure.
 func FormatHTML(s string) string {
 	repl := strings.NewReplacer(
 		" >", ">",
