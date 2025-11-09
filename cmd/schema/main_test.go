@@ -13,7 +13,11 @@ import (
 )
 
 func TestRun(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Stdout mode", func(t *testing.T) {
+		t.Parallel()
+
 		var buf bytes.Buffer
 		p := printer.New(&buf)
 
@@ -23,6 +27,8 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("File output mode", func(t *testing.T) {
+		t.Parallel()
+
 		tmpDir := t.TempDir()
 		outputPath := filepath.Join(tmpDir, "test-schema.json")
 
@@ -39,6 +45,8 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("Creates directory if not exists", func(t *testing.T) {
+		t.Parallel()
+
 		tmpDir := t.TempDir()
 		outputPath := filepath.Join(tmpDir, "nested", "dir", "schema.json")
 
