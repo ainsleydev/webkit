@@ -1,28 +1,42 @@
 package appdef
 
 import (
+	"errors"
 	"fmt"
+	"regexp"
 	"strings"
+	"unicode"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )
+
+var (
+	// validate is the singleton validator instance with custom validators registered.
+	validate *validator.Validate
+)
+
+func init() {
+	validate = validator.New()
+
+	// Register custom validators
+	_ = validate.RegisterValidation("lowercase", validateLowercase)
+	_ = validate.RegisterValidation("alphanumdash", validateAlphanumDash)
+}
 
 // Validate performs comprehensive validation on the Definition,
 // collecting all errors before returning. Returns nil if validation passes.
 func (d *Definition) Validate(fs afero.Fs) []error {
 	var errs []error
 
-	// Validate domains
+	// Struct validation with go-playground/validator
+	errs = append(errs, validateStruct(d)...)
+
+	// Business logic validation
 	errs = append(errs, d.validateDomains()...)
-
-	// Validate app paths
 	errs = append(errs, d.validateAppPaths(fs)...)
-
-	// Validate terraform-managed VMs have domains
 	errs = append(errs, d.validateTerraformManagedVMs()...)
-
-	// Validate env references
 	errs = append(errs, d.validateEnvReferences()...)
 
 	// Return nil if no errors
@@ -31,6 +45,76 @@ func (d *Definition) Validate(fs afero.Fs) []error {
 	}
 
 	return errs
+}
+
+// validateStruct validates a Definition struct using go-playground/validator.
+func validateStruct(def *Definition) []error {
+	err := validate.Struct(def)
+	if err == nil {
+		return nil
+	}
+
+	// Convert validator errors to []error
+	var errs []error
+	var validationErrs validator.ValidationErrors
+	if errors.As(err, &validationErrs) {
+		for _, e := range validationErrs {
+			errs = append(errs, formatValidationError(e))
+		}
+	}
+
+	return errs
+}
+
+// formatValidationError converts a validator.FieldError to a human-readable error message.
+func formatValidationError(e validator.FieldError) error {
+	field := e.Field()
+	tag := e.Tag()
+	param := e.Param()
+
+	switch tag {
+	case "required":
+		return fmt.Errorf("field '%s' is required", field)
+	case "min":
+		if e.Kind().String() == "slice" || e.Kind().String() == "array" {
+			return fmt.Errorf("field '%s' must contain at least %s items", field, param)
+		}
+		return fmt.Errorf("field '%s' must be at least %s", field, param)
+	case "max":
+		if e.Kind().String() == "string" {
+			return fmt.Errorf("field '%s' must be at most %s characters", field, param)
+		}
+		return fmt.Errorf("field '%s' must be at most %s", field, param)
+	case "oneof":
+		return fmt.Errorf("field '%s' must be one of: %s", field, strings.ReplaceAll(param, " ", ", "))
+	case "uri", "url":
+		return fmt.Errorf("field '%s' must be a valid URI", field)
+	case "lowercase":
+		return fmt.Errorf("field '%s' must be lowercase", field)
+	case "alphanumdash":
+		return fmt.Errorf("field '%s' must contain only lowercase letters, numbers, and hyphens, and start with a letter", field)
+	default:
+		return fmt.Errorf("field '%s' failed validation '%s'", field, tag)
+	}
+}
+
+// validateLowercase checks if a string contains only lowercase characters.
+func validateLowercase(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+	for _, r := range value {
+		if unicode.IsUpper(r) {
+			return false
+		}
+	}
+	return true
+}
+
+// validateAlphanumDash validates that a string matches the pattern ^[a-z][a-z0-9-]*$
+// (starts with a lowercase letter, followed by lowercase letters, numbers, or hyphens).
+func validateAlphanumDash(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+	matched, _ := regexp.MatchString(`^[a-z][a-z0-9-]*$`, value)
+	return matched
 }
 
 // validateDomains ensures that domain names do not contain protocol prefixes.

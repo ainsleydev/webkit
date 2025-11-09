@@ -28,7 +28,9 @@
 			"WebFetch(domain:github.com)",
 			"Bash(go generate:*)",
 			"WebFetch(domain:pkg.go.dev)",
-			"Bash(python3:*)"
+			"Bash(python3:*)",
+			"Bash(go doc:*)",
+			"Bash(go get:*)"
 		],
 		"deny": [],
 		"ask": []

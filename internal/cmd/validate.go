@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spf13/afero"
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 )
 
@@ -22,19 +24,16 @@ func validate(_ context.Context, input cmdtools.CommandInput) error {
 	printer.Info("Validating app.json...")
 	printer.LineBreak()
 
-	// Load the app definition (this will parse and apply defaults)
+	// Load the app definition (this will parse and apply defaults).
 	def := input.AppDef()
 
 	// Run validation
 	errs := def.Validate(input.FS)
-
-	// Display results
 	if errs == nil {
 		printer.Success("Validation passed! No errors found.")
 		return nil
 	}
 
-	// Display all errors
 	printer.Error(fmt.Sprintf("Validation failed with %d error(s):", len(errs)))
 	printer.LineBreak()
 

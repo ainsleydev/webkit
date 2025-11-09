@@ -14,13 +14,13 @@ func TestDefinition_Validate(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		Input        *Definition
-		SetupFS      func(afero.Fs)
+		input        *Definition
+		setup        func(afero.Fs)
 		WantErr      bool
 		WantErrCount int
 	}{
 		"Valid Definition": {
-			Input: &Definition{
+			input: &Definition{
 				Apps: []App{
 					{
 						Name:  "test-app",
@@ -39,13 +39,13 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			SetupFS: func(fs afero.Fs) {
+			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
 			WantErr: false,
 		},
 		"Domain With Protocol": {
-			Input: &Definition{
+			input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -56,14 +56,14 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			SetupFS: func(fs afero.Fs) {
+			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
 			WantErr:      true,
 			WantErrCount: 1,
 		},
 		"Non-existent App Path": {
-			Input: &Definition{
+			input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -71,12 +71,12 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			SetupFS:      func(fs afero.Fs) {},
+			setup:        func(fs afero.Fs) {},
 			WantErr:      true,
 			WantErrCount: 1,
 		},
 		"Terraform-managed VM Without Domains": {
-			Input: &Definition{
+			input: &Definition{
 				Apps: []App{
 					{
 						Name:             "test-app",
@@ -87,14 +87,14 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			SetupFS: func(fs afero.Fs) {
+			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
 			WantErr:      true,
 			WantErrCount: 1,
 		},
 		"Invalid Env Resource Reference": {
-			Input: &Definition{
+			input: &Definition{
 				Apps: []App{
 					{
 						Name: "test-app",
@@ -117,14 +117,14 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			SetupFS: func(fs afero.Fs) {
+			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/test", 0o755))
 			},
 			WantErr:      true,
 			WantErrCount: 1,
 		},
 		"Multiple Validation Errors": {
-			Input: &Definition{
+			input: &Definition{
 				Apps: []App{
 					{
 						Name:  "test-app",
@@ -136,7 +136,7 @@ func TestDefinition_Validate(t *testing.T) {
 					},
 				},
 			},
-			SetupFS:      func(fs afero.Fs) {},
+			setup:        func(fs afero.Fs) {},
 			WantErr:      true,
 			WantErrCount: 2, // path + domain
 		},
@@ -147,11 +147,11 @@ func TestDefinition_Validate(t *testing.T) {
 			t.Parallel()
 
 			fs := afero.NewMemMapFs()
-			if test.SetupFS != nil {
-				test.SetupFS(fs)
+			if test.setup != nil {
+				test.setup(fs)
 			}
 
-			errs := test.Input.Validate(fs)
+			errs := test.input.Validate(fs)
 
 			if test.WantErr {
 				require.NotNil(t, errs)
