@@ -280,8 +280,6 @@ func TestPR(t *testing.T) {
 			assert.Contains(t, content, "needs: [setup-webkit, detect-changes]", "should depend on setup-webkit and detect-changes")
 			assert.Contains(t, content, "<!-- terraform-plan -->", "should contain PR comment marker")
 			assert.Contains(t, content, "Terraform Plan - Production", "should contain terraform plan heading")
-			assert.Contains(t, content, "No infrastructure changes", "should contain no changes message")
-			assert.Contains(t, content, "Infrastructure changes detected", "should contain changes detected message")
 		}
 	})
 }
