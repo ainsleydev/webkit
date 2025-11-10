@@ -223,7 +223,7 @@ jobs:
           echo "🔍 Running terraform plan for production environment..."
 
           # Run webkit infra plan for production.
-          if ./webkit infra plan production > plan-output.txt 2>&1; then
+          if ./webkit infra plan > plan-output.txt 2>&1; then
             plan_exit_code=0
           else
             plan_exit_code=$?

@@ -171,8 +171,8 @@ jobs:
           echo "⚠️  NOTE: Currently in dry-run mode (running plan, not apply)"
 
           # TODO: Change to 'apply' when ready for actual infrastructure provisioning.
-          # ./webkit infra apply production
-          if ./webkit infra plan production > plan-output.txt 2>&1; then
+          # ./webkit infra apply
+          if ./webkit infra plan > plan-output.txt 2>&1; then
             plan_exit_code=0
           else
             plan_exit_code=$?
