@@ -115,7 +115,7 @@ jobs:
               continue
             fi
 
-            CURRENT_VERSION=$(jq -r '.webkit_version // empty' app.json)
+            CURRENT_VERSION=$(jq -r '.webkit_version // empty' app.json | sed 's/^v//')
 
             if [ -z "$CURRENT_VERSION" ]; then
               echo "  ⚠️  No webkit_version field in app.json, skipping..."
@@ -167,9 +167,6 @@ jobs:
 
             # Create pull request
             PR_BODY="This automated PR updates the WebKit version from v$CURRENT_VERSION to v$VERSION.
-
-            ## Changes
-            - Updated \`webkit_version\` in \`app.json\` from \`$CURRENT_VERSION\` to \`$VERSION\`
 
             ## Testing
             - [ ] Verify app.json is valid
