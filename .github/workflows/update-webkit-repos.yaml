@@ -131,20 +131,19 @@ jobs:
               echo "  ✓ PR #$EXISTING_PR already exists"
             else
               # Create pull request
+              PR_BODY="This automated PR updates the WebKit version from v$CURRENT_VERSION to v$VERSION.
+
+            ## Changes
+            - Updated \`webkit_version\` in \`app.json\` from \`$CURRENT_VERSION\` to \`$VERSION\`
+
+            ## Testing
+            - [ ] Verify app.json is valid
+            - [ ] Run \`webkit update\` to regenerate files
+            - [ ] Check for any breaking changes in the [release notes](https://github.com/ainsleydev/webkit/releases/tag/v$VERSION)"
+
               gh pr create \
                 --title "chore: Update WebKit to v$VERSION" \
-                --body "$(cat <<EOF
-This automated PR updates the WebKit version from v$CURRENT_VERSION to v$VERSION.
-
-## Changes
-- Updated \`webkit_version\` in \`app.json\` from \`$CURRENT_VERSION\` to \`$VERSION\`
-
-## Testing
-- [ ] Verify app.json is valid
-- [ ] Run \`webkit update\` to regenerate files
-- [ ] Check for any breaking changes in the [release notes](https://github.com/ainsleydev/webkit/releases/tag/v$VERSION)
-EOF
-)" \
+                --body "$PR_BODY" \
                 --base main
 
               echo "  ✓ Pull request created successfully"
