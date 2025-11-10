@@ -42,25 +42,38 @@ jobs:
       - name: Find repos with webkit_version
         id: find_repos
         run: |
-          echo "Searching for repositories with webkit_version in app.json..."
+          echo "Fetching all repositories in ainsleydev org..."
 
-          # Search for code containing webkit_version in app.json files
-          # Focus on repos under ainsleydev organisation
-          REPOS=$(gh search code "webkit_version filename:app.json org:ainsleydev" \
-            --json repository \
-            --jq 'map(.repository.fullName) | unique | .[]' \
-            --limit 100)
+          # Get all repos in the org (works with private repos)
+          ALL_REPOS=$(gh repo list ainsleydev --limit 1000 --json nameWithOwner --jq '.[].nameWithOwner')
 
-          if [ -z "$REPOS" ]; then
+          REPOS_WITH_WEBKIT=""
+
+          # Check each repo for app.json with webkit_version
+          for REPO in $ALL_REPOS; do
+            echo "Checking $REPO..."
+
+            # Try to fetch app.json from the repo
+            if CONTENT=$(gh api "repos/$REPO/contents/app.json" --jq '.content' 2>/dev/null); then
+              # Decode base64 content and check for webkit_version field
+              if echo "$CONTENT" | base64 -d | jq -e '.webkit_version' >/dev/null 2>&1; then
+                echo "  ✓ Found webkit_version in $REPO"
+                REPOS_WITH_WEBKIT="$REPOS_WITH_WEBKIT$REPO"$'\n'
+              fi
+            fi
+          done
+
+          if [ -z "$REPOS_WITH_WEBKIT" ]; then
             echo "No repositories found with webkit_version field"
+            echo "repos=[]" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "Found repositories:"
-          echo "$REPOS"
+          echo "Found repositories with webkit_version:"
+          echo "$REPOS_WITH_WEBKIT"
 
-          # Save to output (convert to JSON array)
-          echo "$REPOS" | jq -R -s -c 'split("\n") | map(select(length > 0))' > repos.json
+          # Convert to JSON array
+          echo "$REPOS_WITH_WEBKIT" | jq -R -s -c 'split("\n") | map(select(length > 0))' > repos.json
           echo "repos=$(cat repos.json)" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
