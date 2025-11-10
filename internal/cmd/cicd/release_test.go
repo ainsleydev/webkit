@@ -406,19 +406,19 @@ func TestReleaseWorkflow(t *testing.T) {
 
 		t.Log("Terraform Apply Job")
 		{
-			assert.Contains(t, content, "terraform-apply-production:", "should contain terraform apply job")
-			assert.Contains(t, content, "Run Terraform Plan (Dry Run)", "should contain terraform plan step")
-			assert.Contains(t, content, "./webkit infra plan production", "should run webkit infra plan command")
-			assert.Contains(t, content, "needs: [setup-webkit, build-and-push]", "should depend on setup-webkit and build-and-push")
-			assert.Contains(t, content, "Install Terraform", "should install terraform")
-			assert.Contains(t, content, "Install SOPS", "should install sops")
-			assert.Contains(t, content, "Send Slack Notification", "should send slack notification")
-			assert.Contains(t, content, "Terraform Plan - Production", "should contain terraform plan heading")
+			assert.Contains(t, content, "terraform-apply-production:")
+			assert.Contains(t, content, "Run Terraform Plan (Dry Run)")
+			assert.Contains(t, content, "./webkit infra plan production")
+			assert.Contains(t, content, "needs: [setup-webkit, build-and-push]")
+			assert.Contains(t, content, "Install Terraform")
+			assert.Contains(t, content, "Install SOPS")
+			assert.Contains(t, content, "Send Slack Notification")
+			assert.Contains(t, content, "Terraform Plan - Production")
 		}
 
 		t.Log("Deploy jobs depend on terraform apply")
 		{
-			assert.Contains(t, content, "needs: [build-and-push, terraform-apply-production]", "deploy job should depend on terraform-apply-production")
+			assert.Contains(t, content, "needs: [build-and-push, terraform-apply-production]")
 		}
 	})
 }
