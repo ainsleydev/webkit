@@ -5,11 +5,12 @@ on:
     inputs:
       webkit_version:
         description: 'WebKit version to update to (e.g., 0.0.41)'
-        required: true
+        required: false
         type: string
-  schedule:
-    # Run weekly on Mondays at 9am UTC
-    - cron: '0 9 * * 1'
+  workflow_run:
+    workflows: ['Release']
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -17,20 +18,24 @@ permissions:
 jobs:
   update-repos:
     runs-on: ubuntu-latest
+    # Only run if triggered manually or if the Release workflow succeeded
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Get latest WebKit version
+      - name: Get WebKit version
         id: get_version
         run: |
           if [ -n "${{ inputs.webkit_version }}" ]; then
+            # Manual trigger with specific version
             VERSION="${{ inputs.webkit_version }}"
           else
             # Get latest release version from GitHub
             VERSION=$(gh release view --json tagName --jq '.tagName' | sed 's/^v//')
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using WebKit version: $VERSION"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
