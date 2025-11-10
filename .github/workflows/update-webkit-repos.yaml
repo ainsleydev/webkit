@@ -44,11 +44,11 @@ jobs:
         run: |
           echo "Searching for repositories with webkit_version in app.json..."
 
-          # Search for repos containing webkit_version in their code
+          # Search for code containing webkit_version in app.json files
           # Focus on repos under ainsleydev organisation
-          REPOS=$(gh search repos "org:ainsleydev webkit_version in:file filename:app.json" \
-            --json fullName \
-            --jq '.[].fullName' \
+          REPOS=$(gh search code "webkit_version filename:app.json org:ainsleydev" \
+            --json repository \
+            --jq 'map(.repository.fullName) | unique | .[]' \
             --limit 100)
 
           if [ -z "$REPOS" ]; then
