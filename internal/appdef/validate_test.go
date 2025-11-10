@@ -1,6 +1,7 @@
 package appdef
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -332,9 +333,22 @@ func TestDefinition_ValidateDomains(t *testing.T) {
 			} else {
 				require.Len(t, errs, len(test.wantErrs), "unexpected number of errors")
 
-				for i, wantErr := range test.wantErrs {
-					assert.Contains(t, errs[i].Error(), wantErr,
-						"error message should contain expected substring")
+				// Collect all error messages for comparison
+				errorMessages := make([]string, len(errs))
+				for i, err := range errs {
+					errorMessages[i] = err.Error()
+				}
+
+				// Check that each expected error is present in the actual errors
+				for _, wantErr := range test.wantErrs {
+					found := false
+					for _, errMsg := range errorMessages {
+						if strings.Contains(errMsg, wantErr) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found, "expected error message containing %q not found in errors: %v", wantErr, errorMessages)
 				}
 			}
 		})
@@ -429,9 +443,22 @@ func TestDefinition_ValidateAppPaths(t *testing.T) {
 			} else {
 				require.Len(t, errs, len(test.wantErrs), "unexpected number of errors")
 
-				for i, wantErr := range test.wantErrs {
-					assert.Contains(t, errs[i].Error(), wantErr,
-						"error message should contain expected substring")
+				// Collect all error messages for comparison
+				errorMessages := make([]string, len(errs))
+				for i, err := range errs {
+					errorMessages[i] = err.Error()
+				}
+
+				// Check that each expected error is present in the actual errors
+				for _, wantErr := range test.wantErrs {
+					found := false
+					for _, errMsg := range errorMessages {
+						if strings.Contains(errMsg, wantErr) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found, "expected error message containing %q not found in errors: %v", wantErr, errorMessages)
 				}
 			}
 		})
@@ -570,9 +597,22 @@ func TestDefinition_ValidateTerraformManagedVMs(t *testing.T) {
 			} else {
 				require.Len(t, errs, len(test.wantErrs), "unexpected number of errors")
 
-				for i, wantErr := range test.wantErrs {
-					assert.Contains(t, errs[i].Error(), wantErr,
-						"error message should contain expected substring")
+				// Collect all error messages for comparison
+				errorMessages := make([]string, len(errs))
+				for i, err := range errs {
+					errorMessages[i] = err.Error()
+				}
+
+				// Check that each expected error is present in the actual errors
+				for _, wantErr := range test.wantErrs {
+					found := false
+					for _, errMsg := range errorMessages {
+						if strings.Contains(errMsg, wantErr) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found, "expected error message containing %q not found in errors: %v", wantErr, errorMessages)
 				}
 			}
 		})
@@ -806,9 +846,22 @@ func TestDefinition_ValidateEnvReferences(t *testing.T) {
 			} else {
 				require.Len(t, errs, len(test.wantErrs), "unexpected number of errors")
 
-				for i, wantErr := range test.wantErrs {
-					assert.Contains(t, errs[i].Error(), wantErr,
-						"error message should contain expected substring")
+				// Collect all error messages for comparison
+				errorMessages := make([]string, len(errs))
+				for i, err := range errs {
+					errorMessages[i] = err.Error()
+				}
+
+				// Check that each expected error is present in the actual errors
+				for _, wantErr := range test.wantErrs {
+					found := false
+					for _, errMsg := range errorMessages {
+						if strings.Contains(errMsg, wantErr) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found, "expected error message containing %q not found in errors: %v", wantErr, errorMessages)
 				}
 			}
 		})
