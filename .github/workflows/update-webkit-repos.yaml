@@ -149,14 +149,20 @@ jobs:
             # Create a new branch
             git checkout -b "$BRANCH_NAME"
 
-            # Update webkit_version in app.json
-            jq ".webkit_version = \"$VERSION\"" app.json > app.json.tmp
-            mv app.json.tmp app.json
+            # Install webkit CLI at the target version
+            echo "  Installing webkit v$VERSION..."
+            WEBKIT_URL="https://github.com/ainsleydev/webkit/releases/download/v${VERSION}/webkit_${VERSION}_linux_amd64.tar.gz"
+            curl -L "$WEBKIT_URL" | tar xz
+            chmod +x webkit
 
-            # Commit changes
+            # Run webkit update to regenerate all files with the new version
+            echo "  Running webkit update..."
+            ./webkit update
+
+            # Commit all changes (app.json and all regenerated files)
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add app.json
+            git add .
             git commit -m "chore: Update WebKit to v$VERSION"
 
             # Delete remote branch if it exists (from a previous failed run)
@@ -169,9 +175,9 @@ jobs:
             PR_BODY="This automated PR updates the WebKit version from v$CURRENT_VERSION to v$VERSION.
 
             ## Testing
-            - [ ] Verify app.json is valid
-            - [ ] Run \`webkit update\` to regenerate files
-            - [ ] Check for any breaking changes in the [release notes](https://github.com/ainsleydev/webkit/releases/tag/v$VERSION)"
+            - [ ] Review the generated files for any unexpected changes
+            - [ ] Check for any breaking changes in the [release notes](https://github.com/ainsleydev/webkit/releases/tag/v$VERSION)
+            - [ ] Test the application locally after merging"
 
             gh pr create \
               --repo "$REPO" \
