@@ -244,4 +244,44 @@ func TestPR(t *testing.T) {
 		assert.NotContains(t, content, "migration-check-api:", "should not contain migration check for non-Payload app")
 		assert.NotContains(t, content, "Check for pending migrations", "should not contain migration check step")
 	})
+
+	t.Run("Terraform Plan Job", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Path:  "./web",
+					Type:  appdef.AppTypeGoLang,
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PR(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "pr.yaml"))
+		require.NoError(t, err)
+
+		content := string(file)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		t.Log("Terraform Plan Job")
+		{
+			assert.Contains(t, content, "terraform-plan-production:", "should contain terraform plan job")
+			assert.Contains(t, content, "Run Terraform Plan", "should contain terraform plan step")
+			assert.Contains(t, content, "./webkit infra plan production", "should run webkit infra plan command")
+			assert.Contains(t, content, "needs: [setup-webkit, detect-changes]", "should depend on setup-webkit and detect-changes")
+			assert.Contains(t, content, "<!-- terraform-plan -->", "should contain PR comment marker")
+			assert.Contains(t, content, "Terraform Plan - Production", "should contain terraform plan heading")
+			assert.Contains(t, content, "No infrastructure changes", "should contain no changes message")
+			assert.Contains(t, content, "Infrastructure changes detected", "should contain changes detected message")
+		}
+	})
 }
