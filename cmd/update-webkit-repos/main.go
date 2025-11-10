@@ -60,7 +60,7 @@ func main() {
 	}
 }
 
-func updateRepo(ctx context.Context, runner executil.Runner, p *printer.Printer, repo, version string) error {
+func updateRepo(ctx context.Context, runner executil.Runner, p *printer.Console, repo, version string) error {
 	p.Info(fmt.Sprintf("Processing %s...", repo))
 
 	repoDir := filepath.Base(repo)
