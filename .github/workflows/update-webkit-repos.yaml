@@ -136,17 +136,7 @@ jobs:
             # Define branch name
             BRANCH_NAME="chore/update-webkit-v$VERSION"
 
-            # Check if PR already exists for this exact version
-            EXISTING_PR=$(gh pr list --repo "$REPO" --head "$BRANCH_NAME" --json number --jq '.[0].number' || echo "")
-
-            if [ -n "$EXISTING_PR" ]; then
-              echo "  ✓ PR #$EXISTING_PR already exists, skipping..."
-              cd ..
-              rm -rf "$REPO_DIR"
-              continue
-            fi
-
-            # Close any stale webkit update PRs for older versions
+            # Close any stale webkit update PRs for older versions (always do this first)
             echo "  Checking for stale webkit update PRs..."
             STALE_PRS=$(gh pr list --repo "$REPO" --search "chore/update-webkit-v in:title" --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("chore/update-webkit-v")) | "\(.number):\(.headRefName)"')
 
@@ -160,6 +150,16 @@ jobs:
                   git push origin --delete "$PR_BRANCH" 2>/dev/null || true
                 fi
               done <<< "$STALE_PRS"
+            fi
+
+            # Check if PR already exists for this exact version
+            EXISTING_PR=$(gh pr list --repo "$REPO" --head "$BRANCH_NAME" --json number --jq '.[0].number' || echo "")
+
+            if [ -n "$EXISTING_PR" ]; then
+              echo "  ✓ PR #$EXISTING_PR already exists for v$VERSION (stale PRs cleaned up)"
+              cd ..
+              rm -rf "$REPO_DIR"
+              continue
             fi
 
             # Create a new branch
