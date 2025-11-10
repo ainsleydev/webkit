@@ -154,10 +154,14 @@ func updateRepo(p *printer.Printer, repo, version string) error {
 	}
 
 	// Commit changes
-	if err := runCommand("git", "config", "user.name", "github-actions[bot]"); err != nil {
+	// Use environment variables for bot identity, defaulting to ainsleydev-bot
+	botName := getEnvOrDefault("GIT_AUTHOR_NAME", "ainsleydev-bot[bot]")
+	botEmail := getEnvOrDefault("GIT_AUTHOR_EMAIL", "175332+ainsleydev-bot[bot]@users.noreply.github.com")
+
+	if err := runCommand("git", "config", "user.name", botName); err != nil {
 		return fmt.Errorf("git config name failed: %w", err)
 	}
-	if err := runCommand("git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"); err != nil {
+	if err := runCommand("git", "config", "user.email", botEmail); err != nil {
 		return fmt.Errorf("git config email failed: %w", err)
 	}
 	if err := runCommand("git", "add", "."); err != nil {
@@ -181,7 +185,9 @@ func updateRepo(p *printer.Printer, repo, version string) error {
 ## Testing
 - [ ] Review the generated files for any unexpected changes
 - [ ] Check for any breaking changes in the [release notes](https://github.com/ainsleydev/webkit/releases/tag/v%s)
-- [ ] Test the application locally after merging`, currentVersion, version, version)
+- [ ] Test the application locally after merging
+
+🤖 Generated with ainsley.dev bot`, currentVersion, version, version)
 
 	if err := runCommand("gh", "pr", "create",
 		"--repo", repo,
@@ -247,4 +253,11 @@ func runShell(command string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
