@@ -104,6 +104,9 @@ jobs:
 
             cd "$REPO_DIR"
 
+            # Configure git remote to use the GitHub App token for authentication
+            git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+
             # Check if app.json exists and has webkit_version
             if [ ! -f "app.json" ]; then
               echo "  ⚠️  No app.json found, skipping..."
@@ -112,7 +115,7 @@ jobs:
               continue
             fi
 
-            CURRENT_VERSION=$(jq -r '.webkit_version // empty' app.json)
+            CURRENT_VERSION=$(jq -r '.webkit_version // empty' app.json | sed 's/^v//')
 
             if [ -z "$CURRENT_VERSION" ]; then
               echo "  ⚠️  No webkit_version field in app.json, skipping..."
@@ -130,45 +133,76 @@ jobs:
 
             echo "  Updating from v$CURRENT_VERSION to v$VERSION"
 
-            # Create a new branch
+            # Define branch name
             BRANCH_NAME="chore/update-webkit-v$VERSION"
-            git checkout -b "$BRANCH_NAME"
 
-            # Update webkit_version in app.json
-            jq ".webkit_version = \"$VERSION\"" app.json > app.json.tmp
-            mv app.json.tmp app.json
+            # Close any stale webkit update PRs for older versions (always do this first)
+            echo "  Checking for stale webkit update PRs..."
+            STALE_PRS=$(gh pr list --repo "$REPO" --search "chore/update-webkit-v in:title" --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("chore/update-webkit-v")) | "\(.number):\(.headRefName)"')
 
-            # Commit and push
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add app.json
-            git commit -m "chore: Update WebKit to v$VERSION"
-            git push origin "$BRANCH_NAME"
+            if [ -n "$STALE_PRS" ]; then
+              while IFS=: read -r PR_NUM PR_BRANCH; do
+                if [ "$PR_BRANCH" != "$BRANCH_NAME" ]; then
+                  echo "  Closing stale PR #$PR_NUM (branch: $PR_BRANCH)..."
+                  gh pr close "$PR_NUM" --repo "$REPO" --comment "Closing this PR as it's superseded by a newer WebKit version update to v$VERSION."
 
-            # Check if PR already exists
-            EXISTING_PR=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[0].number' || echo "")
+                  # Delete the stale remote branch
+                  git push origin --delete "$PR_BRANCH" 2>/dev/null || true
+                fi
+              done <<< "$STALE_PRS"
+            fi
+
+            # Check if PR already exists for this exact version
+            EXISTING_PR=$(gh pr list --repo "$REPO" --head "$BRANCH_NAME" --json number --jq '.[0].number' || echo "")
 
             if [ -n "$EXISTING_PR" ]; then
-              echo "  ✓ PR #$EXISTING_PR already exists"
-            else
-              # Create pull request
-              PR_BODY="This automated PR updates the WebKit version from v$CURRENT_VERSION to v$VERSION.
+              echo "  ✓ PR #$EXISTING_PR already exists for v$VERSION (stale PRs cleaned up)"
+              cd ..
+              rm -rf "$REPO_DIR"
+              continue
+            fi
 
-            ## Changes
-            - Updated \`webkit_version\` in \`app.json\` from \`$CURRENT_VERSION\` to \`$VERSION\`
+            # Create a new branch
+            git checkout -b "$BRANCH_NAME"
+
+            # Install webkit CLI at the target version
+            echo "  Installing webkit v$VERSION..."
+            WEBKIT_URL="https://github.com/ainsleydev/webkit/releases/download/v${VERSION}/webkit_${VERSION}_linux_amd64.tar.gz"
+            curl -L "$WEBKIT_URL" | tar xz
+            chmod +x webkit
+
+            # Run webkit update to regenerate all files with the new version
+            echo "  Running webkit update..."
+            ./webkit update
+
+            # Commit all changes (app.json and all regenerated files)
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore: Update WebKit to v$VERSION"
+
+            # Delete remote branch if it exists (from a previous failed run)
+            git push origin --delete "$BRANCH_NAME" 2>/dev/null || true
+
+            # Push new branch
+            git push origin "$BRANCH_NAME"
+
+            # Create pull request
+            PR_BODY="This automated PR updates the WebKit version from v$CURRENT_VERSION to v$VERSION.
 
             ## Testing
-            - [ ] Verify app.json is valid
-            - [ ] Run \`webkit update\` to regenerate files
-            - [ ] Check for any breaking changes in the [release notes](https://github.com/ainsleydev/webkit/releases/tag/v$VERSION)"
+            - [ ] Review the generated files for any unexpected changes
+            - [ ] Check for any breaking changes in the [release notes](https://github.com/ainsleydev/webkit/releases/tag/v$VERSION)
+            - [ ] Test the application locally after merging"
 
-              gh pr create \
-                --title "chore: Update WebKit to v$VERSION" \
-                --body "$PR_BODY" \
-                --base main
+            gh pr create \
+              --repo "$REPO" \
+              --head "$BRANCH_NAME" \
+              --title "chore: Update WebKit to v$VERSION" \
+              --body "$PR_BODY" \
+              --base main
 
-              echo "  ✓ Pull request created successfully"
-            fi
+            echo "  ✓ Pull request created successfully"
 
             # Cleanup
             cd ..
