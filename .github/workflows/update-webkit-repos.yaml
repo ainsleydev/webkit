@@ -165,11 +165,9 @@ jobs:
             # Create a new branch
             git checkout -b "$BRANCH_NAME"
 
-            # Install webkit CLI at the target version
+            # Install webkit CLI at the target version using the official installer
             echo "  Installing webkit v$VERSION..."
-            WEBKIT_URL="https://github.com/ainsleydev/webkit/releases/download/v${VERSION}/webkit_${VERSION}_linux_amd64.tar.gz"
-            curl -L "$WEBKIT_URL" | tar xz
-            chmod +x webkit
+            VERSION="v$VERSION" INSTALL_DIR="." curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | sh
 
             # Run webkit update to regenerate all files with the new version
             echo "  Running webkit update..."
