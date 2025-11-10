@@ -1,0 +1,157 @@
+name: Update WebKit Repos
+
+on:
+  workflow_dispatch:
+    inputs:
+      webkit_version:
+        description: 'WebKit version to update to (e.g., 0.0.41)'
+        required: false
+        type: string
+  workflow_run:
+    workflows: ['Release']
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  update-repos:
+    runs-on: ubuntu-latest
+    # Only run if triggered manually or if the Release workflow succeeded
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Get WebKit version
+        id: get_version
+        run: |
+          if [ -n "${{ inputs.webkit_version }}" ]; then
+            # Manual trigger with specific version
+            VERSION="${{ inputs.webkit_version }}"
+          else
+            # Get latest release version from GitHub
+            VERSION=$(gh release view --json tagName --jq '.tagName' | sed 's/^v//')
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using WebKit version: $VERSION"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find repos with webkit_version
+        id: find_repos
+        run: |
+          echo "Searching for repositories with webkit_version in app.json..."
+
+          # Search for repos containing webkit_version in their code
+          # Focus on repos under ainsleydev organisation
+          REPOS=$(gh search repos "org:ainsleydev webkit_version in:file filename:app.json" \
+            --json fullName \
+            --jq '.[].fullName' \
+            --limit 100)
+
+          if [ -z "$REPOS" ]; then
+            echo "No repositories found with webkit_version field"
+            exit 0
+          fi
+
+          echo "Found repositories:"
+          echo "$REPOS"
+
+          # Save to output (convert to JSON array)
+          echo "$REPOS" | jq -R -s -c 'split("\n") | map(select(length > 0))' > repos.json
+          echo "repos=$(cat repos.json)" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update repositories
+        if: steps.find_repos.outputs.repos != '[]'
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          REPOS='${{ steps.find_repos.outputs.repos }}'
+
+          echo "Updating repositories to WebKit v$VERSION"
+
+          # Parse JSON array and iterate
+          echo "$REPOS" | jq -r '.[]' | while read -r REPO; do
+            echo "Processing $REPO..."
+
+            # Clone the repository
+            REPO_DIR=$(basename "$REPO")
+            gh repo clone "$REPO" "$REPO_DIR" -- --depth=1
+
+            cd "$REPO_DIR"
+
+            # Check if app.json exists and has webkit_version
+            if [ ! -f "app.json" ]; then
+              echo "  ⚠️  No app.json found, skipping..."
+              cd ..
+              rm -rf "$REPO_DIR"
+              continue
+            fi
+
+            CURRENT_VERSION=$(jq -r '.webkit_version // empty' app.json)
+
+            if [ -z "$CURRENT_VERSION" ]; then
+              echo "  ⚠️  No webkit_version field in app.json, skipping..."
+              cd ..
+              rm -rf "$REPO_DIR"
+              continue
+            fi
+
+            if [ "$CURRENT_VERSION" = "$VERSION" ]; then
+              echo "  ✓ Already on v$VERSION, skipping..."
+              cd ..
+              rm -rf "$REPO_DIR"
+              continue
+            fi
+
+            echo "  Updating from v$CURRENT_VERSION to v$VERSION"
+
+            # Create a new branch
+            BRANCH_NAME="chore/update-webkit-v$VERSION"
+            git checkout -b "$BRANCH_NAME"
+
+            # Update webkit_version in app.json
+            jq ".webkit_version = \"$VERSION\"" app.json > app.json.tmp
+            mv app.json.tmp app.json
+
+            # Commit and push
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add app.json
+            git commit -m "chore: Update WebKit to v$VERSION"
+            git push origin "$BRANCH_NAME"
+
+            # Check if PR already exists
+            EXISTING_PR=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[0].number' || echo "")
+
+            if [ -n "$EXISTING_PR" ]; then
+              echo "  ✓ PR #$EXISTING_PR already exists"
+            else
+              # Create pull request
+              gh pr create \
+                --title "chore: Update WebKit to v$VERSION" \
+                --body "This automated PR updates the WebKit version from v$CURRENT_VERSION to v$VERSION.
+
+## Changes
+- Updated \`webkit_version\` in \`app.json\` from \`$CURRENT_VERSION\` to \`$VERSION\`
+
+## Testing
+- [ ] Verify app.json is valid
+- [ ] Run \`webkit update\` to regenerate files
+- [ ] Check for any breaking changes in the [release notes](https://github.com/ainsleydev/webkit/releases/tag/v$VERSION)" \
+                --base main
+
+              echo "  ✓ Pull request created successfully"
+            fi
+
+            # Cleanup
+            cd ..
+            rm -rf "$REPO_DIR"
+
+            echo ""
+          done
+        env:
+          GH_TOKEN: ${{ secrets.WEBKIT_UPDATE_TOKEN }}
