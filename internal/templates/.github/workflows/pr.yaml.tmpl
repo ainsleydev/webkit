@@ -219,6 +219,18 @@ jobs:
 
       - name: Run Terraform Plan
         id: plan
+        env:
+          SOPS_AGE_KEY: {{ ghSecret "ORG_AGE_SECRET" }}
+          DO_API_KEY: {{ ghSecret "ORG_DO_ACCESS_TOKEN" }}
+          DO_SPACES_ACCESS_KEY: {{ ghSecret "ORG_DO_SPACES_ACCESS_KEY" }}
+          DO_SPACES_SECRET_KEY: {{ ghSecret "ORG_DO_SPACES_SECRET_KEY" }}
+          BACK_BLAZE_BUCKET: {{ ghSecret "ORG_BACK_BLAZE_TF_BUCKET" }}
+          BACK_BLAZE_KEY_ID: {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }}
+          BACK_BLAZE_APPLICATION_KEY: {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+          GITHUB_TOKEN: {{ ghSecret "ORG_GITHUB_TOKEN" }}
+          GITHUB_TOKEN_CLASSIC: {{ ghSecret "ORG_GITHUB_TOKEN_CLASSIC" }}
+          SLACK_BOT_TOKEN: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          SLACK_USER_TOKEN: {{ ghSecret "ORG_SLACK_USER_TOKEN" }}
         run: |
           echo "🔍 Running terraform plan for production environment..."
 
@@ -259,6 +271,8 @@ jobs:
             echo "</details>"
             echo 'EOF'
           } >> $GITHUB_OUTPUT
+
+          exit $plan_exit_code
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
