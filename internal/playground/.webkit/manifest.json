@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.35",
-	"generated_at": "2025-11-07T11:37:31.523724Z",
+	"version": "v0.0.40",
+	"generated_at": "2025-11-10T20:18:05.851809Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -70,25 +70,25 @@
 			"path": ".github/workflows/backup.yaml",
 			"generator": "cicd:BackupWorkflow",
 			"source": "resource:store",
-			"hash": "2392509183b46ba90ed13bfe4de27c340ed5bac8c3040a0c7f39005905eaef19",
+			"hash": "54e3d6fb8630e0a349c6dcb41248734744aae2522399f47e17716859d9fb6248",
 			"scaffolded": false,
-			"generated_at": "2025-11-07T11:37:31.520048Z"
+			"generated_at": "2025-11-10T19:46:30.314848Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "3d31575fe54b3039b2928356b34de2691b85935353481eef2cea180e07243404",
+			"hash": "39730ff9d47c3bc960ec13b98c22b11c97f94a78349a38f22d69ff2842b4a4a9",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T20:03:10.97419Z"
+			"generated_at": "2025-11-10T20:18:05.848258Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "dc5bb283b554a4139a935bbbd1283432fd3b7e8b99b1711539f97e3201b61933",
+			"hash": "b382a4458fc78d1829c62c2afef9cd11d6071a7c98f59b5b46c25e6b541bc7af",
 			"scaffolded": false,
-			"generated_at": "2025-11-07T11:37:31.519749Z"
+			"generated_at": "2025-11-10T20:18:05.849354Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",
@@ -178,6 +178,14 @@
 			"scaffolded": false,
 			"generated_at": "2025-10-23T14:29:04.749051+01:00"
 		},
+		"lefthook.yaml": {
+			"path": "lefthook.yaml",
+			"generator": "files:Hooks",
+			"source": "project",
+			"hash": "a6e4add98e191fc14612b44edb42ef6a09518199042681a8d7379f5d3bacd8e1",
+			"scaffolded": false,
+			"generated_at": "2025-11-10T19:46:30.312278Z"
+		},
 		"package.json": {
 			"path": "package.json",
 			"generator": "files:PackageJSON",
@@ -185,6 +193,14 @@
 			"hash": "f51b6c1c4a239be123bbbf3f89ad1d4cb93651ad6c05954b19030c4e50abc7b9",
 			"scaffolded": true,
 			"generated_at": "2025-11-01T12:38:46.341785Z"
+		},
+		"pnpm-workspace.yaml": {
+			"path": "pnpm-workspace.yaml",
+			"generator": "files:PnpmWorkspace",
+			"source": "project",
+			"hash": "afb7a993279e0f7d56df3e78cbc2bdcccddf5bda0bdc44d9b6cd9e12a5ace00c",
+			"scaffolded": false,
+			"generated_at": "2025-11-10T19:46:30.312879Z"
 		},
 		"web/.env": {
 			"path": "web/.env",

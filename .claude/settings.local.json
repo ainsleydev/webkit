@@ -21,7 +21,9 @@
 			"WebFetch(domain:registry.terraform.io)",
 			"Bash(curl:*)",
 			"WebSearch",
-			"Bash(go build:*)"
+			"Bash(go build:*)",
+			"Bash(pnpm webkit update:*)",
+			"Bash(pnpm test:go:*)"
 		],
 		"deny": [],
 		"ask": []
