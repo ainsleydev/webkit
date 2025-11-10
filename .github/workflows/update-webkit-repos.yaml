@@ -104,6 +104,9 @@ jobs:
 
             cd "$REPO_DIR"
 
+            # Configure git remote to use the GitHub App token for authentication
+            git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+
             # Check if app.json exists and has webkit_version
             if [ ! -f "app.json" ]; then
               echo "  ⚠️  No app.json found, skipping..."
