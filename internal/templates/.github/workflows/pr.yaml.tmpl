@@ -256,9 +256,21 @@ jobs:
             status_emoji="🟢"
             status_text="No infrastructure changes"
           else
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-            status_emoji="🟡"
-            status_text="Infrastructure changes detected"
+            # Detect if changes are SHA-only (image tag updates).
+            # Look for update lines (~) and check if only SHA tag changes exist.
+            sha_changes=$(grep -E '^\s*~\s+tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' plan-output.txt || true)
+            other_changes=$(grep -E '^\s*~\s+' plan-output.txt | grep -v -E 'tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' || true)
+
+            # If we have SHA changes but no other changes, it's SHA-only.
+            if [ -n "$sha_changes" ] && [ -z "$other_changes" ]; then
+              echo "changes_detected=true" >> $GITHUB_OUTPUT
+              status_emoji="🔵"
+              status_text="SHA-only deployment update"
+            else
+              echo "changes_detected=true" >> $GITHUB_OUTPUT
+              status_emoji="🟡"
+              status_text="Infrastructure changes detected"
+            fi
           fi
 
           # Format output for PR comment.
