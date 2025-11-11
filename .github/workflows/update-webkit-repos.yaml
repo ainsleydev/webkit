@@ -56,17 +56,16 @@ jobs:
           ALL_REPOS=$(gh repo list ainsleydev --limit 1000 --json nameWithOwner --jq '.[].nameWithOwner')
 
           REPOS_WITH_WEBKIT=""
+          REPO_COUNT=0
 
           # Check each repo for app.json with webkit_version
           for REPO in $ALL_REPOS; do
-            echo "Checking $REPO..."
-
             # Try to fetch app.json from the repo
             if CONTENT=$(gh api "repos/$REPO/contents/app.json" --jq '.content' 2>/dev/null); then
               # Decode base64 content and check for webkit_version field
               if echo "$CONTENT" | base64 -d | jq -e '.webkit_version' >/dev/null 2>&1; then
-                echo "  ✓ Found webkit_version in $REPO"
                 REPOS_WITH_WEBKIT="$REPOS_WITH_WEBKIT$REPO"$'\n'
+                REPO_COUNT=$((REPO_COUNT + 1))
               fi
             fi
           done
@@ -77,8 +76,7 @@ jobs:
             exit 0
           fi
 
-          echo "Found repositories with webkit_version:"
-          echo "$REPOS_WITH_WEBKIT"
+          echo "Found $REPO_COUNT repositories with webkit_version"
 
           # Convert to JSON array
           echo "$REPOS_WITH_WEBKIT" | jq -R -s -c 'split("\n") | map(select(length > 0))' > repos.json
@@ -95,8 +93,11 @@ jobs:
           echo "Updating repositories to WebKit v$VERSION"
 
           # Parse JSON array and iterate
+          REPO_INDEX=0
+          TOTAL_REPOS=$(echo "$REPOS" | jq -r 'length')
           echo "$REPOS" | jq -r '.[]' | while read -r REPO; do
-            echo "Processing $REPO..."
+            REPO_INDEX=$((REPO_INDEX + 1))
+            echo "Processing repository $REPO_INDEX of $TOTAL_REPOS..."
 
             # Clone the repository
             REPO_DIR=$(basename "$REPO")
@@ -138,7 +139,7 @@ jobs:
 
             # Close any stale webkit update PRs for older versions (always do this first)
             echo "  Checking for stale webkit update PRs..."
-            STALE_PRS=$(gh pr list --repo "$REPO" --search "chore/update-webkit-v in:title" --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("chore/update-webkit-v")) | "\(.number):\(.headRefName)"')
+            STALE_PRS=$(gh pr list --repo "$REPO" --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("chore/update-webkit-v")) | "\(.number):\(.headRefName)"')
 
             if [ -n "$STALE_PRS" ]; then
               while IFS=: read -r PR_NUM PR_BRANCH; do
