@@ -15,8 +15,15 @@ import (
 )
 
 var DestroyCmd = &cli.Command{
-	Name:   "destroy",
-	Usage:  "Tears down infrastructure defined in app.json",
+	Name:  "destroy",
+	Usage: "Tears down infrastructure defined in app.json",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "silent",
+			Aliases: []string{"s"},
+			Usage:   "Suppress informational output (only show Terraform output)",
+		},
+	},
 	Action: cmdtools.Wrap(Destroy),
 }
 
@@ -65,12 +72,14 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 
 	destroyOutput, err := tf.Destroy(ctx, env.Production)
 	if err != nil {
-		printer.Print(destroyOutput.Output)
+		// Write error output directly to stdout (not through printer)
+		fmt.Print(destroyOutput.Output) //nolint:forbidigo
 		return errors.New("executing terraform destroy")
 	}
 
 	spinner.Stop()
-	printer.Print(destroyOutput.Output)
+	// Write destroy output directly to stdout (not through printer)
+	fmt.Print(destroyOutput.Output) //nolint:forbidigo
 	printer.Success("Destroy succeeded, see console output")
 
 	return nil

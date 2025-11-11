@@ -22,6 +22,10 @@ terraform {
       source  = "pablovarela/slack"
       version = "~> 1.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.9"
+    }
   }
 }
 
@@ -300,14 +304,18 @@ locals {
   )
 }
 
+# Wait for DigitalOcean API propagation after app/resource creation
+resource "time_sleep" "wait_for_propagation" {
+  create_duration = "30s"
+  depends_on      = [module.resources, module.apps]
+}
+
 resource "digitalocean_project" "this" {
   name        = var.project_title
   description = var.project_description
   purpose     = "Web Application"
   environment = title(var.environment)
+  resources   = local.all_project_resources
 
-  # Includes both Terraform-managed resources and manually-added domains
-  resources = local.all_project_resources
-
-  depends_on = [module.resources, module.apps]
+  depends_on = [time_sleep.wait_for_propagation]
 }

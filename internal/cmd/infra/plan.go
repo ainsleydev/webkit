@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/urfave/cli/v3"
 
@@ -10,8 +11,15 @@ import (
 )
 
 var PlanCmd = &cli.Command{
-	Name:   "plan",
-	Usage:  "Generates an executive plan from the apps and resources defined in app.json",
+	Name:  "plan",
+	Usage: "Generates an executive plan from the apps and resources defined in app.json",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "silent",
+			Aliases: []string{"s"},
+			Usage:   "Suppress informational output (only show Terraform output)",
+		},
+	},
 	Action: cmdtools.Wrap(Plan),
 }
 
@@ -61,7 +69,8 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 
 	spinner.Stop()
 
-	printer.Print(plan.Output)
+	// Write plan output directly to stdout (not through printer)
+	fmt.Print(plan.Output) //nolint:forbidigo
 	printer.Success("Plan generated, see console output")
 
 	return nil

@@ -126,10 +126,98 @@ jobs:
           min-versions-to-keep: 5
           delete-only-untagged-versions: false
 
+  # Terraform Apply - Production
+  # NOTE: Currently running 'plan' as a dry run to test the workflow.
+  # Change to 'apply' when ready for actual infrastructure provisioning.
+  terraform-apply-production:
+    runs-on: ubuntu-latest
+    needs: [setup-webkit, build-and-push]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Download WebKit CLI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webkit
+          path: ./
+
+      - name: Make WebKit executable
+        run: chmod +x ./webkit
+
+      - name: Setup Infrastructure Dependencies
+        uses: ./.github/actions/setup-infra
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Run Terraform Plan (Dry Run)
+        id: plan
+        env:
+          SOPS_AGE_KEY: ${{ secrets.ORG_AGE_SECRET }}
+          DO_API_KEY: ${{ secrets.ORG_DO_ACCESS_TOKEN }}
+          DO_SPACES_ACCESS_KEY: ${{ secrets.ORG_DO_SPACES_ACCESS_KEY }}
+          DO_SPACES_SECRET_KEY: ${{ secrets.ORG_DO_SPACES_SECRET_KEY }}
+          BACK_BLAZE_BUCKET: ${{ secrets.ORG_BACK_BLAZE_TF_BUCKET }}
+          BACK_BLAZE_KEY_ID: ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}
+          BACK_BLAZE_APPLICATION_KEY: ${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}
+          GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+          GITHUB_TOKEN_CLASSIC: ${{ secrets.ORG_GITHUB_TOKEN_CLASSIC }}
+          SLACK_BOT_TOKEN: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
+          SLACK_USER_TOKEN: ${{ secrets.ORG_SLACK_USER_TOKEN }}
+        run: |
+          echo "🔍 Running terraform plan for production environment..."
+          echo "⚠️  NOTE: Currently in dry-run mode (running plan, not apply)"
+
+          # TODO: Change to 'apply' when ready for actual infrastructure provisioning.
+          # ./webkit infra apply --silent
+          if ./webkit infra plan --silent > plan-output.txt 2>&1; then
+            plan_exit_code=0
+          else
+            plan_exit_code=$?
+          fi
+
+          # Check if there are changes in the plan output.
+          if grep -q "No changes" plan-output.txt || grep -q "0 to add, 0 to change, 0 to destroy" plan-output.txt; then
+            echo "changes_detected=false" >> $GITHUB_OUTPUT
+            status="✅ No infrastructure changes"
+          else
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+            status="⚠️ Infrastructure changes detected"
+          fi
+
+          # Format Slack message.
+          {
+            echo 'slack_message<<EOF'
+            echo "*Terraform Plan - Production*"
+            echo ""
+            echo "$status"
+            echo ""
+            echo "\`\`\`"
+            cat plan-output.txt | head -50
+            echo "\`\`\`"
+            echo ""
+            echo "_Commit:_ ${{ github.sha }}"
+            echo "_Workflow:_ https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+          exit $plan_exit_code
+
+      - name: Send Slack Notification
+        if: always()
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Terraform Plan - Production'
+          message: ${{ steps.plan.outputs.slack_message }}
+          status: ${{ steps.plan.outcome }}
+          commit_sha: ${{ github.sha }}
+          slack_bot_token: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
+          channel_id: ${{ secrets.TF_SLACK_CHANNEL_ID }}
+
   # Deploy Web to DigitalOcean App Platform
   deploy-app-web:
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: [build-and-push, terraform-apply-production]
     environment:
       name: production-web
     steps:
@@ -142,14 +230,15 @@ jobs:
           IMAGE_TAG_SVELTE_KIT: sha-${{ github.sha }}
         with:
           token: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
-          app_name: '${{ github.event.repository.name }}-web'
+          app_name: 'my-website-web'
 
   # Deploy CMS to DigitalOcean VM
   deploy-vm-cms:
     runs-on: ubuntu-latest
-    needs: [build-and-push, setup-webkit]
+    needs: [build-and-push, setup-webkit, terraform-apply-production]
     environment:
       name: production-cms
+      url: https://cms.my-website.com
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -175,17 +264,10 @@ jobs:
       - name: Make WebKit executable
         run: chmod +x ./webkit
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Setup Infrastructure Dependencies
+        uses: ./.github/actions/setup-infra
         with:
           terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Install SOPS
-        run: |
-          curl -LO https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64
-          sudo mv sops-v3.11.0.linux.amd64 /usr/local/bin/sops
-          sudo chmod +x /usr/local/bin/sops
-          sops --version
 
       - name: Generate production env file for CMS
         env:
@@ -239,7 +321,7 @@ jobs:
             -e git_sha=${{ steps.determine_sha.outputs.sha }}
             -e github_user=${{ github.repository_owner }}
             -e github_token=${{ secrets.GITHUB_TOKEN }}
-            -e domain=
+            -e domain=cms.my-website.com
             -e docker_image=${{ github.event.repository.name }}-cms
             -e docker_image_tag=sha-${{ steps.determine_sha.outputs.sha }}
             -e docker_port=3000

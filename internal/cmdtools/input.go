@@ -2,6 +2,7 @@ package cmdtools
 
 import (
 	"context"
+	"io"
 	"os"
 	"time"
 
@@ -32,6 +33,7 @@ type CommandInput struct {
 	SOPSCache   sops.EncrypterDecrypter
 	Manifest    *manifest.Tracker
 	Runner      executil.Runner
+	Silent      bool
 	printer     *printer.Console
 }
 
@@ -54,6 +56,7 @@ func Wrap(command RunCommand) cli.ActionFunc {
 			BaseDir:  dir,
 			Manifest: manifest.NewTracker(),
 			Runner:   executil.DefaultRunner(),
+			Silent:   c.Bool("silent"),
 		}
 
 		return command(ctx, input)
@@ -91,9 +94,13 @@ func (c *CommandInput) Generator() scaffold.Generator {
 }
 
 // Printer returns a new console writer to stdout.
+// In silent mode, informational output is suppressed.
 func (c *CommandInput) Printer() *printer.Console {
 	if c.printer == nil {
 		c.printer = printer.New(os.Stdout)
+		if c.Silent {
+			c.printer.SetWriter(io.Discard)
+		}
 	}
 	return c.printer
 }

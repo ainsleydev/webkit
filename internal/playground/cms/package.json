@@ -1,22 +1,28 @@
 {
 	"name": "cms",
-	"version": "1.0.0",
 	"description": "Test Payload CMS app",
 	"type": "module",
+	"version": "1.0.0",
+	"scripts": {
+		"build": "pnpm payload build",
+		"dev": "pnpm payload dev",
+		"docker": "pnpm docker:build && pnpm docker:run",
+		"docker:build": "docker build . -t my-website-cms --progress plain --no-cache",
+		"docker:remove": "docker image rm my-website-cms",
+		"docker:run": "docker run -it --init --env-file .env -p 3000:3000 --rm -ti my-website-cms",
+		"migrate:create": "NODE_ENV=production payload migrate:create",
+		"migrate:status": "NODE_ENV=production payload migrate:status"
+	},
 	"dependencies": {
-		"payload": "3.50.0",
+		"@lexical/headless": "0.27.0",
 		"@payloadcms/db-sqlite": "3.50.0",
 		"@payloadcms/richtext-lexical": "3.50.0",
 		"lexical": "0.27.0",
-		"@lexical/headless": "0.27.0",
+		"payload": "3.50.0",
 		"react": "^18.0.0"
 	},
 	"devDependencies": {
 		"@payloadcms/eslint-config": "3.50.0",
 		"typescript": "^5.0.0"
-	},
-	"scripts": {
-		"build": "pnpm payload build",
-		"dev": "pnpm payload dev"
 	}
 }

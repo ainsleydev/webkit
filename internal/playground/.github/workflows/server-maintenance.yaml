@@ -45,7 +45,7 @@ jobs:
             cms ansible_host=${{ secrets.TF_PROD_CMS_IP_ADDRESS }} ansible_user=${{ secrets.TF_PROD_CMS_SERVER_USER }}
           options: |
             -e app_name=cms
-            -e domain=
+            -e domain=cms.my-website.com
             -e admin_email=hello@ainsley.dev
             -v
 

@@ -1,6 +1,6 @@
 {
-	"$schema": "../../schema.json",
-	"webkit_version": "v0.0.35",
+	"$schema": "https://raw.githubusercontent.com/ainsleydev/webkit/main/schema.json",
+	"webkit_version": "v0.1.9",
 	"project": {
 		"name": "my-website",
 		"title": "My Website",
@@ -73,12 +73,6 @@
 					"size": "s-2vcpu-4gb"
 				}
 			},
-			"domains": [
-				{
-					"name": "cms.my-website.com",
-					"type": "primary"
-				}
-			],
 			"env": {
 				"dev": {
 					"DATABASE_URL": {"source": "resource", "value": "db.connection_url"},
@@ -93,6 +87,12 @@
 				}
 			},
 			"usesNPM": null,
+			"domains": [
+				{
+					"name": "cms.my-website.com",
+					"type": "primary"
+				}
+			],
 			"commands": {
 				"build": {"command": "pnpm build"},
 				"format": {"command": "pnpm format"},

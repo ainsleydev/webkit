@@ -351,21 +351,74 @@ func TestReleaseWorkflow(t *testing.T) {
 
 		t.Log("DigitalOcean app_name uses project.name, NOT repo name")
 		{
-			// The app_name should use project.name (my-awesome-project) to match Terraform
-			// Terraform constructs the app name as: "${var.project_name}-${var.name}"
-			// This ensures GitHub Actions and Terraform use the same naming convention
+			// The app_name should use project.name (my-awesome-project) to match Terraform.
+			// Terraform constructs the app name as: "${var.project_name}-${var.name}".
+			// This ensures GitHub Actions and Terraform use the same naming convention.
 			assert.Contains(t, content, "app_name: 'my-awesome-project-api'")
 
-			// Should NOT use the GitHub repo name (myawesomeproject)
+			// Should NOT use the GitHub repo name (myawesomeproject).
 			assert.NotContains(t, content, "app_name: 'myawesomeproject-api'")
 		}
 
 		t.Log("Docker image repository uses repo name variable")
 		{
-			// The image repository should use github.event.repository.name to match GHCR
-			// GitHub Actions publishes to: ghcr.io/{owner}/{repo-name}-{app-name}
-			// We check for the template variable, not the hardcoded value
+			// The image repository should use github.event.repository.name to match GHCR.
+			// GitHub Actions publishes to: ghcr.io/{owner}/{repo-name}-{app-name}.
+			// We check for the template variable, not the hardcoded value.
 			assert.Contains(t, content, "images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-${{ matrix.service.name }}")
+		}
+	})
+
+	t.Run("Terraform Apply Job", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Type:  appdef.AppTypeGoLang,
+					Path:  "web",
+					Build: appdef.Build{
+						Dockerfile: "Dockerfile",
+						Port:       8080,
+					},
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Type:     "container",
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := ReleaseWorkflow(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "release.yaml"))
+		require.NoError(t, err)
+
+		content := string(file)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		t.Log("Terraform Apply Job")
+		{
+			assert.Contains(t, content, "terraform-apply-production:")
+			assert.Contains(t, content, "Run Terraform Plan (Dry Run)")
+			assert.Contains(t, content, "./webkit infra plan")
+			assert.Contains(t, content, "needs: [setup-webkit, build-and-push]")
+			assert.Contains(t, content, "Setup Infrastructure Dependencies")
+			assert.Contains(t, content, "./.github/actions/setup-infra")
+			assert.Contains(t, content, "Send Slack Notification")
+			assert.Contains(t, content, "Terraform Plan - Production")
+		}
+
+		t.Log("Deploy jobs depend on terraform apply")
+		{
+			assert.Contains(t, content, "needs: [build-and-push, terraform-apply-production]")
 		}
 	})
 }

@@ -61,96 +61,107 @@ runs:
             ;;
         esac
 
-        # Get short SHA if commit_sha is provided
-        SHORT_SHA=""
-        COMMIT_LINK_FIELD=""
-        if [ -n "$COMMIT_SHA" ]; then
-          SHORT_SHA="${COMMIT_SHA:0:7}"
-          COMMIT_LINK_FIELD=$(cat <<EOF
-        ,
-        {
-          "type": "mrkdwn",
-          "text": "*Commit:*\n<${REPO_URL}/commit/${COMMIT_SHA}|${SHORT_SHA}>"
-        }
-        EOF
-        )
-        fi
-
         # Get current timestamp
         TIMESTAMP=$(date +%s)
 
-        # Build Slack message with Block Kit
-        PAYLOAD=$(cat <<EOF
-        {
-          "channel": "${CHANNEL_ID}",
-          "text": "",
-          "attachments": [
-            {
-              "color": "${COLOR}",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "${TITLE}"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Status:*\n${STATUS^}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Triggered By:*\n${ACTOR}"
-                    }${COMMIT_LINK_FIELD}
-                  ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "${MESSAGE}"
-                  }
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Workflow"
-                      },
-                      "url": "${WORKFLOW_URL}"
-                    },
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Repository"
-                      },
-                      "url": "${REPO_URL}"
+        # Convert \n escape sequences to actual newlines for proper Slack rendering
+        # This handles both literal \n from YAML and actual newlines from command output
+        MESSAGE_FORMATTED=$(printf '%b' "$MESSAGE")
+
+        # Build Slack message with Block Kit using jq for proper JSON escaping
+        if [ -n "$COMMIT_SHA" ]; then
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          # Build commit link text with actual newline
+          COMMIT_LINK=$(printf '*Commit:*\n<%s/commit/%s|%s>' "$REPO_URL" "$COMMIT_SHA" "$SHORT_SHA")
+          FIELDS_JSON=$(jq -n \
+            --arg status_text "$(printf '*Status:*\n%s' "${STATUS^}")" \
+            --arg actor_text "$(printf '*Triggered By:*\n%s' "$ACTOR")" \
+            --arg commit_text "$COMMIT_LINK" \
+            '[
+              {"type": "mrkdwn", "text": $status_text},
+              {"type": "mrkdwn", "text": $actor_text},
+              {"type": "mrkdwn", "text": $commit_text}
+            ]')
+        else
+          FIELDS_JSON=$(jq -n \
+            --arg status_text "$(printf '*Status:*\n%s' "${STATUS^}")" \
+            --arg actor_text "$(printf '*Triggered By:*\n%s' "$ACTOR")" \
+            '[
+              {"type": "mrkdwn", "text": $status_text},
+              {"type": "mrkdwn", "text": $actor_text}
+            ]')
+        fi
+
+        # Build the full payload with jq to ensure proper JSON escaping
+        PAYLOAD=$(jq -n \
+          --arg channel "$CHANNEL_ID" \
+          --arg color "$COLOR" \
+          --arg title "$TITLE" \
+          --argjson fields "$FIELDS_JSON" \
+          --arg message "$MESSAGE_FORMATTED" \
+          --arg workflow_url "$WORKFLOW_URL" \
+          --arg repo_url "$REPO_URL" \
+          --arg workflow "$GITHUB_WORKFLOW" \
+          --arg timestamp "$TIMESTAMP" \
+          '{
+            "channel": $channel,
+            "text": "",
+            "attachments": [
+              {
+                "color": $color,
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": $title
                     }
-                  ]
-                },
-                {
-                  "type": "context",
-                  "elements": [
-                    {
+                  },
+                  {
+                    "type": "section",
+                    "fields": $fields
+                  },
+                  {
+                    "type": "section",
+                    "text": {
                       "type": "mrkdwn",
-                      "text": "Workflow: ${GITHUB_WORKFLOW} | Time: <!date^${TIMESTAMP}^{date_short_pretty} at {time}|$(date)>"
+                      "text": $message
                     }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-        EOF
-        )
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "View Workflow"
+                        },
+                        "url": $workflow_url
+                      },
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "View Repository"
+                        },
+                        "url": $repo_url
+                      }
+                    ]
+                  },
+                  {
+                    "type": "context",
+                    "elements": [
+                      {
+                        "type": "mrkdwn",
+                        "text": ("Workflow: " + $workflow + " | Time: <!date^" + $timestamp + "^{date_short_pretty} at {time}|" + (now|strftime("%c")) + ">")
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }')
 
         # Send to Slack
         RESPONSE=$(curl -X POST https://slack.com/api/chat.postMessage \

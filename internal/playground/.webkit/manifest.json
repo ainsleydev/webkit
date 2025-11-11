@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.35",
-	"generated_at": "2025-11-07T11:37:31.523724Z",
+	"version": "v0.1.9",
+	"generated_at": "2025-11-11T19:37:49.615003Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -42,13 +42,21 @@
 			"scaffolded": false,
 			"generated_at": "2025-10-23T14:29:04.752022+01:00"
 		},
+		".github/actions/setup-infra/action.yaml": {
+			"path": ".github/actions/setup-infra/action.yaml",
+			"generator": "cicd:ActionTemplates",
+			"source": "project",
+			"hash": "1434241bea200719a11afa86621dbe7afa1f9a783482c855aa76b6d82eb919e4",
+			"scaffolded": false,
+			"generated_at": "2025-11-11T19:33:33.273527Z"
+		},
 		".github/actions/slack-notify/action.yaml": {
 			"path": ".github/actions/slack-notify/action.yaml",
 			"generator": "cicd:ActionTemplates",
 			"source": "project",
-			"hash": "d61e76f857f0b9332145b5f0616a53ec3a236aa96f16fcafb65751beca130bda",
+			"hash": "8f56601e603907c1cf363570af537106e1cb9cdbbdb0980ef4bfc06ee7c19571",
 			"scaffolded": false,
-			"generated_at": "2025-11-07T11:37:31.520961Z"
+			"generated_at": "2025-11-11T19:33:33.27368Z"
 		},
 		".github/dependabot.yaml": {
 			"path": ".github/dependabot.yaml",
@@ -70,33 +78,33 @@
 			"path": ".github/workflows/backup.yaml",
 			"generator": "cicd:BackupWorkflow",
 			"source": "resource:store",
-			"hash": "2392509183b46ba90ed13bfe4de27c340ed5bac8c3040a0c7f39005905eaef19",
+			"hash": "54e3d6fb8630e0a349c6dcb41248734744aae2522399f47e17716859d9fb6248",
 			"scaffolded": false,
-			"generated_at": "2025-11-07T11:37:31.520048Z"
+			"generated_at": "2025-11-10T19:46:30.314848Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "3d31575fe54b3039b2928356b34de2691b85935353481eef2cea180e07243404",
+			"hash": "ac614c99cc238332565264fe1cd27c1f5bef6d1b2cfbfcbabfd71f9b742d721a",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T20:03:10.97419Z"
+			"generated_at": "2025-11-11T19:37:49.609608Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "dc5bb283b554a4139a935bbbd1283432fd3b7e8b99b1711539f97e3201b61933",
+			"hash": "4245208062dbecfe6aa7a76b7e2c5ae22db6ae37d783b489f9e3018a7af3dd43",
 			"scaffolded": false,
-			"generated_at": "2025-11-07T11:37:31.519749Z"
+			"generated_at": "2025-11-11T19:33:33.272616Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",
 			"generator": "cicd:VMMaintenanceWorkflow",
 			"source": "app:cms",
-			"hash": "59fa51ac1c6bf8e545bdfb470e3475a4055df90a0d0f6fde83d7dc667a628b11",
+			"hash": "9ba1b62c374d1775a4de43ef182e9b18e7132b7387e53c33f967765ca2707ebe",
 			"scaffolded": false,
-			"generated_at": "2025-11-07T11:37:31.520305Z"
+			"generated_at": "2025-11-11T19:33:33.273215Z"
 		},
 		".gitignore": {
 			"path": ".gitignore",
@@ -178,6 +186,14 @@
 			"scaffolded": false,
 			"generated_at": "2025-10-23T14:29:04.749051+01:00"
 		},
+		"lefthook.yaml": {
+			"path": "lefthook.yaml",
+			"generator": "files:Hooks",
+			"source": "project",
+			"hash": "a6e4add98e191fc14612b44edb42ef6a09518199042681a8d7379f5d3bacd8e1",
+			"scaffolded": false,
+			"generated_at": "2025-11-10T19:46:30.312278Z"
+		},
 		"package.json": {
 			"path": "package.json",
 			"generator": "files:PackageJSON",
@@ -185,6 +201,14 @@
 			"hash": "f51b6c1c4a239be123bbbf3f89ad1d4cb93651ad6c05954b19030c4e50abc7b9",
 			"scaffolded": true,
 			"generated_at": "2025-11-01T12:38:46.341785Z"
+		},
+		"pnpm-workspace.yaml": {
+			"path": "pnpm-workspace.yaml",
+			"generator": "files:PnpmWorkspace",
+			"source": "project",
+			"hash": "afb7a993279e0f7d56df3e78cbc2bdcccddf5bda0bdc44d9b6cd9e12a5ace00c",
+			"scaffolded": false,
+			"generated_at": "2025-11-10T19:46:30.312879Z"
 		},
 		"web/.env": {
 			"path": "web/.env",

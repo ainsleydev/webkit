@@ -22,7 +22,6 @@
 			"Bash(curl:*)",
 			"WebSearch",
 			"Bash(go build:*)",
-			"Bash(git stash:*)",
 			"Bash(APP_ENV=development go run:*)",
 			"Bash(gofumpt:*)",
 			"WebFetch(domain:github.com)",
