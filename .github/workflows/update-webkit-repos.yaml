@@ -138,7 +138,7 @@ jobs:
 
             # Close any stale webkit update PRs for older versions (always do this first)
             echo "  Checking for stale webkit update PRs..."
-            STALE_PRS=$(gh pr list --repo "$REPO" --search "chore/update-webkit-v in:title" --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("chore/update-webkit-v")) | "\(.number):\(.headRefName)"')
+            STALE_PRS=$(gh pr list --repo "$REPO" --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("chore/update-webkit-v")) | "\(.number):\(.headRefName)"')
 
             if [ -n "$STALE_PRS" ]; then
               while IFS=: read -r PR_NUM PR_BRANCH; do
