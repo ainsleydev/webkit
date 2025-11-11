@@ -59,9 +59,7 @@ func Output(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 	defer cleanup()
 
-	if !input.Silent {
-		printer.Println("Retrieving outputs...")
-	}
+	printer.Println("Retrieving outputs...")
 	spinner.Start()
 
 	result, err := tf.Output(ctx, env.Environment(envStr))

@@ -42,22 +42,22 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 	filtered, skipped := appDef.FilterTerraformManaged()
 
 	// Show skipped items if any.
-	if !input.Silent && (len(skipped.Apps) > 0 || len(skipped.Resources) > 0) {
-		printer.Print("")
+	if len(skipped.Apps) > 0 || len(skipped.Resources) > 0 {
+		printer.Println("")
 		printer.Info("The following items are not managed by Terraform:")
 		if len(skipped.Apps) > 0 {
-			printer.Print("  Apps:")
+			printer.Println("  Apps:")
 			for _, app := range skipped.Apps {
-				printer.Print("    - " + app)
+				printer.Println("    - " + app)
 			}
 		}
 		if len(skipped.Resources) > 0 {
-			printer.Print("  Resources:")
+			printer.Println("  Resources:")
 			for _, resource := range skipped.Resources {
-				printer.Print("    - " + resource)
+				printer.Println("    - " + resource)
 			}
 		}
-		printer.Print("")
+		printer.Println("")
 	}
 
 	// Use filtered definition for Terraform.
@@ -67,9 +67,7 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 	defer cleanup()
 
-	if !input.Silent {
-		printer.Println("Destroying Resources...")
-	}
+	printer.Println("Destroying Resources...")
 	spinner.Start()
 
 	destroyOutput, err := tf.Destroy(ctx, env.Production)
@@ -80,9 +78,7 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 
 	spinner.Stop()
 	printer.Print(destroyOutput.Output)
-	if !input.Silent {
-		printer.Success("Destroy succeeded, see console output")
-	}
+	printer.Success("Destroy succeeded, see console output")
 
 	return nil
 }

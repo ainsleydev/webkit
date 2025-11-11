@@ -25,9 +25,7 @@ var PlanCmd = &cli.Command{
 func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 
-	if !input.Silent {
-		printer.Info("Generating executive plan from app definition")
-	}
+	printer.Info("Generating executive plan from app definition")
 	spinner := input.Spinner()
 
 	// Filter definition to only include Terraform-managed items.
@@ -35,22 +33,22 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	filtered, skipped := appDef.FilterTerraformManaged()
 
 	// Show skipped items if any.
-	if !input.Silent && (len(skipped.Apps) > 0 || len(skipped.Resources) > 0) {
-		printer.Print("")
+	if len(skipped.Apps) > 0 || len(skipped.Resources) > 0 {
+		printer.Println("")
 		printer.Info("The following items are not managed by Terraform:")
 		if len(skipped.Apps) > 0 {
-			printer.Print("  Apps:")
+			printer.Println("  Apps:")
 			for _, app := range skipped.Apps {
-				printer.Print("    - " + app)
+				printer.Println("    - " + app)
 			}
 		}
 		if len(skipped.Resources) > 0 {
-			printer.Print("  Resources:")
+			printer.Println("  Resources:")
 			for _, resource := range skipped.Resources {
-				printer.Print("    - " + resource)
+				printer.Println("    - " + resource)
 			}
 		}
-		printer.Print("")
+		printer.Println("")
 	}
 
 	// Use filtered definition for Terraform.
@@ -60,9 +58,7 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	if !input.Silent {
-		printer.Print("Making Plan...")
-	}
+	printer.Println("Making Plan...")
 	spinner.Start()
 
 	plan, err := tf.Plan(ctx, env.Production)
@@ -73,9 +69,7 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	spinner.Stop()
 
 	printer.Print(plan.Output)
-	if !input.Silent {
-		printer.Success("Plan generated, see console output")
-	}
+	printer.Success("Plan generated, see console output")
 
 	return nil
 }

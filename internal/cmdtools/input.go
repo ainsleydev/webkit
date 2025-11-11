@@ -93,9 +93,14 @@ func (c *CommandInput) Generator() scaffold.Generator {
 }
 
 // Printer returns a new console writer to stdout.
+// In silent mode, informational output is suppressed.
 func (c *CommandInput) Printer() *printer.Console {
 	if c.printer == nil {
-		c.printer = printer.New(os.Stdout)
+		if c.Silent {
+			c.printer = printer.NewSilent(os.Stdout)
+		} else {
+			c.printer = printer.New(os.Stdout)
+		}
 	}
 	return c.printer
 }

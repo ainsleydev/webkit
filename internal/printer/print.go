@@ -13,13 +13,26 @@ import (
 // Console provides simple, styled console output
 // using lipgloss for consistent branding.
 type Console struct {
-	writer io.Writer
+	writer       io.Writer
+	infoWriter   io.Writer // Separate writer for informational messages (can be io.Discard)
 }
 
 // New returns a new Console instance that writes to
 // the given io.Writer.
 func New(w io.Writer) *Console {
-	return &Console{writer: w}
+	return &Console{
+		writer:     w,
+		infoWriter: w, // By default, both writers are the same
+	}
+}
+
+// NewSilent returns a new Console instance that suppresses
+// informational output but preserves content output.
+func NewSilent(w io.Writer) *Console {
+	return &Console{
+		writer:     w,
+		infoWriter: io.Discard,
+	}
 }
 
 // SetWriter changes the output writer for the console.
@@ -34,9 +47,10 @@ func (c *Console) Print(msg string) {
 }
 
 // Println writes plain, unstyled text to the console, with a linebreak.
+// Uses infoWriter (can be suppressed in silent mode).
 func (c *Console) Println(msg string) {
-	c.write(msg)
-	c.LineBreak()
+	c.writeInfo(msg)
+	c.lineBreakInfo()
 }
 
 // Printf writes plain, unstyled text to the console,  with formatting.
@@ -45,23 +59,31 @@ func (c *Console) Printf(msg string, args ...any) {
 }
 
 // Success prints a success message with a checkmark icon and success color.
+// Uses infoWriter (can be suppressed in silent mode).
 func (c *Console) Success(msg string) {
-	c.Println(styles.Success.Render(fmt.Sprintf("%s %s", styles.IconSuccess, msg)))
+	c.writeInfo(styles.Success.Render(fmt.Sprintf("%s %s", styles.IconSuccess, msg)))
+	c.lineBreakInfo()
 }
 
 // Error prints an error message with a cross icon and error color.
+// Always outputs (uses main writer, not suppressed in silent mode).
 func (c *Console) Error(msg string) {
-	c.Println(styles.Error.Render(fmt.Sprintf("%s %s", styles.IconError, msg)))
+	c.write(styles.Error.Render(fmt.Sprintf("%s %s", styles.IconError, msg)))
+	c.LineBreak()
 }
 
 // Info prints an informational message with an info icon and color.
+// Uses infoWriter (can be suppressed in silent mode).
 func (c *Console) Info(msg string) {
-	c.Println(styles.Info.Render(fmt.Sprintf("%s %s", styles.IconInfo, msg)))
+	c.writeInfo(styles.Info.Render(fmt.Sprintf("%s %s", styles.IconInfo, msg)))
+	c.lineBreakInfo()
 }
 
 // Warn prints a warning message with a warning icon and color.
+// Uses infoWriter (can be suppressed in silent mode).
 func (c *Console) Warn(msg string) {
-	c.Println(styles.Warn.Render(fmt.Sprintf("%s %s", styles.IconWarn, msg)))
+	c.writeInfo(styles.Warn.Render(fmt.Sprintf("%s %s", styles.IconWarn, msg)))
+	c.lineBreakInfo()
 }
 
 // LineBreak prints \n to the writer.
@@ -74,4 +96,15 @@ func (c *Console) write(s string) {
 		return
 	}
 	_, _ = io.WriteString(c.writer, s)
+}
+
+func (c *Console) writeInfo(s string) {
+	if c.infoWriter == nil { // Guard check
+		return
+	}
+	_, _ = io.WriteString(c.infoWriter, s)
+}
+
+func (c *Console) lineBreakInfo() {
+	c.writeInfo("\n")
 }
