@@ -1,6 +1,6 @@
 {
 	"version": "v0.1.9",
-	"generated_at": "2025-11-11T19:37:49.615003Z",
+	"generated_at": "2025-11-11T19:46:03.406253Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -86,9 +86,9 @@
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "ac614c99cc238332565264fe1cd27c1f5bef6d1b2cfbfcbabfd71f9b742d721a",
+			"hash": "9e411b4e0d7ee482232c955bce5e336e8dab8259a03101fb113a30a3ada78bac",
 			"scaffolded": false,
-			"generated_at": "2025-11-11T19:37:49.609608Z"
+			"generated_at": "2025-11-11T19:46:03.403837Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",

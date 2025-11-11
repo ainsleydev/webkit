@@ -84,7 +84,7 @@ func TestValidate(t *testing.T) {
 		input, buf := setupWithPrinter(t, fs, def)
 
 		err = validate(t.Context(), input)
-		assert.NoError(t, err) // validate returns nil even on validation errors
+		assert.Error(t, err)
 		assert.Contains(t, buf.String(), "Validation failed with 1 error(s):")
 		assert.Contains(t, buf.String(), "should not contain protocol prefix")
 	})
@@ -120,7 +120,7 @@ func TestValidate(t *testing.T) {
 		input, buf := setupWithPrinter(t, fs, def)
 
 		err := validate(t.Context(), input)
-		assert.NoError(t, err)
+		assert.Error(t, err)
 		assert.Contains(t, buf.String(), "Validation failed")
 		assert.Contains(t, buf.String(), "does not exist")
 	})
@@ -156,7 +156,7 @@ func TestValidate(t *testing.T) {
 		input, buf := setupWithPrinter(t, fs, def)
 
 		err := validate(t.Context(), input)
-		assert.NoError(t, err)
+		assert.Error(t, err)
 		assert.Contains(t, buf.String(), "Validation failed with 2 error(s):")
 		assert.Contains(t, buf.String(), "should not contain protocol prefix")
 		assert.Contains(t, buf.String(), "does not exist")
@@ -196,7 +196,7 @@ func TestValidate(t *testing.T) {
 		input, buf := setupWithPrinter(t, fs, def)
 
 		err = validate(t.Context(), input)
-		assert.NoError(t, err)
+		assert.Error(t, err)
 		assert.Contains(t, buf.String(), "Validation failed")
 		assert.Contains(t, buf.String(), "terraform-managed VM/app must have at least one domain configured")
 	})
@@ -249,7 +249,7 @@ func TestValidate(t *testing.T) {
 		input, buf := setupWithPrinter(t, fs, def)
 
 		err = validate(t.Context(), input)
-		assert.NoError(t, err)
+		assert.Error(t, err)
 		assert.Contains(t, buf.String(), "Validation failed")
 		assert.Contains(t, buf.String(), "references non-existent resource")
 	})

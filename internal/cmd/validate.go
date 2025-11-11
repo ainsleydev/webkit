@@ -42,5 +42,5 @@ func validate(_ context.Context, input cmdtools.CommandInput) error {
 	printer.List(items...)
 	printer.LineBreak()
 
-	return nil
+	return cmdtools.ExitWithCode(1)
 }
