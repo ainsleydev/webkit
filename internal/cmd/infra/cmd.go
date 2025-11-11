@@ -58,10 +58,12 @@ func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInpu
 		}
 	}
 	if err != nil {
+		spinner.Stop()
 		return nil, teardown, err
 	}
 
 	if err = tf.Init(ctx); err != nil {
+		spinner.Stop()
 		return nil, teardown, err
 	}
 
@@ -101,6 +103,7 @@ func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInpu
 
 	err = secrets.Resolve(ctx, appDef, resolveConfig)
 	if err != nil {
+		spinner.Stop()
 		return nil, func() {}, err
 	}
 
