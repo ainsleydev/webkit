@@ -327,8 +327,12 @@ jobs:
         run: |
           if ./webkit validate > validation-output.txt 2>&1; then
             echo "validation_failed=false" >> $GITHUB_OUTPUT
+            status_emoji="🟢"
+            status_text="Validation passed"
           else
             echo "validation_failed=true" >> $GITHUB_OUTPUT
+            status_emoji="🔴"
+            status_text="Validation failed"
           fi
 
           {
@@ -336,9 +340,16 @@ jobs:
             echo "<!-- validation-result -->"
             echo "### app.json Validation"
             echo ""
+            echo "$status_emoji **$status_text**"
+            echo ""
+            echo "<details>"
+            echo "<summary>View validation output</summary>"
+            echo ""
             echo '```'
             cat validation-output.txt
             echo '```'
+            echo ""
+            echo "</details>"
             echo 'EOF'
           } >> $GITHUB_OUTPUT
 
