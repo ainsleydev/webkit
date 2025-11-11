@@ -167,17 +167,44 @@ jobs:
 
             # Install webkit CLI at the target version using the official installer
             echo "  Installing webkit v$VERSION..."
-            VERSION="v$VERSION" INSTALL_DIR="." curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | sh
+            curl -sSL https://raw.githubusercontent.com/ainsleydev/webkit/main/bin/install.sh | VERSION="v$VERSION" sh
+
+            # Ensure webkit is in PATH (fallback to ~/.local/bin if not found)
+            if ! command -v webkit >/dev/null 2>&1; then
+              echo "  Adding ~/.local/bin to PATH..."
+              export PATH="$HOME/.local/bin:$PATH"
+            fi
+
+            # Verify webkit is available
+            if ! command -v webkit >/dev/null 2>&1; then
+              echo "  ✗ Error: webkit not found in PATH after installation"
+              cd ..
+              rm -rf "$REPO_DIR"
+              continue
+            fi
 
             # Run webkit update to regenerate all files with the new version
             echo "  Running webkit update..."
-            ./webkit update
+            if ! webkit update; then
+              echo "  ✗ Error: webkit update failed"
+              cd ..
+              rm -rf "$REPO_DIR"
+              continue
+            fi
 
-            # Commit all changes (app.json and all regenerated files)
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add .
-            git commit -m "chore: Update WebKit to v$VERSION"
+            # Check if there are any changes to commit
+            if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git status --porcelain)" ]; then
+              # Commit all changes (app.json and all regenerated files)
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add .
+              git commit -m "chore: Update WebKit to v$VERSION"
+            else
+              echo "  ⚠️  No changes detected after webkit update, skipping..."
+              cd ..
+              rm -rf "$REPO_DIR"
+              continue
+            fi
 
             # Delete remote branch if it exists (from a previous failed run)
             git push origin --delete "$BRANCH_NAME" 2>/dev/null || true
