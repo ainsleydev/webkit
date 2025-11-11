@@ -33,6 +33,11 @@ var OutputCmd = &cli.Command{
 			Usage:   "Filter outputs to a specific app name",
 			Aliases: []string{"a"},
 		},
+		&cli.BoolFlag{
+			Name:    "silent",
+			Aliases: []string{"s"},
+			Usage:   "Suppress informational output (only show Terraform output)",
+		},
 	},
 	Action: cmdtools.Wrap(Output),
 }
@@ -54,7 +59,9 @@ func Output(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 	defer cleanup()
 
-	printer.Println("Retrieving outputs...")
+	if !input.Silent {
+		printer.Println("Retrieving outputs...")
+	}
 	spinner.Start()
 
 	result, err := tf.Output(ctx, env.Environment(envStr))

@@ -17,6 +17,13 @@ import (
 var DestroyCmd = &cli.Command{
 	Name:   "destroy",
 	Usage:  "Tears down infrastructure defined in app.json",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "silent",
+			Aliases: []string{"s"},
+			Usage:   "Suppress informational output (only show Terraform output)",
+		},
+	},
 	Action: cmdtools.Wrap(Destroy),
 }
 
@@ -35,7 +42,7 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 	filtered, skipped := appDef.FilterTerraformManaged()
 
 	// Show skipped items if any.
-	if len(skipped.Apps) > 0 || len(skipped.Resources) > 0 {
+	if !input.Silent && (len(skipped.Apps) > 0 || len(skipped.Resources) > 0) {
 		printer.Print("")
 		printer.Info("The following items are not managed by Terraform:")
 		if len(skipped.Apps) > 0 {
@@ -60,7 +67,9 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 	defer cleanup()
 
-	printer.Println("Destroying Resources...")
+	if !input.Silent {
+		printer.Println("Destroying Resources...")
+	}
 	spinner.Start()
 
 	destroyOutput, err := tf.Destroy(ctx, env.Production)
@@ -71,7 +80,9 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 
 	spinner.Stop()
 	printer.Print(destroyOutput.Output)
-	printer.Success("Destroy succeeded, see console output")
+	if !input.Silent {
+		printer.Success("Destroy succeeded, see console output")
+	}
 
 	return nil
 }

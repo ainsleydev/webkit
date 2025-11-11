@@ -32,6 +32,7 @@ type CommandInput struct {
 	SOPSCache   sops.EncrypterDecrypter
 	Manifest    *manifest.Tracker
 	Runner      executil.Runner
+	Silent      bool
 	printer     *printer.Console
 }
 
@@ -54,6 +55,7 @@ func Wrap(command RunCommand) cli.ActionFunc {
 			BaseDir:  dir,
 			Manifest: manifest.NewTracker(),
 			Runner:   executil.DefaultRunner(),
+			Silent:   c.Bool("silent"),
 		}
 
 		return command(ctx, input)

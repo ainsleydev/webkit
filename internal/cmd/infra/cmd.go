@@ -48,7 +48,9 @@ func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInpu
 	spinner := input.Spinner()
 
 	spinner.Stop()
-	printer.Println("Initializing Terraform...")
+	if !input.Silent {
+		printer.Println("Initializing Terraform...")
+	}
 	spinner.Start()
 
 	tf, err := newTerraform(ctx, appDef, input.Manifest)
@@ -69,13 +71,17 @@ func initTerraformWithDefinition(ctx context.Context, input cmdtools.CommandInpu
 
 	spinner.Stop()
 
-	printer.Println("Resolving Secrets...")
+	if !input.Silent {
+		printer.Println("Resolving Secrets...")
+	}
 	spinner.Start()
 
 	// Check if we need to fetch Terraform outputs (only if there are resource references).
 	var tfOutputs *secrets.TerraformOutputProvider
 	if hasResourceReferences(appDef) {
-		printer.Println("Fetching Terraform outputs...")
+		if !input.Silent {
+			printer.Println("Fetching Terraform outputs...")
+		}
 		spinner.Start()
 
 		tfOutputs, err = fetchTerraformOutputs(ctx, tf, env.Production)
