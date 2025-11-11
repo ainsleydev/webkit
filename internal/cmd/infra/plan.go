@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/urfave/cli/v3"
 
@@ -34,21 +35,21 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Show skipped items if any.
 	if len(skipped.Apps) > 0 || len(skipped.Resources) > 0 {
-		printer.Println("")
+		printer.Print("")
 		printer.Info("The following items are not managed by Terraform:")
 		if len(skipped.Apps) > 0 {
-			printer.Println("  Apps:")
+			printer.Print("  Apps:")
 			for _, app := range skipped.Apps {
-				printer.Println("    - " + app)
+				printer.Print("    - " + app)
 			}
 		}
 		if len(skipped.Resources) > 0 {
-			printer.Println("  Resources:")
+			printer.Print("  Resources:")
 			for _, resource := range skipped.Resources {
-				printer.Println("    - " + resource)
+				printer.Print("    - " + resource)
 			}
 		}
-		printer.Println("")
+		printer.Print("")
 	}
 
 	// Use filtered definition for Terraform.
@@ -58,7 +59,7 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	printer.Println("Making Plan...")
+	printer.Print("Making Plan...")
 	spinner.Start()
 
 	plan, err := tf.Plan(ctx, env.Production)
@@ -68,7 +69,8 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 
 	spinner.Stop()
 
-	printer.Print(plan.Output)
+	// Write plan output directly to stdout (not through printer)
+	fmt.Print(plan.Output)
 	printer.Success("Plan generated, see console output")
 
 	return nil

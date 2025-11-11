@@ -43,21 +43,21 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Show skipped items if any.
 	if len(skipped.Apps) > 0 || len(skipped.Resources) > 0 {
-		printer.Println("")
+		printer.Print("")
 		printer.Info("The following items are not managed by Terraform:")
 		if len(skipped.Apps) > 0 {
-			printer.Println("  Apps:")
+			printer.Print("  Apps:")
 			for _, app := range skipped.Apps {
-				printer.Println("    - " + app)
+				printer.Print("    - " + app)
 			}
 		}
 		if len(skipped.Resources) > 0 {
-			printer.Println("  Resources:")
+			printer.Print("  Resources:")
 			for _, resource := range skipped.Resources {
-				printer.Println("    - " + resource)
+				printer.Print("    - " + resource)
 			}
 		}
-		printer.Println("")
+		printer.Print("")
 	}
 
 	// Use filtered definition for Terraform.
@@ -72,12 +72,14 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 
 	destroyOutput, err := tf.Destroy(ctx, env.Production)
 	if err != nil {
-		printer.Print(destroyOutput.Output)
+		// Write error output directly to stdout (not through printer)
+		fmt.Print(destroyOutput.Output)
 		return errors.New("executing terraform destroy")
 	}
 
 	spinner.Stop()
-	printer.Print(destroyOutput.Output)
+	// Write destroy output directly to stdout (not through printer)
+	fmt.Print(destroyOutput.Output)
 	printer.Success("Destroy succeeded, see console output")
 
 	return nil

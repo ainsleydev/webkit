@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/urfave/cli/v3"
 
@@ -35,21 +36,21 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Show skipped items if any.
 	if len(skipped.Apps) > 0 || len(skipped.Resources) > 0 {
-		printer.Println("")
+		printer.Print("")
 		printer.Info("The following items are not managed by Terraform:")
 		if len(skipped.Apps) > 0 {
-			printer.Println("  Apps:")
+			printer.Print("  Apps:")
 			for _, app := range skipped.Apps {
-				printer.Println("    - " + app)
+				printer.Print("    - " + app)
 			}
 		}
 		if len(skipped.Resources) > 0 {
-			printer.Println("  Resources:")
+			printer.Print("  Resources:")
 			for _, resource := range skipped.Resources {
-				printer.Println("    - " + resource)
+				printer.Print("    - " + resource)
 			}
 		}
-		printer.Println("")
+		printer.Print("")
 	}
 
 	// Use filtered definition for Terraform.
@@ -64,13 +65,15 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 
 	plan, err := tf.Apply(ctx, env.Production)
 	if err != nil {
-		printer.Print(plan.Output)
+		// Write error output directly to stdout (not through printer)
+		fmt.Print(plan.Output)
 		return errors.New("executing terraform apply")
 	}
 
 	spinner.Stop()
 
-	printer.Print(plan.Output)
+	// Write plan output directly to stdout (not through printer)
+	fmt.Print(plan.Output)
 	printer.Success("Apply succeeded, see console output")
 
 	return nil

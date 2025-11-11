@@ -2,6 +2,7 @@ package cmdtools
 
 import (
 	"context"
+	"io"
 	"os"
 	"time"
 
@@ -96,10 +97,9 @@ func (c *CommandInput) Generator() scaffold.Generator {
 // In silent mode, informational output is suppressed.
 func (c *CommandInput) Printer() *printer.Console {
 	if c.printer == nil {
+		c.printer = printer.New(os.Stdout)
 		if c.Silent {
-			c.printer = printer.NewSilent(os.Stdout)
-		} else {
-			c.printer = printer.New(os.Stdout)
+			c.printer.SetWriter(io.Discard)
 		}
 	}
 	return c.printer
