@@ -17,6 +17,9 @@ permissions:
   pull-requests: write
   issues: write
 
+env:
+  TF_VERSION: '{{ .TerraformVersion }}'
+
 jobs:
   setup-webkit:
     runs-on: ubuntu-latest
@@ -216,6 +219,11 @@ jobs:
 
       - name: Make WebKit executable
         run: chmod +x ./webkit
+
+      - name: Setup Infrastructure Dependencies
+        uses: ./.github/actions/setup-infra
+        with:
+          terraform_version: {{ ghVar "env.TF_VERSION" }}
 
       - name: Run Terraform Plan
         id: plan

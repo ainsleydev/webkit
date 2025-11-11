@@ -410,8 +410,8 @@ func TestReleaseWorkflow(t *testing.T) {
 			assert.Contains(t, content, "Run Terraform Plan (Dry Run)")
 			assert.Contains(t, content, "./webkit infra plan")
 			assert.Contains(t, content, "needs: [setup-webkit, build-and-push]")
-			assert.Contains(t, content, "Install Terraform")
-			assert.Contains(t, content, "Install SOPS")
+			assert.Contains(t, content, "Setup Infrastructure Dependencies")
+			assert.Contains(t, content, "./.github/actions/setup-infra")
 			assert.Contains(t, content, "Send Slack Notification")
 			assert.Contains(t, content, "Terraform Plan - Production")
 		}
