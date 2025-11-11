@@ -63,25 +63,31 @@ runs:
         # Get current timestamp
         TIMESTAMP=$(date +%s)
 
+        # Convert \n escape sequences to actual newlines for proper Slack rendering
+        # This handles both literal \n from YAML and actual newlines from command output
+        MESSAGE_FORMATTED=$(printf '%b' "$MESSAGE")
+
         # Build Slack message with Block Kit using jq for proper JSON escaping
         if [ -n "$COMMIT_SHA" ]; then
           SHORT_SHA="${COMMIT_SHA:0:7}"
+          # Build commit link text with actual newline
+          COMMIT_LINK=$(printf '*Commit:*\n<%s/commit/%s|%s>' "$REPO_URL" "$COMMIT_SHA" "$SHORT_SHA")
           FIELDS_JSON=$(jq -n \
-            --arg status "${STATUS^}" \
-            --arg actor "$ACTOR" \
-            --arg commit_text "*Commit:*\n<${REPO_URL}/commit/${COMMIT_SHA}|${SHORT_SHA}>" \
+            --arg status_text "$(printf '*Status:*\n%s' "${STATUS^}")" \
+            --arg actor_text "$(printf '*Triggered By:*\n%s' "$ACTOR")" \
+            --arg commit_text "$COMMIT_LINK" \
             '[
-              {"type": "mrkdwn", "text": ("*Status:*\n" + $status)},
-              {"type": "mrkdwn", "text": ("*Triggered By:*\n" + $actor)},
+              {"type": "mrkdwn", "text": $status_text},
+              {"type": "mrkdwn", "text": $actor_text},
               {"type": "mrkdwn", "text": $commit_text}
             ]')
         else
           FIELDS_JSON=$(jq -n \
-            --arg status "${STATUS^}" \
-            --arg actor "$ACTOR" \
+            --arg status_text "$(printf '*Status:*\n%s' "${STATUS^}")" \
+            --arg actor_text "$(printf '*Triggered By:*\n%s' "$ACTOR")" \
             '[
-              {"type": "mrkdwn", "text": ("*Status:*\n" + $status)},
-              {"type": "mrkdwn", "text": ("*Triggered By:*\n" + $actor)}
+              {"type": "mrkdwn", "text": $status_text},
+              {"type": "mrkdwn", "text": $actor_text}
             ]')
         fi
 
@@ -91,7 +97,7 @@ runs:
           --arg color "$COLOR" \
           --arg title "$TITLE" \
           --argjson fields "$FIELDS_JSON" \
-          --arg message "$MESSAGE" \
+          --arg message "$MESSAGE_FORMATTED" \
           --arg workflow_url "$WORKFLOW_URL" \
           --arg repo_url "$REPO_URL" \
           --arg workflow "$GITHUB_WORKFLOW" \
