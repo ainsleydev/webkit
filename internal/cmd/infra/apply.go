@@ -12,8 +12,8 @@ import (
 )
 
 var ApplyCmd = &cli.Command{
-	Name:   "apply",
-	Usage:  "Creates or updates infrastructure based off the apps and resources defined in app.json",
+	Name:  "apply",
+	Usage: "Creates or updates infrastructure based off the apps and resources defined in app.json",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "silent",

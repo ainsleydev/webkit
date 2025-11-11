@@ -11,8 +11,8 @@ import (
 )
 
 var PlanCmd = &cli.Command{
-	Name:   "plan",
-	Usage:  "Generates an executive plan from the apps and resources defined in app.json",
+	Name:  "plan",
+	Usage: "Generates an executive plan from the apps and resources defined in app.json",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "silent",

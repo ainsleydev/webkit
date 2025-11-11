@@ -15,8 +15,8 @@ import (
 )
 
 var DestroyCmd = &cli.Command{
-	Name:   "destroy",
-	Usage:  "Tears down infrastructure defined in app.json",
+	Name:  "destroy",
+	Usage: "Tears down infrastructure defined in app.json",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "silent",
