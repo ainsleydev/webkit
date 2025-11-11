@@ -70,7 +70,7 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	spinner.Stop()
 
 	// Write plan output directly to stdout (not through printer)
-	fmt.Print(plan.Output)
+	fmt.Print(plan.Output) //nolint:forbidigo
 	printer.Success("Plan generated, see console output")
 
 	return nil

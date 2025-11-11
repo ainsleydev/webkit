@@ -66,14 +66,14 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 	plan, err := tf.Apply(ctx, env.Production)
 	if err != nil {
 		// Write error output directly to stdout (not through printer)
-		fmt.Print(plan.Output)
+		fmt.Print(plan.Output) //nolint:forbidigo
 		return errors.New("executing terraform apply")
 	}
 
 	spinner.Stop()
 
 	// Write plan output directly to stdout (not through printer)
-	fmt.Print(plan.Output)
+	fmt.Print(plan.Output) //nolint:forbidigo
 	printer.Success("Apply succeeded, see console output")
 
 	return nil

@@ -73,13 +73,13 @@ func Destroy(ctx context.Context, input cmdtools.CommandInput) error {
 	destroyOutput, err := tf.Destroy(ctx, env.Production)
 	if err != nil {
 		// Write error output directly to stdout (not through printer)
-		fmt.Print(destroyOutput.Output)
+		fmt.Print(destroyOutput.Output) //nolint:forbidigo
 		return errors.New("executing terraform destroy")
 	}
 
 	spinner.Stop()
 	// Write destroy output directly to stdout (not through printer)
-	fmt.Print(destroyOutput.Output)
+	fmt.Print(destroyOutput.Output) //nolint:forbidigo
 	printer.Success("Destroy succeeded, see console output")
 
 	return nil
