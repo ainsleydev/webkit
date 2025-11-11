@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/urfave/cli/v3"
 
@@ -11,8 +12,15 @@ import (
 )
 
 var ApplyCmd = &cli.Command{
-	Name:   "apply",
-	Usage:  "Creates or updates infrastructure based off the apps and resources defined in app.json",
+	Name:  "apply",
+	Usage: "Creates or updates infrastructure based off the apps and resources defined in app.json",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "silent",
+			Aliases: []string{"s"},
+			Usage:   "Suppress informational output (only show Terraform output)",
+		},
+	},
 	Action: cmdtools.Wrap(Apply),
 }
 
@@ -57,13 +65,15 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 
 	plan, err := tf.Apply(ctx, env.Production)
 	if err != nil {
-		printer.Print(plan.Output)
+		// Write error output directly to stdout (not through printer)
+		fmt.Print(plan.Output) //nolint:forbidigo
 		return errors.New("executing terraform apply")
 	}
 
 	spinner.Stop()
 
-	printer.Print(plan.Output)
+	// Write plan output directly to stdout (not through printer)
+	fmt.Print(plan.Output) //nolint:forbidigo
 	printer.Success("Apply succeeded, see console output")
 
 	return nil
