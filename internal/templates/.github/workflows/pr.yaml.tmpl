@@ -17,6 +17,9 @@ permissions:
   pull-requests: write
   issues: write
 
+env:
+  TF_VERSION: '{{ .TerraformVersion }}'
+
 jobs:
   setup-webkit:
     runs-on: ubuntu-latest
@@ -216,6 +219,18 @@ jobs:
 
       - name: Make WebKit executable
         run: chmod +x ./webkit
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: {{ ghVar "env.TF_VERSION" }}
+
+      - name: Install SOPS
+        run: |
+          curl -LO https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64
+          sudo mv sops-v3.11.0.linux.amd64 /usr/local/bin/sops
+          sudo chmod +x /usr/local/bin/sops
+          sops --version
 
       - name: Run Terraform Plan
         id: plan
