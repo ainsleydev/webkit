@@ -78,78 +78,98 @@ runs:
         # Get current timestamp
         TIMESTAMP=$(date +%s)
 
-        # Build Slack message with Block Kit
-        PAYLOAD=$(cat <<EOF
-        {
-          "channel": "${CHANNEL_ID}",
-          "text": "",
-          "attachments": [
-            {
-              "color": "${COLOR}",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "${TITLE}"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Status:*\n${STATUS^}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Triggered By:*\n${ACTOR}"
-                    }${COMMIT_LINK_FIELD}
-                  ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "${MESSAGE}"
-                  }
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Workflow"
-                      },
-                      "url": "${WORKFLOW_URL}"
-                    },
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Repository"
-                      },
-                      "url": "${REPO_URL}"
+        # Build Slack message with Block Kit using jq for proper JSON escaping
+        # Parse the COMMIT_LINK_FIELD if it exists
+        if [ -n "$COMMIT_LINK_FIELD" ]; then
+          FIELDS_JSON=$(jq -n \
+            --arg status "${STATUS^}" \
+            --arg actor "$ACTOR" \
+            --arg commit_text "*Commit:*\n<${REPO_URL}/commit/${COMMIT_SHA}|${SHORT_SHA}>" \
+            '[
+              {"type": "mrkdwn", "text": ("*Status:*\n" + $status)},
+              {"type": "mrkdwn", "text": ("*Triggered By:*\n" + $actor)},
+              {"type": "mrkdwn", "text": $commit_text}
+            ]')
+        else
+          FIELDS_JSON=$(jq -n \
+            --arg status "${STATUS^}" \
+            --arg actor "$ACTOR" \
+            '[
+              {"type": "mrkdwn", "text": ("*Status:*\n" + $status)},
+              {"type": "mrkdwn", "text": ("*Triggered By:*\n" + $actor)}
+            ]')
+        fi
+
+        # Build the full payload with jq to ensure proper JSON escaping
+        PAYLOAD=$(jq -n \
+          --arg channel "$CHANNEL_ID" \
+          --arg color "$COLOR" \
+          --arg title "$TITLE" \
+          --argjson fields "$FIELDS_JSON" \
+          --arg message "$MESSAGE" \
+          --arg workflow_url "$WORKFLOW_URL" \
+          --arg repo_url "$REPO_URL" \
+          --arg workflow "$GITHUB_WORKFLOW" \
+          --arg timestamp "$TIMESTAMP" \
+          '{
+            "channel": $channel,
+            "text": "",
+            "attachments": [
+              {
+                "color": $color,
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": $title
                     }
-                  ]
-                },
-                {
-                  "type": "context",
-                  "elements": [
-                    {
+                  },
+                  {
+                    "type": "section",
+                    "fields": $fields
+                  },
+                  {
+                    "type": "section",
+                    "text": {
                       "type": "mrkdwn",
-                      "text": "Workflow: ${GITHUB_WORKFLOW} | Time: <!date^${TIMESTAMP}^{date_short_pretty} at {time}|$(date)>"
+                      "text": $message
                     }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-        EOF
-        )
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "View Workflow"
+                        },
+                        "url": $workflow_url
+                      },
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "View Repository"
+                        },
+                        "url": $repo_url
+                      }
+                    ]
+                  },
+                  {
+                    "type": "context",
+                    "elements": [
+                      {
+                        "type": "mrkdwn",
+                        "text": ("Workflow: " + $workflow + " | Time: <!date^" + $timestamp + "^{date_short_pretty} at {time}|" + (now|strftime("%c")) + ">")
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }')
 
         # Send to Slack
         RESPONSE=$(curl -X POST https://slack.com/api/chat.postMessage \
