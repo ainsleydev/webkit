@@ -60,27 +60,12 @@ runs:
             ;;
         esac
 
-        # Get short SHA if commit_sha is provided
-        SHORT_SHA=""
-        COMMIT_LINK_FIELD=""
-        if [ -n "$COMMIT_SHA" ]; then
-          SHORT_SHA="${COMMIT_SHA:0:7}"
-          COMMIT_LINK_FIELD=$(cat <<EOF
-        ,
-        {
-          "type": "mrkdwn",
-          "text": "*Commit:*\n<${REPO_URL}/commit/${COMMIT_SHA}|${SHORT_SHA}>"
-        }
-        EOF
-        )
-        fi
-
         # Get current timestamp
         TIMESTAMP=$(date +%s)
 
         # Build Slack message with Block Kit using jq for proper JSON escaping
-        # Parse the COMMIT_LINK_FIELD if it exists
-        if [ -n "$COMMIT_LINK_FIELD" ]; then
+        if [ -n "$COMMIT_SHA" ]; then
+          SHORT_SHA="${COMMIT_SHA:0:7}"
           FIELDS_JSON=$(jq -n \
             --arg status "${STATUS^}" \
             --arg actor "$ACTOR" \
