@@ -220,17 +220,10 @@ jobs:
       - name: Make WebKit executable
         run: chmod +x ./webkit
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Setup Infrastructure Dependencies
+        uses: ./.github/actions/setup-infra
         with:
           terraform_version: {{ ghVar "env.TF_VERSION" }}
-
-      - name: Install SOPS
-        run: |
-          curl -LO https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64
-          sudo mv sops-v3.11.0.linux.amd64 /usr/local/bin/sops
-          sudo chmod +x /usr/local/bin/sops
-          sops --version
 
       - name: Run Terraform Plan
         id: plan
