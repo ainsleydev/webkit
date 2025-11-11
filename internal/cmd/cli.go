@@ -28,6 +28,7 @@ func Run() {
 		},
 		Commands: []*cli.Command{
 			updateCmd,
+			validateCmd,
 			scaffoldCmd,
 			secrets.Command,
 			env.Command,

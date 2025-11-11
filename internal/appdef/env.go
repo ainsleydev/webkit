@@ -8,25 +8,28 @@ import (
 )
 
 type (
-	// Environment contains env-specific variable configurations.
+	// Environment contains environment-specific variable configurations.
+	// Variables can be defined per environment (dev, staging, production)
+	// or set once in 'default' to apply across all environments.
 	Environment struct {
-		Default    EnvVar `json:"default,omitempty" inline:"true"`
-		Dev        EnvVar `json:"dev,omitempty" inline:"true"`
-		Staging    EnvVar `json:"staging,omitempty" inline:"true"`
-		Production EnvVar `json:"production,omitempty" inline:"true"`
+		Default    EnvVar `json:"default,omitempty" inline:"true" description:"Environment variables that apply to all environments (dev, staging, production)"`
+		Dev        EnvVar `json:"dev,omitempty" inline:"true" description:"Environment variables specific to the development environment"`
+		Staging    EnvVar `json:"staging,omitempty" inline:"true" description:"Environment variables specific to the staging environment"`
+		Production EnvVar `json:"production,omitempty" inline:"true" description:"Environment variables specific to the production environment"`
 	}
-	// EnvVar is a map of variable names to their configurations.
+	// EnvVar is a map of variable names to their value configurations.
+	// Each key is the environment variable name, and the value defines
+	// where the variable's value comes from (static value, resource output, or secret).
 	EnvVar map[string]EnvValue
-	// EnvValue represents a single env variable configuration
+	// EnvValue represents a single environment variable configuration.
+	// It specifies both the source type and the value/reference for the variable.
 	EnvValue struct {
-		// Source defines the source type: "value", "resource", or "sops"
-		Source EnvSource `json:"source"`
-		// Value holds the actual value for different source types:
+		Source EnvSource `json:"source" required:"true" validate:"required,oneof=value resource sops" description:"Source type for the variable value (value, resource, sops)"`
+		// Value holds the actual value or reference depending on the source type:
 		// - "value": A static string (e.g., "https://api.example.com")
 		// - "resource": A Terraform resource reference (e.g., "db.connection_url")
 		// - "sops": The variable name/key to lookup in the SOPS file (e.g., "API_KEY")
-		//   Note: For SOPS, the file path is determined by environment (dev.yaml, staging.yaml, production.yaml)
-		Value any `json:"value,omitempty"`
+		Value any `json:"value,omitempty" description:"The value or reference for this variable (format depends on source type)"`
 	}
 )
 

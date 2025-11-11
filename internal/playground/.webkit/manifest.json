@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.40",
-	"generated_at": "2025-11-10T20:18:05.851809Z",
+	"version": "v0.1.9",
+	"generated_at": "2025-11-11T19:46:03.406253Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -42,13 +42,21 @@
 			"scaffolded": false,
 			"generated_at": "2025-10-23T14:29:04.752022+01:00"
 		},
+		".github/actions/setup-infra/action.yaml": {
+			"path": ".github/actions/setup-infra/action.yaml",
+			"generator": "cicd:ActionTemplates",
+			"source": "project",
+			"hash": "1434241bea200719a11afa86621dbe7afa1f9a783482c855aa76b6d82eb919e4",
+			"scaffolded": false,
+			"generated_at": "2025-11-11T19:33:33.273527Z"
+		},
 		".github/actions/slack-notify/action.yaml": {
 			"path": ".github/actions/slack-notify/action.yaml",
 			"generator": "cicd:ActionTemplates",
 			"source": "project",
-			"hash": "d61e76f857f0b9332145b5f0616a53ec3a236aa96f16fcafb65751beca130bda",
+			"hash": "8f56601e603907c1cf363570af537106e1cb9cdbbdb0980ef4bfc06ee7c19571",
 			"scaffolded": false,
-			"generated_at": "2025-11-07T11:37:31.520961Z"
+			"generated_at": "2025-11-11T19:33:33.27368Z"
 		},
 		".github/dependabot.yaml": {
 			"path": ".github/dependabot.yaml",
@@ -78,25 +86,25 @@
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "39730ff9d47c3bc960ec13b98c22b11c97f94a78349a38f22d69ff2842b4a4a9",
+			"hash": "9e411b4e0d7ee482232c955bce5e336e8dab8259a03101fb113a30a3ada78bac",
 			"scaffolded": false,
-			"generated_at": "2025-11-10T20:18:05.848258Z"
+			"generated_at": "2025-11-11T19:46:03.403837Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "b382a4458fc78d1829c62c2afef9cd11d6071a7c98f59b5b46c25e6b541bc7af",
+			"hash": "4245208062dbecfe6aa7a76b7e2c5ae22db6ae37d783b489f9e3018a7af3dd43",
 			"scaffolded": false,
-			"generated_at": "2025-11-10T20:18:05.849354Z"
+			"generated_at": "2025-11-11T19:33:33.272616Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",
 			"generator": "cicd:VMMaintenanceWorkflow",
 			"source": "app:cms",
-			"hash": "59fa51ac1c6bf8e545bdfb470e3475a4055df90a0d0f6fde83d7dc667a628b11",
+			"hash": "9ba1b62c374d1775a4de43ef182e9b18e7132b7387e53c33f967765ca2707ebe",
 			"scaffolded": false,
-			"generated_at": "2025-11-07T11:37:31.520305Z"
+			"generated_at": "2025-11-11T19:33:33.273215Z"
 		},
 		".gitignore": {
 			"path": ".gitignore",

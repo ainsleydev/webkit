@@ -66,7 +66,6 @@ jobs:
         env:
           GITHUB_TOKEN: {{ ghSecret "GITHUB_TOKEN" }}
           GITLEAKS_LICENSE: {{ ghSecret "ORG_GITLEAKS_LICENSE" }}
-
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
@@ -202,7 +201,6 @@ jobs:
           comment-body: {{ ghVar "steps.diff.outputs.diff_message" }}
           issue-number: {{ ghVar "github.event.pull_request.number" }}
           private-key: {{ ghSecret "ORG_GITHUB_APP_PRIVATE_KEY" }}
-
   terraform-plan-production:
     runs-on: ubuntu-latest
     needs: [setup-webkit, detect-changes]
@@ -308,8 +306,57 @@ jobs:
           comment-body: {{ ghVar "steps.plan.outputs.plan_message" }}
           issue-number: {{ ghVar "github.event.pull_request.number" }}
           private-key: {{ ghSecret "ORG_GITHUB_APP_PRIVATE_KEY" }}
+  validate-app-json:
+    runs-on: ubuntu-latest
+    needs: setup-webkit
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
 
-	{{- range $app := .Apps }}
+      - name: Download WebKit CLI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webkit
+          path: ./
+
+      - name: Make WebKit executable
+        run: chmod +x ./webkit
+
+      - name: Run Validation
+        id: validate
+        run: |
+          if ./webkit validate > validation-output.txt 2>&1; then
+            echo "validation_failed=false" >> $GITHUB_OUTPUT
+          else
+            echo "validation_failed=true" >> $GITHUB_OUTPUT
+          fi
+
+          {
+            echo 'validation_message<<EOF'
+            echo "<!-- validation-result -->"
+            echo "### app.json Validation"
+            echo ""
+            echo '```'
+            cat validation-output.txt
+            echo '```'
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: ./.github/actions/pr-comment
+        with:
+          body-includes: '<!-- validation-result -->'
+          comment-body: {{ ghVar "steps.validate.outputs.validation_message" }}
+          issue-number: {{ ghVar "github.event.pull_request.number" }}
+          private-key: {{ ghSecret "ORG_GITHUB_APP_PRIVATE_KEY" }}
+
+      - name: Fail Workflow if Validation Failed
+        if: steps.validate.outputs.validation_failed == 'true'
+        run: |
+          echo "Validation failed. Please fix the errors in app.json"
+          exit 1
+{{ range $app := .Apps }}
   app-{{ .Name | lower }}:
     runs-on: ubuntu-latest
     needs: detect-changes

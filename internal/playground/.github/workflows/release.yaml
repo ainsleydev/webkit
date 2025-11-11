@@ -145,17 +145,10 @@ jobs:
       - name: Make WebKit executable
         run: chmod +x ./webkit
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Setup Infrastructure Dependencies
+        uses: ./.github/actions/setup-infra
         with:
           terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Install SOPS
-        run: |
-          curl -LO https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64
-          sudo mv sops-v3.11.0.linux.amd64 /usr/local/bin/sops
-          sudo chmod +x /usr/local/bin/sops
-          sops --version
 
       - name: Run Terraform Plan (Dry Run)
         id: plan
@@ -176,8 +169,8 @@ jobs:
           echo "⚠️  NOTE: Currently in dry-run mode (running plan, not apply)"
 
           # TODO: Change to 'apply' when ready for actual infrastructure provisioning.
-          # ./webkit infra apply
-          if ./webkit infra plan > plan-output.txt 2>&1; then
+          # ./webkit infra apply --silent
+          if ./webkit infra plan --silent > plan-output.txt 2>&1; then
             plan_exit_code=0
           else
             plan_exit_code=$?
@@ -245,6 +238,7 @@ jobs:
     needs: [build-and-push, setup-webkit, terraform-apply-production]
     environment:
       name: production-cms
+      url: https://cms.my-website.com
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -270,17 +264,10 @@ jobs:
       - name: Make WebKit executable
         run: chmod +x ./webkit
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Setup Infrastructure Dependencies
+        uses: ./.github/actions/setup-infra
         with:
           terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Install SOPS
-        run: |
-          curl -LO https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64
-          sudo mv sops-v3.11.0.linux.amd64 /usr/local/bin/sops
-          sudo chmod +x /usr/local/bin/sops
-          sops --version
 
       - name: Generate production env file for CMS
         env:
@@ -334,7 +321,7 @@ jobs:
             -e git_sha=${{ steps.determine_sha.outputs.sha }}
             -e github_user=${{ github.repository_owner }}
             -e github_token=${{ secrets.GITHUB_TOKEN }}
-            -e domain=
+            -e domain=cms.my-website.com
             -e docker_image=${{ github.event.repository.name }}-cms
             -e docker_image_tag=sha-${{ steps.determine_sha.outputs.sha }}
             -e docker_port=3000
