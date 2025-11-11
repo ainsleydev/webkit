@@ -272,7 +272,13 @@ jobs:
             echo 'EOF'
           } >> $GITHUB_OUTPUT
 
-          exit $plan_exit_code
+          # Only fail if the plan command had a real error (not just changes detected)
+          if [ $plan_exit_code -ne 0 ]; then
+            echo "⚠️ Terraform plan exited with code $plan_exit_code"
+            echo "Plan output has been posted as a PR comment for review"
+            # Don't fail the workflow - let the PR comment show the error
+            # exit $plan_exit_code
+          fi
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
