@@ -8,6 +8,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
@@ -38,6 +39,7 @@ func PR(_ context.Context, input cmdtools.CommandInput) error {
 		map[string]any{
 			"Apps":                appDef.Apps,
 			"PayloadPostgresApps": findPayloadAppsWithPostgres(appDef.Apps, appDef.Resources),
+			"TerraformVersion":    infra.TerraformVersion,
 		},
 		scaffold.WithTracking(manifest.SourceProject()),
 	)
