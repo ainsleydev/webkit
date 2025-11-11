@@ -120,5 +120,9 @@ func (c *CommandInput) SOPSClient() sops.EncrypterDecrypter {
 }
 
 func (c *CommandInput) Spinner() *spinner.Spinner {
-	return spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+	s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+	if c.Silent {
+		s.Writer = io.Discard
+	}
+	return s
 }
