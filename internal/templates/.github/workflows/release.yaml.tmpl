@@ -174,10 +174,26 @@ jobs:
           # Check if there are changes in the plan output.
           if grep -q "No changes" plan-output.txt || grep -q "0 to add, 0 to change, 0 to destroy" plan-output.txt; then
             echo "changes_detected=false" >> $GITHUB_OUTPUT
-            status="🟢 No infrastructure changes"
+            echo "sha_only=false" >> $GITHUB_OUTPUT
+            status_emoji="🟢"
+            status_text="No infrastructure changes"
           else
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-            status="⚠️ Infrastructure changes detected"
+            # Detect if changes are SHA-only (image tag updates).
+            sha_changes=$(grep -E '^\s*~\s+tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' plan-output.txt || true)
+            other_changes=$(grep -E '^\s*~\s+\w+\s+=.*' plan-output.txt | grep -v -E 'tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' || true)
+
+            # If we have SHA changes but no other changes, it's SHA-only.
+            if [ -n "$sha_changes" ] && [ -z "$other_changes" ]; then
+              echo "changes_detected=true" >> $GITHUB_OUTPUT
+              echo "sha_only=true" >> $GITHUB_OUTPUT
+              status_emoji="🟢"
+              status_text="SHA-only deployment update"
+            else
+              echo "changes_detected=true" >> $GITHUB_OUTPUT
+              echo "sha_only=false" >> $GITHUB_OUTPUT
+              status_emoji="🟡"
+              status_text="Infrastructure changes detected"
+            fi
           fi
 
           # Format Slack message.
@@ -185,8 +201,7 @@ jobs:
             echo 'slack_message<<EOF'
             echo "*Infra Plan*"
             echo ""
-            echo "$status"
-            echo ""
+            echo "$status_emoji **$status_text**"
             echo "\`\`\`"
             cat plan-output.txt | head -50
             echo "\`\`\`"
@@ -199,10 +214,10 @@ jobs:
           exit $plan_exit_code
 
       - name: Send Slack Notification
-        if: always()
+        if: steps.plan.outputs.changes_detected == 'true' && steps.plan.outputs.sha_only != 'true'
         uses: ./.github/actions/slack-notify
         with:
-          title: 'Terraform Plan - Production'
+          title: 'Infra Plan'
           message: {{ ghVar "steps.plan.outputs.slack_message" }}
           status: {{ ghVar "steps.plan.outcome" }}
           commit_sha: {{ ghVar "github.sha" }}
