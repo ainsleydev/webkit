@@ -15,6 +15,7 @@ type TFEnvironment struct {
 	BackBlazeBucket             string `env:"BACK_BLAZE_BUCKET,required"`
 	BackBlazeKeyID              string `env:"BACK_BLAZE_KEY_ID,required"`
 	BackBlazeApplicationKey     string `env:"BACK_BLAZE_APPLICATION_KEY,required"`
+	TursoAPIToken               string `env:"TURSO_API_TOKEN"`
 	GithubToken                 string `env:"GITHUB_TOKEN,required"`
 	GithubTokenClassic          string `env:"GITHUB_TOKEN_CLASSIC,required"`
 	SlackBotToken               string `env:"SLACK_BOT_TOKEN,required"`
@@ -40,6 +41,7 @@ func (t *TFEnvironment) varStrings() []string {
 		"do_spaces_secret_key=" + t.DigitalOceanSpacesSecretKey,
 		"b2_application_key=" + t.BackBlazeApplicationKey,
 		"b2_application_key_id=" + t.BackBlazeKeyID,
+		"turso_api_token=" + t.TursoAPIToken,
 		"github_token=" + t.GithubToken,
 		"github_token_classic=" + t.GithubTokenClassic,
 		"slack_bot_token=" + t.SlackBotToken,
