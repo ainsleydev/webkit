@@ -65,6 +65,13 @@ variable "b2_application_key_id" {
   sensitive = true
 }
 
+variable "turso_api_token" {
+  type        = string
+  description = "Turso token for authentication"
+  sensitive   = true
+  default     = ""
+}
+
 variable "github_token" {
   type      = string
   sensitive = true

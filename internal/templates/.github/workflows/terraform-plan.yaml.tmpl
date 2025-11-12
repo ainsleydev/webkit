@@ -52,6 +52,7 @@ jobs:
           DIGITALOCEAN_TOKEN: ${{ secret "DIGITALOCEAN_TOKEN" }}
           B2_APPLICATION_KEY_ID: ${{ secret "ORG_PROD_B2_APPLICATION_KEY_ID" }}
           B2_APPLICATION_KEY: ${{ secret "ORG_PROD_B2_APPLICATION_KEY" }}
+          TURSO_TOKEN: ${{ secret "ORG_TURSO_TOKEN" }}
         run: |
           terraform init \
             -backend-config="bucket=webkit-terraform-state" \
@@ -73,6 +74,7 @@ jobs:
           DIGITALOCEAN_TOKEN: ${{ secret "DIGITALOCEAN_TOKEN" }}
           B2_APPLICATION_KEY_ID: ${{ secret "B2_APPLICATION_KEY_ID" }}
           B2_APPLICATION_KEY: ${{ secret "B2_APPLICATION_KEY" }}
+          TURSO_TOKEN: ${{ secret "ORG_TURSO_TOKEN" }}
         run: |
           terraform plan \
             -out=tfplan \

@@ -9,22 +9,22 @@ variable "name" {
 }
 
 variable "platform_type" {
-  description = "Resource type (postgres, s3, etc.)"
+  description = "Resource type (postgres, s3, sqlite, etc.)"
   type        = string
 
   validation {
-    condition     = contains(["postgres", "s3"], var.platform_type)
-    error_message = "Type must be one of: postgres, s3"
+    condition     = contains(["postgres", "s3", "sqlite"], var.platform_type)
+    error_message = "Type must be one of: postgres, s3, sqlite"
   }
 }
 
 variable "platform_provider" {
-  description = "Platform provider (digitalocean, aws, b2, etc.)"
+  description = "Platform provider (digitalocean, aws, b2, turso, etc.)"
   type        = string
 
   validation {
-    condition     = contains(["digitalocean", "b2"], var.platform_provider)
-    error_message = "Provider must be one of: digitalocean, b2"
+    condition     = contains(["digitalocean", "b2", "turso"], var.platform_provider)
+    error_message = "Provider must be one of: digitalocean, b2, turso"
   }
 }
 
