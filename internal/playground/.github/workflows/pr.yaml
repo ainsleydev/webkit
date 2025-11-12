@@ -67,6 +67,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.ORG_GITLEAKS_LICENSE }}
+
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
@@ -137,7 +138,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/pr-comment
         with:
-          body-includes: 'WebKit Drift'
+          body-includes: 'Drift Detection'
           comment-body: ${{ steps.drift.outputs.drift_message }}
           issue-number: ${{ github.event.pull_request.number }}
           private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
@@ -145,7 +146,7 @@ jobs:
       - name: Fail Workflow if Drift Detected
         if: steps.drift.outputs.drift_detected == 'true'
         run: |
-          echo "❌ Drift detected in WebKit-generated files"
+          echo "🔴 Drift detected in generated files"
           echo "Run 'webkit update' to sync your project with the latest templates"
           exit 1
   app-json-diff:
@@ -202,6 +203,7 @@ jobs:
           comment-body: ${{ steps.diff.outputs.diff_message }}
           issue-number: ${{ github.event.pull_request.number }}
           private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
+
   terraform-plan-production:
     runs-on: ubuntu-latest
     needs: [setup-webkit, detect-changes]
@@ -263,7 +265,7 @@ jobs:
             # If we have SHA changes but no other changes, it's SHA-only.
             if [ -n "$sha_changes" ] && [ -z "$other_changes" ]; then
               echo "changes_detected=true" >> $GITHUB_OUTPUT
-              status_emoji="🔵"
+              status_emoji="🟢"
               status_text="SHA-only deployment update"
             else
               echo "changes_detected=true" >> $GITHUB_OUTPUT
@@ -276,7 +278,7 @@ jobs:
           {
             echo 'plan_message<<EOF'
             echo "<!-- terraform-plan -->"
-            echo "### Terraform Plan - Production"
+            echo "### Infra Plan"
             echo ""
             echo "$status_emoji **$status_text**"
             echo ""
@@ -307,57 +309,6 @@ jobs:
           comment-body: ${{ steps.plan.outputs.plan_message }}
           issue-number: ${{ github.event.pull_request.number }}
           private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
-  validate-app-json:
-    runs-on: ubuntu-latest
-    needs: setup-webkit
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v5
-
-      - name: Download WebKit CLI Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: webkit
-          path: ./
-
-      - name: Make WebKit executable
-        run: chmod +x ./webkit
-
-      - name: Run Validation
-        id: validate
-        run: |
-          if ./webkit validate > validation-output.txt 2>&1; then
-            echo "validation_failed=false" >> $GITHUB_OUTPUT
-          else
-            echo "validation_failed=true" >> $GITHUB_OUTPUT
-          fi
-
-          {
-            echo 'validation_message<<EOF'
-            echo "<!-- validation-result -->"
-            echo "### app.json Validation"
-            echo ""
-            echo '```'
-            cat validation-output.txt
-            echo '```'
-            echo 'EOF'
-          } >> $GITHUB_OUTPUT
-
-      - name: Comment on PR
-        if: github.event_name == 'pull_request'
-        uses: ./.github/actions/pr-comment
-        with:
-          body-includes: '<!-- validation-result -->'
-          comment-body: ${{ steps.validate.outputs.validation_message }}
-          issue-number: ${{ github.event.pull_request.number }}
-          private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
-
-      - name: Fail Workflow if Validation Failed
-        if: steps.validate.outputs.validation_failed == 'true'
-        run: |
-          echo "Validation failed. Please fix the errors in app.json"
-          exit 1
-
   app-cms:
     runs-on: ubuntu-latest
     needs: detect-changes
@@ -505,10 +456,10 @@ jobs:
           echo "$output"
 
           if echo "$output" | grep -q "No schema changes detected"; then
-            echo "✅ No pending migrations detected"
+            echo "🟢 No pending migrations detected"
             echo "result=pass" >> $GITHUB_OUTPUT
           else
-            echo "❌ Schema changes detected! Please run migrations locally."
+            echo "🔴 Schema changes detected! Please run migrations locally."
             echo "result=fail" >> $GITHUB_OUTPUT
 
             echo "---- Generated Migration Files ----"
@@ -527,9 +478,9 @@ jobs:
         run: |
           result="${{ steps.migration.outputs.result }}"
           if [[ "$result" == "fail" ]]; then
-            message="❌ **Schema changes detected!** Please run \`pnpm migrate:create\`, commit the migration, and push."
+            message="🔴 **Schema changes detected!** Please run \`pnpm migrate:create\`, commit the migration, and push."
           elif [[ "$result" == "pass" ]]; then
-            message="✅ **No pending migrations detected.** All clear to merge!"
+            message="🟢 **No pending migrations detected.** All clear to merge!"
           else
             message="⚠️ Migration check did not run correctly."
           fi

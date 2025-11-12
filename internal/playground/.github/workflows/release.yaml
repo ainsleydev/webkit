@@ -169,8 +169,8 @@ jobs:
           echo "⚠️  NOTE: Currently in dry-run mode (running plan, not apply)"
 
           # TODO: Change to 'apply' when ready for actual infrastructure provisioning.
-          # ./webkit infra apply --silent
-          if ./webkit infra plan --silent > plan-output.txt 2>&1; then
+          # ./webkit infra apply
+          if ./webkit infra plan > plan-output.txt 2>&1; then
             plan_exit_code=0
           else
             plan_exit_code=$?
@@ -179,7 +179,7 @@ jobs:
           # Check if there are changes in the plan output.
           if grep -q "No changes" plan-output.txt || grep -q "0 to add, 0 to change, 0 to destroy" plan-output.txt; then
             echo "changes_detected=false" >> $GITHUB_OUTPUT
-            status="✅ No infrastructure changes"
+            status="🟢 No infrastructure changes"
           else
             echo "changes_detected=true" >> $GITHUB_OUTPUT
             status="⚠️ Infrastructure changes detected"
@@ -188,7 +188,7 @@ jobs:
           # Format Slack message.
           {
             echo 'slack_message<<EOF'
-            echo "*Terraform Plan - Production*"
+            echo "*Infra Plan*"
             echo ""
             echo "$status"
             echo ""

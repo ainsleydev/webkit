@@ -174,7 +174,7 @@ jobs:
           # Check if there are changes in the plan output.
           if grep -q "No changes" plan-output.txt || grep -q "0 to add, 0 to change, 0 to destroy" plan-output.txt; then
             echo "changes_detected=false" >> $GITHUB_OUTPUT
-            status="✅ No infrastructure changes"
+            status="🟢 No infrastructure changes"
           else
             echo "changes_detected=true" >> $GITHUB_OUTPUT
             status="⚠️ Infrastructure changes detected"
@@ -183,7 +183,7 @@ jobs:
           # Format Slack message.
           {
             echo 'slack_message<<EOF'
-            echo "*Terraform Plan - Production*"
+            echo "*Infra Plan*"
             echo ""
             echo "$status"
             echo ""

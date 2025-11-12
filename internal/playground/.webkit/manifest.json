@@ -1,6 +1,6 @@
 {
-	"version": "v0.1.9",
-	"generated_at": "2025-11-11T19:46:03.406253Z",
+	"version": "v0.1.8",
+	"generated_at": "2025-11-12T09:39:12.704319Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -8,7 +8,7 @@
 			"source": "project",
 			"hash": "ab566c1c6cb968859aa8df09d347a87bedd703b47881e28aaa74bc35e3e23069",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.750678+01:00"
+			"generated_at": "2025-11-12T09:39:12.700409Z"
 		},
 		".editorconfig": {
 			"path": ".editorconfig",
@@ -16,7 +16,7 @@
 			"source": "project",
 			"hash": "3ef257d024d2cb37d22672dea599b129d79ef2e25158189db3ed6f25deb4939e",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.749264+01:00"
+			"generated_at": "2025-11-12T09:39:12.696977Z"
 		},
 		".github/actions/db-add-ip/action.yaml": {
 			"path": ".github/actions/db-add-ip/action.yaml",
@@ -24,7 +24,7 @@
 			"source": "project",
 			"hash": "fdef71c1a52ca42cb26fd13aecf1ee5861b9fd9c08df6a0c406c5ee019c3f97f",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.751821+01:00"
+			"generated_at": "2025-11-12T09:39:12.702823Z"
 		},
 		".github/actions/db-remove-ip/action.yaml": {
 			"path": ".github/actions/db-remove-ip/action.yaml",
@@ -32,7 +32,7 @@
 			"source": "project",
 			"hash": "a8fe69d1307bb151b5ac9088d4f157dfddea20b5c66a91daf497cc374c75e327",
 			"scaffolded": false,
-			"generated_at": "2025-11-06T14:48:29.593662Z"
+			"generated_at": "2025-11-12T09:39:12.702907Z"
 		},
 		".github/actions/pr-comment/action.yaml": {
 			"path": ".github/actions/pr-comment/action.yaml",
@@ -40,7 +40,7 @@
 			"source": "project",
 			"hash": "120a18e52f09ded56cdb0e6e48963b5daf67cba2bdda9dcea61d0cf399e75860",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.752022+01:00"
+			"generated_at": "2025-11-12T09:39:12.702516Z"
 		},
 		".github/actions/setup-infra/action.yaml": {
 			"path": ".github/actions/setup-infra/action.yaml",
@@ -48,7 +48,7 @@
 			"source": "project",
 			"hash": "1434241bea200719a11afa86621dbe7afa1f9a783482c855aa76b6d82eb919e4",
 			"scaffolded": false,
-			"generated_at": "2025-11-11T19:33:33.273527Z"
+			"generated_at": "2025-11-12T09:39:12.702607Z"
 		},
 		".github/actions/slack-notify/action.yaml": {
 			"path": ".github/actions/slack-notify/action.yaml",
@@ -56,7 +56,7 @@
 			"source": "project",
 			"hash": "8f56601e603907c1cf363570af537106e1cb9cdbbdb0980ef4bfc06ee7c19571",
 			"scaffolded": false,
-			"generated_at": "2025-11-11T19:33:33.27368Z"
+			"generated_at": "2025-11-12T09:39:12.702694Z"
 		},
 		".github/dependabot.yaml": {
 			"path": ".github/dependabot.yaml",
@@ -64,7 +64,7 @@
 			"source": "project",
 			"hash": "59d62cf8d9972220acc74610d85bd29193abd825dc4cc7468590ed35929434bd",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.750083+01:00"
+			"generated_at": "2025-11-12T09:39:12.697912Z"
 		},
 		".github/settings.yml": {
 			"path": ".github/settings.yml",
@@ -72,7 +72,7 @@
 			"source": "project",
 			"hash": "cf0313986c9f8a8464d2cb29ef222c27d537d879c791960a47679b7e86c65c2e",
 			"scaffolded": false,
-			"generated_at": "2025-11-01T09:15:31.197651Z"
+			"generated_at": "2025-11-12T09:39:12.698049Z"
 		},
 		".github/workflows/backup.yaml": {
 			"path": ".github/workflows/backup.yaml",
@@ -80,23 +80,23 @@
 			"source": "resource:store",
 			"hash": "54e3d6fb8630e0a349c6dcb41248734744aae2522399f47e17716859d9fb6248",
 			"scaffolded": false,
-			"generated_at": "2025-11-10T19:46:30.314848Z"
+			"generated_at": "2025-11-12T09:39:12.701903Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "9e411b4e0d7ee482232c955bce5e336e8dab8259a03101fb113a30a3ada78bac",
+			"hash": "e698c0ce51c35ede841da63a55ece9340ce489f7d0410d87b7c84a85894ab72f",
 			"scaffolded": false,
-			"generated_at": "2025-11-11T19:46:03.403837Z"
+			"generated_at": "2025-11-12T09:39:12.700903Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "4245208062dbecfe6aa7a76b7e2c5ae22db6ae37d783b489f9e3018a7af3dd43",
+			"hash": "ebd2805155dd61b698606875eff9e755106b07f866e8ed37054908ad1aa1eb0e",
 			"scaffolded": false,
-			"generated_at": "2025-11-11T19:33:33.272616Z"
+			"generated_at": "2025-11-12T09:39:12.70153Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",
@@ -104,7 +104,7 @@
 			"source": "app:cms",
 			"hash": "9ba1b62c374d1775a4de43ef182e9b18e7132b7387e53c33f967765ca2707ebe",
 			"scaffolded": false,
-			"generated_at": "2025-11-11T19:33:33.273215Z"
+			"generated_at": "2025-11-12T09:39:12.702383Z"
 		},
 		".gitignore": {
 			"path": ".gitignore",
@@ -112,7 +112,7 @@
 			"source": "project",
 			"hash": "933bae0470e0614ed3aa5f4f8d20e00bb87098f061c06b45348aa4f560cc6d08",
 			"scaffolded": false,
-			"generated_at": "2025-11-01T09:15:31.197223Z"
+			"generated_at": "2025-11-12T09:39:12.697667Z"
 		},
 		".prettierignore": {
 			"path": ".prettierignore",
@@ -120,7 +120,7 @@
 			"source": "project",
 			"hash": "be358b5050cc5cb844b5c8c8de8ef8fd524e1ae32844c352d80c3a3b5851b136",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.748797+01:00"
+			"generated_at": "2025-11-12T09:39:12.696655Z"
 		},
 		".prettierrc": {
 			"path": ".prettierrc",
@@ -128,7 +128,7 @@
 			"source": "project",
 			"hash": "f5442b14b45eda3a7066fa9dd386fcaf7df32903014ae746047a4264805aaa2b",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.749441+01:00"
+			"generated_at": "2025-11-12T09:39:12.696491Z"
 		},
 		"AGENTS.md": {
 			"path": "AGENTS.md",
@@ -136,7 +136,7 @@
 			"source": "project",
 			"hash": "6411c7c0d3b83e06a09d2bc67410b517370fdb88aec63cdc9ef3b453b90d70d8",
 			"scaffolded": false,
-			"generated_at": "2025-11-01T09:15:31.200048Z"
+			"generated_at": "2025-11-12T09:39:12.7031Z"
 		},
 		"api/.env": {
 			"path": "api/.env",
@@ -144,7 +144,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-23T14:29:04.752848+01:00"
+			"generated_at": "2025-11-12T09:39:12.70374Z"
 		},
 		"api/.env.production": {
 			"path": "api/.env.production",
@@ -152,7 +152,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-23T14:29:04.752908+01:00"
+			"generated_at": "2025-11-12T09:39:12.703798Z"
 		},
 		"cms/.env": {
 			"path": "cms/.env",
@@ -160,7 +160,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-23T14:29:04.752804+01:00"
+			"generated_at": "2025-11-12T09:39:12.703706Z"
 		},
 		"cms/.env.production": {
 			"path": "cms/.env.production",
@@ -168,7 +168,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-23T14:29:04.752873+01:00"
+			"generated_at": "2025-11-12T09:39:12.703762Z"
 		},
 		"cms/AGENTS.md": {
 			"path": "cms/AGENTS.md",
@@ -176,7 +176,7 @@
 			"source": "project",
 			"hash": "0411575a13dbe2a9f197e7ab29c039d6cc2015623ca68f1d9fc3b6342251c53c",
 			"scaffolded": false,
-			"generated_at": "2025-11-01T09:15:31.200363Z"
+			"generated_at": "2025-11-12T09:39:12.703306Z"
 		},
 		"eslint.config.js": {
 			"path": "eslint.config.js",
@@ -184,7 +184,7 @@
 			"source": "project",
 			"hash": "95ca512c342a7a92d220f6172c666320c193e0fd7d710521d49bf98cd5a9240e",
 			"scaffolded": false,
-			"generated_at": "2025-10-23T14:29:04.749051+01:00"
+			"generated_at": "2025-11-12T09:39:12.696807Z"
 		},
 		"lefthook.yaml": {
 			"path": "lefthook.yaml",
@@ -192,7 +192,7 @@
 			"source": "project",
 			"hash": "a6e4add98e191fc14612b44edb42ef6a09518199042681a8d7379f5d3bacd8e1",
 			"scaffolded": false,
-			"generated_at": "2025-11-10T19:46:30.312278Z"
+			"generated_at": "2025-11-12T09:39:12.698203Z"
 		},
 		"package.json": {
 			"path": "package.json",
@@ -200,7 +200,7 @@
 			"source": "project",
 			"hash": "f51b6c1c4a239be123bbbf3f89ad1d4cb93651ad6c05954b19030c4e50abc7b9",
 			"scaffolded": true,
-			"generated_at": "2025-11-01T12:38:46.341785Z"
+			"generated_at": "2025-11-12T09:39:12.698377Z"
 		},
 		"pnpm-workspace.yaml": {
 			"path": "pnpm-workspace.yaml",
@@ -208,7 +208,7 @@
 			"source": "project",
 			"hash": "afb7a993279e0f7d56df3e78cbc2bdcccddf5bda0bdc44d9b6cd9e12a5ace00c",
 			"scaffolded": false,
-			"generated_at": "2025-11-10T19:46:30.312879Z"
+			"generated_at": "2025-11-12T09:39:12.699728Z"
 		},
 		"web/.env": {
 			"path": "web/.env",
@@ -216,7 +216,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-23T14:29:04.752829+01:00"
+			"generated_at": "2025-11-12T09:39:12.703724Z"
 		},
 		"web/.env.production": {
 			"path": "web/.env.production",
@@ -224,7 +224,7 @@
 			"source": "project",
 			"hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			"scaffolded": true,
-			"generated_at": "2025-10-23T14:29:04.752891+01:00"
+			"generated_at": "2025-11-12T09:39:12.70378Z"
 		},
 		"web/AGENTS.md": {
 			"path": "web/AGENTS.md",
@@ -232,7 +232,7 @@
 			"source": "project",
 			"hash": "30663fc31dc7ea8320822b056f0657ed6cd518c869908c3f350d9ecbd97e36b6",
 			"scaffolded": false,
-			"generated_at": "2025-11-01T09:15:31.200597Z"
+			"generated_at": "2025-11-12T09:39:12.703485Z"
 		}
 	}
 }

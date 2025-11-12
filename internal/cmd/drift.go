@@ -122,7 +122,7 @@ func formatDriftOutput(drifted []manifest.DriftEntry, format string) (string, er
 
 func formatDriftAsText(drifted []manifest.DriftEntry) string {
 	if len(drifted) == 0 {
-		return "✓ No drift detected - all files are up to date"
+		return "🟢 No drift detected - all files are up to date"
 	}
 
 	var output strings.Builder
@@ -177,11 +177,11 @@ func formatDriftAsText(drifted []manifest.DriftEntry) string {
 
 func formatDriftAsMarkdown(drifted []manifest.DriftEntry) string {
 	if len(drifted) == 0 {
-		return "### WebKit Drift Detection\n\n✅ **No drift detected** - all files are up to date"
+		return "### Drift Detection\n\n🟢 **No drift detected** - all files are up to date"
 	}
 
 	var output strings.Builder
-	output.WriteString("### WebKit Drift Detection\n\n")
+	output.WriteString("### Drift Detection\n\n")
 
 	modifiedFiles := manifest.DriftReasonModified.FilterEntries(drifted)
 	outdatedFiles := manifest.DriftReasonOutdated.FilterEntries(drifted)

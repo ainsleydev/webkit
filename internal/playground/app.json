@@ -1,6 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/ainsleydev/webkit/main/schema.json",
-	"webkit_version": "v0.1.9",
+	"webkit_version": "v0.1.8",
 	"project": {
 		"name": "my-website",
 		"title": "My Website",

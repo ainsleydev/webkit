@@ -383,7 +383,7 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 		t.Parallel()
 
 		output := formatDriftAsMarkdown([]manifest.DriftEntry{})
-		assert.Contains(t, output, "WebKit Drift Detection")
+		assert.Contains(t, output, "Drift Detection")
 		assert.Contains(t, output, "No drift detected")
 		assert.Contains(t, output, "all files are up to date")
 	})
@@ -396,7 +396,7 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 		}
 
 		output := formatDriftAsMarkdown(drifted)
-		assert.Contains(t, output, "WebKit Drift Detection")
+		assert.Contains(t, output, "Drift Detection")
 		assert.Contains(t, output, "Manual modifications detected (1 file)")
 		assert.Contains(t, output, "`file1.txt`")
 		assert.Contains(t, output, "**Action Required:**")
