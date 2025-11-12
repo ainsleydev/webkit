@@ -26,10 +26,10 @@ updates:
     dependencies:
       patterns:
         - "*"
+      {{- if eq .Type "payload" }}
       exclude-patterns:
-        {{- if eq .Type "payload" }}
         - "@payloadcms/*"
         - "payload"
         - "@ainsleydev/payload-helper"
-        {{- end }}
+      {{- end }}
   {{- end }}
