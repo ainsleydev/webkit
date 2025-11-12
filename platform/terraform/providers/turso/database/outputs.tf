@@ -15,7 +15,7 @@ output "database" {
 
 output "auth_token" {
   description = "The authentication token for the database"
-  value       = turso_database_token.this.token
+  value       = turso_database_token.this.jwt
   sensitive   = true
 }
 
@@ -27,6 +27,6 @@ output "connection_url" {
 
 output "connection_url_with_token" {
   description = "The complete libsql connection URL with authentication token"
-  value       = "libsql://${turso_database.this.hostname}?authToken=${turso_database_token.this.token}"
+  value       = "libsql://${turso_database.this.hostname}?authToken=${turso_database_token.this.jwt}"
   sensitive   = true
 }
