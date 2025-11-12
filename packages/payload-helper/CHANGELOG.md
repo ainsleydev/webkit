@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.0.39
+
+### Patch Changes
+
+- 7b5f55c: Admin Logo
+
 ## 0.0.38
 
 ### Patch Changes
