@@ -8,6 +8,16 @@ Create and update the `docs` folder with coherent documentation for WebKit.
 
 Create beautiful looking README's from the `app.json` data.
 
+## Misc
+
+- BetterStack/OneUptime Providers for Infra.
+- Improve Coverage.
+- Create an infra plan —destroy command. So we can see whats destroyed?
+- Seed utilities for Payload, it's a pain having to do it all the time.
+- Add Playgrounds for Payload & SvelteKit with the payload-helper imported for testing.
+
+---
+
 ## Testing
 
 ### Standardised test setup utilities
@@ -52,11 +62,5 @@ Consider adding a linter rule to enforce consistent error wrapping patterns acro
 - Add custom `forbidigo` pattern to warn about `fmt.Errorf.*%w` when it could be `errors.Wrap`.
 - Create a custom linter using `go-ruleguard`.
 
-## Misc
-
-- BetterStack/OneUptime Providers for Infra.
-- Improve Coverage.
-- Create an infra plan —destroy command. So we can see whats destroyed?
-- Seed utilities for Payload, it's a pain having to do it all the time.
 
 
