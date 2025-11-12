@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
@@ -14,5 +15,6 @@ func Schema(_ context.Context, input cmdtools.CommandInput) error {
 		templates.Embed,
 		"schema.json",
 		filepath.Join(".webkit", "schema.json"),
+		scaffold.WithoutNotice(),
 	)
 }

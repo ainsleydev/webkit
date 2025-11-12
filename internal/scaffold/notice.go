@@ -19,7 +19,7 @@ var commentMap = map[string]string{
 	".js":           "//",
 	".html":         "<!-- %s -->",
 	".md":           "<!-- %s -->",
-	".json":         "", // JSON doesn't support comments
+	".json":         "",
 }
 
 // noticeForFile prepends a file-type-appropriate "do not edit"
