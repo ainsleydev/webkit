@@ -34,18 +34,18 @@ This module uses the [jpedroh/turso](https://registry.terraform.io/providers/jpe
 
 ## Authentication
 
-The Turso provider requires a `TURSO_API_TOKEN` environment variable:
+The Turso provider requires a `TURSO_TOKEN` environment variable:
 
 ### Local Development
 Add to your `tf_env` file:
 ```bash
-export TURSO_API_TOKEN="your-turso-api-token"
+export TURSO_TOKEN="your-turso-token"
 ```
 
 ### GitHub Actions
-Add `TURSO_API_TOKEN` as an organization or repository secret in GitHub.
+Add `TURSO_TOKEN` as `ORG_TURSO_TOKEN` organisation secret in GitHub.
 
-To get your API token:
+To get your token:
 ```bash
 turso auth token
 ```
