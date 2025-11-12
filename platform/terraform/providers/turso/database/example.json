@@ -5,7 +5,7 @@
       "type": "sqlite",
       "provider": "turso",
       "config": {
-        "organization": "my-org",
+        "organisation": "my-org",
         "group": "default"
       }
     }

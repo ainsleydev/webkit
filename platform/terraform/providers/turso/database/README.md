@@ -16,7 +16,7 @@ This module uses the [jpedroh/turso](https://registry.terraform.io/providers/jpe
       "type": "sqlite",
       "provider": "turso",
       "config": {
-        "organization": "my-org",
+        "organisation": "my-org",
         "group": "default"
       }
     }
@@ -28,7 +28,7 @@ This module uses the [jpedroh/turso](https://registry.terraform.io/providers/jpe
 
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `organization` | string | Yes | - | Your Turso organization name |
+| `organisation` | string | Yes | - | Your Turso organisation name |
 | `group` | string | No | `"default"` | The Turso group to create the database in |
 | `size_limit` | string | No | `null` | Optional size limit for the database |
 
@@ -74,7 +74,7 @@ Example: For a resource named `db` in production, the connection URL will be ava
       "type": "sqlite",
       "provider": "turso",
       "config": {
-        "organization": "my-org",
+        "organisation": "my-org",
         "group": "default"
       }
     }

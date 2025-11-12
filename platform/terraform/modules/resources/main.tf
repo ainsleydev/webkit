@@ -53,7 +53,7 @@ module "turso_database" {
   source = "../../providers/turso/database"
 
   name         = var.name
-  organization = var.platform_config.organization
+  organisation = var.platform_config.organisation
   group        = try(var.platform_config.group, "default")
   size_limit   = try(var.platform_config.size_limit, null)
   tags         = try(var.tags, [])
