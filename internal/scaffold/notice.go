@@ -19,15 +19,23 @@ var commentMap = map[string]string{
 	".js":           "//",
 	".html":         "<!-- %s -->",
 	".md":           "<!-- %s -->",
+	".json":         "",
 }
 
 // noticeForFile prepends a file-type-appropriate "do not edit"
 // header to generated files dependent on the file type.
 func noticeForFile(path string) string {
 	ext := filepath.Ext(path)
-	comment := commentMap[ext]
+	comment, exists := commentMap[ext]
+
+	// If no mapping exists, use # as fallback
+	if !exists {
+		comment = "#"
+	}
+
+	// If comment is empty string (e.g., JSON), return empty notice
 	if comment == "" {
-		comment = "#" // fallback
+		return ""
 	}
 
 	noticeText := WebKitNotice

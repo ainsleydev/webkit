@@ -4,7 +4,6 @@
 	"required": ["webkit_version", "project", "apps"],
 	"definitions": {
 		"AppdefApp": {
-			"required": ["name", "title", "type", "path", "infra"],
 			"properties": {
 				"build": {
 					"$ref": "#/definitions/AppdefBuild",
@@ -19,7 +18,6 @@
 				},
 				"description": {
 					"description": "Brief description of the app's purpose and functionality",
-					"maxLength": 200,
 					"type": "string"
 				},
 				"domains": {
@@ -39,7 +37,6 @@
 				},
 				"name": {
 					"description": "Unique identifier for the app (lowercase, hyphenated)",
-					"pattern": "^[a-z][a-z0-9-]*$",
 					"type": "string"
 				},
 				"path": {
@@ -56,7 +53,6 @@
 				},
 				"type": {
 					"description": "Application type (payload, svelte-kit, golang)",
-					"enum": ["svelte-kit", "golang", "payload"],
 					"type": "string"
 				},
 				"usesNPM": {
@@ -74,8 +70,6 @@
 				},
 				"port": {
 					"description": "Port number the app listens on inside the container",
-					"maximum": 65535,
-					"minimum": 1,
 					"type": "integer"
 				},
 				"release": {
@@ -114,7 +108,6 @@
 			]
 		},
 		"AppdefDomain": {
-			"required": ["name"],
 			"properties": {
 				"name": {
 					"description": "Domain name without protocol (e.g., 'example.com' or 'api.example.com')",
@@ -122,7 +115,6 @@
 				},
 				"type": {
 					"description": "Domain type (primary, alias, unmanaged)",
-					"enum": ["primary", "alias", "unmanaged"],
 					"type": "string"
 				},
 				"wildcard": {
@@ -141,7 +133,6 @@
 			"properties": {
 				"source": {
 					"description": "Source type for the variable value (value, resource, sops)",
-					"enum": ["value", "resource", "sops"],
 					"type": "string"
 				},
 				"value": {
@@ -178,7 +169,6 @@
 			"type": "object"
 		},
 		"AppdefGitHubRepo": {
-			"required": ["owner", "name"],
 			"properties": {
 				"name": {
 					"description": "Repository name on GitHub",
@@ -192,7 +182,6 @@
 			"type": "object"
 		},
 		"AppdefInfra": {
-			"required": ["provider", "type"],
 			"properties": {
 				"config": {
 					"description": "Provider-specific infrastructure configuration options",
@@ -214,23 +203,19 @@
 			"properties": {
 				"webhook_url": {
 					"description": "Webhook URL for sending notifications (e.g., Slack webhook)",
-					"type": "string",
-					"format": "uri"
+					"type": "string"
 				}
 			},
 			"type": "object"
 		},
 		"AppdefProject": {
-			"required": ["name", "title", "description", "repo"],
 			"properties": {
 				"description": {
 					"description": "Brief description of the project's purpose and functionality",
-					"maxLength": 200,
 					"type": "string"
 				},
 				"name": {
 					"description": "Unique identifier for the project (lowercase, hyphenated)",
-					"pattern": "^[a-z][a-z0-9-]*$",
 					"type": "string"
 				},
 				"repo": {
@@ -258,12 +243,10 @@
 				},
 				"name": {
 					"description": "Unique identifier for the resource (used in environment variable references)",
-					"pattern": "^[a-z][a-z0-9-]*$",
 					"type": "string"
 				},
 				"provider": {
 					"description": "Cloud provider hosting this resource (digitalocean, backblaze)",
-					"enum": ["digitalocean", "backblaze"],
 					"type": "string"
 				},
 				"terraformManaged": {
@@ -272,7 +255,6 @@
 				},
 				"type": {
 					"description": "Type of resource to provision (postgres, s3)",
-					"enum": ["postgres", "s3"],
 					"type": "string"
 				}
 			},

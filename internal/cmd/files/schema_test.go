@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/scaffold"
 )
 
 func TestSchema(t *testing.T) {
@@ -21,11 +22,9 @@ func TestSchema(t *testing.T) {
 		err := Schema(t.Context(), input)
 		require.NoError(t, err)
 
-		t.Log("File Exists")
-		{
-			exists, err := afero.Exists(input.FS, ".webkit/schema.json")
-			require.NoError(t, err)
-			assert.True(t, exists, "schema file should be created")
-		}
+		file, err := afero.ReadFile(input.FS, ".webkit/schema.json")
+		assert.NoError(t, err)
+		assert.NotEmpty(t, file)
+		assert.NotContains(t, string(file), scaffold.WebKitNotice)
 	})
 }
