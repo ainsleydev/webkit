@@ -15,7 +15,7 @@ type TFEnvironment struct {
 	BackBlazeBucket             string `env:"BACK_BLAZE_BUCKET,required"`
 	BackBlazeKeyID              string `env:"BACK_BLAZE_KEY_ID,required"`
 	BackBlazeApplicationKey     string `env:"BACK_BLAZE_APPLICATION_KEY,required"`
-	TursoToken                  string `env:"TURSO_TOKEN"`
+	TursoToken                  string `env:"TURSO_TOKEN,required"`
 	GithubToken                 string `env:"GITHUB_TOKEN,required"`
 	GithubTokenClassic          string `env:"GITHUB_TOKEN_CLASSIC,required"`
 	SlackBotToken               string `env:"SLACK_BOT_TOKEN,required"`
