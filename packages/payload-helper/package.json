@@ -16,7 +16,7 @@
 		"url": "https://ainsley.dev"
 	},
 	"main": "./dist/index.js",
-	"types": "./dist/types.d.ts",
+	"types": "./dist/index.d.ts",
 	"scripts": {
 		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
 		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
@@ -37,10 +37,10 @@
 		"@lexical/headless": "0.38.2",
 		"@lexical/html": "0.38.2",
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
-		"@payloadcms/db-sqlite": "3.56.0",
-		"@payloadcms/plugin-form-builder": "3.56.0",
-		"@payloadcms/plugin-seo": "3.56.0",
-		"@payloadcms/richtext-lexical": "3.56.0",
+		"@payloadcms/db-sqlite": "3.63.0",
+		"@payloadcms/plugin-form-builder": "3.63.0",
+		"@payloadcms/plugin-seo": "3.63.0",
+		"@payloadcms/richtext-lexical": "3.63.0",
 		"@types/json-schema": "^7.0.15",
 		"chalk": "^5.3.0",
 		"commander": "^12.1.0",
@@ -48,7 +48,7 @@
 		"jsdom": "^24.1.1",
 		"lexical": "0.28.0",
 		"mime-types": "^2.1.35",
-		"payload": "3.56.0"
+		"payload": "3.63.0"
 	},
 	"peerDependencies": {
 		"@payloadcms/ui": "3.x",
@@ -58,7 +58,7 @@
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
 		"@jest/globals": "^29.7.0",
-		"@payloadcms/ui": "^3.63.0",
+		"@payloadcms/ui": "3.63.0",
 		"@swc/cli": "^0.7.8",
 		"@swc/core": "^1.7.2",
 		"@types/jest": "^29.5.12",
