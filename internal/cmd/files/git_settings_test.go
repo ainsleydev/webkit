@@ -22,6 +22,11 @@ func TestGitSettings(t *testing.T) {
 				Type: appdef.AppTypePayload,
 				Path: "cms",
 			},
+			{
+				Name: "web",
+				Type: appdef.AppTypeGoLang,
+				Path: "web",
+			},
 		},
 	}
 
