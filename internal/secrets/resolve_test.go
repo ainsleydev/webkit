@@ -175,6 +175,76 @@ DB_PASS: dbpass123
 		assert.Equal(t, def.Shared.Env.Dev["API_KEY"].Value, "supersecret")
 		assert.Equal(t, def.Apps[0].Env.Dev["DB_PASS"].Value, "dbpass123")
 	})
+
+	t.Run("Default SOPS Does Not Mutate Across Environments", func(t *testing.T) {
+		// This test ensures that SOPS secrets defined in the Default section
+		// are resolved independently for each environment using their respective
+		// SOPS files, without mutation causing later environments to overwrite earlier ones.
+		tmpDir := t.TempDir()
+
+		// Create development secrets file
+		devSecretPath := filepath.Join(tmpDir, FilePathFromEnv(env.Development))
+		require.NoError(t, os.MkdirAll(filepath.Dir(devSecretPath), 0o700))
+		require.NoError(t, os.WriteFile(devSecretPath, []byte("USER_PASSWORD: dev_password_123\n"), 0o600))
+
+		// Create production secrets file
+		prodSecretPath := filepath.Join(tmpDir, FilePathFromEnv(env.Production))
+		require.NoError(t, os.MkdirAll(filepath.Dir(prodSecretPath), 0o700))
+		require.NoError(t, os.WriteFile(prodSecretPath, []byte("USER_PASSWORD: prod_password_456\n"), 0o600))
+
+		// Create staging secrets file
+		stagingSecretPath := filepath.Join(tmpDir, FilePathFromEnv(env.Staging))
+		require.NoError(t, os.MkdirAll(filepath.Dir(stagingSecretPath), 0o700))
+		require.NoError(t, os.WriteFile(stagingSecretPath, []byte("USER_PASSWORD: staging_password_789\n"), 0o600))
+
+		def := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Env: appdef.Environment{
+						// USER_PASSWORD is defined in Default with SOPS source
+						// This means it should use SOPS for all environments,
+						// but read environment-specific secret files
+						Default: map[string]appdef.EnvValue{
+							"USER_PASSWORD": {Source: appdef.EnvSourceSOPS},
+						},
+					},
+				},
+			},
+		}
+
+		ctrl := gomock.NewController(t)
+		mockClient := mocks.NewMockEncrypterDecrypter(ctrl)
+
+		// Expect decrypt/encrypt calls for all three environments
+		mockClient.EXPECT().Decrypt(devSecretPath).Return(nil)
+		mockClient.EXPECT().Encrypt(devSecretPath).Return(nil)
+		mockClient.EXPECT().Decrypt(stagingSecretPath).Return(nil)
+		mockClient.EXPECT().Encrypt(stagingSecretPath).Return(nil)
+		mockClient.EXPECT().Decrypt(prodSecretPath).Return(nil)
+		mockClient.EXPECT().Encrypt(prodSecretPath).Return(nil)
+
+		cfg := ResolveConfig{
+			SOPSClient: mockClient,
+			BaseDir:    tmpDir,
+		}
+
+		err := Resolve(t.Context(), def, cfg)
+		require.NoError(t, err)
+
+		// CRITICAL ASSERTION: Each environment should have its own value
+		// If the bug exists, all three would have "prod_password_456"
+		assert.Equal(t, "dev_password_123", def.Apps[0].Env.Dev["USER_PASSWORD"].Value,
+			"Development should have dev password")
+		assert.Equal(t, "staging_password_789", def.Apps[0].Env.Staging["USER_PASSWORD"].Value,
+			"Staging should have staging password")
+		assert.Equal(t, "prod_password_456", def.Apps[0].Env.Production["USER_PASSWORD"].Value,
+			"Production should have production password")
+
+		// Ensure Default was not mutated
+		assert.Equal(t, appdef.EnvSourceSOPS, def.Apps[0].Env.Default["USER_PASSWORD"].Source,
+			"Default should still have SOPS source")
+	})
 }
 
 func TestResolveForEnvironment(t *testing.T) {

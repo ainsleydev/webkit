@@ -186,7 +186,7 @@ func TestMergeVars(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got := mergeVars(test.base, test.override)
+			got := MergeVars(test.base, test.override)
 			assert.Equal(t, test.want, got)
 		})
 	}
@@ -327,6 +327,121 @@ func TestEnvironment_GetVarsForEnvironment(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, test.want, got)
 			}
+		})
+	}
+}
+
+func TestCloneEnvVar(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Nil Map", func(t *testing.T) {
+		t.Parallel()
+		result := CloneEnvVar(nil)
+		assert.Nil(t, result)
+	})
+
+	t.Run("Empty Map", func(t *testing.T) {
+		t.Parallel()
+		src := make(EnvVar)
+		result := CloneEnvVar(src)
+		assert.NotNil(t, result)
+		assert.Empty(t, result)
+	})
+
+	t.Run("Clone With Values", func(t *testing.T) {
+		t.Parallel()
+		src := EnvVar{
+			"KEY1": {Source: EnvSourceValue, Value: "value1"},
+			"KEY2": {Source: EnvSourceSOPS},
+		}
+
+		result := CloneEnvVar(src)
+
+		// Should have same content
+		assert.Equal(t, src, result)
+
+		// Verify mutation doesn't affect original
+		result["KEY1"] = EnvValue{Source: EnvSourceValue, Value: "modified"}
+		assert.Equal(t, "value1", src["KEY1"].Value, "Original should not be modified")
+	})
+}
+
+func TestMergeVars_Exported(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		base     EnvVar
+		override EnvVar
+		want     EnvVar
+	}{
+		"Empty Maps": {
+			base:     make(EnvVar),
+			override: make(EnvVar),
+			want:     EnvVar{},
+		},
+		"Base Only": {
+			base: EnvVar{
+				"KEY1": {Source: EnvSourceValue, Value: "base1"},
+				"KEY2": {Source: EnvSourceValue, Value: "base2"},
+			},
+			override: make(EnvVar),
+			want: EnvVar{
+				"KEY1": {Source: EnvSourceValue, Value: "base1"},
+				"KEY2": {Source: EnvSourceValue, Value: "base2"},
+			},
+		},
+		"Override Only": {
+			base: make(EnvVar),
+			override: EnvVar{
+				"KEY1": {Source: EnvSourceValue, Value: "override1"},
+				"KEY2": {Source: EnvSourceValue, Value: "override2"},
+			},
+			want: EnvVar{
+				"KEY1": {Source: EnvSourceValue, Value: "override1"},
+				"KEY2": {Source: EnvSourceValue, Value: "override2"},
+			},
+		},
+		"Override Takes Precedence": {
+			base: EnvVar{
+				"KEY1": {Source: EnvSourceValue, Value: "base1"},
+				"KEY2": {Source: EnvSourceValue, Value: "base2"},
+				"KEY3": {Source: EnvSourceValue, Value: "base3"},
+			},
+			override: EnvVar{
+				"KEY2": {Source: EnvSourceValue, Value: "override2"}, // Should override
+				"KEY4": {Source: EnvSourceValue, Value: "override4"}, // New key
+			},
+			want: EnvVar{
+				"KEY1": {Source: EnvSourceValue, Value: "base1"},
+				"KEY2": {Source: EnvSourceValue, Value: "override2"},
+				"KEY3": {Source: EnvSourceValue, Value: "base3"},
+				"KEY4": {Source: EnvSourceValue, Value: "override4"},
+			},
+		},
+		"Does Not Mutate Inputs": {
+			base: EnvVar{
+				"KEY1": {Source: EnvSourceValue, Value: "base1"},
+			},
+			override: EnvVar{
+				"KEY2": {Source: EnvSourceValue, Value: "override2"},
+			},
+			want: EnvVar{
+				"KEY1": {Source: EnvSourceValue, Value: "base1"},
+				"KEY2": {Source: EnvSourceValue, Value: "override2"},
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			result := MergeVars(test.base, test.override)
+			assert.Equal(t, test.want, result)
+
+			// Verify mutation doesn't affect inputs
+			result["KEY_NEW"] = EnvValue{Source: EnvSourceValue, Value: "new"}
+			assert.NotContains(t, test.base, "KEY_NEW")
+			assert.NotContains(t, test.override, "KEY_NEW")
 		})
 	}
 }

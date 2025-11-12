@@ -76,9 +76,14 @@ func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Envir
 
 // resolveSingleEnv resolves variables for a specific environment only.
 // It resolves defaults first, then environment-specific vars (following the merge pattern).
+// To avoid mutating the shared Default map across environments, we clone it first.
 func resolveSingleEnv(ctx context.Context, cfg ResolveConfig, enviro *appdef.Environment, targetEnv env.Environment) error {
-	// Resolve defaults first (they apply to the target environment)
-	if err := resolveVars(ctx, cfg, enviro.Default, targetEnv); err != nil {
+	// Clone defaults to avoid mutating the shared Default map
+	// This ensures each environment gets its own resolved values from environment-specific SOPS files
+	defaultClone := appdef.CloneEnvVar(enviro.Default)
+
+	// Resolve the cloned defaults for this specific environment
+	if err := resolveVars(ctx, cfg, defaultClone, targetEnv); err != nil {
 		return err
 	}
 
@@ -89,7 +94,24 @@ func resolveSingleEnv(ctx context.Context, cfg ResolveConfig, enviro *appdef.Env
 	}
 
 	// Resolve environment-specific vars
-	return resolveVars(ctx, cfg, targetVars, targetEnv)
+	if err := resolveVars(ctx, cfg, targetVars, targetEnv); err != nil {
+		return err
+	}
+
+	// Merge resolved defaults with resolved env-specific vars (env-specific takes precedence)
+	// and write back to the appropriate environment field
+	merged := appdef.MergeVars(defaultClone, targetVars)
+
+	switch targetEnv {
+	case env.Development:
+		enviro.Dev = merged
+	case env.Staging:
+		enviro.Staging = merged
+	case env.Production:
+		enviro.Production = merged
+	}
+
+	return nil
 }
 
 // resolveVars resolves all variables in a single EnvVar map.

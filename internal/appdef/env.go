@@ -174,18 +174,31 @@ func ParseResourceReference(value any) (resourceName, outputName string, ok bool
 	return parts[0], parts[1], true
 }
 
-// mergeVars merges `override` into `base`, with `override`
-// taking precedence (usually app/shared).
+// CloneEnvVar creates a shallow copy of an EnvVar map.
+// This prevents mutation of the original map.
+// Returns nil if the source is nil.
+func CloneEnvVar(src EnvVar) EnvVar {
+	if src == nil {
+		return nil
+	}
+	clone := make(EnvVar, len(src))
+	for k, v := range src {
+		clone[k] = v
+	}
+	return clone
+}
+
+// MergeVars merges two EnvVar maps, with override taking precedence over base.
 // Returns a new map without mutating the inputs.
-func mergeVars(base, override EnvVar) EnvVar {
+func MergeVars(base, override EnvVar) EnvVar {
 	result := make(EnvVar)
 
-	// Copy base first.
+	// Copy base first
 	for k, v := range base {
 		result[k] = v
 	}
 
-	// Apply overrides.
+	// Apply overrides
 	for k, v := range override {
 		result[k] = v
 	}
