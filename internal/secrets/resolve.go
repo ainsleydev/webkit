@@ -80,7 +80,7 @@ func resolveAllEnvs(ctx context.Context, cfg ResolveConfig, enviro *appdef.Envir
 func resolveSingleEnv(ctx context.Context, cfg ResolveConfig, enviro *appdef.Environment, targetEnv env.Environment) error {
 	// Clone defaults to avoid mutating the shared Default map
 	// This ensures each environment gets its own resolved values from environment-specific SOPS files
-	defaultClone := cloneEnvVar(enviro.Default)
+	defaultClone := appdef.CloneEnvVar(enviro.Default)
 
 	// Resolve the cloned defaults for this specific environment
 	if err := resolveVars(ctx, cfg, defaultClone, targetEnv); err != nil {
@@ -100,7 +100,7 @@ func resolveSingleEnv(ctx context.Context, cfg ResolveConfig, enviro *appdef.Env
 
 	// Merge resolved defaults with resolved env-specific vars (env-specific takes precedence)
 	// and write back to the appropriate environment field
-	merged := mergeEnvVars(defaultClone, targetVars)
+	merged := appdef.MergeVars(defaultClone, targetVars)
 
 	switch targetEnv {
 	case env.Development:
@@ -210,35 +210,4 @@ var resolver = map[appdef.EnvSource]resolveFunc{
 
 		return nil
 	},
-}
-
-// cloneEnvVar creates a shallow copy of an EnvVar map.
-// This prevents mutation of the original map when resolving variables.
-func cloneEnvVar(src appdef.EnvVar) appdef.EnvVar {
-	if src == nil {
-		return nil
-	}
-	clone := make(appdef.EnvVar, len(src))
-	for k, v := range src {
-		clone[k] = v
-	}
-	return clone
-}
-
-// mergeEnvVars merges two EnvVar maps, with override taking precedence over base.
-// Returns a new map without mutating the inputs.
-func mergeEnvVars(base, override appdef.EnvVar) appdef.EnvVar {
-	result := make(appdef.EnvVar)
-
-	// Copy base first
-	for k, v := range base {
-		result[k] = v
-	}
-
-	// Apply overrides
-	for k, v := range override {
-		result[k] = v
-	}
-
-	return result
 }
