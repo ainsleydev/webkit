@@ -53,6 +53,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("BACK_BLAZE_BUCKET", "bucket")
 	t.Setenv("BACK_BLAZE_KEY_ID", "id")
 	t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
+	t.Setenv("TURSO_TOKEN", "turso-test-token")
 	t.Setenv("GITHUB_TOKEN", "token")
 	t.Setenv("GITHUB_TOKEN_CLASSIC", "token")
 	t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
@@ -69,6 +70,7 @@ func teardownEnv(t *testing.T) {
 		"BACK_BLAZE_BUCKET",
 		"BACK_BLAZE_KEY_ID",
 		"BACK_BLAZE_APPLICATION_KEY",
+		"TURSO_TOKEN",
 		"GITHUB_TOKEN",
 		"GITHUB_TOKEN_CLASSIC",
 		"SLACK_BOT_TOKEN",
