@@ -46,3 +46,15 @@ module "b2_bucket" {
   days_from_uploading_to_hiding   = try(var.platform_config.days_from_uploading_to_hiding, null)
   lifecycle_rule_file_name_prefix = try(var.platform_config.lifecycle_rule_file_name_prefix, null)
 }
+
+# Turso Database
+module "turso_database" {
+  count  = var.platform_provider == "turso" && var.platform_type == "turso" ? 1 : 0
+  source = "../../providers/turso/database"
+
+  name         = var.name
+  organization = var.platform_config.organization
+  group        = try(var.platform_config.group, "default")
+  size_limit   = try(var.platform_config.size_limit, null)
+  tags         = try(var.tags, [])
+}
