@@ -22,6 +22,7 @@ type (
 		UsesNPM          *bool                   `json:"usesNPM" description:"Whether this app should be included in the pnpm workspace (auto-detected if not set)"`
 		TerraformManaged *bool                   `json:"terraformManaged,omitempty" description:"Whether this app's infrastructure is managed by Terraform (defaults to true)"`
 		Domains          []Domain                `json:"domains,omitzero" description:"Domain configurations for accessing this app"`
+		Tools            map[string]string       `json:"tools,omitempty" description:"Build tools and their versions required for CI/CD (e.g., golangci-lint: latest)"`
 		Commands         map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string" inline:"true" description:"Custom commands for linting, testing, formatting, and building"`
 	}
 	// Build defines Docker build configuration for containerised applications.
@@ -159,6 +160,50 @@ func (a *App) PrimaryDomain() string {
 		return a.Domains[0].Name
 	}
 	return ""
+}
+
+// ResolvedTools returns the app's tools with defaults merged in.
+// Default tools for the app type are included first, then overridden
+// by any explicitly configured tools. Tools can be disabled by setting
+// their version to an empty string or "disabled".
+func (a *App) ResolvedTools() map[string]string {
+	tools := make(map[string]string)
+
+	// Start with defaults for app type.
+	if defaults, ok := defaultTools[a.Type]; ok {
+		for k, v := range defaults {
+			tools[k] = v
+		}
+	}
+
+	// Override with explicit tools.
+	for k, v := range a.Tools {
+		if v == "" || v == "disabled" {
+			delete(tools, k)
+		} else {
+			tools[k] = v
+		}
+	}
+
+	return tools
+}
+
+// InstallCommands returns the shell commands needed to install
+// all resolved tools for this app. For Go tools, it uses the
+// goToolRegistry to map tool names to their full install paths.
+func (a *App) InstallCommands() []string {
+	var commands []string
+
+	for tool, version := range a.ResolvedTools() {
+		if installPath, ok := goToolRegistry[tool]; ok {
+			commands = append(commands, fmt.Sprintf("go install %s@%s", installPath, version))
+		} else {
+			// Assume tool is already a full install path.
+			commands = append(commands, fmt.Sprintf("go install %s@%s", tool, version))
+		}
+	}
+
+	return commands
 }
 
 func (a *App) applyDefaults() error {

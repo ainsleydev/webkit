@@ -462,3 +462,200 @@ func TestApp_PrimaryDomain(t *testing.T) {
 		})
 	}
 }
+
+func TestApp_ResolvedTools(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		app  App
+		want map[string]string
+	}{
+		"GoLang defaults": {
+			app: App{Type: AppTypeGoLang},
+			want: map[string]string{
+				"golangci-lint": "latest",
+				"templ":         "latest",
+				"sqlc":          "latest",
+			},
+		},
+		"Payload no defaults": {
+			app:  App{Type: AppTypePayload},
+			want: map[string]string{},
+		},
+		"SvelteKit no defaults": {
+			app:  App{Type: AppTypeSvelteKit},
+			want: map[string]string{},
+		},
+		"Custom override": {
+			app: App{
+				Type: AppTypeGoLang,
+				Tools: map[string]string{
+					"templ": "v0.2.543",
+				},
+			},
+			want: map[string]string{
+				"golangci-lint": "latest",
+				"templ":         "v0.2.543",
+				"sqlc":          "latest",
+			},
+		},
+		"Add custom tool": {
+			app: App{
+				Type: AppTypeGoLang,
+				Tools: map[string]string{
+					"buf": "v1.28.1",
+				},
+			},
+			want: map[string]string{
+				"golangci-lint": "latest",
+				"templ":         "latest",
+				"sqlc":          "latest",
+				"buf":           "v1.28.1",
+			},
+		},
+		"Disable default tool with empty string": {
+			app: App{
+				Type: AppTypeGoLang,
+				Tools: map[string]string{
+					"sqlc": "",
+				},
+			},
+			want: map[string]string{
+				"golangci-lint": "latest",
+				"templ":         "latest",
+			},
+		},
+		"Disable default tool with disabled": {
+			app: App{
+				Type: AppTypeGoLang,
+				Tools: map[string]string{
+					"templ": "disabled",
+				},
+			},
+			want: map[string]string{
+				"golangci-lint": "latest",
+				"sqlc":          "latest",
+			},
+		},
+		"Multiple overrides": {
+			app: App{
+				Type: AppTypeGoLang,
+				Tools: map[string]string{
+					"golangci-lint": "v1.55.2",
+					"templ":         "disabled",
+					"buf":           "v1.28.1",
+				},
+			},
+			want: map[string]string{
+				"golangci-lint": "v1.55.2",
+				"sqlc":          "latest",
+				"buf":           "v1.28.1",
+			},
+		},
+		"Only custom tools": {
+			app: App{
+				Type: AppTypePayload,
+				Tools: map[string]string{
+					"custom-tool": "v1.0.0",
+				},
+			},
+			want: map[string]string{
+				"custom-tool": "v1.0.0",
+			},
+		},
+		"Nil tools map": {
+			app: App{
+				Type:  AppTypeGoLang,
+				Tools: nil,
+			},
+			want: map[string]string{
+				"golangci-lint": "latest",
+				"templ":         "latest",
+				"sqlc":          "latest",
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.app.ResolvedTools()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestApp_InstallCommands(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		app  App
+		want []string
+	}{
+		"GoLang defaults": {
+			app: App{Type: AppTypeGoLang},
+			want: []string{
+				"go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest",
+				"go install github.com/a-h/templ/cmd/templ@latest",
+				"go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest",
+			},
+		},
+		"No tools": {
+			app:  App{Type: AppTypePayload},
+			want: []string{},
+		},
+		"Custom version": {
+			app: App{
+				Type: AppTypeGoLang,
+				Tools: map[string]string{
+					"templ": "v0.2.543",
+					"sqlc":  "disabled",
+				},
+			},
+			want: []string{
+				"go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest",
+				"go install github.com/a-h/templ/cmd/templ@v0.2.543",
+			},
+		},
+		"Full install path": {
+			app: App{
+				Type: AppTypeGoLang,
+				Tools: map[string]string{
+					"golangci-lint":                   "disabled",
+					"templ":                           "disabled",
+					"sqlc":                            "disabled",
+					"github.com/custom/tool/cmd/tool": "v1.0.0",
+				},
+			},
+			want: []string{
+				"go install github.com/custom/tool/cmd/tool@v1.0.0",
+			},
+		},
+		"Mixed known and custom": {
+			app: App{
+				Type: AppTypeGoLang,
+				Tools: map[string]string{
+					"buf":                      "v1.28.1",
+					"github.com/custom/mytool": "v2.0.0",
+				},
+			},
+			want: []string{
+				"go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest",
+				"go install github.com/a-h/templ/cmd/templ@latest",
+				"go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest",
+				"go install github.com/bufbuild/buf/cmd/buf@v1.28.1",
+				"go install github.com/custom/mytool@v2.0.0",
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.app.InstallCommands()
+			// Sort both slices to ensure consistent comparison,
+			// since map iteration order is not guaranteed.
+			assert.ElementsMatch(t, test.want, got)
+		})
+	}
+}

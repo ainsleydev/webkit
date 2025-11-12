@@ -397,6 +397,15 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+
+{{- $tools := $app.ResolvedTools }}
+{{- if gt (len $tools) 0 }}
+      - name: Install Go Tools
+        run: |
+{{- range $app.InstallCommands }}
+          {{ . }}
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{- range $spec := $app.OrderedCommands }}

@@ -207,3 +207,119 @@ Arguments can be passed in to each dockerfile using the `args` parameter as a ke
 - Every app must have a `Dockerfile` at `{app.path}/Dockerfile`
 - Build args are passed to Docker with `--build-arg`
 - For advanced Docker features (multi-stage builds, BuildKit), modify your Dockerfile directly.
+
+## Tools and dependencies
+
+The `tools` field allows you to specify build tools and their versions that are required for CI/CD pipelines. WebKit automatically installs these tools in GitHub Actions workflows before running your commands.
+
+### Default behaviour
+
+WebKit provides sensible defaults for common tools based on your app type. For Go applications, the following tools are installed automatically:
+
+- `golangci-lint` - For linting
+- `templ` - For template generation
+- `sqlc` - For SQL code generation
+
+JavaScript applications (Payload, SvelteKit) don't have default tools, as they typically install dependencies via pnpm.
+
+### Overriding tool versions
+
+You can override the version of any default tool by specifying it in the `tools` field:
+
+```json
+{
+    "apps": [
+        {
+            "name": "api",
+            "type": "golang",
+            "path": "services/api",
+            "tools": {
+                "templ": "v0.2.543",
+                "golangci-lint": "v1.55.2"
+            }
+        }
+    ]
+}
+```
+
+### Adding custom tools
+
+You can add tools that aren't in the default set by including them in the `tools` field:
+
+```json
+{
+    "tools": {
+        "buf": "v1.28.1",
+        "wire": "latest"
+    }
+}
+```
+
+WebKit recognises common Go tool names and knows how to install them. Supported tool names include:
+
+- `golangci-lint`
+- `templ`
+- `sqlc`
+- `buf`
+- `wire`
+- `mockgen`
+
+For tools not in the registry, specify the full Go module path:
+
+```json
+{
+    "tools": {
+        "github.com/custom/tool/cmd/mytool": "v1.0.0"
+    }
+}
+```
+
+### Disabling default tools
+
+If you don't need a default tool, you can disable it by setting its version to an empty string or `"disabled"`:
+
+```json
+{
+    "tools": {
+        "sqlc": "disabled",
+        "templ": ""
+    }
+}
+```
+
+### Attributes
+
+| Key   | Description                                                             | Required | Default                           | Notes                                |
+|-------|-------------------------------------------------------------------------|----------|-----------------------------------|--------------------------------------|
+| tools | Map of tool names to versions (e.g., `"golangci-lint": "latest"`)      | No       | Auto-populated for Go apps        | Only applies to Go apps in CI/CD     |
+
+### Example
+
+```json
+{
+    "apps": [
+        {
+            "name": "api",
+            "type": "golang",
+            "path": "services/api",
+            "tools": {
+                "golangci-lint": "v1.55.2",
+                "templ": "v0.2.543",
+                "sqlc": "disabled",
+                "buf": "v1.28.1"
+            },
+            "commands": {
+                "lint": "golangci-lint run",
+                "generate": "templ generate && buf generate"
+            }
+        }
+    ]
+}
+```
+
+### Notes
+
+- Tools are only installed in CI/CD workflows, not in local development.
+- For local development, install tools manually or use a tool like `asdf`.
+- Version `"latest"` installs the most recent release of the tool.
+- Tool installation happens after Go is set up but before commands are run.
