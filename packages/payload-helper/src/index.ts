@@ -1,7 +1,6 @@
 import type { CollectionConfig, Config } from 'payload';
+import { injectAdminIcon, injectAdminLogo } from './plugin/admin.js';
 import { cacheHookCollections, cacheHookGlobals } from './plugin/hooks.js';
-import { injectAdminIcon } from './plugin/icon.js';
-import { injectAdminLogo } from './plugin/logo.js';
 import type { PayloadHelperPluginConfig } from './types.js';
 
 /**
