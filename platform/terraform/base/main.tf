@@ -127,7 +127,7 @@ module "default_b2_bucket" {
 # This is created before resources/apps so the channel ID is available for alert configuration.
 #
 resource "slack_conversation" "project_channel" {
-  name              = "${var.project_name}-alerts"
+  name              = "alerts-${var.project_name}"
   topic             = "CI/CD alerts and notifications for ${var.project_title}"
   is_private        = false
   action_on_destroy = "archive"

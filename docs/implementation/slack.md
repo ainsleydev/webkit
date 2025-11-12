@@ -38,7 +38,7 @@ These tokens are used to:
 
 When you run `webkit infra apply`, Terraform will automatically:
 
-1. Create a Slack channel named `{project-name}-alerts`.
+1. Create a Slack channel named `alerts-{project-name}`.
 2. Configure the channel topic: "CI/CD alerts and notifications for {project-title}".
 3. Add you as a permanent member of the channel.
 4. Store the channel ID as `TF_SLACK_CHANNEL_ID` in your GitHub repository secrets.
@@ -50,7 +50,7 @@ webkit infra apply
 **Output example:**
 ```
 slack_channel_id = "C1234567890"
-slack_channel_name = "my-project-alerts"
+slack_channel_name = "alerts-my-project"
 ```
 
 ### Step 3: Verify GitHub secrets
@@ -85,7 +85,7 @@ DigitalOcean requires a webhook URL for alerts, and Slack's incoming webhooks ca
 
 3. **Create a new webhook:**
    - Scroll down and click "Add New Webhook to Workspace".
-   - Select the channel created by Terraform (e.g., `my-project-alerts`).
+   - Select the channel created by Terraform (e.g., `alerts-my-project`).
    - Authorise the webhook.
 
 4. **Copy the webhook URL:**
@@ -236,7 +236,7 @@ All notifications use Slack's Block Kit format with rich formatting:
 | Output | Description |
 |--------|-------------|
 | `slack_channel_id` | Channel ID for programmatic access |
-| `slack_channel_name` | Channel name (e.g., "my-project-alerts") |
+| `slack_channel_name` | Channel name (e.g., "alerts-my-project") |
 
 ## Troubleshooting
 
