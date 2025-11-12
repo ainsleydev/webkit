@@ -78,5 +78,5 @@ export const payloadHelper =
 		return config;
 	};
 
-export type { LogoConfig, LogoProps } from './admin/components/Logo.js';
+export type { LogoProps } from './admin/components/Logo.js';
 export type { AdminLogoConfig, PayloadHelperPluginConfig } from './types.js';

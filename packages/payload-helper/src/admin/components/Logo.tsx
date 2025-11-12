@@ -4,24 +4,13 @@ import { useTheme } from '@payloadcms/ui';
 // @ts-expect-error - next/image is a peer dependency and will be available in consumer projects
 import Image from 'next/image';
 import type React from 'react';
-
-/**
- * Configuration for the Logo component.
- */
-export type LogoConfig = {
-	path: string;
-	darkModePath?: string;
-	width?: number;
-	height?: number;
-	alt: string;
-	className?: string;
-};
+import type { AdminLogoConfig } from '../../types.js';
 
 /**
  * Props for the Logo component.
  */
 export type LogoProps = {
-	config: LogoConfig;
+	config: AdminLogoConfig;
 };
 
 /**
@@ -38,7 +27,7 @@ export const Logo: React.FC<LogoProps> = ({ config }) => {
 		<figure className={config.className ? config.className : undefined}>
 			<Image
 				src={imagePath}
-				alt={config.alt}
+				alt={config.alt || 'Logo'}
 				width={config.width || 150}
 				height={config.height || 40}
 			/>
