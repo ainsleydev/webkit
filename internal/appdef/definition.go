@@ -224,14 +224,14 @@ func mergeEnvironments(envs ...Environment) Environment {
 
 	for _, env := range envs {
 		// Apply defaults to each environment first, then apply environment-specific overrides.
-		devWithDefaults := mergeVars(env.Default, env.Dev)
-		stagingWithDefaults := mergeVars(env.Default, env.Staging)
-		productionWithDefaults := mergeVars(env.Default, env.Production)
+		devWithDefaults := MergeVars(env.Default, env.Dev)
+		stagingWithDefaults := MergeVars(env.Default, env.Staging)
+		productionWithDefaults := MergeVars(env.Default, env.Production)
 
 		// Merge into accumulated result.
-		merged.Dev = mergeVars(merged.Dev, devWithDefaults)
-		merged.Staging = mergeVars(merged.Staging, stagingWithDefaults)
-		merged.Production = mergeVars(merged.Production, productionWithDefaults)
+		merged.Dev = MergeVars(merged.Dev, devWithDefaults)
+		merged.Staging = MergeVars(merged.Staging, stagingWithDefaults)
+		merged.Production = MergeVars(merged.Production, productionWithDefaults)
 	}
 
 	return merged

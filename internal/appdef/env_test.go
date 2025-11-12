@@ -186,7 +186,7 @@ func TestMergeVars(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got := mergeVars(test.base, test.override)
+			got := MergeVars(test.base, test.override)
 			assert.Equal(t, test.want, got)
 		})
 	}

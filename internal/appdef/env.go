@@ -205,8 +205,3 @@ func MergeVars(base, override EnvVar) EnvVar {
 
 	return result
 }
-
-// mergeVars is an internal alias for MergeVars.
-func mergeVars(base, override EnvVar) EnvVar {
-	return MergeVars(base, override)
-}
