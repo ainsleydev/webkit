@@ -413,7 +413,7 @@ func TestReleaseWorkflow(t *testing.T) {
 			assert.Contains(t, content, "Setup Infrastructure Dependencies")
 			assert.Contains(t, content, "./.github/actions/setup-infra")
 			assert.Contains(t, content, "Send Slack Notification")
-			assert.Contains(t, content, "Terraform Plan - Production")
+			assert.Contains(t, content, "Infra Plan")
 		}
 
 		t.Log("Deploy jobs depend on terraform apply")
