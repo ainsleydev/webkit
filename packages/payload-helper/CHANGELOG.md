@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.0.40
+
+### Patch Changes
+
+- bf60a66: Icon Support
+
 ## 0.0.39
 
 ### Patch Changes
