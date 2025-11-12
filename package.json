@@ -42,7 +42,7 @@
 		"act:lint": "act pull_request -W .github/workflows/lint.yaml -b",
 		"act:test": "act pull_request -W .github/workflows/test.yaml -b",
 		"act:release": "act push -W .github/workflows/release.yaml --dryrun -b",
-		"tag": "pnpm release:check && go run cmd/tag/main.go",
+		"tag": "pnpm release:check && go run cmd/tag/main.go && pnpm build",
 		"release:check": "goreleaser check",
 		"release:test": "pnpm release:clean && goreleaser release --snapshot --clean --skip=publish",
 		"release:version": "git describe --tags --always --dirty 2>/dev/null || echo 'no tags'",

@@ -1,26 +1,7 @@
 import type { CollectionConfig, Config } from 'payload';
 import { cacheHookCollections, cacheHookGlobals } from './plugin/hooks.js';
-import { fieldMapper, schemas } from './plugin/schema.js';
+import { injectAdminLogo } from './plugin/logo.js';
 import type { PayloadHelperPluginConfig } from './types.js';
-import env from './util/env.js';
-
-// export const test = (pluginOptions: PayloadHelperPluginConfig): Plugin[] => {
-// 	return [
-// 		seoPlugin({
-// 			collections: pluginOptions?.seo?.collections,
-// 			globals: pluginOptions?.seo?.globals,
-// 			fields: [...SEOFields, pluginOptions.seo?.fields],
-// 			tabbedUI: true,
-// 			uploadsCollection: 'media',
-// 			generateTitle: pluginOptions?.seo?.generateTitle ?
-// 				pluginOptions?.seo?.generateTitle :
-// 				({ doc }) => `${pluginOptions.siteName} — ${doc?.title?.value ?? ''}`,
-// 			generateDescription: pluginOptions?.seo?.generateDescription ?
-// 				pluginOptions?.seo?.generateDescription :
-// 				({ doc }) => doc?.excerpt?.value,
-// 		}),
-// 	];
-// };
 
 /**
  * Payload Helper Plugin for websites at ainsley.dev
@@ -33,41 +14,46 @@ export const payloadHelper =
 	(incomingConfig: Config): Config => {
 		// TODO: Validate Config
 
+		let config = incomingConfig;
+
 		// Update typescript generation file
-		incomingConfig.typescript = incomingConfig.typescript || {};
-		incomingConfig.typescript.outputFile = './src/types/payload.ts';
+		config.typescript = config.typescript || {};
+		config.typescript.outputFile = './src/types/payload.ts';
+
+		// Inject admin Logo component if adminLogo config is provided
+		if (pluginOptions.adminLogo) {
+			config = injectAdminLogo(config, pluginOptions.adminLogo, pluginOptions.siteName);
+		}
 
 		// Map collections & add hooks
-		incomingConfig.collections = (incomingConfig.collections || []).map(
-			(collection): CollectionConfig => {
-				if (collection.upload !== undefined && collection.upload !== true) {
-					return collection;
-				}
+		config.collections = (config.collections || []).map((collection): CollectionConfig => {
+			if (collection.upload !== undefined && collection.upload !== true) {
+				return collection;
+			}
 
-				const hooks = collection.hooks || {};
+			const hooks = collection.hooks || {};
 
-				// Add afterChange hook only if webServer is defined
-				if (pluginOptions.webServer) {
-					hooks.afterChange = [
-						...(hooks.afterChange || []),
-						cacheHookCollections({
-							server: pluginOptions.webServer,
-							slug: collection.slug,
-							fields: collection.fields,
-							isCollection: true,
-						}),
-					];
-				}
+			// Add afterChange hook only if webServer is defined
+			if (pluginOptions.webServer) {
+				hooks.afterChange = [
+					...(hooks.afterChange || []),
+					cacheHookCollections({
+						server: pluginOptions.webServer,
+						slug: collection.slug,
+						fields: collection.fields,
+						isCollection: true,
+					}),
+				];
+			}
 
-				return {
-					...collection,
-					hooks,
-				};
-			},
-		);
+			return {
+				...collection,
+				hooks,
+			};
+		});
 
 		// Map globals & add hooks
-		incomingConfig.globals = (incomingConfig.globals || []).map((global) => {
+		config.globals = (config.globals || []).map((global) => {
 			const hooks = global.hooks || {};
 
 			// Add afterChange hook only if webServer is defined
@@ -89,5 +75,8 @@ export const payloadHelper =
 			};
 		});
 
-		return incomingConfig;
+		return config;
 	};
+
+export type { LogoProps } from './admin/components/Logo.js';
+export type { AdminLogoConfig, PayloadHelperPluginConfig } from './types.js';

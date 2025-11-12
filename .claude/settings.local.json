@@ -29,7 +29,12 @@
 			"WebFetch(domain:pkg.go.dev)",
 			"Bash(python3:*)",
 			"Bash(go doc:*)",
-			"Bash(go get:*)"
+			"Bash(go get:*)",
+			"Bash(pnpm format:*)",
+			"Bash(pnpm run build:types:*)",
+			"Bash(pnpm --filter @ainsleydev/payload-helper build:*)",
+			"Bash(pnpm --filter @ainsleydev/payload-helper add:*)",
+			"Bash(pnpm --filter @ainsleydev/payload-helper format:*)"
 		],
 		"deny": [],
 		"ask": []

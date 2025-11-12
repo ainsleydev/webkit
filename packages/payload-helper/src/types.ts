@@ -23,9 +23,19 @@ export type WebServerConfig = {
 // 	config: AWS.S3ClientConfig;
 // }
 
+export type AdminLogoConfig = {
+	path: string;
+	darkModePath?: string;
+	width?: number;
+	height?: number;
+	alt?: string;
+	className?: string;
+};
+
 export type PayloadHelperPluginConfig = {
 	siteName: string;
 	settings?: SettingsConfig;
 	// seo?: SEOConfig;
 	webServer?: WebServerConfig;
+	adminLogo?: AdminLogoConfig;
 };
