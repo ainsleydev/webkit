@@ -1,48 +1,48 @@
 {
-  "resources": [
-    {
-      "name": "db",
-      "type": "sqlite",
-      "provider": "turso",
-      "config": {
-        "organisation": "my-org",
-        "group": "default"
-      }
-    }
-  ],
-  "apps": [
-    {
-      "name": "api",
-      "title": "API",
-      "type": "golang",
-      "path": "api",
-      "build": {
-        "dockerfile": "Dockerfile",
-        "port": 8080
-      },
-      "infra": {
-        "provider": "digitalocean",
-        "type": "container",
-        "config": {
-          "domain": "api.example.com"
-        }
-      },
-      "env": {
-        "production": {
-          "DATABASE_URL": {
-            "source": "resource",
-            "value": "db.connection_url"
-          },
-          "TURSO_AUTH_TOKEN": {
-            "source": "resource",
-            "value": "db.auth_token"
-          },
-          "DB_HOST": {
-            "source": "resource",
-            "value": "db.host"
-          }
-        }
-      }
-    }
-  ]
+	"resources": [
+		{
+			"name": "db",
+			"type": "sqlite",
+			"provider": "turso",
+			"config": {
+				"organisation": "my-org",
+				"group": "default"
+			}
+		}
+	],
+	"apps": [
+		{
+			"name": "api",
+			"title": "API",
+			"type": "golang",
+			"path": "api",
+			"build": {
+				"dockerfile": "Dockerfile",
+				"port": 8080
+			},
+			"infra": {
+				"provider": "digitalocean",
+				"type": "container",
+				"config": {
+					"domain": "api.example.com"
+				}
+			},
+			"env": {
+				"production": {
+					"DATABASE_URL": {
+						"source": "resource",
+						"value": "db.connection_url"
+					},
+					"TURSO_AUTH_TOKEN": {
+						"source": "resource",
+						"value": "db.auth_token"
+					},
+					"DB_HOST": {
+						"source": "resource",
+						"value": "db.host"
+					}
+				}
+			}
+		}
+	]
 }
