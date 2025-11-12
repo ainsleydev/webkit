@@ -21,6 +21,10 @@ inputs:
     description: 'Commit SHA for linking'
     required: false
     default: ''
+  buttons:
+    description: 'Optional JSON array of custom buttons: [{"text": "Button Text", "url": "https://..."}]'
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
@@ -34,6 +38,7 @@ runs:
         MESSAGE: ${{ inputs.message }}
         STATUS: ${{ inputs.status }}
         COMMIT_SHA: ${{ inputs.commit_sha }}
+        BUTTONS: ${{ inputs.buttons }}
         WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         ACTOR: ${{ github.actor }}
@@ -91,6 +96,50 @@ runs:
             ]')
         fi
 
+        # Build custom buttons array from input
+        if [ -n "$BUTTONS" ] && [ "$BUTTONS" != "[]" ] && [ "$BUTTONS" != "" ]; then
+          # Parse custom buttons and convert to Slack button format
+          CUSTOM_BUTTONS=$(echo "$BUTTONS" | jq -c '[.[] | {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": .text
+            },
+            "url": .url
+          }]')
+        else
+          CUSTOM_BUTTONS="[]"
+        fi
+
+        # Build standard buttons (workflow and repository)
+        STANDARD_BUTTONS=$(jq -n \
+          --arg workflow_url "$WORKFLOW_URL" \
+          --arg repo_url "$REPO_URL" \
+          '[
+            {
+              "type": "button",
+              "text": {
+                "type": "plain_text",
+                "text": "View Workflow"
+              },
+              "url": $workflow_url
+            },
+            {
+              "type": "button",
+              "text": {
+                "type": "plain_text",
+                "text": "View Repository"
+              },
+              "url": $repo_url
+            }
+          ]')
+
+        # Combine custom buttons with standard buttons (custom buttons first)
+        ALL_BUTTONS=$(jq -n \
+          --argjson custom "$CUSTOM_BUTTONS" \
+          --argjson standard "$STANDARD_BUTTONS" \
+          '$custom + $standard')
+
         # Build the full payload with jq to ensure proper JSON escaping
         PAYLOAD=$(jq -n \
           --arg channel "$CHANNEL_ID" \
@@ -98,8 +147,7 @@ runs:
           --arg title "$TITLE" \
           --argjson fields "$FIELDS_JSON" \
           --arg message "$MESSAGE_FORMATTED" \
-          --arg workflow_url "$WORKFLOW_URL" \
-          --arg repo_url "$REPO_URL" \
+          --argjson buttons "$ALL_BUTTONS" \
           --arg workflow "$GITHUB_WORKFLOW" \
           --arg timestamp "$TIMESTAMP" \
           '{
@@ -129,24 +177,7 @@ runs:
                   },
                   {
                     "type": "actions",
-                    "elements": [
-                      {
-                        "type": "button",
-                        "text": {
-                          "type": "plain_text",
-                          "text": "View Workflow"
-                        },
-                        "url": $workflow_url
-                      },
-                      {
-                        "type": "button",
-                        "text": {
-                          "type": "plain_text",
-                          "text": "View Repository"
-                        },
-                        "url": $repo_url
-                      }
-                    ]
+                    "elements": $buttons
                   },
                   {
                     "type": "context",
