@@ -279,7 +279,7 @@ func TestPR(t *testing.T) {
 			assert.Contains(t, content, "./webkit infra plan")
 			assert.Contains(t, content, "needs: [setup-webkit, detect-changes]")
 			assert.Contains(t, content, "<!-- terraform-plan -->")
-			assert.Contains(t, content, "Terraform Plan - Production")
+			assert.Contains(t, content, "Infra Plan")
 		}
 	})
 
