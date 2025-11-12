@@ -62,6 +62,7 @@
 **/.pnp.js
 **/.yarn/install-state.gz
 **/.pnpm-store/
+**/.npmrc
 
 # Testing
 **/coverage/
