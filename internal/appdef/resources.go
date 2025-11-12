@@ -14,8 +14,8 @@ type (
 	// made available to apps through environment variables.
 	Resource struct {
 		Name             string               `json:"name" required:"true" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the resource (used in environment variable references)"`
-		Type             ResourceType         `json:"type" required:"true" validate:"required,oneof=postgres s3" description:"Type of resource to provision (postgres, s3)"`
-		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean backblaze" description:"Cloud provider hosting this resource (digitalocean, backblaze)"`
+		Type             ResourceType         `json:"type" required:"true" validate:"required,oneof=postgres s3 sqlite" description:"Type of resource to provision (postgres, s3, sqlite)"`
+		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean backblaze turso" description:"Cloud provider hosting this resource (digitalocean, backblaze, turso)"`
 		Config           map[string]any       `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
 		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
 		TerraformManaged *bool                `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`
@@ -34,6 +34,7 @@ type ResourceType string
 const (
 	ResourceTypePostgres ResourceType = "postgres"
 	ResourceTypeS3       ResourceType = "s3"
+	ResourceTypeSQLite   ResourceType = "sqlite"
 )
 
 // String implements fmt.Stringer on the ResourceType.
@@ -48,6 +49,7 @@ type ResourceProvider string
 const (
 	ResourceProviderDigitalOcean ResourceProvider = "digitalocean"
 	ResourceProviderBackBlaze    ResourceProvider = "backblaze"
+	ResourceProviderTurso        ResourceProvider = "turso"
 )
 
 // String implements fmt.Stringer on the ResourceProvider.
@@ -72,6 +74,13 @@ var requiredOutputs = map[ResourceType][]string{
 		"bucket_name",
 		"bucket_url",
 		"region",
+	},
+	ResourceTypeSQLite: {
+		"id",
+		"connection_url",
+		"host",
+		"database",
+		"auth_token",
 	},
 }
 
@@ -130,6 +139,10 @@ func (r *Resource) applyDefaults() {
 	case "s3":
 		if _, ok := r.Config["acl"]; !ok {
 			r.Config["acl"] = "private"
+		}
+	case "sqlite":
+		if _, ok := r.Config["group"]; !ok {
+			r.Config["group"] = "default"
 		}
 	}
 }

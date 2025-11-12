@@ -14,6 +14,10 @@ terraform {
       source  = "Backblaze/b2"
       version = "~> 0.10.0"
     }
+    turso = {
+      source  = "jpedroh/turso"
+      version = "~> 0.3.0"
+    }
     github = {
       source  = "integrations/github"
       version = "~> 5.0"
@@ -41,6 +45,10 @@ provider "digitalocean" {
 provider "b2" {
   application_key    = var.b2_application_key
   application_key_id = var.b2_application_key_id
+}
+
+provider "turso" {
+  api_token = var.turso_api_token
 }
 
 provider "github" {

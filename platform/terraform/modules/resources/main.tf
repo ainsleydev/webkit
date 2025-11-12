@@ -47,9 +47,9 @@ module "b2_bucket" {
   lifecycle_rule_file_name_prefix = try(var.platform_config.lifecycle_rule_file_name_prefix, null)
 }
 
-# Turso Database
+# Turso SQLite Database
 module "turso_database" {
-  count  = var.platform_provider == "turso" && var.platform_type == "turso" ? 1 : 0
+  count  = var.platform_provider == "turso" && var.platform_type == "sqlite" ? 1 : 0
   source = "../../providers/turso/database"
 
   name         = var.name

@@ -9,12 +9,12 @@ variable "name" {
 }
 
 variable "platform_type" {
-  description = "Resource type (postgres, s3, turso, etc.)"
+  description = "Resource type (postgres, s3, sqlite, etc.)"
   type        = string
 
   validation {
-    condition     = contains(["postgres", "s3", "turso"], var.platform_type)
-    error_message = "Type must be one of: postgres, s3, turso"
+    condition     = contains(["postgres", "s3", "sqlite"], var.platform_type)
+    error_message = "Type must be one of: postgres, s3, sqlite"
   }
 }
 
