@@ -1,6 +1,6 @@
 {
-	"version": "v0.0.40",
-	"generated_at": "2025-11-10T20:18:05.851809Z",
+	"version": "v0.1.4",
+	"generated_at": "2025-11-12T09:37:16.778426Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -42,6 +42,14 @@
 			"scaffolded": false,
 			"generated_at": "2025-10-23T14:29:04.752022+01:00"
 		},
+		".github/actions/setup-infra/action.yaml": {
+			"path": ".github/actions/setup-infra/action.yaml",
+			"generator": "cicd:ActionTemplates",
+			"source": "project",
+			"hash": "1434241bea200719a11afa86621dbe7afa1f9a783482c855aa76b6d82eb919e4",
+			"scaffolded": false,
+			"generated_at": "2025-11-12T09:37:16.776287Z"
+		},
 		".github/actions/slack-notify/action.yaml": {
 			"path": ".github/actions/slack-notify/action.yaml",
 			"generator": "cicd:ActionTemplates",
@@ -78,17 +86,17 @@
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "39730ff9d47c3bc960ec13b98c22b11c97f94a78349a38f22d69ff2842b4a4a9",
+			"hash": "3b1cfcdf13fcb7ebb10ed835df9de7cc70ddadabf3a179f79bd7875a12afa55b",
 			"scaffolded": false,
-			"generated_at": "2025-11-10T20:18:05.848258Z"
+			"generated_at": "2025-11-12T09:37:16.774554Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "b382a4458fc78d1829c62c2afef9cd11d6071a7c98f59b5b46c25e6b541bc7af",
+			"hash": "758dbddc12451b391e5c6fa990e872096cf241166cad3f3f5e8a28e08ca7fc34",
 			"scaffolded": false,
-			"generated_at": "2025-11-10T20:18:05.849354Z"
+			"generated_at": "2025-11-12T09:37:16.77564Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",

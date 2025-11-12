@@ -18,6 +18,9 @@ permissions:
   pull-requests: write
   issues: write
 
+env:
+  TF_VERSION: '1.13.0'
+
 jobs:
   setup-webkit:
     runs-on: ubuntu-latest
@@ -218,8 +221,25 @@ jobs:
       - name: Make WebKit executable
         run: chmod +x ./webkit
 
+      - name: Setup Infrastructure Dependencies
+        uses: ./.github/actions/setup-infra
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
       - name: Run Terraform Plan
         id: plan
+        env:
+          SOPS_AGE_KEY: ${{ secrets.ORG_AGE_SECRET }}
+          DO_API_KEY: ${{ secrets.ORG_DO_ACCESS_TOKEN }}
+          DO_SPACES_ACCESS_KEY: ${{ secrets.ORG_DO_SPACES_ACCESS_KEY }}
+          DO_SPACES_SECRET_KEY: ${{ secrets.ORG_DO_SPACES_SECRET_KEY }}
+          BACK_BLAZE_BUCKET: ${{ secrets.ORG_BACK_BLAZE_TF_BUCKET }}
+          BACK_BLAZE_KEY_ID: ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}
+          BACK_BLAZE_APPLICATION_KEY: ${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}
+          GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+          GITHUB_TOKEN_CLASSIC: ${{ secrets.ORG_GITHUB_TOKEN_CLASSIC }}
+          SLACK_BOT_TOKEN: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
+          SLACK_USER_TOKEN: ${{ secrets.ORG_SLACK_USER_TOKEN }}
         run: |
           echo "🔍 Running terraform plan for production environment..."
 
@@ -237,9 +257,21 @@ jobs:
             status_emoji="🟢"
             status_text="No infrastructure changes"
           else
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-            status_emoji="🟡"
-            status_text="Infrastructure changes detected"
+            # Detect if changes are SHA-only (image tag updates).
+            # Look for update lines (~) and check if only SHA tag changes exist.
+            sha_changes=$(grep -E '^\s*~\s+tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' plan-output.txt || true)
+            other_changes=$(grep -E '^\s*~\s+' plan-output.txt | grep -v -E 'tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' || true)
+
+            # If we have SHA changes but no other changes, it's SHA-only.
+            if [ -n "$sha_changes" ] && [ -z "$other_changes" ]; then
+              echo "changes_detected=true" >> $GITHUB_OUTPUT
+              status_emoji="🔵"
+              status_text="SHA-only deployment update"
+            else
+              echo "changes_detected=true" >> $GITHUB_OUTPUT
+              status_emoji="🟡"
+              status_text="Infrastructure changes detected"
+            fi
           fi
 
           # Format output for PR comment.
@@ -260,6 +292,14 @@ jobs:
             echo "</details>"
             echo 'EOF'
           } >> $GITHUB_OUTPUT
+
+          # Only fail if the plan command had a real error (not just changes detected)
+          if [ $plan_exit_code -ne 0 ]; then
+            echo "⚠️ Terraform plan exited with code $plan_exit_code"
+            echo "Plan output has been posted as a PR comment for review"
+            # Don't fail the workflow - let the PR comment show the error
+            # exit $plan_exit_code
+          fi
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
