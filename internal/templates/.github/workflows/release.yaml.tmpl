@@ -382,7 +382,7 @@ jobs:
           commit_sha: {{ ghVar "github.sha" }}
           slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
           channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
-          buttons: {{ ghVar "steps.buttons.outputs.buttons" }}
+          buttons: '{{ ghVar "steps.buttons.outputs.buttons" }}'
 
   # Notify Slack on release failure
   notify-failure:
@@ -409,4 +409,4 @@ jobs:
           commit_sha: {{ ghVar "github.sha" }}
           slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
           channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
-          buttons: {{ ghVar "steps.buttons.outputs.buttons" }}
+          buttons: '{{ ghVar "steps.buttons.outputs.buttons" }}'
