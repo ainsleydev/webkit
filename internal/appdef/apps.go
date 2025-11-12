@@ -162,27 +162,19 @@ func (a *App) PrimaryDomain() string {
 	return ""
 }
 
-// ResolvedTools returns the app's tools with defaults merged in.
-// Default tools for the app type are included first, then overridden
-// by any explicitly configured tools. Tools can be disabled by setting
-// their version to an empty string or "disabled".
+// ResolvedTools returns the app's tools after applying any user overrides.
+// Tools are populated by applyDefaults(), and this method handles
+// disabling tools (by setting version to "" or "disabled").
 func (a *App) ResolvedTools() map[string]string {
 	tools := make(map[string]string)
 
-	// Start with defaults for app type.
-	if defaults, ok := defaultTools[a.Type]; ok {
-		for k, v := range defaults {
-			tools[k] = v
-		}
-	}
-
-	// Override with explicit tools.
+	// Copy all tools from the app.
 	for k, v := range a.Tools {
+		// Skip disabled tools.
 		if v == "" || v == "disabled" {
-			delete(tools, k)
-		} else {
-			tools[k] = v
+			continue
 		}
+		tools[k] = v
 	}
 
 	return tools
@@ -228,6 +220,23 @@ func (a *App) applyDefaults() error {
 			a.Commands[cmd] = CommandSpec{
 				Cmd: defaultCmd,
 			}
+		}
+	}
+
+	// Apply default tools for this app type.
+	if a.Tools == nil {
+		a.Tools = make(map[string]string)
+	}
+
+	if toolDefaults, hasToolDefaults := defaultTools[a.Type]; hasToolDefaults {
+		for tool, version := range toolDefaults {
+			// Skip if user has explicitly configured this tool.
+			if _, exists := a.Tools[tool]; exists {
+				continue
+			}
+
+			// Apply default tool.
+			a.Tools[tool] = version
 		}
 	}
 

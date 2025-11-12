@@ -122,6 +122,69 @@ func TestApp_OrderedCommands(t *testing.T) {
 			assert.Equal(t, "go test ./...", commands[2].Cmd)
 			assert.Equal(t, "go build main.go", commands[3].Cmd)
 		}
+
+		t.Log("Check Tools are Populated")
+		{
+			require.NotNil(t, app.Tools)
+			assert.Equal(t, "latest", app.Tools["golangci-lint"])
+			assert.Equal(t, "latest", app.Tools["templ"])
+			assert.Equal(t, "latest", app.Tools["sqlc"])
+			assert.Len(t, app.Tools, 3)
+		}
+	})
+
+	t.Run("User Tools Preserved", func(t *testing.T) {
+		t.Parallel()
+
+		app := &App{
+			Name: "api",
+			Type: AppTypeGoLang,
+			Path: "./",
+			Tools: map[string]string{
+				"templ": "v0.2.543",
+				"buf":   "v1.28.1",
+			},
+		}
+
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		t.Log("Check User Tools are Preserved")
+		{
+			require.NotNil(t, app.Tools)
+			assert.Equal(t, "v0.2.543", app.Tools["templ"])
+			assert.Equal(t, "v1.28.1", app.Tools["buf"])
+		}
+
+		t.Log("Check Default Tools are Added")
+		{
+			assert.Equal(t, "latest", app.Tools["golangci-lint"])
+			assert.Equal(t, "latest", app.Tools["sqlc"])
+		}
+
+		t.Log("Check All Tools Present")
+		{
+			assert.Len(t, app.Tools, 4)
+		}
+	})
+
+	t.Run("Payload Apps Have No Default Tools", func(t *testing.T) {
+		t.Parallel()
+
+		app := &App{
+			Name: "cms",
+			Type: AppTypePayload,
+			Path: "./",
+		}
+
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		t.Log("Check No Default Tools for Payload")
+		{
+			require.NotNil(t, app.Tools)
+			assert.Len(t, app.Tools, 0)
+		}
 	})
 }
 
@@ -467,11 +530,13 @@ func TestApp_ResolvedTools(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		app  App
-		want map[string]string
+		app           App
+		applyDefaults bool
+		want          map[string]string
 	}{
-		"GoLang defaults": {
-			app: App{Type: AppTypeGoLang},
+		"GoLang defaults after applyDefaults": {
+			app:           App{Type: AppTypeGoLang},
+			applyDefaults: true,
 			want: map[string]string{
 				"golangci-lint": "latest",
 				"templ":         "latest",
@@ -479,20 +544,23 @@ func TestApp_ResolvedTools(t *testing.T) {
 			},
 		},
 		"Payload no defaults": {
-			app:  App{Type: AppTypePayload},
-			want: map[string]string{},
+			app:           App{Type: AppTypePayload},
+			applyDefaults: true,
+			want:          map[string]string{},
 		},
 		"SvelteKit no defaults": {
-			app:  App{Type: AppTypeSvelteKit},
-			want: map[string]string{},
+			app:           App{Type: AppTypeSvelteKit},
+			applyDefaults: true,
+			want:          map[string]string{},
 		},
-		"Custom override": {
+		"Custom override preserved": {
 			app: App{
 				Type: AppTypeGoLang,
 				Tools: map[string]string{
 					"templ": "v0.2.543",
 				},
 			},
+			applyDefaults: true,
 			want: map[string]string{
 				"golangci-lint": "latest",
 				"templ":         "v0.2.543",
@@ -506,6 +574,7 @@ func TestApp_ResolvedTools(t *testing.T) {
 					"buf": "v1.28.1",
 				},
 			},
+			applyDefaults: true,
 			want: map[string]string{
 				"golangci-lint": "latest",
 				"templ":         "latest",
@@ -520,6 +589,7 @@ func TestApp_ResolvedTools(t *testing.T) {
 					"sqlc": "",
 				},
 			},
+			applyDefaults: true,
 			want: map[string]string{
 				"golangci-lint": "latest",
 				"templ":         "latest",
@@ -532,6 +602,7 @@ func TestApp_ResolvedTools(t *testing.T) {
 					"templ": "disabled",
 				},
 			},
+			applyDefaults: true,
 			want: map[string]string{
 				"golangci-lint": "latest",
 				"sqlc":          "latest",
@@ -546,6 +617,7 @@ func TestApp_ResolvedTools(t *testing.T) {
 					"buf":           "v1.28.1",
 				},
 			},
+			applyDefaults: true,
 			want: map[string]string{
 				"golangci-lint": "v1.55.2",
 				"sqlc":          "latest",
@@ -559,6 +631,7 @@ func TestApp_ResolvedTools(t *testing.T) {
 					"custom-tool": "v1.0.0",
 				},
 			},
+			applyDefaults: true,
 			want: map[string]string{
 				"custom-tool": "v1.0.0",
 			},
@@ -568,6 +641,7 @@ func TestApp_ResolvedTools(t *testing.T) {
 				Type:  AppTypeGoLang,
 				Tools: nil,
 			},
+			applyDefaults: true,
 			want: map[string]string{
 				"golangci-lint": "latest",
 				"templ":         "latest",
@@ -579,6 +653,12 @@ func TestApp_ResolvedTools(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
+			if test.applyDefaults {
+				err := test.app.applyDefaults()
+				require.NoError(t, err)
+			}
+
 			got := test.app.ResolvedTools()
 			assert.Equal(t, test.want, got)
 		})
@@ -652,6 +732,11 @@ func TestApp_InstallCommands(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
+			// Apply defaults to populate tools.
+			err := test.app.applyDefaults()
+			require.NoError(t, err)
+
 			got := test.app.InstallCommands()
 			// Sort both slices to ensure consistent comparison,
 			// since map iteration order is not guaranteed.
