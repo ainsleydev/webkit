@@ -21,7 +21,7 @@
 		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
 		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
 		"build:types": "tsc --emitDeclarationOnly --outDir dist",
-		"format": "biome format --write . --apply-unsafe --organise-imports",
+		"format": "biome check --write --unsafe .",
 		"lint": "biome lint --write .",
 		"clean": "rimraf {dist,*.tsbuildinfo}",
 		"test": "jest --passWithNoTests"

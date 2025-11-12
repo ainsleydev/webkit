@@ -1,6 +1,6 @@
 import type { CollectionConfig, Config } from 'payload';
+import { injectAdminIcon, injectAdminLogo } from './plugin/admin.js';
 import { cacheHookCollections, cacheHookGlobals } from './plugin/hooks.js';
-import { injectAdminLogo } from './plugin/logo.js';
 import type { PayloadHelperPluginConfig } from './types.js';
 
 /**
@@ -20,9 +20,14 @@ export const payloadHelper =
 		config.typescript = config.typescript || {};
 		config.typescript.outputFile = './src/types/payload.ts';
 
-		// Inject admin Logo component if adminLogo config is provided
-		if (pluginOptions.adminLogo) {
-			config = injectAdminLogo(config, pluginOptions.adminLogo, pluginOptions.siteName);
+		// Inject admin Logo component if logo config is provided
+		if (pluginOptions.admin?.logo) {
+			config = injectAdminLogo(config, pluginOptions.admin.logo, pluginOptions.siteName);
+		}
+
+		// Inject admin Icon component if icon config is provided
+		if (pluginOptions.admin?.icon) {
+			config = injectAdminIcon(config, pluginOptions.admin.icon, pluginOptions.siteName);
 		}
 
 		// Map collections & add hooks
@@ -78,5 +83,11 @@ export const payloadHelper =
 		return config;
 	};
 
+export type { IconProps } from './admin/components/Icon.js';
 export type { LogoProps } from './admin/components/Logo.js';
-export type { AdminLogoConfig, PayloadHelperPluginConfig } from './types.js';
+export type {
+	AdminConfig,
+	AdminIconConfig,
+	AdminLogoConfig,
+	PayloadHelperPluginConfig,
+} from './types.js';

@@ -32,10 +32,24 @@ export type AdminLogoConfig = {
 	className?: string;
 };
 
+export type AdminIconConfig = {
+	path: string;
+	darkModePath?: string;
+	width?: number;
+	height?: number;
+	alt?: string;
+	className?: string;
+};
+
+export type AdminConfig = {
+	logo?: AdminLogoConfig;
+	icon?: AdminIconConfig;
+};
+
 export type PayloadHelperPluginConfig = {
 	siteName: string;
 	settings?: SettingsConfig;
 	// seo?: SEOConfig;
 	webServer?: WebServerConfig;
-	adminLogo?: AdminLogoConfig;
+	admin?: AdminConfig;
 };
