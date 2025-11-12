@@ -67,7 +67,7 @@ variable "b2_application_key_id" {
 
 variable "turso_api_token" {
   type        = string
-  description = "Turso API token for authentication"
+  description = "Turso token for authentication"
   sensitive   = true
   default     = ""
 }
