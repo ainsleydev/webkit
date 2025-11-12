@@ -138,7 +138,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/pr-comment
         with:
-          body-includes: 'WebKit Drift'
+          body-includes: 'Drift Detection'
           comment-body: ${{ steps.drift.outputs.drift_message }}
           issue-number: ${{ github.event.pull_request.number }}
           private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
@@ -146,7 +146,7 @@ jobs:
       - name: Fail Workflow if Drift Detected
         if: steps.drift.outputs.drift_detected == 'true'
         run: |
-          echo "❌ Drift detected in WebKit-generated files"
+          echo "🔴 Drift detected in generated files"
           echo "Run 'webkit update' to sync your project with the latest templates"
           exit 1
   app-json-diff:
@@ -258,14 +258,14 @@ jobs:
             status_text="No infrastructure changes"
           else
             # Detect if changes are SHA-only (image tag updates).
-            # Look for update lines (~) and check if only SHA tag changes exist.
+            # Look for actual field changes (lines with =) and check if only SHA tag changes exist.
             sha_changes=$(grep -E '^\s*~\s+tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' plan-output.txt || true)
-            other_changes=$(grep -E '^\s*~\s+' plan-output.txt | grep -v -E 'tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' || true)
+            other_changes=$(grep -E '^\s*~\s+\w+\s+=.*' plan-output.txt | grep -v -E 'tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' || true)
 
             # If we have SHA changes but no other changes, it's SHA-only.
             if [ -n "$sha_changes" ] && [ -z "$other_changes" ]; then
               echo "changes_detected=true" >> $GITHUB_OUTPUT
-              status_emoji="🔵"
+              status_emoji="🟢"
               status_text="SHA-only deployment update"
             else
               echo "changes_detected=true" >> $GITHUB_OUTPUT
@@ -278,7 +278,7 @@ jobs:
           {
             echo 'plan_message<<EOF'
             echo "<!-- terraform-plan -->"
-            echo "### Terraform Plan - Production"
+            echo "### Infra Plan"
             echo ""
             echo "$status_emoji **$status_text**"
             echo ""
@@ -456,10 +456,10 @@ jobs:
           echo "$output"
 
           if echo "$output" | grep -q "No schema changes detected"; then
-            echo "✅ No pending migrations detected"
+            echo "🟢 No pending migrations detected"
             echo "result=pass" >> $GITHUB_OUTPUT
           else
-            echo "❌ Schema changes detected! Please run migrations locally."
+            echo "🔴 Schema changes detected! Please run migrations locally."
             echo "result=fail" >> $GITHUB_OUTPUT
 
             echo "---- Generated Migration Files ----"
@@ -478,9 +478,9 @@ jobs:
         run: |
           result="${{ steps.migration.outputs.result }}"
           if [[ "$result" == "fail" ]]; then
-            message="❌ **Schema changes detected!** Please run \`pnpm migrate:create\`, commit the migration, and push."
+            message="🔴 **Schema changes detected!** Please run \`pnpm migrate:create\`, commit the migration, and push."
           elif [[ "$result" == "pass" ]]; then
-            message="✅ **No pending migrations detected.** All clear to merge!"
+            message="🟢 **No pending migrations detected.** All clear to merge!"
           else
             message="⚠️ Migration check did not run correctly."
           fi

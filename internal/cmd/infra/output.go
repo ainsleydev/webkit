@@ -33,6 +33,11 @@ var OutputCmd = &cli.Command{
 			Usage:   "Filter outputs to a specific app name",
 			Aliases: []string{"a"},
 		},
+		&cli.BoolFlag{
+			Name:    "silent",
+			Aliases: []string{"s"},
+			Usage:   "Suppress informational output (only show Terraform output)",
+		},
 	},
 	Action: cmdtools.Wrap(Output),
 }

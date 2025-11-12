@@ -62,6 +62,11 @@ Examples:
 			Usage:   "Environment to import into (development, staging, production)",
 			Value:   env.Production.String(),
 		},
+		&cli.BoolFlag{
+			Name:    "silent",
+			Aliases: []string{"s"},
+			Usage:   "Suppress informational output (only show Terraform output)",
+		},
 	},
 	Action: cmdtools.Wrap(Import),
 }

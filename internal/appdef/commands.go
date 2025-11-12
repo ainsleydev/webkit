@@ -7,13 +7,14 @@ import (
 	"github.com/swaggest/jsonschema-go"
 )
 
-// CommandSpec defines an action for an App, this can run in
-// CI or locally.
+// CommandSpec defines an action for an app that can run in CI/CD or locally.
+// Commands can be specified as a boolean (enable/disable), a string (command override),
+// or an object (full configuration with timeout and CI settings).
 type CommandSpec struct {
 	Name     string `json:"-"`
-	Cmd      string `json:"command,omitempty"`
-	SkipCI   bool   `json:"skip_ci,omitempty"`
-	Timeout  string `json:"timeout,omitempty"`
+	Cmd      string `json:"command,omitempty" description:"The shell command to execute (e.g., 'pnpm build')"`
+	SkipCI   bool   `json:"skip_ci,omitempty" description:"Whether to skip running this command in CI/CD pipelines"`
+	Timeout  string `json:"timeout,omitempty" description:"Maximum execution time for the command (e.g., '5m', '1h')"`
 	Disabled bool   `json:"-"` // Set during unmarshal
 }
 

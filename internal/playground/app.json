@@ -1,5 +1,5 @@
 {
-	"webkit_version": "v0.1.4",
+	"webkit_version": "v0.1.8",
 	"project": {
 		"name": "my-website",
 		"title": "My Website",
@@ -86,6 +86,12 @@
 				}
 			},
 			"usesNPM": null,
+			"domains": [
+				{
+					"name": "cms.my-website.com",
+					"type": "primary"
+				}
+			],
 			"commands": {
 				"build": {"command": "pnpm build"},
 				"format": {"command": "pnpm format"},

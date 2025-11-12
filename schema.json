@@ -1,0 +1,339 @@
+{
+	"title": "WebKit App Definition",
+	"description": "Schema for webkit app.json configuration files",
+	"required": ["webkit_version", "project", "apps"],
+	"definitions": {
+		"AppdefApp": {
+			"required": ["name", "title", "type", "path", "infra"],
+			"properties": {
+				"build": {
+					"$ref": "#/definitions/AppdefBuild",
+					"description": "Build configuration for Docker containerisation"
+				},
+				"commands": {
+					"description": "Custom commands for linting, testing, formatting, and building",
+					"additionalProperties": {
+						"$ref": "#/definitions/AppdefCommandSpec"
+					},
+					"type": ["object", "null"]
+				},
+				"description": {
+					"description": "Brief description of the app's purpose and functionality",
+					"maxLength": 200,
+					"type": "string"
+				},
+				"domains": {
+					"description": "Domain configurations for accessing this app",
+					"items": {
+						"$ref": "#/definitions/AppdefDomain"
+					},
+					"type": ["array", "null"]
+				},
+				"env": {
+					"$ref": "#/definitions/AppdefEnvironment",
+					"description": "Environment variables specific to this app"
+				},
+				"infra": {
+					"$ref": "#/definitions/AppdefInfra",
+					"description": "Infrastructure and deployment configuration"
+				},
+				"name": {
+					"description": "Unique identifier for the app (lowercase, hyphenated)",
+					"pattern": "^[a-z][a-z0-9-]*$",
+					"type": "string"
+				},
+				"path": {
+					"description": "Relative file path to the app's source code directory",
+					"type": "string"
+				},
+				"terraformManaged": {
+					"description": "Whether this app's infrastructure is managed by Terraform (defaults to true)",
+					"type": ["null", "boolean"]
+				},
+				"title": {
+					"description": "Human-readable app name for display purposes",
+					"type": "string"
+				},
+				"type": {
+					"description": "Application type (payload, svelte-kit, golang)",
+					"enum": ["svelte-kit", "golang", "payload"],
+					"type": "string"
+				},
+				"usesNPM": {
+					"description": "Whether this app should be included in the pnpm workspace (auto-detected if not set)",
+					"type": ["null", "boolean"]
+				}
+			},
+			"type": "object"
+		},
+		"AppdefBuild": {
+			"properties": {
+				"dockerfile": {
+					"description": "Path to the Dockerfile relative to the app directory",
+					"type": "string"
+				},
+				"port": {
+					"description": "Port number the app listens on inside the container",
+					"maximum": 65535,
+					"minimum": 1,
+					"type": "integer"
+				},
+				"release": {
+					"description": "Whether to build and release this app in CI/CD (defaults to true)",
+					"type": ["null", "boolean"]
+				}
+			},
+			"type": "object"
+		},
+		"AppdefCommandSpec": {
+			"properties": {
+				"command": {
+					"description": "The shell command to execute (e.g., 'pnpm build')",
+					"type": "string"
+				},
+				"skip_ci": {
+					"description": "Whether to skip running this command in CI/CD pipelines",
+					"type": "boolean"
+				},
+				"timeout": {
+					"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+					"type": "string"
+				}
+			},
+			"type": "object",
+			"oneOf": [
+				{
+					"type": "boolean"
+				},
+				{
+					"type": "string"
+				},
+				{
+					"$ref": "#/definitions/AppdefCommandSpec"
+				}
+			]
+		},
+		"AppdefDomain": {
+			"required": ["name"],
+			"properties": {
+				"name": {
+					"description": "Domain name without protocol (e.g., 'example.com' or 'api.example.com')",
+					"type": "string"
+				},
+				"type": {
+					"description": "Domain type (primary, alias, unmanaged)",
+					"enum": ["primary", "alias", "unmanaged"],
+					"type": "string"
+				},
+				"wildcard": {
+					"description": "Whether this is a wildcard domain (e.g., '*.example.com')",
+					"type": "boolean"
+				},
+				"zone": {
+					"description": "DNS zone for the domain if different from default",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefEnvValue": {
+			"required": ["source"],
+			"properties": {
+				"source": {
+					"description": "Source type for the variable value (value, resource, sops)",
+					"enum": ["value", "resource", "sops"],
+					"type": "string"
+				},
+				"value": {
+					"description": "The value or reference for this variable (format depends on source type)"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefEnvVar": {
+			"additionalProperties": {
+				"$ref": "#/definitions/AppdefEnvValue"
+			},
+			"type": "object"
+		},
+		"AppdefEnvironment": {
+			"properties": {
+				"default": {
+					"$ref": "#/definitions/AppdefEnvVar",
+					"description": "Environment variables that apply to all environments (dev, staging, production)"
+				},
+				"dev": {
+					"$ref": "#/definitions/AppdefEnvVar",
+					"description": "Environment variables specific to the development environment"
+				},
+				"production": {
+					"$ref": "#/definitions/AppdefEnvVar",
+					"description": "Environment variables specific to the production environment"
+				},
+				"staging": {
+					"$ref": "#/definitions/AppdefEnvVar",
+					"description": "Environment variables specific to the staging environment"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefGitHubRepo": {
+			"required": ["owner", "name"],
+			"properties": {
+				"name": {
+					"description": "Repository name on GitHub",
+					"type": "string"
+				},
+				"owner": {
+					"description": "GitHub username or organisation that owns the repository",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefInfra": {
+			"required": ["provider", "type"],
+			"properties": {
+				"config": {
+					"description": "Provider-specific infrastructure configuration options",
+					"additionalProperties": {},
+					"type": ["object", "null"]
+				},
+				"provider": {
+					"description": "Cloud infrastructure provider (digitalocean, backblaze)",
+					"type": "string"
+				},
+				"type": {
+					"description": "Infrastructure type (vm, app, container, function)",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefNotifications": {
+			"properties": {
+				"webhook_url": {
+					"description": "Webhook URL for sending notifications (e.g., Slack webhook)",
+					"type": "string",
+					"format": "uri"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefProject": {
+			"required": ["name", "title", "description", "repo"],
+			"properties": {
+				"description": {
+					"description": "Brief description of the project's purpose and functionality",
+					"maxLength": 200,
+					"type": "string"
+				},
+				"name": {
+					"description": "Unique identifier for the project (lowercase, hyphenated)",
+					"pattern": "^[a-z][a-z0-9-]*$",
+					"type": "string"
+				},
+				"repo": {
+					"$ref": "#/definitions/AppdefGitHubRepo",
+					"description": "GitHub repository information for the project"
+				},
+				"title": {
+					"description": "Human-readable project name displayed in documentation and UIs",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefResource": {
+			"required": ["name", "type", "provider"],
+			"properties": {
+				"backup": {
+					"$ref": "#/definitions/AppdefResourceBackupConfig",
+					"description": "Backup configuration for the resource"
+				},
+				"config": {
+					"description": "Provider-specific resource configuration (e.g., size, region, version)",
+					"additionalProperties": {},
+					"type": ["object", "null"]
+				},
+				"name": {
+					"description": "Unique identifier for the resource (used in environment variable references)",
+					"pattern": "^[a-z][a-z0-9-]*$",
+					"type": "string"
+				},
+				"provider": {
+					"description": "Cloud provider hosting this resource (digitalocean, backblaze)",
+					"enum": ["digitalocean", "backblaze"],
+					"type": "string"
+				},
+				"terraformManaged": {
+					"description": "Whether this resource is managed by Terraform (defaults to true)",
+					"type": ["null", "boolean"]
+				},
+				"type": {
+					"description": "Type of resource to provision (postgres, s3)",
+					"enum": ["postgres", "s3"],
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefResourceBackupConfig": {
+			"properties": {
+				"enabled": {
+					"description": "Whether to enable automated backups for this resource",
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefShared": {
+			"properties": {
+				"env": {
+					"$ref": "#/definitions/AppdefEnvironment",
+					"description": "Environment variables shared across all apps"
+				}
+			},
+			"type": "object"
+		}
+	},
+	"properties": {
+		"$schema": {
+			"description": "JSON Schema reference for IDE validation and autocomplete",
+			"type": "string"
+		},
+		"apps": {
+			"description": "Application definitions for all apps in the project",
+			"items": {
+				"$ref": "#/definitions/AppdefApp"
+			},
+			"minItems": 1,
+			"type": ["array", "null"]
+		},
+		"notifications": {
+			"$ref": "#/definitions/AppdefNotifications",
+			"description": "Alert and notification settings for the project"
+		},
+		"project": {
+			"$ref": "#/definitions/AppdefProject",
+			"description": "Project metadata including name, title, and repository information"
+		},
+		"resources": {
+			"description": "Infrastructure resources such as databases and storage buckets",
+			"items": {
+				"$ref": "#/definitions/AppdefResource"
+			},
+			"type": ["array", "null"]
+		},
+		"shared": {
+			"$ref": "#/definitions/AppdefShared",
+			"description": "Shared configuration that applies to all apps"
+		},
+		"webkit_version": {
+			"description": "The version of webkit used to generate this configuration",
+			"type": "string"
+		}
+	},
+	"type": "object",
+	"$schema": "http://json-schema.org/draft-07/schema#"
+}

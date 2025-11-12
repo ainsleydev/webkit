@@ -40,19 +40,19 @@ func (m *GHClient) EXPECT() *GHClientMockRecorder {
 	return m.recorder
 }
 
-// GetLatestSHATag mocks base method.
-func (m *GHClient) GetLatestSHATag(ctx context.Context, owner, repo, appName string) (string, error) {
+// GetFileContent mocks base method.
+func (m *GHClient) GetFileContent(ctx context.Context, owner, repo, path, ref string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLatestSHATag", ctx, owner, repo, appName)
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "GetFileContent", ctx, owner, repo, path, ref)
+	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetLatestSHATag indicates an expected call of GetLatestSHATag.
-func (mr *GHClientMockRecorder) GetLatestSHATag(ctx, owner, repo, appName any) *gomock.Call {
+// GetFileContent indicates an expected call of GetFileContent.
+func (mr *GHClientMockRecorder) GetFileContent(ctx, owner, repo, path, ref any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestSHATag", reflect.TypeOf((*GHClient)(nil).GetLatestSHATag), ctx, owner, repo, appName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFileContent", reflect.TypeOf((*GHClient)(nil).GetFileContent), ctx, owner, repo, path, ref)
 }
 
 // GetLatestRelease mocks base method.
@@ -70,17 +70,17 @@ func (mr *GHClientMockRecorder) GetLatestRelease(ctx, owner, repo any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestRelease", reflect.TypeOf((*GHClient)(nil).GetLatestRelease), ctx, owner, repo)
 }
 
-// GetFileContent mocks base method.
-func (m *GHClient) GetFileContent(ctx context.Context, owner, repo, path, ref string) ([]byte, error) {
+// GetLatestSHATag mocks base method.
+func (m *GHClient) GetLatestSHATag(ctx context.Context, owner, repo, appName string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFileContent", ctx, owner, repo, path, ref)
-	ret0, _ := ret[0].([]byte)
+	ret := m.ctrl.Call(m, "GetLatestSHATag", ctx, owner, repo, appName)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetFileContent indicates an expected call of GetFileContent.
-func (mr *GHClientMockRecorder) GetFileContent(ctx, owner, repo, path, ref any) *gomock.Call {
+// GetLatestSHATag indicates an expected call of GetLatestSHATag.
+func (mr *GHClientMockRecorder) GetLatestSHATag(ctx, owner, repo, appName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFileContent", reflect.TypeOf((*GHClient)(nil).GetFileContent), ctx, owner, repo, path, ref)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestSHATag", reflect.TypeOf((*GHClient)(nil).GetLatestSHATag), ctx, owner, repo, appName)
 }

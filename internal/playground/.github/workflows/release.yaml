@@ -179,7 +179,7 @@ jobs:
           # Check if there are changes in the plan output.
           if grep -q "No changes" plan-output.txt || grep -q "0 to add, 0 to change, 0 to destroy" plan-output.txt; then
             echo "changes_detected=false" >> $GITHUB_OUTPUT
-            status="✅ No infrastructure changes"
+            status="🟢 No infrastructure changes"
           else
             echo "changes_detected=true" >> $GITHUB_OUTPUT
             status="⚠️ Infrastructure changes detected"
@@ -188,7 +188,7 @@ jobs:
           # Format Slack message.
           {
             echo 'slack_message<<EOF'
-            echo "*Terraform Plan - Production*"
+            echo "*Infra Plan*"
             echo ""
             echo "$status"
             echo ""
@@ -238,6 +238,7 @@ jobs:
     needs: [build-and-push, setup-webkit, terraform-apply-production]
     environment:
       name: production-cms
+      url: https://cms.my-website.com
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -320,7 +321,7 @@ jobs:
             -e git_sha=${{ steps.determine_sha.outputs.sha }}
             -e github_user=${{ github.repository_owner }}
             -e github_token=${{ secrets.GITHUB_TOKEN }}
-            -e domain=
+            -e domain=cms.my-website.com
             -e docker_image=${{ github.event.repository.name }}-cms
             -e docker_image_tag=sha-${{ steps.determine_sha.outputs.sha }}
             -e docker_port=3000

@@ -22,8 +22,14 @@
 			"Bash(curl:*)",
 			"WebSearch",
 			"Bash(go build:*)",
-			"Bash(pnpm webkit update:*)",
-			"Bash(pnpm test:go:*)"
+			"Bash(APP_ENV=development go run:*)",
+			"Bash(gofumpt:*)",
+			"WebFetch(domain:github.com)",
+			"Bash(go generate:*)",
+			"WebFetch(domain:pkg.go.dev)",
+			"Bash(python3:*)",
+			"Bash(go doc:*)",
+			"Bash(go get:*)"
 		],
 		"deny": [],
 		"ask": []

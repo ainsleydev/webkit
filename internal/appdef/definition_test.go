@@ -668,4 +668,16 @@ func TestDefinition_ApplyDefaults(t *testing.T) {
 		err := def.ApplyDefaults()
 		assert.NoError(t, err)
 	})
+
+	t.Run("Schema Added", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{}
+
+		err := def.ApplyDefaults()
+		assert.NoError(t, err)
+
+		want := "https://raw.githubusercontent.com/ainsleydev/webkit/main/schema.json"
+		assert.Equal(t, want, def.Schema)
+	})
 }
