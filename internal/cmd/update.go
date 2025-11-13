@@ -40,6 +40,7 @@ var updateOps = []runner{
 
 	// Alphabetically
 	{files.Schema, "Files: Create WebKit JSON schema"},
+	{files.ClaudeSettings, "Files: Create Claude Code settings"},
 	{files.CodeStyle, "Files: Create code style files"},
 	{files.DockerIgnore, "Files: Create .dockerignore files"},
 	{files.GitSettings, "Files: Create git settings"},
