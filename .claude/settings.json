@@ -1,13 +1,7 @@
 {
 	"permissions": {
 		"allow": [
-			"Bash(go test:*)",
-			"Bash(go build:*)",
-			"Bash(go run:*)",
-			"Bash(go generate:*)",
-			"Bash(go doc:*)",
-			"Bash(go get:*)",
-			"Bash(APP_ENV=development go run:*)",
+			"Bash(go:*)",
 			"Bash(gofumpt:*)",
 			"Bash(git checkout:*)",
 			"Bash(git add:*)",
@@ -22,10 +16,6 @@
 			"Bash(pnpm format:go:*)",
 			"Bash(pnpm lint:*)",
 			"Bash(pnpm lint:go:*)",
-			"Bash(pnpm run build:types:*)",
-			"Bash(pnpm --filter @ainsleydev/payload-helper build:*)",
-			"Bash(pnpm --filter @ainsleydev/payload-helper add:*)",
-			"Bash(pnpm --filter @ainsleydev/payload-helper format:*)",
 			"Bash(./webkit:*)",
 			"Bash(webkit:*)",
 			"Bash(cat:*)",

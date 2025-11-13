@@ -1,13 +1,7 @@
 {
 	"permissions": {
 		"allow": [
-			"Bash(go test:*)",
-			"Bash(go build:*)",
-			"Bash(go run:*)",
-			"Bash(go generate:*)",
-			"Bash(go doc:*)",
-			"Bash(go get:*)",
-			"Bash(APP_ENV=development go run:*)",
+			"Bash(go:*)",
 			"Bash(gofumpt:*)",
 			"Bash(git checkout:*)",
 			"Bash(git add:*)",
@@ -20,7 +14,6 @@
 			"Bash(pnpm build:*)",
 			"Bash(pnpm format:*)",
 			"Bash(pnpm lint:*)",
-			"Bash(pnpm run build:types:*)",
 			"Bash(./webkit:*)",
 			"Bash(webkit:*)",
 			"Bash(cat:*)",
