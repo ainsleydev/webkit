@@ -230,7 +230,9 @@ jobs:
           SLACK_USER_TOKEN: {{ ghSecret "ORG_SLACK_USER_TOKEN" }}
         run: |
           echo "🚀 Applying terraform changes for production environment..."
-          ./webkit infra apply --silent
+          # TODO: Uncomment when ready to apply changes.
+          # ./webkit infra apply --silent
+          echo "⚠️  Apply is currently disabled - remove this comment to enable"
 
       - name: Skip Apply for SHA-only Changes
         if: steps.plan.outputs.sha_only == 'true'
