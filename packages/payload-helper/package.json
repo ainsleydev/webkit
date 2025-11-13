@@ -34,6 +34,7 @@
 		"access": "public"
 	},
 	"dependencies": {
+		"@ainsleydev/email-templates": "workspace:*",
 		"@lexical/headless": "0.38.2",
 		"@lexical/html": "0.38.2",
 		"@nouance/payload-better-fields-plugin": "^1.4.1",
