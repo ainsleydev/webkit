@@ -122,8 +122,10 @@ jobs:
           delete-only-untagged-versions: false
 
   # Terraform Apply - Production
-  # NOTE: Currently running 'plan' as a dry run to test the workflow.
-  # Change to 'apply' when ready for actual infrastructure provisioning.
+  # Strategy: Run plan to detect SHA-only changes, then conditionally skip apply.
+  # SHA-only changes (container image updates) are handled by deploy jobs, not terraform.
+  # Note: Plan runs twice for real infrastructure changes (once here, once in apply).
+  # Future optimisation: Save plan file and pass to apply (requires webkit CLI changes).
   terraform-apply-production:
     runs-on: ubuntu-latest
     needs: [setup-webkit, build-and-push]
@@ -145,7 +147,7 @@ jobs:
         with:
           terraform_version: {{ ghVar "env.TF_VERSION" }}
 
-      - name: Run Terraform Plan (Dry Run)
+      - name: Run Terraform Plan
         id: plan
         env:
           SOPS_AGE_KEY: {{ ghSecret "ORG_AGE_SECRET" }}
@@ -162,10 +164,7 @@ jobs:
           SLACK_USER_TOKEN: {{ ghSecret "ORG_SLACK_USER_TOKEN" }}
         run: |
           echo "🔍 Running terraform plan for production environment..."
-          echo "⚠️  NOTE: Currently in dry-run mode (running plan, not apply)"
 
-          # TODO: Change to 'apply' when ready for actual infrastructure provisioning.
-          # ./webkit infra apply --silent
           if ./webkit infra plan --silent > plan-output.txt 2>&1; then
             plan_exit_code=0
           else
@@ -213,6 +212,31 @@ jobs:
           } >> $GITHUB_OUTPUT
 
           exit $plan_exit_code
+
+      - name: Run Terraform Apply
+        if: steps.plan.outputs.sha_only != 'true' && steps.plan.outputs.changes_detected == 'true'
+        env:
+          SOPS_AGE_KEY: {{ ghSecret "ORG_AGE_SECRET" }}
+          DO_API_KEY: {{ ghSecret "ORG_DO_ACCESS_TOKEN" }}
+          DO_SPACES_ACCESS_KEY: {{ ghSecret "ORG_DO_SPACES_ACCESS_KEY" }}
+          DO_SPACES_SECRET_KEY: {{ ghSecret "ORG_DO_SPACES_SECRET_KEY" }}
+          BACK_BLAZE_BUCKET: {{ ghSecret "ORG_BACK_BLAZE_TF_BUCKET" }}
+          BACK_BLAZE_KEY_ID: {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }}
+          BACK_BLAZE_APPLICATION_KEY: {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+          TURSO_TOKEN: {{ ghSecret "ORG_TURSO_TOKEN" }}
+          GITHUB_TOKEN: {{ ghSecret "ORG_GITHUB_TOKEN" }}
+          GITHUB_TOKEN_CLASSIC: {{ ghSecret "ORG_GITHUB_TOKEN_CLASSIC" }}
+          SLACK_BOT_TOKEN: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          SLACK_USER_TOKEN: {{ ghSecret "ORG_SLACK_USER_TOKEN" }}
+        run: |
+          echo "🚀 Applying terraform changes for production environment..."
+          ./webkit infra apply --silent
+
+      - name: Skip Apply for SHA-only Changes
+        if: steps.plan.outputs.sha_only == 'true'
+        run: |
+          echo "⏭️  Skipping terraform apply - only container image SHA changes detected"
+          echo "Deploy jobs will handle the container image updates"
 
       - name: Send Slack Notification
         if: steps.plan.outputs.changes_detected == 'true' && steps.plan.outputs.sha_only != 'true'
