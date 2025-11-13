@@ -407,13 +407,22 @@ func TestReleaseWorkflow(t *testing.T) {
 		t.Log("Terraform Apply Job")
 		{
 			assert.Contains(t, content, "terraform-apply-production:")
-			assert.Contains(t, content, "Run Terraform Plan (Dry Run)")
+			assert.Contains(t, content, "Run Terraform Plan")
+			assert.Contains(t, content, "Run Terraform Apply")
 			assert.Contains(t, content, "./webkit infra plan")
+			assert.Contains(t, content, "./webkit infra apply")
 			assert.Contains(t, content, "needs: [setup-webkit, build-and-push]")
 			assert.Contains(t, content, "Setup Infrastructure Dependencies")
 			assert.Contains(t, content, "./.github/actions/setup-infra")
 			assert.Contains(t, content, "Send Slack Notification")
 			assert.Contains(t, content, "Infra Plan")
+		}
+
+		t.Log("SHA-only detection logic")
+		{
+			assert.Contains(t, content, "sha_only")
+			assert.Contains(t, content, "Skip Apply for SHA-only Changes")
+			assert.Contains(t, content, "if: steps.plan.outputs.sha_only != 'true' && steps.plan.outputs.changes_detected == 'true'")
 		}
 
 		t.Log("Deploy jobs depend on terraform apply")
