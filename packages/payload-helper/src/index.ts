@@ -95,6 +95,7 @@ export { ForgotPasswordEmail } from './email/ForgotPasswordEmail.js';
 export type { ForgotPasswordEmailProps } from './email/ForgotPasswordEmail.js';
 export { VerifyAccountEmail } from './email/VerifyAccountEmail.js';
 export type { VerifyAccountEmailProps } from './email/VerifyAccountEmail.js';
+export { default as env } from './util/env.js';
 export type {
 	AdminConfig,
 	AdminIconConfig,

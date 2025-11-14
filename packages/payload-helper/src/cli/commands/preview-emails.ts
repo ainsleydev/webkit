@@ -1,31 +1,21 @@
 import chalk from 'chalk';
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import type { PayloadHelperPluginConfig } from '../../types.js';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import type { Payload } from 'payload';
 
-export const previewEmails = async (options: { port?: number }) => {
+export const previewEmails = async (options: { payload: Payload; port?: number }) => {
 	const port = options.port || 3000;
+	const payload = options.payload;
 
 	console.log(chalk.blue('🔍 Looking for payload.config.ts...'));
-
-	// Find payload.config.ts in current directory
-	const configPath = join(process.cwd(), 'payload.config.ts');
-	if (!existsSync(configPath)) {
-		console.error(chalk.red('❌ Could not find payload.config.ts in current directory'));
-		process.exit(1);
-	}
-
-	console.log(chalk.green('✓ Found payload.config.ts'));
 
 	// Load the config
 	let emailConfig: PayloadHelperPluginConfig['email'];
 	try {
-		const configUrl = pathToFileURL(configPath).href;
-		const configModule = await import(configUrl);
-		const config = configModule.default || configModule;
+		const config = payload.config;
 
 		// Try to find payloadHelper plugin config
 		const plugins = config.plugins || [];

@@ -146,6 +146,27 @@ npx payload-helper preview-emails --port 3001
 
 The preview will show both ForgotPassword and VerifyAccount emails using your configured theme, frontEndUrl, and content overrides.
 
+## Utilities
+
+### Environment Variables
+
+The package exports an `env` utility object that provides access to environment variables required by Payload Helper.
+
+```typescript
+import { env } from '@ainsleydev/payload-helper'
+
+// Access environment variables
+const spaces = {
+	key: env.DO_SPACES_KEY,
+	secret: env.DO_SPACES_SECRET,
+	endpoint: env.DO_SPACES_ENDPOINT,
+	region: env.DO_SPACES_REGION,
+	bucket: env.DO_SPACES_BUCKET,
+}
+```
+
+**Note:** When using ESM modules, always import utilities from the main package entry point as shown above. Direct imports to subpaths (e.g., `@ainsleydev/payload-helper/dist/util/env`) are not supported.
+
 ## Open Source
 
 ainsley.dev permits the use of any HTML, SCSS and Javascript found within the repository for use

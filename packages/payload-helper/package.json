@@ -17,6 +17,19 @@
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./dist/admin/components/*": {
+			"types": "./dist/admin/components/*.d.ts",
+			"import": "./dist/admin/components/*.js",
+			"default": "./dist/admin/components/*.js"
+		},
+		"./package.json": "./package.json"
+	},
 	"scripts": {
 		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
 		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
