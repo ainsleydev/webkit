@@ -3,6 +3,7 @@ package appdef
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 )
 
 type (
@@ -22,7 +23,7 @@ type (
 		UsesNPM          *bool                   `json:"usesNPM" description:"Whether this app should be included in the pnpm workspace (auto-detected if not set)"`
 		TerraformManaged *bool                   `json:"terraformManaged,omitempty" description:"Whether this app's infrastructure is managed by Terraform (defaults to true)"`
 		Domains          []Domain                `json:"domains,omitzero" description:"Domain configurations for accessing this app"`
-		Tools            map[string]string       `json:"tools,omitempty" description:"Build tools and their versions required for CI/CD (e.g., golangci-lint: latest)"`
+		Tools            map[string]ToolSpec     `json:"tools,omitempty" jsonschema:"oneof_type=string;object" inline:"true" description:"Build tools and their versions or installation commands required for CI/CD"`
 		Commands         map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string" inline:"true" description:"Custom commands for linting, testing, formatting, and building"`
 	}
 	// Build defines Docker build configuration for containerised applications.
@@ -162,40 +163,78 @@ func (a *App) PrimaryDomain() string {
 	return ""
 }
 
-// ResolvedTools returns the app's tools after applying any user overrides.
-// Tools are populated by applyDefaults(), and this method handles
-// disabling tools (by setting version to "" or "disabled").
-func (a *App) ResolvedTools() map[string]string {
-	tools := make(map[string]string)
+// ResolvedTools returns the app's tools with resolved installation commands.
+// Tools are populated by applyDefaults(), and this method handles version
+// overrides and custom install commands.
+func (a *App) ResolvedTools() map[string]ToolSpec {
+	tools := make(map[string]ToolSpec)
 
-	// Copy all tools from the app.
-	for k, v := range a.Tools {
+	// Get default tools for reference.
+	var defaults map[string]Tool
+	if d, ok := defaultTools[a.Type]; ok {
+		defaults = d
+	}
+
+	for toolName, spec := range a.Tools {
 		// Skip disabled tools.
-		if v == "" || v == "disabled" {
+		if spec.Version == "disabled" || spec.Version == "" {
 			continue
 		}
-		tools[k] = v
+
+		// If user provided custom install command, use it as-is.
+		if spec.Install != "" {
+			tools[toolName] = spec
+			continue
+		}
+
+		// User only provided version override - need to construct install command.
+		// First check if we have a default for this tool.
+		if defaultTool, hasDefault := defaults[toolName]; hasDefault {
+			// Replace version in default install command.
+			install := replaceVersion(defaultTool.Install, defaultTool.Version, spec.Version)
+			tools[toolName] = ToolSpec{
+				Version: spec.Version,
+				Install: install,
+			}
+			continue
+		}
+
+		// Tool not in defaults - try goToolRegistry for backward compatibility.
+		if installPath, ok := goToolRegistry[toolName]; ok {
+			tools[toolName] = ToolSpec{
+				Version: spec.Version,
+				Install: fmt.Sprintf("go install %s@%s", installPath, spec.Version),
+			}
+			continue
+		}
+
+		// Assume toolName is already a full install path (e.g., "github.com/custom/tool").
+		tools[toolName] = ToolSpec{
+			Version: spec.Version,
+			Install: fmt.Sprintf("go install %s@%s", toolName, spec.Version),
+		}
 	}
 
 	return tools
 }
 
 // InstallCommands returns the shell commands needed to install
-// all resolved tools for this app. For Go tools, it uses the
-// goToolRegistry to map tool names to their full install paths.
+// all resolved tools for this app.
 func (a *App) InstallCommands() []string {
 	var commands []string
 
-	for tool, version := range a.ResolvedTools() {
-		if installPath, ok := goToolRegistry[tool]; ok {
-			commands = append(commands, fmt.Sprintf("go install %s@%s", installPath, version))
-		} else {
-			// Assume tool is already a full install path.
-			commands = append(commands, fmt.Sprintf("go install %s@%s", tool, version))
-		}
+	for _, spec := range a.ResolvedTools() {
+		commands = append(commands, spec.Install)
 	}
 
 	return commands
+}
+
+// replaceVersion replaces the old version in an install command with a new version.
+// For example: "go install foo@latest" with oldVer="latest" newVer="v1.0.0" becomes "go install foo@v1.0.0"
+func replaceVersion(installCmd, oldVersion, newVersion string) string {
+	// Simple string replacement of @oldVersion with @newVersion.
+	return strings.ReplaceAll(installCmd, "@"+oldVersion, "@"+newVersion)
 }
 
 func (a *App) applyDefaults() error {
@@ -225,18 +264,21 @@ func (a *App) applyDefaults() error {
 
 	// Apply default tools for this app type.
 	if a.Tools == nil {
-		a.Tools = make(map[string]string)
+		a.Tools = make(map[string]ToolSpec)
 	}
 
 	if toolDefaults, hasToolDefaults := defaultTools[a.Type]; hasToolDefaults {
-		for tool, version := range toolDefaults {
+		for toolName, toolDef := range toolDefaults {
 			// Skip if user has explicitly configured this tool.
-			if _, exists := a.Tools[tool]; exists {
+			if _, exists := a.Tools[toolName]; exists {
 				continue
 			}
 
-			// Apply default tool.
-			a.Tools[tool] = version
+			// Apply default tool from registry.
+			a.Tools[toolName] = ToolSpec{
+				Version: toolDef.Version,
+				Install: toolDef.Install,
+			}
 		}
 	}
 

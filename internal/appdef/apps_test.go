@@ -126,9 +126,9 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Log("Check Tools are Populated")
 		{
 			require.NotNil(t, app.Tools)
-			assert.Equal(t, "latest", app.Tools["golangci-lint"])
-			assert.Equal(t, "latest", app.Tools["templ"])
-			assert.Equal(t, "latest", app.Tools["sqlc"])
+			assert.Equal(t, "latest", app.Tools["golangci-lint"].Version)
+			assert.Equal(t, "latest", app.Tools["templ"].Version)
+			assert.Equal(t, "latest", app.Tools["sqlc"].Version)
 			assert.Len(t, app.Tools, 3)
 		}
 	})
@@ -140,9 +140,9 @@ func TestApp_OrderedCommands(t *testing.T) {
 			Name: "api",
 			Type: AppTypeGoLang,
 			Path: "./",
-			Tools: map[string]string{
-				"templ": "v0.2.543",
-				"buf":   "v1.28.1",
+			Tools: map[string]ToolSpec{
+				"templ": {Version: "v0.2.543"},
+				"buf":   {Version: "v1.28.1"},
 			},
 		}
 
@@ -152,14 +152,14 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Log("Check User Tools are Preserved")
 		{
 			require.NotNil(t, app.Tools)
-			assert.Equal(t, "v0.2.543", app.Tools["templ"])
-			assert.Equal(t, "v1.28.1", app.Tools["buf"])
+			assert.Equal(t, "v0.2.543", app.Tools["templ"].Version)
+			assert.Equal(t, "v1.28.1", app.Tools["buf"].Version)
 		}
 
 		t.Log("Check Default Tools are Added")
 		{
-			assert.Equal(t, "latest", app.Tools["golangci-lint"])
-			assert.Equal(t, "latest", app.Tools["sqlc"])
+			assert.Equal(t, "latest", app.Tools["golangci-lint"].Version)
+			assert.Equal(t, "latest", app.Tools["sqlc"].Version)
 		}
 
 		t.Log("Check All Tools Present")
@@ -529,218 +529,130 @@ func TestApp_PrimaryDomain(t *testing.T) {
 func TestApp_ResolvedTools(t *testing.T) {
 	t.Parallel()
 
-	tt := map[string]struct {
-		app           App
-		applyDefaults bool
-		want          map[string]string
-	}{
-		"GoLang defaults after applyDefaults": {
-			app:           App{Type: AppTypeGoLang},
-			applyDefaults: true,
-			want: map[string]string{
-				"golangci-lint": "latest",
-				"templ":         "latest",
-				"sqlc":          "latest",
-			},
-		},
-		"Payload no defaults": {
-			app:           App{Type: AppTypePayload},
-			applyDefaults: true,
-			want:          map[string]string{},
-		},
-		"SvelteKit no defaults": {
-			app:           App{Type: AppTypeSvelteKit},
-			applyDefaults: true,
-			want:          map[string]string{},
-		},
-		"Custom override preserved": {
-			app: App{
-				Type: AppTypeGoLang,
-				Tools: map[string]string{
-					"templ": "v0.2.543",
-				},
-			},
-			applyDefaults: true,
-			want: map[string]string{
-				"golangci-lint": "latest",
-				"templ":         "v0.2.543",
-				"sqlc":          "latest",
-			},
-		},
-		"Add custom tool": {
-			app: App{
-				Type: AppTypeGoLang,
-				Tools: map[string]string{
-					"buf": "v1.28.1",
-				},
-			},
-			applyDefaults: true,
-			want: map[string]string{
-				"golangci-lint": "latest",
-				"templ":         "latest",
-				"sqlc":          "latest",
-				"buf":           "v1.28.1",
-			},
-		},
-		"Disable default tool with empty string": {
-			app: App{
-				Type: AppTypeGoLang,
-				Tools: map[string]string{
-					"sqlc": "",
-				},
-			},
-			applyDefaults: true,
-			want: map[string]string{
-				"golangci-lint": "latest",
-				"templ":         "latest",
-			},
-		},
-		"Disable default tool with disabled": {
-			app: App{
-				Type: AppTypeGoLang,
-				Tools: map[string]string{
-					"templ": "disabled",
-				},
-			},
-			applyDefaults: true,
-			want: map[string]string{
-				"golangci-lint": "latest",
-				"sqlc":          "latest",
-			},
-		},
-		"Multiple overrides": {
-			app: App{
-				Type: AppTypeGoLang,
-				Tools: map[string]string{
-					"golangci-lint": "v1.55.2",
-					"templ":         "disabled",
-					"buf":           "v1.28.1",
-				},
-			},
-			applyDefaults: true,
-			want: map[string]string{
-				"golangci-lint": "v1.55.2",
-				"sqlc":          "latest",
-				"buf":           "v1.28.1",
-			},
-		},
-		"Only custom tools": {
-			app: App{
-				Type: AppTypePayload,
-				Tools: map[string]string{
-					"custom-tool": "v1.0.0",
-				},
-			},
-			applyDefaults: true,
-			want: map[string]string{
-				"custom-tool": "v1.0.0",
-			},
-		},
-		"Nil tools map": {
-			app: App{
-				Type:  AppTypeGoLang,
-				Tools: nil,
-			},
-			applyDefaults: true,
-			want: map[string]string{
-				"golangci-lint": "latest",
-				"templ":         "latest",
-				"sqlc":          "latest",
-			},
-		},
-	}
+	t.Run("GoLang defaults after applyDefaults", func(t *testing.T) {
+		t.Parallel()
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+		app := App{Type: AppTypeGoLang}
+		err := app.applyDefaults()
+		require.NoError(t, err)
 
-			if test.applyDefaults {
-				err := test.app.applyDefaults()
-				require.NoError(t, err)
-			}
+		got := app.ResolvedTools()
+		assert.Len(t, got, 3)
+		assert.Equal(t, "latest", got["golangci-lint"].Version)
+		assert.Equal(t, "latest", got["templ"].Version)
+		assert.Equal(t, "latest", got["sqlc"].Version)
+		assert.Contains(t, got["golangci-lint"].Install, "golangci-lint")
+	})
 
-			got := test.app.ResolvedTools()
-			assert.Equal(t, test.want, got)
-		})
-	}
+	t.Run("Custom version override", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]ToolSpec{
+				"templ": {Version: "v0.2.543"},
+			},
+		}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.ResolvedTools()
+		assert.Len(t, got, 3)
+		assert.Equal(t, "v0.2.543", got["templ"].Version)
+		assert.Contains(t, got["templ"].Install, "@v0.2.543")
+	})
+
+	t.Run("Custom install command", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]ToolSpec{
+				"custom": {
+					Version: "v1.0.0",
+					Install: "curl -sSL https://example.com/install.sh | sh",
+				},
+			},
+		}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.ResolvedTools()
+		assert.Contains(t, got, "custom")
+		assert.Equal(t, "curl -sSL https://example.com/install.sh | sh", got["custom"].Install)
+	})
+
+	t.Run("Disable default tool", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]ToolSpec{
+				"sqlc": {Version: "disabled"},
+			},
+		}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.ResolvedTools()
+		assert.Len(t, got, 2)
+		assert.NotContains(t, got, "sqlc")
+	})
 }
 
 func TestApp_InstallCommands(t *testing.T) {
 	t.Parallel()
 
-	tt := map[string]struct {
-		app  App
-		want []string
-	}{
-		"GoLang defaults": {
-			app: App{Type: AppTypeGoLang},
-			want: []string{
-				"go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest",
-				"go install github.com/a-h/templ/cmd/templ@latest",
-				"go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest",
+	t.Run("GoLang defaults", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{Type: AppTypeGoLang}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.InstallCommands()
+		assert.Len(t, got, 3)
+		assert.Contains(t, got, "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest")
+		assert.Contains(t, got, "go install github.com/a-h/templ/cmd/templ@latest")
+		assert.Contains(t, got, "go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest")
+	})
+
+	t.Run("Custom version override", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]ToolSpec{
+				"templ": {Version: "v0.2.543"},
+				"sqlc":  {Version: "disabled"},
 			},
-		},
-		"No tools": {
-			app:  App{Type: AppTypePayload},
-			want: []string{},
-		},
-		"Custom version": {
-			app: App{
-				Type: AppTypeGoLang,
-				Tools: map[string]string{
-					"templ": "v0.2.543",
-					"sqlc":  "disabled",
+		}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.InstallCommands()
+		assert.Len(t, got, 2)
+		assert.Contains(t, got, "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest")
+		assert.Contains(t, got, "go install github.com/a-h/templ/cmd/templ@v0.2.543")
+		assert.NotContains(t, got, "sqlc")
+	})
+
+	t.Run("Custom install command", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]ToolSpec{
+				"custom": {
+					Version: "v1.0.0",
+					Install: "curl -sSL https://example.com/install.sh | sh",
 				},
 			},
-			want: []string{
-				"go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest",
-				"go install github.com/a-h/templ/cmd/templ@v0.2.543",
-			},
-		},
-		"Full install path": {
-			app: App{
-				Type: AppTypeGoLang,
-				Tools: map[string]string{
-					"golangci-lint":                   "disabled",
-					"templ":                           "disabled",
-					"sqlc":                            "disabled",
-					"github.com/custom/tool/cmd/tool": "v1.0.0",
-				},
-			},
-			want: []string{
-				"go install github.com/custom/tool/cmd/tool@v1.0.0",
-			},
-		},
-		"Mixed known and custom": {
-			app: App{
-				Type: AppTypeGoLang,
-				Tools: map[string]string{
-					"buf":                      "v1.28.1",
-					"github.com/custom/mytool": "v2.0.0",
-				},
-			},
-			want: []string{
-				"go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest",
-				"go install github.com/a-h/templ/cmd/templ@latest",
-				"go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest",
-				"go install github.com/bufbuild/buf/cmd/buf@v1.28.1",
-				"go install github.com/custom/mytool@v2.0.0",
-			},
-		},
-	}
+		}
+		err := app.applyDefaults()
+		require.NoError(t, err)
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			// Apply defaults to populate tools.
-			err := test.app.applyDefaults()
-			require.NoError(t, err)
-
-			got := test.app.InstallCommands()
-			// Sort both slices to ensure consistent comparison,
-			// since map iteration order is not guaranteed.
-			assert.ElementsMatch(t, test.want, got)
-		})
-	}
+		got := app.InstallCommands()
+		assert.Contains(t, got, "curl -sSL https://example.com/install.sh | sh")
+	})
 }

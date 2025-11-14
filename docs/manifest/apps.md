@@ -274,6 +274,31 @@ For tools not in the registry, specify the full Go module path:
 }
 ```
 
+### Custom installation methods
+
+For tools that require special installation methods (like downloading binaries or using curl scripts), you can specify the full installation command:
+
+```json
+{
+    "tools": {
+        "goreleaser": {
+            "version": "v1.18.2",
+            "install": "curl -sSL https://github.com/goreleaser/goreleaser/releases/download/v1.18.2/goreleaser_Linux_x86_64.tar.gz | tar xz"
+        },
+        "custom-binary": {
+            "version": "v2.0.0",
+            "install": "wget https://example.com/tool && chmod +x tool && mv tool /usr/local/bin/"
+        }
+    }
+}
+```
+
+When you provide an `install` command, WebKit will execute it exactly as written. This allows you to:
+- Download pre-compiled binaries
+- Run installation scripts
+- Use package managers other than `go install`
+- Execute any custom installation logic
+
 ### Disabling default tools
 
 If you don't need a default tool, you can disable it by setting its version to an empty string or `"disabled"`:
@@ -291,7 +316,11 @@ If you don't need a default tool, you can disable it by setting its version to a
 
 | Key   | Description                                                             | Required | Default                           | Notes                                |
 |-------|-------------------------------------------------------------------------|----------|-----------------------------------|--------------------------------------|
-| tools | Map of tool names to versions (e.g., `"golangci-lint": "latest"`)      | No       | Auto-populated for Go apps        | Only applies to Go apps in CI/CD     |
+| tools | Map of tool names to versions or tool configurations                    | No       | Auto-populated for Go apps        | Can be string (version) or object (version + install command) |
+
+Tool configuration object fields:
+- `version` (string): Version to install (e.g., `"latest"`, `"v1.0.0"`)
+- `install` (string, optional): Custom installation command
 
 ### Example
 
@@ -306,7 +335,11 @@ If you don't need a default tool, you can disable it by setting its version to a
                 "golangci-lint": "v1.55.2",
                 "templ": "v0.2.543",
                 "sqlc": "disabled",
-                "buf": "v1.28.1"
+                "buf": "v1.28.1",
+                "custom-tool": {
+                    "version": "v2.0.0",
+                    "install": "curl -sSL https://example.com/install.sh | sh"
+                }
             },
             "commands": {
                 "lint": "golangci-lint run",
