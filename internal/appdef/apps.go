@@ -3,6 +3,8 @@ package appdef
 import (
 	"fmt"
 	"path/filepath"
+
+	"github.com/ainsleydev/webkit/internal/appdef/types"
 )
 
 type (
@@ -11,19 +13,19 @@ type (
 	// environment variables, and deployment settings. Apps can be of different
 	// types (Payload CMS, SvelteKit, GoLang) and are deployed independently.
 	App struct {
-		Name             string                  `json:"name" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the app (lowercase, hyphenated)"`
-		Title            string                  `json:"title" validate:"required" description:"Human-readable app name for display purposes"`
-		Type             AppType                 `json:"type" validate:"required,oneof=svelte-kit golang payload" description:"Application type (payload, svelte-kit, golang)"`
-		Description      string                  `json:"description,omitempty" validate:"omitempty,max=200" description:"Brief description of the app's purpose and functionality"`
-		Path             string                  `json:"path" validate:"required" description:"Relative file path to the app's source code directory"`
-		Build            Build                   `json:"build" description:"Build configuration for Docker containerisation"`
-		Infra            Infra                   `json:"infra" validate:"required" description:"Infrastructure and deployment configuration"`
-		Env              Environment             `json:"env" description:"Environment variables specific to this app"`
-		UsesNPM          *bool                   `json:"usesNPM" description:"Whether this app should be included in the pnpm workspace (auto-detected if not set)"`
-		TerraformManaged *bool                   `json:"terraformManaged,omitempty" description:"Whether this app's infrastructure is managed by Terraform (defaults to true)"`
-		Domains          []Domain                `json:"domains,omitzero" description:"Domain configurations for accessing this app"`
-		Tools            map[string]Tool         `json:"tools,omitempty" inline:"true" description:"Build tools required for CI/CD workflows"`
-		Commands         map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string" inline:"true" description:"Custom commands for linting, testing, formatting, and building"`
+		Name             string                                  `json:"name" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the app (lowercase, hyphenated)"`
+		Title            string                                  `json:"title" validate:"required" description:"Human-readable app name for display purposes"`
+		Type             AppType                                 `json:"type" validate:"required,oneof=svelte-kit golang payload" description:"Application type (payload, svelte-kit, golang)"`
+		Description      string                                  `json:"description,omitempty" validate:"omitempty,max=200" description:"Brief description of the app's purpose and functionality"`
+		Path             string                                  `json:"path" validate:"required" description:"Relative file path to the app's source code directory"`
+		Build            Build                                   `json:"build" description:"Build configuration for Docker containerisation"`
+		Infra            Infra                                   `json:"infra" validate:"required" description:"Infrastructure and deployment configuration"`
+		Env              Environment                             `json:"env" description:"Environment variables specific to this app"`
+		UsesNPM          *bool                                   `json:"usesNPM" description:"Whether this app should be included in the pnpm workspace (auto-detected if not set)"`
+		TerraformManaged *bool                                   `json:"terraformManaged,omitempty" description:"Whether this app's infrastructure is managed by Terraform (defaults to true)"`
+		Domains          []Domain                                `json:"domains,omitzero" description:"Domain configurations for accessing this app"`
+		Tools            map[string]Tool                         `json:"tools,omitempty" inline:"true" description:"Build tools required for CI/CD workflows"`
+		Commands         *types.OrderedMap[Command, CommandSpec] `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string" inline:"true" description:"Custom commands for linting, testing, formatting, and building"`
 	}
 	// Build defines Docker build configuration for containerised applications.
 	// These settings control how the app is built and exposed in container environments.
@@ -87,7 +89,7 @@ const (
 	DomainTypeUnmanaged DomainType = "unmanaged"
 )
 
-// String implements fmt.Stringer on the DomainType.
+// String §implements fmt.Stringer on the DomainType.
 func (d DomainType) String() string {
 	return string(d)
 }
@@ -98,7 +100,7 @@ func (a *App) OrderedCommands() []CommandSpec {
 	var ordered []CommandSpec
 
 	for _, cmd := range Commands {
-		spec, exists := a.Commands[cmd]
+		spec, exists := a.Commands.Get(cmd)
 		if !exists {
 			// Should not happen because applyDefaults populates them
 			continue
@@ -200,7 +202,7 @@ func (a *App) InstallCommands() []string {
 
 func (a *App) applyDefaults() error {
 	if a.Commands == nil {
-		a.Commands = make(map[Command]CommandSpec)
+		a.Commands = types.NewOrderedMap[Command, CommandSpec]()
 	}
 
 	// Get default Commands for this app type
@@ -211,15 +213,15 @@ func (a *App) applyDefaults() error {
 
 	for _, cmd := range Commands {
 		// Skip if user has explicitly configured this command.
-		if _, exists := a.Commands[cmd]; exists {
+		if _, exists := a.Commands.Get(cmd); exists {
 			continue
 		}
 
 		// Apply default command if available.
 		if defaultCmd, ok := defaults[cmd]; ok {
-			a.Commands[cmd] = CommandSpec{
+			a.Commands.Set(cmd, CommandSpec{
 				Cmd: defaultCmd,
-			}
+			})
 		}
 	}
 

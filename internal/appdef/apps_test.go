@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/ainsleydev/webkit/internal/appdef/types"
 	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
@@ -85,7 +86,7 @@ func TestApp_OrderedCommands(t *testing.T) {
 			Name:     "web",
 			Type:     AppTypeGoLang,
 			Path:     "./",
-			Commands: map[Command]CommandSpec{},
+			Commands: types.NewOrderedMap[Command, CommandSpec](),
 		}
 
 		commands := app.OrderedCommands()
