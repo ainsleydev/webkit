@@ -1,6 +1,6 @@
-import type { Field } from "payload";
+import type { Field } from 'payload';
 // @ts-expect-error
-import { validateURL } from "../util/validation";
+import { validateURL } from '../util/validation';
 
 /**
  * SEO Fields define the additional fields that appear
@@ -8,42 +8,42 @@ import { validateURL } from "../util/validation";
  */
 export const SEOFields: Field[] = [
 	{
-		type: "row",
+		type: 'row',
 		fields: [
 			{
-				name: "private",
-				type: "checkbox",
-				label: "Private",
+				name: 'private',
+				type: 'checkbox',
+				label: 'Private',
 				defaultValue: false,
 				admin: {
-					width: "50%",
+					width: '50%',
 					description:
 						'Enable private mode to prevent robots from crawling the page or website. When enabled it will output <meta name="robots" content="noindex" /> on the frontend.',
 				},
 			},
 			{
-				name: "canonicalURL",
-				type: "text",
-				label: "Canonical",
+				name: 'canonicalURL',
+				type: 'text',
+				label: 'Canonical',
 				admin: {
-					width: "50%",
+					width: '50%',
 					description:
-						"A canonical URL is the version of a webpage chosen by search engines like Google as the main version when there are duplicates.",
+						'A canonical URL is the version of a webpage chosen by search engines like Google as the main version when there are duplicates.',
 				},
 				validate: validateURL,
 			},
 		],
 	},
 	{
-		name: "structuredData",
-		type: "json",
-		label: "Structured Data",
+		name: 'structuredData',
+		type: 'json',
+		label: 'Structured Data',
 		// typescriptSchema: [
 		// 	() => ({...addGoJSONSchema('[]byte', false)}),
 		// ],
 		admin: {
 			description:
-				"Structured data is a standardized format for providing information about a page and classifying the page content. The site Schema.org contains a standardised list of markup that the major search engines — Google, Bing, Yahoo and Yandex — have collectively agreed to support.",
+				'Structured data is a standardized format for providing information about a page and classifying the page content. The site Schema.org contains a standardised list of markup that the major search engines — Google, Bing, Yahoo and Yandex — have collectively agreed to support.',
 		},
 	},
 ];

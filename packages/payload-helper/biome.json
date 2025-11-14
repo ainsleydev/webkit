@@ -4,6 +4,13 @@
 	"files": {
 		"includes": ["**/src/**", "!**/.next/**"]
 	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"jsxQuoteStyle": "single",
+			"trailingCommas": "all"
+		}
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {

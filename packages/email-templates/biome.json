@@ -1,6 +1,13 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.3.5/schema.json",
 	"root": false,
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"jsxQuoteStyle": "single",
+			"trailingCommas": "all"
+		}
+	},
 	"assist": { "actions": { "source": { "organizeImports": "on" } } },
 	"linter": {
 		"enabled": true,

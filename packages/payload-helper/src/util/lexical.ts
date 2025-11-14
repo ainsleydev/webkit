@@ -1,5 +1,5 @@
-import { createHeadlessEditor } from "@lexical/headless";
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
+import { createHeadlessEditor } from '@lexical/headless';
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 // import { sqliteAdapter } from '@payloadcms/db-sqlite';
 // import {
 // 	defaultEditorConfig,
@@ -7,9 +7,9 @@ import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 // 	lexicalEditor,
 // 	sanitizeServerEditorConfig,
 // } from '@payloadcms/richtext-lexical';
-import { JSDOM } from "jsdom";
-import type { SerializedEditorState } from "lexical";
-import { $getRoot, $getSelection } from "lexical";
+import { JSDOM } from 'jsdom';
+import type { SerializedEditorState } from 'lexical';
+import { $getRoot, $getSelection } from 'lexical';
 // import { buildConfig, getPayload } from 'payload';
 // import { importWithoutClientFiles } from 'payload/node';
 
@@ -119,7 +119,7 @@ export const lexicalToHtml = (json: SerializedEditorState): string => {
 	});
 
 	// Initialize a JSDOM instance
-	const dom = new JSDOM("");
+	const dom = new JSDOM('');
 
 	// @ts-expect-error
 	globalThis.window = dom.window;
@@ -131,7 +131,7 @@ export const lexicalToHtml = (json: SerializedEditorState): string => {
 	});
 
 	// Convert the editor state to HTML
-	let html = "";
+	let html = '';
 	editor.getEditorState().read(() => {
 		html = $generateHtmlFromNodes(editor);
 	});

@@ -1,4 +1,4 @@
-import type { Field } from "payload";
+import type { Field } from 'payload';
 
 /**
  * Determines if a Payload field has a name property.
@@ -6,12 +6,12 @@ import type { Field } from "payload";
  * @param field
  */
 export const fieldHasName = (field: Field): boolean => {
-	if (field.type === "ui") {
+	if (field.type === 'ui') {
 		return false;
 	}
 	return (
-		field.type !== "tabs" &&
-		field.type !== "row" &&
-		field.type !== "collapsible"
+		field.type !== 'tabs' &&
+		field.type !== 'row' &&
+		field.type !== 'collapsible'
 	);
 };

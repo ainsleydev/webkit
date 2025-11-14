@@ -3,8 +3,8 @@ import type {
 	Field,
 	GlobalAfterChangeHook,
 	Payload,
-} from "payload";
-import type { WebServerConfig } from "../types.js";
+} from 'payload';
+import type { WebServerConfig } from '../types.js';
 
 /**
  * TODO
@@ -29,19 +29,19 @@ const cacheBust = async (
 	const logger = payload.logger;
 
 	const endpoint =
-		new URL(config?.server?.cacheEndpoint ?? "", config?.server?.baseURL ?? "")
-			.href ?? "";
+		new URL(config?.server?.cacheEndpoint ?? '', config?.server?.baseURL ?? '')
+			.href ?? '';
 
 	try {
 		const response = await fetch(endpoint, {
-			method: "POST",
+			method: 'POST',
 			headers: {
-				"Content-Type": "application/json",
+				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
 				slug: config.slug,
 				fields: config.fields,
-				type: config.isCollection ? "collection" : "global",
+				type: config.isCollection ? 'collection' : 'global',
 				doc: doc,
 				prevDoc: previousDoc,
 			}),
@@ -56,7 +56,7 @@ export const cacheHookCollections = (
 	config: CacheBustConfig,
 ): CollectionAfterChangeHook => {
 	return async ({ req, doc, previousDoc, operation }) => {
-		if (operation !== "update") {
+		if (operation !== 'update') {
 			return;
 		}
 		await cacheBust(config, req.payload, doc, previousDoc);

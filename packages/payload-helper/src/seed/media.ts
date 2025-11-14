@@ -1,8 +1,8 @@
-import path from "node:path";
-import type { Payload, PayloadRequest } from "payload";
-import { getFileByPath } from "payload";
-import { htmlToLexical } from "../util/lexical.js";
-import type { Media, MediaSeed } from "./types.js";
+import path from 'node:path';
+import type { Payload, PayloadRequest } from 'payload';
+import { getFileByPath } from 'payload';
+import { htmlToLexical } from '../util/lexical.js';
+import type { Media, MediaSeed } from './types.js';
 
 /**
  *
@@ -22,7 +22,7 @@ export const uploadMedia = async (
 		const caption = media.caption ? htmlToLexical(media.caption) : null;
 
 		return (await payload.create({
-			collection: "media",
+			collection: 'media',
 			file: image,
 			data: {
 				alt: media.alt,

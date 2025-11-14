@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
 	commitTransaction,
 	getPayload,
@@ -9,8 +9,8 @@ import {
 	type Payload,
 	type PayloadRequest,
 	type SanitizedConfig,
-} from "payload";
-import env from "../util/env.js";
+} from 'payload';
+import env from '../util/env.js';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -40,7 +40,7 @@ export type SeedOptions = {
  */
 export const seed = (opts: { seeder: Seeder; config: SanitizedConfig }) => {
 	const fn = async () => {
-		process.env.PAYLOAD_DROP_DATABASE = "true";
+		process.env.PAYLOAD_DROP_DATABASE = 'true';
 
 		const payload = await getPayload({
 			config: opts.config,
@@ -53,7 +53,7 @@ export const seed = (opts: { seeder: Seeder; config: SanitizedConfig }) => {
 
 		try {
 			// Creating new tables
-			payload.logger.info("Creating indexes...");
+			payload.logger.info('Creating indexes...');
 			try {
 				if (payload.db.init) {
 					await payload.db.init();
@@ -63,13 +63,13 @@ export const seed = (opts: { seeder: Seeder; config: SanitizedConfig }) => {
 				return;
 			}
 
-			payload.logger.info("Migrating DB...");
+			payload.logger.info('Migrating DB...');
 			await payload.db.migrate();
 
 			// Clearing local media
 			if (!env.isProduction) {
-				payload.logger.info("Clearing media...");
-				const mediaDir = path.resolve(dirname, "../../media");
+				payload.logger.info('Clearing media...');
+				const mediaDir = path.resolve(dirname, '../../media');
 				if (fs.existsSync(mediaDir)) {
 					fs.rmSync(mediaDir, { recursive: true, force: true });
 				}
@@ -80,9 +80,9 @@ export const seed = (opts: { seeder: Seeder; config: SanitizedConfig }) => {
 
 			await commitTransaction(req);
 
-			payload.logger.info("Seed complete");
+			payload.logger.info('Seed complete');
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Unknown error";
+			const message = err instanceof Error ? err.message : 'Unknown error';
 			payload.logger.error(`Seed failed: ${message}`);
 			await killTransaction(req);
 		}

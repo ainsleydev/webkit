@@ -11,11 +11,11 @@ import {
 	Row,
 	Section,
 	Text,
-} from "@react-email/components";
+} from '@react-email/components';
 // biome-ignore lint/style/useImportType: React is needed for JSX
-import * as React from "react";
-import { generateStyles } from "../theme/styles.js";
-import type { EmailTheme } from "../theme/types.js";
+import * as React from 'react';
+import { generateStyles } from '../theme/styles.js';
+import type { EmailTheme } from '../theme/types.js';
 
 interface BaseEmailProps {
 	theme: EmailTheme;
@@ -36,7 +36,7 @@ export const BaseEmail = ({ theme, previewText, children }: BaseEmailProps) => {
 			<Head />
 			{previewText && <Preview>{previewText}</Preview>}
 			<Body style={styles.main}>
-				<Section style={{ padding: "0 15px" }}>
+				<Section style={{ padding: '0 15px' }}>
 					<Container style={styles.container}>
 						<Section style={styles.logoSection}>
 							<Img
@@ -48,15 +48,15 @@ export const BaseEmail = ({ theme, previewText, children }: BaseEmailProps) => {
 						<Hr style={styles.hr} />
 						<Section>{children}</Section>
 						<Hr style={styles.hr} />
-						<Section style={{ marginTop: "20px" }}>
+						<Section style={{ marginTop: '20px' }}>
 							<Row>
-								<Column align="left">
+								<Column align='left'>
 									<Text style={styles.footerText}>
 										© {new Date().getFullYear()} {branding.companyName}. {branding.footerText}
 									</Text>
 								</Column>
 								{branding.websiteUrl && (
-									<Column align="right">
+									<Column align='right'>
 										<Text style={styles.footerText}>
 											<Link href={branding.websiteUrl} style={{ color: theme.colours.text.action }}>
 												{new URL(branding.websiteUrl).hostname}

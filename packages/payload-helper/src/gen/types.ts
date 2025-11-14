@@ -1,6 +1,6 @@
-import * as fs from "node:fs";
-import { configToJSONSchema, getPayload, type SanitizedConfig } from "payload";
-import { fieldMapper, type SchemaOptions, schemas } from "../plugin/schema.js";
+import * as fs from 'node:fs';
+import { configToJSONSchema, getPayload, type SanitizedConfig } from 'payload';
+import { fieldMapper, type SchemaOptions, schemas } from '../plugin/schema.js';
 
 /**
  * Creates JSON schema types of Payloads Collections & Globals
@@ -9,11 +9,11 @@ export async function generateTypes(
 	config: SanitizedConfig,
 	opts: SchemaOptions,
 ): Promise<void> {
-	console.log("Compiling JSON types for Collections and Globals...");
+	console.log('Compiling JSON types for Collections and Globals...');
 
 	const outputFile = (
 		process.env.PAYLOAD_TS_OUTPUT_PATH || config.typescript.outputFile
-	).replace(".ts", ".json");
+	).replace('.ts', '.json');
 
 	config.typescript = {
 		...config.typescript,

@@ -1,8 +1,8 @@
-import type { CollectionConfig, Config } from "payload";
-import { injectAdminIcon, injectAdminLogo } from "./plugin/admin.js";
-import { injectEmailTemplates } from "./plugin/email.js";
-import { cacheHookCollections, cacheHookGlobals } from "./plugin/hooks.js";
-import type { PayloadHelperPluginConfig } from "./types.js";
+import type { CollectionConfig, Config } from 'payload';
+import { injectAdminIcon, injectAdminLogo } from './plugin/admin.js';
+import { injectEmailTemplates } from './plugin/email.js';
+import { cacheHookCollections, cacheHookGlobals } from './plugin/hooks.js';
+import type { PayloadHelperPluginConfig } from './types.js';
 
 /**
  * Payload Helper Plugin for websites at ainsley.dev
@@ -19,7 +19,7 @@ export const payloadHelper =
 
 		// Update typescript generation file
 		config.typescript = config.typescript || {};
-		config.typescript.outputFile = "./src/types/payload.ts";
+		config.typescript.outputFile = './src/types/payload.ts';
 
 		// Inject admin Logo component if logo config is provided
 		if (pluginOptions.admin?.logo) {
@@ -99,12 +99,12 @@ export const payloadHelper =
 		return config;
 	};
 
-export type { IconProps } from "./admin/components/Icon.js";
-export type { LogoProps } from "./admin/components/Logo.js";
-export type { ForgotPasswordEmailProps } from "./email/ForgotPasswordEmail.js";
-export { ForgotPasswordEmail } from "./email/ForgotPasswordEmail.js";
-export type { VerifyAccountEmailProps } from "./email/VerifyAccountEmail.js";
-export { VerifyAccountEmail } from "./email/VerifyAccountEmail.js";
+export type { IconProps } from './admin/components/Icon.js';
+export type { LogoProps } from './admin/components/Logo.js';
+export type { ForgotPasswordEmailProps } from './email/ForgotPasswordEmail.js';
+export { ForgotPasswordEmail } from './email/ForgotPasswordEmail.js';
+export type { VerifyAccountEmailProps } from './email/VerifyAccountEmail.js';
+export { VerifyAccountEmail } from './email/VerifyAccountEmail.js';
 export type {
 	AdminConfig,
 	AdminIconConfig,
@@ -112,4 +112,4 @@ export type {
 	EmailConfig,
 	EmailContentOverrides,
 	PayloadHelperPluginConfig,
-} from "./types.js";
+} from './types.js';
