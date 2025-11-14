@@ -49,9 +49,9 @@ export interface EmailTheme {
  */
 export type PartialEmailTheme = {
 	colours?: {
-		text?: Partial<EmailColours['text']>;
-		background?: Partial<EmailColours['background']>;
-		border?: Partial<EmailColours['border']>;
+		text?: Partial<EmailColours["text"]>;
+		background?: Partial<EmailColours["background"]>;
+		border?: Partial<EmailColours["border"]>;
 	};
 	branding?: Partial<EmailBranding>;
 };

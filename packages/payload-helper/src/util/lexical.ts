@@ -1,5 +1,5 @@
-import { createHeadlessEditor } from '@lexical/headless';
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
+import { createHeadlessEditor } from "@lexical/headless";
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 // import { sqliteAdapter } from '@payloadcms/db-sqlite';
 // import {
 // 	defaultEditorConfig,
@@ -7,9 +7,9 @@ import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 // 	lexicalEditor,
 // 	sanitizeServerEditorConfig,
 // } from '@payloadcms/richtext-lexical';
-import { JSDOM } from 'jsdom';
-import { $getRoot, $getSelection, type LexicalEditor } from 'lexical';
-import type { SerializedEditorState } from 'lexical';
+import { JSDOM } from "jsdom";
+import type { SerializedEditorState } from "lexical";
+import { $getRoot, $getSelection } from "lexical";
 // import { buildConfig, getPayload } from 'payload';
 // import { importWithoutClientFiles } from 'payload/node';
 
@@ -61,13 +61,13 @@ export const htmlToLexical = (html: string): SerializedEditorState => {
 			const dom = new JSDOM(`<!DOCTYPE html><body>${html}</body>`);
 
 			// Once you have the DOM instance it's easy to generate LexicalNodes.
-			const nodes = $generateNodesFromDOM(editor, dom.window.document);
+			const _nodes = $generateNodesFromDOM(editor, dom.window.document);
 
 			// Select the root
 			$getRoot().select();
 
 			// Insert them at a selection.
-			const selection = $getSelection();
+			const _selection = $getSelection();
 
 			//if (selection) selection.insertNodes(nodes);
 		},
@@ -119,9 +119,9 @@ export const lexicalToHtml = (json: SerializedEditorState): string => {
 	});
 
 	// Initialize a JSDOM instance
-	const dom = new JSDOM('');
+	const dom = new JSDOM("");
 
-	// @ts-ignore
+	// @ts-expect-error
 	globalThis.window = dom.window;
 	globalThis.document = dom.window.document;
 
@@ -131,7 +131,7 @@ export const lexicalToHtml = (json: SerializedEditorState): string => {
 	});
 
 	// Convert the editor state to HTML
-	let html = '';
+	let html = "";
 	editor.getEditorState().read(() => {
 		html = $generateHtmlFromNodes(editor);
 	});

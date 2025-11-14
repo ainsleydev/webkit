@@ -1,11 +1,11 @@
-import { readdir, stat } from 'node:fs/promises';
-import { createServer } from 'node:http';
-import { join, relative, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
-import { render } from '@react-email/render';
-import * as React from 'react';
-import { defaultTheme } from '../theme/default.js';
-import type { EmailTheme } from '../theme/types.js';
+import { readdir, stat } from "node:fs/promises";
+import { createServer } from "node:http";
+import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+import { render } from "@react-email/render";
+import * as React from "react";
+import { defaultTheme } from "../theme/default.js";
+import type { EmailTheme } from "../theme/types.js";
 
 type EmailComponent = React.ComponentType<{ theme: EmailTheme }>;
 
@@ -37,8 +37,8 @@ async function discoverTemplates(directory: string): Promise<TemplateInfo[]> {
 			const fullPath = join(resolvedDir, entry);
 			const stats = await stat(fullPath);
 
-			if (stats.isFile() && (entry.endsWith('.tsx') || entry.endsWith('.jsx'))) {
-				const name = entry.replace(/\.(tsx|jsx)$/, '');
+			if (stats.isFile() && (entry.endsWith(".tsx") || entry.endsWith(".jsx"))) {
+				const name = entry.replace(/\.(tsx|jsx)$/, "");
 				const route = `/${name.toLowerCase()}`;
 
 				templates.push({
@@ -70,10 +70,10 @@ async function loadTemplate(templatePath: string): Promise<EmailComponent> {
 
 		// Try to find the component - check default export first, then named exports.
 		const component =
-			module.default || Object.values(module).find((exp) => typeof exp === 'function');
+			module.default || Object.values(module).find((exp) => typeof exp === "function");
 
 		if (!component) {
-			throw new Error('No React component found in template file');
+			throw new Error("No React component found in template file");
 		}
 
 		return component as EmailComponent;
@@ -91,12 +91,12 @@ async function loadTemplate(templatePath: string): Promise<EmailComponent> {
 export async function previewCommand(options: PreviewOptions): Promise<void> {
 	const { directory, port } = options;
 
-	console.log('\nDiscovering email templates...');
+	console.log("\nDiscovering email templates...");
 	const templates = await discoverTemplates(directory);
 
 	if (templates.length === 0) {
 		console.error(`\nNo email templates found in "${directory}"`);
-		console.log('Expected .tsx or .jsx files with React components.');
+		console.log("Expected .tsx or .jsx files with React components.");
 		process.exit(1);
 	}
 
@@ -120,10 +120,10 @@ export async function previewCommand(options: PreviewOptions): Promise<void> {
 
 	// Create HTTP server.
 	const server = createServer(async (req, res) => {
-		const url = req.url || '/';
+		const url = req.url || "/";
 
 		// Handle root - redirect to first template.
-		if (url === '/') {
+		if (url === "/") {
 			const firstTemplate = templates[0];
 			if (firstTemplate) {
 				res.writeHead(302, { Location: firstTemplate.route });
@@ -141,19 +141,19 @@ export async function previewCommand(options: PreviewOptions): Promise<void> {
 				const element = React.createElement(component, { theme: defaultTheme });
 				const html = await render(element);
 
-				res.writeHead(200, { 'Content-Type': 'text/html' });
+				res.writeHead(200, { "Content-Type": "text/html" });
 				res.end(html);
 				return;
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
-				res.writeHead(500, { 'Content-Type': 'text/plain' });
+				res.writeHead(500, { "Content-Type": "text/plain" });
 				res.end(`Error rendering template: ${message}`);
 				return;
 			}
 		}
 
 		// 404 - template not found.
-		res.writeHead(404, { 'Content-Type': 'text/html' });
+		res.writeHead(404, { "Content-Type": "text/html" });
 		res.end(`
 			<!DOCTYPE html>
 			<html>
@@ -172,7 +172,7 @@ export async function previewCommand(options: PreviewOptions): Promise<void> {
 					<h1>404 - Template not found</h1>
 					<p>Available templates:</p>
 					<ul>
-						${templates.map((t) => `<li><a href="${t.route}">${t.name}</a></li>`).join('\n')}
+						${templates.map((t) => `<li><a href="${t.route}">${t.name}</a></li>`).join("\n")}
 					</ul>
 				</body>
 			</html>
@@ -181,12 +181,12 @@ export async function previewCommand(options: PreviewOptions): Promise<void> {
 
 	// Start server.
 	server.listen(port, () => {
-		console.log('\n  Email Templates Preview');
+		console.log("\n  Email Templates Preview");
 		console.log(`  ➜  Local:   http://localhost:${port}/\n`);
-		console.log('  Available templates:');
+		console.log("  Available templates:");
 		for (const template of templates) {
 			console.log(`  - http://localhost:${port}${template.route}`);
 		}
-		console.log('\n  Press Ctrl+C to stop\n');
+		console.log("\n  Press Ctrl+C to stop\n");
 	});
 }

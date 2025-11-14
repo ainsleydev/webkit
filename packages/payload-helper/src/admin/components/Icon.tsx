@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useTheme } from '@payloadcms/ui';
+import { useTheme } from "@payloadcms/ui";
 // @ts-expect-error - next/image is a peer dependency and will be available in consumer projects
-import Image from 'next/image';
-import type React from 'react';
-import type { AdminIconConfig } from '../../types.js';
+import Image from "next/image";
+import type React from "react";
+import type { AdminIconConfig } from "../../types.js";
 
 /**
  * Props for the Icon component.
@@ -22,13 +22,16 @@ export type IconProps = {
  */
 export const Icon: React.FC<IconProps> = ({ config }) => {
 	const { theme } = useTheme();
-	const imagePath = theme === 'light' || !config.darkModePath ? config.path : config.darkModePath;
+	const imagePath =
+		theme === "light" || !config.darkModePath
+			? config.path
+			: config.darkModePath;
 
 	return (
 		<figure className={config.className ? config.className : undefined}>
 			<Image
 				src={imagePath}
-				alt={config.alt || 'Icon'}
+				alt={config.alt || "Icon"}
 				width={config.width || 120}
 				height={config.height || 120}
 			/>

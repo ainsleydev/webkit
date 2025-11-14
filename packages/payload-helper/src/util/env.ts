@@ -1,5 +1,5 @@
 function hasKey(key: string): boolean {
-	return Object.prototype.hasOwnProperty.call(process.env, key);
+	return Object.hasOwn(process.env, key);
 }
 
 function envFn<T>(key: string, defaultValue: T): string | T {
@@ -7,11 +7,11 @@ function envFn<T>(key: string, defaultValue: T): string | T {
 }
 
 function getKey(key: string): string {
-	return process.env[key] ?? '';
+	return process.env[key] ?? "";
 }
 
 const utils = {
-	isProduction: getKey('NODE_ENV') === 'production',
+	isProduction: getKey("NODE_ENV") === "production",
 
 	int(key: string, defaultValue?: number): number | undefined {
 		if (!hasKey(key)) {
@@ -34,7 +34,7 @@ const utils = {
 			return defaultValue;
 		}
 
-		return getKey(key) === 'true';
+		return getKey(key) === "true";
 	},
 
 	json(key: string, defaultValue?: object) {
@@ -46,7 +46,9 @@ const utils = {
 			return JSON.parse(getKey(key));
 		} catch (error) {
 			if (error instanceof Error) {
-				throw new Error(`Invalid json environment variable ${key}: ${error.message}`);
+				throw new Error(
+					`Invalid json environment variable ${key}: ${error.message}`,
+				);
 			}
 
 			throw error;
@@ -60,12 +62,12 @@ const utils = {
 
 		let value = getKey(key);
 
-		if (value.startsWith('[') && value.endsWith(']')) {
+		if (value.startsWith("[") && value.endsWith("]")) {
 			value = value.substring(1, value.length - 1);
 		}
 
-		return value.split(',').map((v) => {
-			return v.trim().replace(/^"(.*)"$/, '$1');
+		return value.split(",").map((v) => {
+			return v.trim().replace(/^"(.*)"$/, "$1");
 		});
 	},
 
@@ -79,11 +81,13 @@ const utils = {
 
 	oneOf(key: string, expectedValues?: unknown[], defaultValue?: unknown) {
 		if (!expectedValues) {
-			throw new Error('env.oneOf requires expectedValues');
+			throw new Error("env.oneOf requires expectedValues");
 		}
 
 		if (defaultValue && !expectedValues.includes(defaultValue)) {
-			throw new Error('env.oneOf requires defaultValue to be included in expectedValues');
+			throw new Error(
+				"env.oneOf requires defaultValue to be included in expectedValues",
+			);
 		}
 
 		const rawValue = envFn(key, defaultValue);

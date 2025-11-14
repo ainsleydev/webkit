@@ -1,13 +1,11 @@
 // import type { SEOPluginConfig } from "@payloadcms/plugin-seo/types";
-import type { PartialEmailTheme } from '@ainsleydev/email-templates';
-import type { GlobalConfig, Tab, TextField, TextareaField, UploadField } from 'payload';
+import type { PartialEmailTheme } from "@ainsleydev/email-templates";
+import type { GlobalConfig, Tab } from "payload";
 // import type {SEOPluginConfig} from "@payloadcms/plugin-seo/dist/types.js";
 
 export type SettingsConfig = {
 	additionalTabs?: Tab[];
-	override: (args: {
-		config: GlobalConfig;
-	}) => GlobalConfig;
+	override: (args: { config: GlobalConfig }) => GlobalConfig;
 };
 
 export type WebServerConfig = {

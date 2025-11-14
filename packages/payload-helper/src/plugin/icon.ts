@@ -1,5 +1,5 @@
-import type { Config } from 'payload';
-import type { AdminIconConfig } from '../types.js';
+import type { Config } from "payload";
+import type { AdminIconConfig } from "../types.js";
 
 /**
  * Injects the admin Icon component into the Payload config.
@@ -17,8 +17,8 @@ export const injectAdminIcon = (
 			graphics: {
 				...config.admin?.components?.graphics,
 				Icon: {
-					path: '@ainsleydev/payload-helper/dist/admin/components/Icon',
-					exportName: 'Icon',
+					path: "@ainsleydev/payload-helper/dist/admin/components/Icon",
+					exportName: "Icon",
 					clientProps: {
 						config: {
 							...iconConfig,

@@ -1,9 +1,9 @@
-import { renderEmail } from '@ainsleydev/email-templates';
-import type { Config } from 'payload';
+import { renderEmail } from "@ainsleydev/email-templates";
+import type { Config } from "payload";
 
-import { ForgotPasswordEmail } from '../email/ForgotPasswordEmail.js';
-import { VerifyAccountEmail } from '../email/VerifyAccountEmail.js';
-import type { EmailConfig } from '../types.js';
+import { ForgotPasswordEmail } from "../email/ForgotPasswordEmail.js";
+import { VerifyAccountEmail } from "../email/VerifyAccountEmail.js";
+import type { EmailConfig } from "../types.js";
 
 /**
  * Injects email templates into all auth-enabled collections in the Payload config.
@@ -12,9 +12,12 @@ import type { EmailConfig } from '../types.js';
  * @param emailConfig - The email configuration from plugin options
  * @returns The modified Payload configuration with email templates injected
  */
-export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): Config => {
+export const injectEmailTemplates = (
+	config: Config,
+	emailConfig: EmailConfig,
+): Config => {
 	// Get the website URL for branding, defaulting to Payload's serverUrl
-	const websiteUrl = emailConfig.frontEndUrl || config.serverURL || '';
+	const websiteUrl = emailConfig.frontEndUrl || config.serverURL || "";
 
 	// Merge user theme with websiteUrl for branding
 	const themeOverride = {
@@ -26,7 +29,8 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 	};
 
 	// Find all collections with auth enabled
-	const collectionsWithAuth = config.collections?.filter((collection) => collection.auth) || [];
+	const collectionsWithAuth =
+		config.collections?.filter((collection) => collection.auth) || [];
 
 	// If no collections with auth, return config unchanged
 	if (collectionsWithAuth.length === 0) {
@@ -44,7 +48,7 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 		const updatedCollection = { ...collection };
 
 		// Ensure auth is an object (it could be true or an object)
-		if (typeof updatedCollection.auth === 'boolean') {
+		if (typeof updatedCollection.auth === "boolean") {
 			updatedCollection.auth = {};
 		} else {
 			updatedCollection.auth = { ...updatedCollection.auth };
@@ -53,9 +57,11 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 		// Inject forgotPassword email template
 		const currentForgotPassword = updatedCollection.auth.forgotPassword;
 		updatedCollection.auth.forgotPassword = {
-			...(typeof currentForgotPassword === 'object' ? currentForgotPassword : {}),
+			...(typeof currentForgotPassword === "object"
+				? currentForgotPassword
+				: {}),
 			generateEmailHTML: async (args) => {
-				const token = args?.token || '';
+				const token = args?.token || "";
 				const user = args?.user || {};
 				const resetUrl = `${config.serverURL}/admin/reset/${token}`;
 
@@ -77,9 +83,9 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 		// Inject verify email template
 		const currentVerify = updatedCollection.auth.verify;
 		updatedCollection.auth.verify = {
-			...(typeof currentVerify === 'object' ? currentVerify : {}),
+			...(typeof currentVerify === "object" ? currentVerify : {}),
 			generateEmailHTML: async (args) => {
-				const token = args?.token || '';
+				const token = args?.token || "";
 				const user = args?.user || {};
 				// For verify emails, the token is used in the verification URL
 				const verifyUrl = `${config.serverURL}/admin/${collection.slug}/verify/${token}`;
