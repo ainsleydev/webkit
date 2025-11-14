@@ -136,7 +136,7 @@ module "default_b2_bucket" {
 #
 resource "slack_conversation" "project_channel" {
   name              = "alerts-${var.project_name}"
-  topic             = "CI/CD alerts and notifications for ${var.project_title}"
+  topic             = "CI/CD alerts and notifications for ${replace(var.project_title, "/[^a-zA-Z0-9 ]/", " ")}"
   is_private        = false
   action_on_destroy = "archive"
 
