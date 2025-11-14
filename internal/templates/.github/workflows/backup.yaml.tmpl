@@ -122,8 +122,8 @@ jobs:
           rclone config create do_spaces s3 \
             env_auth false \
             provider DigitalOcean \
-            access_key_id {{ ghSecret "ORG_DO_SPACES_ACCESS_KEY" }} \
-            secret_access_key {{ ghSecret "ORG_DO_SPACES_SECRET_KEY" }} \
+            access_key_id ${{"{{"}} secrets.REPO_DO_SPACES_ACCESS_KEY || secrets.ORG_DO_SPACES_ACCESS_KEY {{ "}}" }} \
+            secret_access_key ${{"{{"}} secrets.REPO_DO_SPACES_SECRET_KEY || secrets.ORG_DO_SPACES_SECRET_KEY {{ "}}" }} \
             region {{ ghSecret (index $.Data .Name "Region") }} \
             endpoint https://{{ ghSecret (index $.Data .Name "Region") }}.digitaloceanspaces.com
 
