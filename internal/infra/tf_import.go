@@ -124,7 +124,7 @@ func buildS3Imports(resource *appdef.Resource, bucketID string) []importAddress 
 	if !ok {
 		region = "ams3"
 	}
-	id := fmt.Sprintf("%s,%s", bucketID, region)
+	id := fmt.Sprintf("%s,%s", region, bucketID)
 
 	return []importAddress{
 		{

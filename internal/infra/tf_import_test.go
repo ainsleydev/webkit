@@ -94,15 +94,15 @@ func TestBuildImportAddresses(t *testing.T) {
 			want: []importAddress{
 				{
 					Address: "module.resources[\"media-bucket\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
-					ID:      "bucket-789,ams3",
+					ID:      "ams3,bucket-789",
 				},
 				{
 					Address: "module.resources[\"media-bucket\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
-					ID:      "bucket-789,ams3",
+					ID:      "ams3,bucket-789",
 				},
 				{
 					Address: "module.resources[\"media-bucket\"].module.do_bucket[0].digitalocean_cdn.this",
-					ID:      "bucket-789,ams3",
+					ID:      "ams3,bucket-789",
 				},
 			},
 			wantErr: false,
@@ -299,15 +299,15 @@ func TestBuildS3Imports(t *testing.T) {
 	want := []importAddress{
 		{
 			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
-			ID:      "bucket-123,ams3",
+			ID:      "ams3,bucket-123",
 		},
 		{
 			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
-			ID:      "bucket-123,ams3",
+			ID:      "ams3,bucket-123",
 		},
 		{
 			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_cdn.this",
-			ID:      "bucket-123,ams3",
+			ID:      "ams3,bucket-123",
 		},
 	}
 
