@@ -172,10 +172,6 @@ func TestBuildImportAddresses(t *testing.T) {
 					Address: "module.resources[\"db\"].module.turso_database[0].turso_database.this",
 					ID:      "my-org/my-database",
 				},
-				{
-					Address: "module.resources[\"db\"].module.turso_database[0].turso_database_token.this",
-					ID:      "my-org/my-database",
-				},
 			},
 			wantErr: false,
 		},
@@ -570,10 +566,6 @@ func TestBuildTursoImports(t *testing.T) {
 					Address: "module.resources[\"db\"].module.turso_database[0].turso_database.this",
 					ID:      "my-org/my-database",
 				},
-				{
-					Address: "module.resources[\"db\"].module.turso_database[0].turso_database_token.this",
-					ID:      "my-org/my-database",
-				},
 			},
 			wantErr: false,
 		},
@@ -620,10 +612,6 @@ func TestBuildTursoSQLiteImports(t *testing.T) {
 					Address: "module.resources[\"db\"].module.turso_database[0].turso_database.this",
 					ID:      "my-org/my-database",
 				},
-				{
-					Address: "module.resources[\"db\"].module.turso_database[0].turso_database_token.this",
-					ID:      "my-org/my-database",
-				},
 			},
 		},
 		"Hyphenated resource name": {
@@ -634,10 +622,6 @@ func TestBuildTursoSQLiteImports(t *testing.T) {
 			want: []importAddress{
 				{
 					Address: "module.resources[\"prod-db\"].module.turso_database[0].turso_database.this",
-					ID:      "acme-corp/production-db",
-				},
-				{
-					Address: "module.resources[\"prod-db\"].module.turso_database[0].turso_database_token.this",
 					ID:      "acme-corp/production-db",
 				},
 			},
