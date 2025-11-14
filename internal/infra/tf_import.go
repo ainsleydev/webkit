@@ -191,20 +191,18 @@ func buildDropletImports(app *appdef.App, dropletID string) []importAddress {
 // buildTursoSQLiteImports creates the import addresses for a Turso SQLite database.
 // The databaseID should be in the format "organization/database-name".
 //
-// This imports both the database and the associated authentication token.
+// Note: Only the database resource is imported. The authentication token (turso_database_token)
+// cannot be imported as it's a generated resource. Terraform will create a new token during
+// the next apply operation.
+//
 // The function builds the full resource address using the resource module pattern:
 //   - Database: module.resources["<name>"].module.turso_database[0].turso_database.this
-//   - Token: module.resources["<name>"].module.turso_database[0].turso_database_token.this
 func buildTursoSQLiteImports(resource *appdef.Resource, databaseID string) []importAddress {
 	baseModule := fmt.Sprintf("module.resources[\"%s\"].module.turso_database[0]", resource.Name)
 
 	return []importAddress{
 		{
 			Address: fmt.Sprintf("%s.turso_database.this", baseModule),
-			ID:      databaseID,
-		},
-		{
-			Address: fmt.Sprintf("%s.turso_database_token.this", baseModule),
 			ID:      databaseID,
 		},
 	}
