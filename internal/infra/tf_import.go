@@ -60,7 +60,7 @@ func buildDigitalOceanImports(projectName string, resource *appdef.Resource, clu
 func buildTursoImports(projectName string, resource *appdef.Resource, databaseID string) ([]importAddress, error) {
 	switch resource.Type {
 	case appdef.ResourceTypeSQLite:
-		return buildTursoSQLiteImports(projectName, resource, databaseID), nil
+		return buildTursoSQLiteImports(resource, databaseID), nil
 	default:
 		return nil, fmt.Errorf("import not supported for resource type %q with Turso provider", resource.Type)
 	}
@@ -186,7 +186,7 @@ func buildDropletImports(app *appdef.App, dropletID string) []importAddress {
 // The function builds the full resource address using the resource module pattern:
 //   - Database: module.resources["<name>"].module.turso_database[0].turso_database.this
 //   - Token: module.resources["<name>"].module.turso_database[0].turso_database_token.this
-func buildTursoSQLiteImports(projectName string, resource *appdef.Resource, databaseID string) []importAddress {
+func buildTursoSQLiteImports(resource *appdef.Resource, databaseID string) []importAddress {
 	baseModule := fmt.Sprintf("module.resources[\"%s\"].module.turso_database[0]", resource.Name)
 
 	return []importAddress{

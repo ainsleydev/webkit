@@ -532,13 +532,11 @@ func TestBuildTursoSQLiteImports(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		projectName string
-		resource    *appdef.Resource
-		databaseID  string
-		want        []importAddress
+		resource   *appdef.Resource
+		databaseID string
+		want       []importAddress
 	}{
 		"Simple database name": {
-			projectName: "my-project",
 			resource: &appdef.Resource{
 				Name: "db",
 			},
@@ -555,7 +553,6 @@ func TestBuildTursoSQLiteImports(t *testing.T) {
 			},
 		},
 		"Hyphenated resource name": {
-			projectName: "my-company",
 			resource: &appdef.Resource{
 				Name: "prod-db",
 			},
@@ -577,7 +574,7 @@ func TestBuildTursoSQLiteImports(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got := buildTursoSQLiteImports(test.projectName, test.resource, test.databaseID)
+			got := buildTursoSQLiteImports(test.resource, test.databaseID)
 			assert.Equal(t, test.want, got)
 		})
 	}
