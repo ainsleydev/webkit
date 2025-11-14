@@ -191,7 +191,12 @@ func buildDropletImports(app *appdef.App, dropletID string) []importAddress {
 // buildTursoSQLiteImports creates the import addresses for a Turso SQLite database.
 // The databaseID should be in the format "organization/database-name".
 //
-// Note: Only the database resource is imported. The authentication token (turso_database_token)
+// Note: The database name in Turso should follow the pattern "{project-name}-{resource-name}"
+// to match webkit's naming convention (same as DigitalOcean resources).
+// For example, if your project is "my-app" and resource name is "db", the database in Turso
+// should be named "my-app-db", and the import ID would be "my-org/my-app-db".
+//
+// Only the database resource is imported. The authentication token (turso_database_token)
 // cannot be imported as it's a generated resource. Terraform will create a new token during
 // the next apply operation.
 //
