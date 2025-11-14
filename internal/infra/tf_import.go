@@ -118,28 +118,37 @@ func buildPostgresImports(projectName string, resource *appdef.Resource, cluster
 }
 
 // buildS3Imports creates the import addresses for a DigitalOcean Spaces bucket.
+// Note: The CDN resource requires a different import ID format (just the CDN UUID)
+// compared to the bucket and CORS configuration (which use "region,bucket_name").
 func buildS3Imports(resource *appdef.Resource, bucketID string) []importAddress {
 	baseModule := fmt.Sprintf("module.resources[\"%s\"].module.do_bucket[0]", resource.Name)
 	region, ok := resource.Config["region"].(string)
 	if !ok {
 		region = "ams3"
 	}
-	id := fmt.Sprintf("%s,%s", region, bucketID)
+	bucketImportID := fmt.Sprintf("%s,%s", region, bucketID)
 
-	return []importAddress{
+	addresses := []importAddress{
 		{
 			Address: fmt.Sprintf("%s.digitalocean_spaces_bucket.this", baseModule),
-			ID:      id,
+			ID:      bucketImportID,
 		},
 		{
 			Address: fmt.Sprintf("%s.digitalocean_spaces_bucket_cors_configuration.this", baseModule),
-			ID:      id,
-		},
-		{
-			Address: fmt.Sprintf("%s.digitalocean_cdn.this", baseModule),
-			ID:      id,
+			ID:      bucketImportID,
 		},
 	}
+
+	// CDN uses a different import format - just the CDN UUID, not "region,bucket_name"
+	// Extract cdn_id from config if present
+	if cdnID, ok := resource.Config["cdn_id"].(string); ok && cdnID != "" {
+		addresses = append(addresses, importAddress{
+			Address: fmt.Sprintf("%s.digitalocean_cdn.this", baseModule),
+			ID:      cdnID,
+		})
+	}
+
+	return addresses
 }
 
 // buildDigitalOceanAppImports creates import addresses for DigitalOcean apps.
