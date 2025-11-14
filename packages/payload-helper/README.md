@@ -91,6 +91,40 @@ payloadHelper({
 })
 ```
 
+### Email configuration
+
+Configure branded email templates for Payload authentication flows. Automatically applies to all collections with `auth` enabled.
+
+```typescript
+payloadHelper({
+	siteName: 'My Site',
+	email: {
+		frontEndUrl: 'https://your-site.com', // Optional, defaults to Payload's serverURL
+		theme: {
+			branding: {
+				companyName: 'My Company',
+				logoUrl: 'https://your-site.com/logo.png',
+			},
+			colours: {
+				background: {
+					accent: '#ff5043',
+				},
+			},
+		},
+		forgotPassword: {
+			heading: 'Reset your password',
+			bodyText: 'Click the button below to reset your password.',
+			buttonText: 'Reset Password',
+		},
+		verifyAccount: {
+			heading: 'Welcome aboard',
+			bodyText: 'Please verify your email address.',
+			buttonText: 'Verify Email',
+		},
+	},
+})
+```
+
 ## Open Source
 
 ainsley.dev permits the use of any HTML, SCSS and Javascript found within the repository for use
