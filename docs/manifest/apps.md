@@ -374,3 +374,5 @@ You can override the auto-generated install command for any tool type by providi
 - For local development, install tools manually or use a tool like `asdf`.
 - Version `"latest"` installs the most recent release of the tool.
 - Tool installation happens after Go is set up but before commands are run.
+- Go tools are installed via `go install`, pnpm tools via `pnpm add -g`.
+- For other package managers or custom installation methods, use the `script` type.
