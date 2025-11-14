@@ -52,7 +52,7 @@ module "turso_database" {
   count  = var.platform_provider == "turso" && var.platform_type == "sqlite" ? 1 : 0
   source = "../../providers/turso/database"
 
-  name         = var.name
+  name         = "${var.project_name}-${var.name}"
   organisation = var.platform_config.organisation
   group        = try(var.platform_config.group, "default")
   size_limit   = try(var.platform_config.size_limit, null)
