@@ -122,6 +122,69 @@ func TestApp_OrderedCommands(t *testing.T) {
 			assert.Equal(t, "go test ./...", commands[2].Cmd)
 			assert.Equal(t, "go build main.go", commands[3].Cmd)
 		}
+
+		t.Log("Check Tools are Populated")
+		{
+			require.NotNil(t, app.Tools)
+			assert.Equal(t, "latest", app.Tools["golangci-lint"].Version)
+			assert.Equal(t, "latest", app.Tools["templ"].Version)
+			assert.Equal(t, "latest", app.Tools["sqlc"].Version)
+			assert.Len(t, app.Tools, 3)
+		}
+	})
+
+	t.Run("User Tools Preserved", func(t *testing.T) {
+		t.Parallel()
+
+		app := &App{
+			Name: "api",
+			Type: AppTypeGoLang,
+			Path: "./",
+			Tools: map[string]Tool{
+				"templ": {Type: "go", Name: "github.com/a-h/templ/cmd/templ", Version: "v0.2.543"},
+				"buf":   {Type: "go", Name: "github.com/bufbuild/buf/cmd/buf", Version: "v1.28.1"},
+			},
+		}
+
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		t.Log("Check User Tools are Preserved")
+		{
+			require.NotNil(t, app.Tools)
+			assert.Equal(t, "v0.2.543", app.Tools["templ"].Version)
+			assert.Equal(t, "v1.28.1", app.Tools["buf"].Version)
+		}
+
+		t.Log("Check Default Tools are Added")
+		{
+			assert.Equal(t, "latest", app.Tools["golangci-lint"].Version)
+			assert.Equal(t, "latest", app.Tools["sqlc"].Version)
+		}
+
+		t.Log("Check All Tools Present")
+		{
+			assert.Len(t, app.Tools, 4)
+		}
+	})
+
+	t.Run("Payload Apps Have No Default Tools", func(t *testing.T) {
+		t.Parallel()
+
+		app := &App{
+			Name: "cms",
+			Type: AppTypePayload,
+			Path: "./",
+		}
+
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		t.Log("Check No Default Tools for Payload")
+		{
+			require.NotNil(t, app.Tools)
+			assert.Len(t, app.Tools, 0)
+		}
 	})
 }
 
@@ -461,4 +524,97 @@ func TestApp_PrimaryDomain(t *testing.T) {
 			assert.Equal(t, test.want, got)
 		})
 	}
+}
+
+func TestApp_InstallCommands(t *testing.T) {
+	t.Parallel()
+
+	t.Run("GoLang defaults", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{Type: AppTypeGoLang}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.InstallCommands()
+		assert.Len(t, got, 3)
+		assert.Contains(t, got, "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest")
+		assert.Contains(t, got, "go install github.com/a-h/templ/cmd/templ@latest")
+		assert.Contains(t, got, "go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest")
+	})
+
+	t.Run("Custom Go tool with version", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]Tool{
+				"templ": {Type: "go", Name: "github.com/a-h/templ/cmd/templ", Version: "v0.2.543"},
+			},
+		}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.InstallCommands()
+		assert.Len(t, got, 3)
+		assert.Contains(t, got, "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest")
+		assert.Contains(t, got, "go install github.com/a-h/templ/cmd/templ@v0.2.543")
+		assert.Contains(t, got, "go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest")
+	})
+
+	t.Run("pnpm tool", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]Tool{
+				"eslint": {Type: "pnpm", Name: "eslint", Version: "8.0.0"},
+			},
+		}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.InstallCommands()
+		assert.Contains(t, got, "pnpm add -g eslint@8.0.0")
+	})
+
+	t.Run("Custom install command via script type", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]Tool{
+				"custom": {
+					Type:    "script",
+					Install: "curl -sSL https://example.com/install.sh | sh",
+				},
+			},
+		}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.InstallCommands()
+		assert.Contains(t, got, "curl -sSL https://example.com/install.sh | sh")
+	})
+
+	t.Run("Install override for any type", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]Tool{
+				"custom": {
+					Type:    "go",
+					Name:    "github.com/foo/bar",
+					Version: "v1.0.0",
+					Install: "custom install command",
+				},
+			},
+		}
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		got := app.InstallCommands()
+		assert.Contains(t, got, "custom install command")
+	})
 }

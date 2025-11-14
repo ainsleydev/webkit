@@ -397,6 +397,14 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+
+{{- if gt (len $app.Tools) 0 }}
+      - name: Install Build Tools
+        run: |
+{{- range $app.InstallCommands }}
+          {{ . }}
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{- range $spec := $app.OrderedCommands }}
