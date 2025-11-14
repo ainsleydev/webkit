@@ -131,6 +131,42 @@ func TestBuildImportAddresses(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		"Turso SQLite database": {
+			projectName: "test-project",
+			resource: &appdef.Resource{
+				Name:     "db",
+				Type:     appdef.ResourceTypeSQLite,
+				Provider: appdef.ResourceProviderTurso,
+				Config: map[string]any{
+					"organisation": "my-org",
+					"group":        "default",
+				},
+			},
+			baseID: "my-org/my-database",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"db\"].module.turso_database[0].turso_database.this",
+					ID:      "my-org/my-database",
+				},
+				{
+					Address: "module.resources[\"db\"].module.turso_database[0].turso_database_token.this",
+					ID:      "my-org/my-database",
+				},
+			},
+			wantErr: false,
+		},
+		"Turso with unsupported resource type": {
+			projectName: "test-project",
+			resource: &appdef.Resource{
+				Name:     "cache",
+				Type:     appdef.ResourceTypePostgres,
+				Provider: appdef.ResourceProviderTurso,
+				Config:   map[string]any{},
+			},
+			baseID:  "my-org/my-db",
+			want:    nil,
+			wantErr: true,
+		},
 	}
 
 	for name, test := range tt {
@@ -429,6 +465,114 @@ func TestBuildDigitalOceanAppImports(t *testing.T) {
 			if !test.wantErr {
 				assert.Equal(t, test.want, got)
 			}
+		})
+	}
+}
+
+func TestBuildTursoImports(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		resource   *appdef.Resource
+		databaseID string
+		want       []importAddress
+		wantErr    bool
+	}{
+		"SQLite database": {
+			resource: &appdef.Resource{
+				Name: "db",
+				Type: appdef.ResourceTypeSQLite,
+				Config: map[string]any{
+					"organisation": "my-org",
+					"group":        "default",
+				},
+			},
+			databaseID: "my-org/my-database",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"db\"].module.turso_database[0].turso_database.this",
+					ID:      "my-org/my-database",
+				},
+				{
+					Address: "module.resources[\"db\"].module.turso_database[0].turso_database_token.this",
+					ID:      "my-org/my-database",
+				},
+			},
+			wantErr: false,
+		},
+		"Unsupported resource type": {
+			resource: &appdef.Resource{
+				Name: "cache",
+				Type: appdef.ResourceTypePostgres,
+			},
+			databaseID: "my-org/my-db",
+			want:       nil,
+			wantErr:    true,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := buildTursoImports(test.resource, test.databaseID)
+			assert.Equal(t, test.wantErr, err != nil)
+
+			if !test.wantErr {
+				assert.Equal(t, test.want, got)
+			}
+		})
+	}
+}
+
+func TestBuildTursoSQLiteImports(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		resource   *appdef.Resource
+		databaseID string
+		want       []importAddress
+	}{
+		"Simple database name": {
+			resource: &appdef.Resource{
+				Name: "db",
+			},
+			databaseID: "my-org/my-database",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"db\"].module.turso_database[0].turso_database.this",
+					ID:      "my-org/my-database",
+				},
+				{
+					Address: "module.resources[\"db\"].module.turso_database[0].turso_database_token.this",
+					ID:      "my-org/my-database",
+				},
+			},
+		},
+		"Hyphenated resource name": {
+			resource: &appdef.Resource{
+				Name: "prod-db",
+			},
+			databaseID: "acme-corp/production-db",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"prod-db\"].module.turso_database[0].turso_database.this",
+					ID:      "acme-corp/production-db",
+				},
+				{
+					Address: "module.resources[\"prod-db\"].module.turso_database[0].turso_database_token.this",
+					ID:      "acme-corp/production-db",
+				},
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := buildTursoSQLiteImports(test.resource, test.databaseID)
+			assert.Equal(t, test.want, got)
 		})
 	}
 }
