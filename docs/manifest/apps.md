@@ -222,9 +222,13 @@ WebKit provides sensible defaults for common tools based on your app type. For G
 
 JavaScript applications (Payload, SvelteKit) don't have default tools, as they typically install dependencies via pnpm.
 
-### Overriding tool versions
+### Configuring tools
 
-You can override the version of any default tool by specifying it in the `tools` field:
+Tools are defined as objects with a `type` field that determines how they're installed. WebKit supports three tool types:
+
+#### Go tools
+
+Go tools are installed via `go install`:
 
 ```json
 {
@@ -234,93 +238,96 @@ You can override the version of any default tool by specifying it in the `tools`
             "type": "golang",
             "path": "services/api",
             "tools": {
-                "templ": "v0.2.543",
-                "golangci-lint": "v1.55.2"
+                "custom-tool": {
+                    "type": "go",
+                    "name": "github.com/custom/tool/cmd/mytool",
+                    "version": "v1.0.0"
+                }
             }
         }
     ]
 }
 ```
 
-### Adding custom tools
+This generates: `go install github.com/custom/tool/cmd/mytool@v1.0.0`
 
-You can add tools that aren't in the default set by including them in the `tools` field:
+#### pnpm tools
 
-```json
-{
-    "tools": {
-        "buf": "v1.28.1",
-        "wire": "latest"
-    }
-}
-```
-
-WebKit recognises common Go tool names and knows how to install them. Supported tool names include:
-
-- `golangci-lint`
-- `templ`
-- `sqlc`
-- `buf`
-- `wire`
-- `mockgen`
-
-For tools not in the registry, specify the full Go module path:
+Node.js tools are installed globally via pnpm:
 
 ```json
 {
     "tools": {
-        "github.com/custom/tool/cmd/mytool": "v1.0.0"
-    }
-}
-```
-
-### Custom installation methods
-
-For tools that require special installation methods (like downloading binaries or using curl scripts), you can specify the full installation command:
-
-```json
-{
-    "tools": {
-        "goreleaser": {
-            "version": "v1.18.2",
-            "install": "curl -sSL https://github.com/goreleaser/goreleaser/releases/download/v1.18.2/goreleaser_Linux_x86_64.tar.gz | tar xz"
-        },
-        "custom-binary": {
-            "version": "v2.0.0",
-            "install": "wget https://example.com/tool && chmod +x tool && mv tool /usr/local/bin/"
+        "eslint": {
+            "type": "pnpm",
+            "name": "eslint",
+            "version": "8.0.0"
         }
     }
 }
 ```
 
-When you provide an `install` command, WebKit will execute it exactly as written. This allows you to:
-- Download pre-compiled binaries
-- Run installation scripts
-- Use package managers other than `go install`
-- Execute any custom installation logic
+This generates: `pnpm add -g eslint@8.0.0`
 
-### Disabling default tools
+#### Script tools
 
-If you don't need a default tool, you can disable it by setting its version to an empty string or `"disabled"`:
+For custom installation methods (downloading binaries, curl scripts, etc.), use the `script` type:
 
 ```json
 {
     "tools": {
-        "sqlc": "disabled",
-        "templ": ""
+        "goreleaser": {
+            "type": "script",
+            "install": "curl -sSL https://github.com/goreleaser/goreleaser/releases/download/v1.18.2/goreleaser_Linux_x86_64.tar.gz | tar xz"
+        }
+    }
+}
+```
+
+The `install` command is executed exactly as written.
+
+### Overriding default tools
+
+Default tools are automatically populated by `applyDefaults()`. To customise a default tool (like changing the version), simply include it in your `tools` configuration:
+
+```json
+{
+    "tools": {
+        "templ": {
+            "type": "go",
+            "name": "github.com/a-h/templ/cmd/templ",
+            "version": "v0.2.543"
+        }
+    }
+}
+```
+
+### Install command override
+
+You can override the auto-generated install command for any tool type by providing an `install` field:
+
+```json
+{
+    "tools": {
+        "custom": {
+            "type": "go",
+            "name": "github.com/foo/bar",
+            "version": "v1.0.0",
+            "install": "custom install command"
+        }
     }
 }
 ```
 
 ### Attributes
 
-| Key   | Description                                                             | Required | Default                           | Notes                                |
-|-------|-------------------------------------------------------------------------|----------|-----------------------------------|--------------------------------------|
-| tools | Map of tool names to versions or tool configurations                    | No       | Auto-populated for Go apps        | Can be string (version) or object (version + install command) |
-
-Tool configuration object fields:
-- `version` (string): Version to install (e.g., `"latest"`, `"v1.0.0"`)
-- `install` (string, optional): Custom installation command
+| Key     | Description                                     | Required | Default                    | Notes                                                     |
+|---------|-------------------------------------------------|----------|----------------------------|-----------------------------------------------------------|
+| tools   | Map of tool names to tool configurations        | No       | Auto-populated for Go apps | Each tool is an object with type, name, version, install |
+| type    | Installation method                             | Yes      | -                          | One of: "go", "pnpm", "script"                            |
+| name    | Package path (go) or package name (pnpm)        | No       | -                          | Required for "go" and "pnpm" types                        |
+| version | Version to install                              | No       | -                          | Required for "go" and "pnpm" types                        |
+| install | Custom installation command                     | No       | -                          | Required for "script" type, optional override for others  |
 
 ### Example
 
@@ -332,12 +339,23 @@ Tool configuration object fields:
             "type": "golang",
             "path": "services/api",
             "tools": {
-                "golangci-lint": "v1.55.2",
-                "templ": "v0.2.543",
-                "sqlc": "disabled",
-                "buf": "v1.28.1",
-                "custom-tool": {
-                    "version": "v2.0.0",
+                "golangci-lint": {
+                    "type": "go",
+                    "name": "github.com/golangci/golangci-lint/cmd/golangci-lint",
+                    "version": "v1.55.2"
+                },
+                "templ": {
+                    "type": "go",
+                    "name": "github.com/a-h/templ/cmd/templ",
+                    "version": "v0.2.543"
+                },
+                "buf": {
+                    "type": "go",
+                    "name": "github.com/bufbuild/buf/cmd/buf",
+                    "version": "v1.28.1"
+                },
+                "custom-binary": {
+                    "type": "script",
                     "install": "curl -sSL https://example.com/install.sh | sh"
                 }
             },
