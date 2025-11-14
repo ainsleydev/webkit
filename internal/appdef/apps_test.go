@@ -618,3 +618,123 @@ func TestApp_InstallCommands(t *testing.T) {
 		assert.Contains(t, got, "custom install command")
 	})
 }
+
+func TestApp_CommandOrderPreservation(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Order preserved through marshal/unmarshal", func(t *testing.T) {
+		t.Parallel()
+
+		// Create JSON with custom command order
+		jsonData := []byte(`{
+			"name": "api",
+			"title": "API",
+			"type": "golang",
+			"path": "./api",
+			"build": {
+				"dockerfile": "Dockerfile",
+				"port": 8080
+			},
+			"infra": {
+				"provider": "digitalocean",
+				"type": "vm"
+			},
+			"commands": {
+				"generate": {"command": "TEMPL_EXPERIMENT=rawgo go generate ./..."},
+				"build": {"command": "go build main.go"},
+				"format": {"command": "go fmt ./..."},
+				"lint": {"command": "echo"},
+				"test": {"command": "go test ./..."}
+			}
+		}`)
+
+		// Unmarshal
+		var app App
+		err := json.Unmarshal(jsonData, &app)
+		require.NoError(t, err)
+
+		// Verify commands were parsed
+		assert.Len(t, app.Commands, 5)
+		assert.Equal(t, "TEMPL_EXPERIMENT=rawgo go generate ./...", app.Commands["generate"].Cmd)
+		assert.Equal(t, "go build main.go", app.Commands["build"].Cmd)
+
+		// Verify order was recorded
+		require.Len(t, app.commandOrder, 5)
+		assert.Equal(t, "generate", app.commandOrder[0])
+		assert.Equal(t, "build", app.commandOrder[1])
+		assert.Equal(t, "format", app.commandOrder[2])
+		assert.Equal(t, "lint", app.commandOrder[3])
+		assert.Equal(t, "test", app.commandOrder[4])
+
+		// Marshal back to JSON
+		marshaled, err := json.Marshal(&app)
+		require.NoError(t, err)
+
+		// Unmarshal again to verify order is preserved
+		var app2 App
+		err = json.Unmarshal(marshaled, &app2)
+		require.NoError(t, err)
+
+		// Verify order is still the same
+		require.Len(t, app2.commandOrder, 5)
+		assert.Equal(t, "generate", app2.commandOrder[0])
+		assert.Equal(t, "build", app2.commandOrder[1])
+		assert.Equal(t, "format", app2.commandOrder[2])
+		assert.Equal(t, "lint", app2.commandOrder[3])
+		assert.Equal(t, "test", app2.commandOrder[4])
+	})
+
+	t.Run("Default commands added in order", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Name: "api",
+			Type: AppTypeGoLang,
+			Path: "./api",
+		}
+
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		// Verify default order was tracked
+		require.Len(t, app.commandOrder, 4)
+		assert.Equal(t, "format", app.commandOrder[0])
+		assert.Equal(t, "lint", app.commandOrder[1])
+		assert.Equal(t, "test", app.commandOrder[2])
+		assert.Equal(t, "build", app.commandOrder[3])
+	})
+
+	t.Run("User commands preserved with defaults appended", func(t *testing.T) {
+		t.Parallel()
+
+		jsonData := []byte(`{
+			"name": "api",
+			"title": "API",
+			"type": "golang",
+			"path": "./api",
+			"build": {},
+			"infra": {"provider": "digitalocean", "type": "vm"},
+			"commands": {
+				"generate": {"command": "go generate ./..."},
+				"build": {"command": "go build main.go"}
+			}
+		}`)
+
+		var app App
+		err := json.Unmarshal(jsonData, &app)
+		require.NoError(t, err)
+
+		// Apply defaults
+		err = app.applyDefaults()
+		require.NoError(t, err)
+
+		// User commands should be first, defaults appended
+		require.Len(t, app.commandOrder, 4)
+		assert.Equal(t, "generate", app.commandOrder[0])
+		assert.Equal(t, "build", app.commandOrder[1])
+		// Defaults added after user commands (format and lint were added, test was not since it's default)
+		assert.Contains(t, app.commandOrder, "format")
+		assert.Contains(t, app.commandOrder, "lint")
+		assert.Contains(t, app.commandOrder, "test")
+	})
+}

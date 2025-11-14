@@ -1,6 +1,8 @@
 package appdef
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 )
@@ -23,7 +25,8 @@ type (
 		TerraformManaged *bool                   `json:"terraformManaged,omitempty" description:"Whether this app's infrastructure is managed by Terraform (defaults to true)"`
 		Domains          []Domain                `json:"domains,omitzero" description:"Domain configurations for accessing this app"`
 		Tools            map[string]Tool         `json:"tools,omitempty" inline:"true" description:"Build tools required for CI/CD workflows"`
-		Commands         map[Command]CommandSpec `json:"commands,omitzero" jsonschema:"oneof_type=boolean;object;string" inline:"true" description:"Custom commands for linting, testing, formatting, and building"`
+		Commands         map[Command]CommandSpec `json:"-" jsonschema:"oneof_type=boolean;object;string" inline:"true" description:"Custom commands for linting, testing, formatting, and building"`
+		commandOrder     []string                `json:"-"`
 	}
 	// Build defines Docker build configuration for containerised applications.
 	// These settings control how the app is built and exposed in container environments.
@@ -220,6 +223,8 @@ func (a *App) applyDefaults() error {
 			a.Commands[cmd] = CommandSpec{
 				Cmd: defaultCmd,
 			}
+			// Track order for newly added defaults
+			a.commandOrder = append(a.commandOrder, cmd.String())
 		}
 	}
 
@@ -270,4 +275,86 @@ func (a *App) defaultPort() int {
 	default:
 		return 3000
 	}
+}
+
+// MarshalJSON implements custom JSON marshaling for App to preserve command order.
+func (a *App) MarshalJSON() ([]byte, error) {
+	// Create a temporary struct with all fields except Commands
+	type Alias App
+	aux := &struct {
+		Commands map[string]interface{} `json:"commands,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(a),
+	}
+
+	// Marshal commands in the preserved order
+	if len(a.Commands) > 0 {
+		aux.Commands = make(map[string]interface{})
+		for _, key := range a.commandOrder {
+			if cmd, exists := a.Commands[Command(key)]; exists {
+				aux.Commands[key] = cmd
+			}
+		}
+	}
+
+	return json.Marshal(aux)
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for App to preserve command order.
+func (a *App) UnmarshalJSON(data []byte) error {
+	// Standard unmarshal for all fields except commands
+	type Alias App
+	aux := &struct {
+		Commands json.RawMessage `json:"commands"`
+		*Alias
+	}{
+		Alias: (*Alias)(a),
+	}
+
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	// Parse commands manually to preserve order
+	if len(aux.Commands) > 0 {
+		a.Commands = make(map[Command]CommandSpec)
+		a.commandOrder = []string{}
+
+		// Use json.Decoder to parse object keys in order
+		decoder := json.NewDecoder(bytes.NewReader(aux.Commands))
+
+		// Read opening brace
+		_, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+
+		// Read key-value pairs
+		for decoder.More() {
+			// Read key
+			token, err := decoder.Token()
+			if err != nil {
+				return err
+			}
+			key := token.(string)
+
+			// Read value
+			var spec CommandSpec
+			if err := decoder.Decode(&spec); err != nil {
+				return err
+			}
+
+			a.Commands[Command(key)] = spec
+			a.commandOrder = append(a.commandOrder, key)
+		}
+
+		// Read closing brace
+		_, err = decoder.Token()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
