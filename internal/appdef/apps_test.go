@@ -187,6 +187,109 @@ func TestApp_OrderedCommands(t *testing.T) {
 			assert.Len(t, app.Tools, 0)
 		}
 	})
+
+	t.Run("Custom Commands Included", func(t *testing.T) {
+		t.Parallel()
+
+		app := &App{
+			Name:     "web",
+			Type:     AppTypeGoLang,
+			Path:     "./",
+			Commands: types.NewOrderedMap[Command, CommandSpec](),
+		}
+
+		// Add custom "generate" command first
+		app.Commands.Set("generate", CommandSpec{Cmd: "TEMPL_EXPERIMENT=rawgo go generate ./..."})
+
+		// Apply defaults (adds format, lint, test, build)
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		commands := app.OrderedCommands()
+
+		t.Log("Check custom command is first (insertion order)")
+		{
+			require.Greater(t, len(commands), 0, "should have commands")
+			assert.Equal(t, "generate", commands[0].Name)
+			assert.Equal(t, "TEMPL_EXPERIMENT=rawgo go generate ./...", commands[0].Cmd)
+		}
+
+		t.Log("Check all commands are present")
+		{
+			// 1 custom + 4 defaults
+			assert.Len(t, commands, 5)
+		}
+
+		t.Log("Verify command order is preserved")
+		{
+			names := make([]string, len(commands))
+			for i, cmd := range commands {
+				names[i] = cmd.Name
+			}
+			// Custom "generate" first, then defaults in order
+			assert.Equal(t, []string{"generate", "format", "lint", "test", "build"}, names)
+		}
+	})
+
+	t.Run("Multiple Custom Commands Preserve Order", func(t *testing.T) {
+		t.Parallel()
+
+		app := &App{
+			Name:     "api",
+			Type:     AppTypeGoLang,
+			Path:     "./",
+			Commands: types.NewOrderedMap[Command, CommandSpec](),
+		}
+
+		// Add multiple custom commands
+		app.Commands.Set("generate", CommandSpec{Cmd: "go generate ./..."})
+		app.Commands.Set("custom-build", CommandSpec{Cmd: "make build"})
+		app.Commands.Set("format", CommandSpec{Cmd: "gofumpt -w ."}) // Override default
+
+		// Apply defaults
+		err := app.applyDefaults()
+		require.NoError(t, err)
+
+		commands := app.OrderedCommands()
+
+		t.Log("Check insertion order preserved")
+		{
+			names := make([]string, len(commands))
+			for i, cmd := range commands {
+				names[i] = cmd.Name
+			}
+			// Custom commands first in insertion order, then remaining defaults
+			assert.Equal(t, []string{"generate", "custom-build", "format", "lint", "test", "build"}, names)
+		}
+
+		t.Log("Check custom command overrides default")
+		{
+			// Find the format command
+			var formatCmd *CommandSpec
+			for _, cmd := range commands {
+				if cmd.Name == "format" {
+					formatCmd = &cmd
+					break
+				}
+			}
+			require.NotNil(t, formatCmd, "format command should exist")
+			assert.Equal(t, "gofumpt -w .", formatCmd.Cmd, "should use custom format command")
+		}
+	})
+
+	t.Run("Nil Commands Returns Nil", func(t *testing.T) {
+		t.Parallel()
+
+		app := &App{
+			Name:     "web",
+			Type:     AppTypeGoLang,
+			Path:     "./",
+			Commands: nil,
+		}
+
+		commands := app.OrderedCommands()
+		assert.Nil(t, commands)
+	})
 }
 
 func TestApp_MergeEnvironments(t *testing.T) {
