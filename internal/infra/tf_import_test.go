@@ -82,7 +82,7 @@ func TestBuildImportAddresses(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		"DigitalOcean S3 bucket": {
+		"DigitalOcean S3 bucket without CDN": {
 			projectName: "test-project",
 			resource: &appdef.Resource{
 				Name:     "media-bucket",
@@ -100,9 +100,33 @@ func TestBuildImportAddresses(t *testing.T) {
 					Address: "module.resources[\"media-bucket\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
 					ID:      "ams3,bucket-789",
 				},
+			},
+			wantErr: false,
+		},
+		"DigitalOcean S3 bucket with CDN": {
+			projectName: "test-project",
+			resource: &appdef.Resource{
+				Name:     "store",
+				Type:     appdef.ResourceTypeS3,
+				Provider: appdef.ResourceProviderDigitalOcean,
+				Config: map[string]any{
+					"region": "ams3",
+					"cdn_id": "26226874-569d-41d9-9191-e18a09a2d134",
+				},
+			},
+			baseID: "s-clark-store",
+			want: []importAddress{
 				{
-					Address: "module.resources[\"media-bucket\"].module.do_bucket[0].digitalocean_cdn.this",
-					ID:      "ams3,bucket-789",
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "ams3,s-clark-store",
+				},
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "ams3,s-clark-store",
+				},
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_cdn.this",
+					ID:      "26226874-569d-41d9-9191-e18a09a2d134",
 				},
 			},
 			wantErr: false,
@@ -291,28 +315,81 @@ func TestBuildPostgresImports(t *testing.T) {
 func TestBuildS3Imports(t *testing.T) {
 	t.Parallel()
 
-	resource := &appdef.Resource{
-		Name: "media",
+	tt := map[string]struct {
+		resource *appdef.Resource
+		bucketID string
+		want     []importAddress
+	}{
+		"Bucket without CDN": {
+			resource: &appdef.Resource{
+				Name:   "media",
+				Config: map[string]any{},
+			},
+			bucketID: "bucket-123",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "ams3,bucket-123",
+				},
+				{
+					Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "ams3,bucket-123",
+				},
+			},
+		},
+		"Bucket with CDN": {
+			resource: &appdef.Resource{
+				Name: "store",
+				Config: map[string]any{
+					"region": "ams3",
+					"cdn_id": "26226874-569d-41d9-9191-e18a09a2d134",
+				},
+			},
+			bucketID: "s-clark-store",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "ams3,s-clark-store",
+				},
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "ams3,s-clark-store",
+				},
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_cdn.this",
+					ID:      "26226874-569d-41d9-9191-e18a09a2d134",
+				},
+			},
+		},
+		"Bucket with custom region": {
+			resource: &appdef.Resource{
+				Name: "nyc-bucket",
+				Config: map[string]any{
+					"region": "nyc3",
+				},
+			},
+			bucketID: "my-bucket",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"nyc-bucket\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "nyc3,my-bucket",
+				},
+				{
+					Address: "module.resources[\"nyc-bucket\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "nyc3,my-bucket",
+				},
+			},
+		},
 	}
-	bucketID := "bucket-123"
 
-	want := []importAddress{
-		{
-			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
-			ID:      "ams3,bucket-123",
-		},
-		{
-			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
-			ID:      "ams3,bucket-123",
-		},
-		{
-			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_cdn.this",
-			ID:      "ams3,bucket-123",
-		},
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := buildS3Imports(test.resource, test.bucketID)
+			assert.Equal(t, test.want, got)
+		})
 	}
-
-	got := buildS3Imports(resource, bucketID)
-	assert.Equal(t, want, got)
 }
 
 func TestBuildAppImportAddresses(t *testing.T) {
