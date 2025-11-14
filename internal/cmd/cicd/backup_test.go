@@ -171,6 +171,48 @@ func TestBackupWorkflow(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("Unsupported Resource Types Generate Valid Workflow", func(t *testing.T) {
+		t.Parallel()
+
+		// SQLite is not supported for backups. This verifies that mixing
+		// unsupported resources with supported ones generates valid YAML
+		// (i.e., sync-to-gdrive doesn't depend on non-existent backup jobs).
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:     "db",
+					Type:     appdef.ResourceTypeSQLite,
+					Provider: appdef.ResourceProviderTurso,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+				{
+					Name:     "store",
+					Type:     appdef.ResourceTypeS3,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+	})
+
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 
