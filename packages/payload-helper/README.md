@@ -125,6 +125,62 @@ payloadHelper({
 })
 ```
 
+#### Previewing emails
+
+Preview your emails with your actual branding:
+
+1. Create `preview-emails/ForgotPassword.tsx`:
+
+```typescript
+import { renderEmail } from '@ainsleydev/email-templates'
+import { ForgotPasswordEmail } from '@ainsleydev/payload-helper'
+
+export default async function render() {
+	return renderEmail({
+		component: ForgotPasswordEmail,
+		props: {
+			user: { firstName: 'John', email: 'john@example.com' },
+			resetUrl: 'https://yoursite.com/admin/reset/token123',
+		},
+		theme: {
+			branding: {
+				companyName: 'Your Company',
+				logoUrl: 'https://yoursite.com/logo.png',
+				websiteUrl: 'https://yoursite.com',
+			},
+		},
+	})
+}
+```
+
+2. Create `preview-emails/VerifyAccount.tsx`:
+
+```typescript
+import { renderEmail } from '@ainsleydev/email-templates'
+import { VerifyAccountEmail } from '@ainsleydev/payload-helper'
+
+export default async function render() {
+	return renderEmail({
+		component: VerifyAccountEmail,
+		props: {
+			user: { firstName: 'Jane', email: 'jane@example.com' },
+			verifyUrl: 'https://yoursite.com/admin/users/verify/token789',
+		},
+		theme: {
+			branding: {
+				companyName: 'Your Company',
+				logoUrl: 'https://yoursite.com/logo.png',
+				websiteUrl: 'https://yoursite.com',
+			},
+		},
+	})
+}
+```
+
+3. Run: `npx email-templates preview ./preview-emails`
+
+Open http://localhost:3000 to view your emails with your branding.
+
 ## Open Source
 
 ainsley.dev permits the use of any HTML, SCSS and Javascript found within the repository for use
