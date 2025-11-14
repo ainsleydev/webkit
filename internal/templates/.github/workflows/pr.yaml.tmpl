@@ -227,7 +227,7 @@ jobs:
         id: plan
         env:
           SOPS_AGE_KEY: {{ ghSecret "ORG_AGE_SECRET" }}
-          DO_API_KEY: {{ ghSecret "ORG_DO_ACCESS_TOKEN" }}
+          DO_API_KEY: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
           DO_SPACES_ACCESS_KEY: ${{"{{"}} secrets.REPO_DO_SPACES_ACCESS_KEY || secrets.ORG_DO_SPACES_ACCESS_KEY {{ "}}" }}
           DO_SPACES_SECRET_KEY: ${{"{{"}} secrets.REPO_DO_SPACES_SECRET_KEY || secrets.ORG_DO_SPACES_SECRET_KEY {{ "}}" }}
           BACK_BLAZE_BUCKET: {{ ghSecret "ORG_BACK_BLAZE_TF_BUCKET" }}
