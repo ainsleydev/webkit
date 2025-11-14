@@ -55,6 +55,8 @@ jobs:
   secret-scan:
     name: gitleaks
     runs-on: ubuntu-latest
+    # Skip for Dependabot PRs as they don't have access to ORG_GITLEAKS_LICENSE
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -102,6 +104,8 @@ jobs:
   drift-detection:
     runs-on: ubuntu-latest
     needs: setup-webkit
+    # Skip for Dependabot PRs as they don't have access to ORG_GITHUB_APP_PRIVATE_KEY
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -150,6 +154,8 @@ jobs:
   app-json-diff:
     runs-on: ubuntu-latest
     needs: setup-webkit
+    # Skip for Dependabot PRs as they don't have access to ORG_GITHUB_APP_PRIVATE_KEY
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -204,7 +210,8 @@ jobs:
   terraform-plan-production:
     runs-on: ubuntu-latest
     needs: [setup-webkit, detect-changes]
-    if: {{ ghVar "needs.detect-changes.outputs.shared-changed" }} == 'true'
+    # Skip for Dependabot PRs as they don't have access to infrastructure secrets
+    if: {{ ghVar "needs.detect-changes.outputs.shared-changed" }} == 'true' && github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -355,7 +362,7 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Comment on PR
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: ./.github/actions/pr-comment
         with:
           body-includes: '<!-- validation-result -->'
@@ -423,7 +430,8 @@ jobs:
   migration-check-{{ $app.App.Name }}:
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: {{ ghVar (printf "needs.detect-changes.outputs.%s-changed" $app.App.Name) }} == 'true' || {{ ghVar "needs.detect-changes.outputs.shared-changed" }} == 'true'
+    # Skip for Dependabot PRs as they don't have access to database secrets
+    if: ({{ ghVar (printf "needs.detect-changes.outputs.%s-changed" $app.App.Name) }} == 'true' || {{ ghVar "needs.detect-changes.outputs.shared-changed" }} == 'true') && github.actor != 'dependabot[bot]'
     env:
       DO_ACCESS_TOKEN: ${{"{{"}} secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN {{ "}}" }}
     steps:
@@ -506,7 +514,7 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Comment on PR
-        if: always() && github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: ./.github/actions/pr-comment
         with:
           body-includes: 'Migration Check - {{ $app.App.Title }}'
