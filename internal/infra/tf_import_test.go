@@ -473,14 +473,12 @@ func TestBuildTursoImports(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		projectName string
-		resource    *appdef.Resource
-		databaseID  string
-		want        []importAddress
-		wantErr     bool
+		resource   *appdef.Resource
+		databaseID string
+		want       []importAddress
+		wantErr    bool
 	}{
 		"SQLite database": {
-			projectName: "test-project",
 			resource: &appdef.Resource{
 				Name: "db",
 				Type: appdef.ResourceTypeSQLite,
@@ -503,7 +501,6 @@ func TestBuildTursoImports(t *testing.T) {
 			wantErr: false,
 		},
 		"Unsupported resource type": {
-			projectName: "test-project",
 			resource: &appdef.Resource{
 				Name: "cache",
 				Type: appdef.ResourceTypePostgres,
@@ -518,7 +515,7 @@ func TestBuildTursoImports(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := buildTursoImports(test.projectName, test.resource, test.databaseID)
+			got, err := buildTursoImports(test.resource, test.databaseID)
 			assert.Equal(t, test.wantErr, err != nil)
 
 			if !test.wantErr {

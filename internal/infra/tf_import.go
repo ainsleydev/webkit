@@ -26,7 +26,7 @@ func buildImportAddresses(projectName string, resource *appdef.Resource, baseID 
 	case appdef.ResourceProviderDigitalOcean:
 		return buildDigitalOceanImports(projectName, resource, baseID)
 	case appdef.ResourceProviderTurso:
-		return buildTursoImports(projectName, resource, baseID)
+		return buildTursoImports(resource, baseID)
 	default:
 		return nil, fmt.Errorf("import not supported for provider %q", resource.Provider)
 	}
@@ -57,7 +57,7 @@ func buildDigitalOceanImports(projectName string, resource *appdef.Resource, clu
 }
 
 // buildTursoImports creates import addresses for Turso resources.
-func buildTursoImports(projectName string, resource *appdef.Resource, databaseID string) ([]importAddress, error) {
+func buildTursoImports(resource *appdef.Resource, databaseID string) ([]importAddress, error) {
 	switch resource.Type {
 	case appdef.ResourceTypeSQLite:
 		return buildTursoSQLiteImports(resource, databaseID), nil
