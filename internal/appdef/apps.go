@@ -94,15 +94,20 @@ func (d DomainType) String() string {
 	return string(d)
 }
 
-// OrderedCommands returns the app's commands in canonical order
-// with Name populated.
+// OrderedCommands returns the app's commands in their defined order
+// with Name populated. This includes both canonical commands (format, lint, test, build)
+// and custom commands (e.g., generate) in the order they appear in the OrderedMap.
 func (a *App) OrderedCommands() []CommandSpec {
+	if a.Commands == nil {
+		return nil
+	}
+
 	var ordered []CommandSpec
 
-	for _, cmd := range Commands {
+	// Iterate over commands in the order they were defined in the OrderedMap
+	for _, cmd := range a.Commands.Keys() {
 		spec, exists := a.Commands.Get(cmd)
 		if !exists {
-			// Should not happen because applyDefaults populates them
 			continue
 		}
 		spec.Name = cmd.String() // Populate name for templates.
