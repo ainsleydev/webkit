@@ -25,6 +25,8 @@ func buildImportAddresses(projectName string, resource *appdef.Resource, baseID 
 	switch resource.Provider {
 	case appdef.ResourceProviderDigitalOcean:
 		return buildDigitalOceanImports(projectName, resource, baseID)
+	case appdef.ResourceProviderTurso:
+		return buildTursoImports(projectName, resource, baseID)
 	default:
 		return nil, fmt.Errorf("import not supported for provider %q", resource.Provider)
 	}
@@ -51,6 +53,16 @@ func buildDigitalOceanImports(projectName string, resource *appdef.Resource, clu
 		return buildS3Imports(resource, clusterID), nil
 	default:
 		return nil, fmt.Errorf("import not supported for resource type %q", resource.Type)
+	}
+}
+
+// buildTursoImports creates import addresses for Turso resources.
+func buildTursoImports(projectName string, resource *appdef.Resource, databaseID string) ([]importAddress, error) {
+	switch resource.Type {
+	case appdef.ResourceTypeSQLite:
+		return buildTursoSQLiteImports(projectName, resource, databaseID), nil
+	default:
+		return nil, fmt.Errorf("import not supported for resource type %q with Turso provider", resource.Type)
 	}
 }
 
@@ -163,6 +175,28 @@ func buildDropletImports(app *appdef.App, dropletID string) []importAddress {
 		{
 			Address: fmt.Sprintf("%s.digitalocean_droplet.this", baseModule),
 			ID:      dropletID,
+		},
+	}
+}
+
+// buildTursoSQLiteImports creates the import addresses for a Turso SQLite database.
+// The databaseID should be in the format "organization/database-name".
+//
+// This imports both the database and the associated authentication token.
+// The function builds the full resource address using the resource module pattern:
+//   - Database: module.resources["<name>"].module.turso_database[0].turso_database.this
+//   - Token: module.resources["<name>"].module.turso_database[0].turso_database_token.this
+func buildTursoSQLiteImports(projectName string, resource *appdef.Resource, databaseID string) []importAddress {
+	baseModule := fmt.Sprintf("module.resources[\"%s\"].module.turso_database[0]", resource.Name)
+
+	return []importAddress{
+		{
+			Address: fmt.Sprintf("%s.turso_database.this", baseModule),
+			ID:      databaseID,
+		},
+		{
+			Address: fmt.Sprintf("%s.turso_database_token.this", baseModule),
+			ID:      databaseID,
 		},
 	}
 }
