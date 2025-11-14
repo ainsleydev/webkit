@@ -1,9 +1,9 @@
 import js from '@eslint/js';
 import payloadPlugin from '@payloadcms/eslint-plugin';
+import { globalIgnores } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 import perfectionist from 'eslint-plugin-perfectionist';
 import svelte from 'eslint-plugin-svelte';
-import { globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import ts from 'typescript-eslint';
 

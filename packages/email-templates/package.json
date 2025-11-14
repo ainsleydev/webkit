@@ -4,7 +4,14 @@
 	"description": "Composable email template building blocks with theme system for React Email",
 	"license": "MIT",
 	"type": "module",
-	"keywords": ["email", "templates", "react-email", "transactional", "typescript", "theme"],
+	"keywords": [
+		"email",
+		"templates",
+		"react-email",
+		"transactional",
+		"typescript",
+		"theme"
+	],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ainsleydev/webkit.git",
@@ -31,7 +38,13 @@
 		"test:watch": "vitest",
 		"preview": "tsx preview/server.ts"
 	},
-	"files": ["dist", "bin.js", "src", "README.md", "CHANGELOG.md"],
+	"files": [
+		"dist",
+		"bin.js",
+		"src",
+		"README.md",
+		"CHANGELOG.md"
+	],
 	"publishConfig": {
 		"access": "public"
 	},

@@ -1,3 +1,3 @@
-export { defaultTheme } from './default.js';
-export { mergeTheme } from './merge.js';
-export type { EmailTheme, EmailColours, EmailBranding, PartialEmailTheme } from './types.js';
+export { defaultTheme } from "./default.js";
+export { mergeTheme } from "./merge.js";
+export type { EmailBranding, EmailColours, EmailTheme, PartialEmailTheme } from "./types.js";

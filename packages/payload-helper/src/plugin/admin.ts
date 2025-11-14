@@ -1,5 +1,5 @@
-import type { Config } from 'payload';
-import type { AdminIconConfig, AdminLogoConfig } from '../types.js';
+import type { Config } from "payload";
+import type { AdminIconConfig, AdminLogoConfig } from "../types.js";
 
 /**
  * Injects the admin Logo component into the Payload config.
@@ -17,8 +17,8 @@ export const injectAdminLogo = (
 			graphics: {
 				...config.admin?.components?.graphics,
 				Logo: {
-					path: '@ainsleydev/payload-helper/dist/admin/components/Logo',
-					exportName: 'Logo',
+					path: "@ainsleydev/payload-helper/dist/admin/components/Logo",
+					exportName: "Logo",
 					clientProps: {
 						config: {
 							...logoConfig,
@@ -47,8 +47,8 @@ export const injectAdminIcon = (
 			graphics: {
 				...config.admin?.components?.graphics,
 				Icon: {
-					path: '@ainsleydev/payload-helper/dist/admin/components/Icon',
-					exportName: 'Icon',
+					path: "@ainsleydev/payload-helper/dist/admin/components/Icon",
+					exportName: "Icon",
 					clientProps: {
 						config: {
 							...iconConfig,

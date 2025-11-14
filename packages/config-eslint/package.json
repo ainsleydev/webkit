@@ -3,7 +3,10 @@
 	"version": "0.0.9",
 	"description": "ainsley.dev ESLint Configuration",
 	"license": "MIT",
-	"keywords": ["eslint", "eslintconfig"],
+	"keywords": [
+		"eslint",
+		"eslintconfig"
+	],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ainsleydev/webkit.git",

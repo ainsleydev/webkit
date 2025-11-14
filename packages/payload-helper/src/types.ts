@@ -1,12 +1,11 @@
 // import type { SEOPluginConfig } from "@payloadcms/plugin-seo/types";
-import type { GlobalConfig, Tab, TextField, TextareaField, UploadField } from 'payload';
+import type { PartialEmailTheme } from "@ainsleydev/email-templates";
+import type { GlobalConfig, Tab } from "payload";
 // import type {SEOPluginConfig} from "@payloadcms/plugin-seo/dist/types.js";
 
 export type SettingsConfig = {
 	additionalTabs?: Tab[];
-	override: (args: {
-		config: GlobalConfig;
-	}) => GlobalConfig;
+	override: (args: { config: GlobalConfig }) => GlobalConfig;
 };
 
 export type WebServerConfig = {
@@ -46,10 +45,40 @@ export type AdminConfig = {
 	icon?: AdminIconConfig;
 };
 
+export type EmailContentOverrides = {
+	previewText?: string;
+	heading?: string;
+	bodyText?: string;
+	buttonText?: string;
+};
+
+export type EmailConfig = {
+	/**
+	 * Optional front-end URL override. If not provided, uses Payload's serverUrl.
+	 */
+	frontEndUrl?: string;
+
+	/**
+	 * Optional theme customization for email templates.
+	 */
+	theme?: PartialEmailTheme;
+
+	/**
+	 * Optional content overrides for the forgot password email.
+	 */
+	forgotPassword?: EmailContentOverrides;
+
+	/**
+	 * Optional content overrides for the verify account email.
+	 */
+	verifyAccount?: EmailContentOverrides;
+};
+
 export type PayloadHelperPluginConfig = {
 	siteName: string;
 	settings?: SettingsConfig;
 	// seo?: SEOConfig;
 	webServer?: WebServerConfig;
 	admin?: AdminConfig;
+	email?: EmailConfig;
 };

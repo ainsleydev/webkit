@@ -1,7 +1,7 @@
-import { render } from '@react-email/render';
-import * as React from 'react';
-import { mergeTheme } from './theme/merge.js';
-import type { EmailTheme, PartialEmailTheme } from './theme/types.js';
+import { render } from "@react-email/render";
+import * as React from "react";
+import { mergeTheme } from "./theme/merge.js";
+import type { EmailTheme, PartialEmailTheme } from "./theme/types.js";
 
 /**
  * Options for rendering an email template.
@@ -14,7 +14,7 @@ export interface RenderEmailOptions<P = Record<string, unknown>> {
 	/**
 	 * Props to pass to the component (excluding theme).
 	 */
-	props: Omit<P, 'theme'>;
+	props: Omit<P, "theme">;
 	/**
 	 * Optional theme overrides. Will be merged with default theme.
 	 */
