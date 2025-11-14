@@ -493,72 +493,49 @@ func TestOrderedMap_MarshalJSON_Errors(t *testing.T) {
 func TestOrderedMap_EdgeCases(t *testing.T) {
 	t.Parallel()
 
-	tt := map[string]struct {
-		setup func() *OrderedMap[string, string]
-		test  func(t *testing.T, om *OrderedMap[string, string])
-	}{
-		"Set and overwrite preserves position": {
-			setup: func() *OrderedMap[string, string] {
-				om := NewOrderedMap[string, string]()
-				om.Set("a", "1")
-				om.Set("b", "2")
-				om.Set("c", "3")
-				om.Set("b", "updated") // Overwrite
-				return om
-			},
-			test: func(t *testing.T, om *OrderedMap[string, string]) {
-				t.Helper()
+	t.Run("Set and overwrite preserves position", func(t *testing.T) {
+		t.Parallel()
 
-				keys := om.Keys()
-				assert.Equal(t, []string{"a", "b", "c"}, keys)
-				val, _ := om.Get("b")
-				assert.Equal(t, "updated", val)
-			},
-		},
-		"Empty string keys and values": {
-			setup: func() *OrderedMap[string, string] {
-				om := NewOrderedMap[string, string]()
-				om.Set("", "")
-				om.Set("a", "")
-				om.Set("", "value")
-				return om
-			},
-			test: func(t *testing.T, om *OrderedMap[string, string]) {
-				t.Helper()
+		om := NewOrderedMap[string, string]()
+		om.Set("a", "1")
+		om.Set("b", "2")
+		om.Set("c", "3")
+		om.Set("b", "updated")
 
-				assert.Equal(t, 2, om.Len()) // Only 2 unique keys: "" and "a"
-				val, ok := om.Get("")
-				assert.True(t, ok)
-				assert.Equal(t, "value", val) // Last set value
-			},
-		},
-		"Marshal and unmarshal empty strings": {
-			setup: func() *OrderedMap[string, string] {
-				om := NewOrderedMap[string, string]()
-				om.Set("", "empty key")
-				om.Set("normal", "")
-				return om
-			},
-			test: func(t *testing.T, om *OrderedMap[string, string]) {
-				t.Helper()
+		keys := om.Keys()
+		assert.Equal(t, []string{"a", "b", "c"}, keys)
+		val, _ := om.Get("b")
+		assert.Equal(t, "updated", val)
+	})
 
-				data, err := json.Marshal(om)
-				require.NoError(t, err)
+	t.Run("Empty string keys and values", func(t *testing.T) {
+		t.Parallel()
 
-				om2 := NewOrderedMap[string, string]()
-				err = json.Unmarshal(data, om2)
-				require.NoError(t, err)
+		om := NewOrderedMap[string, string]()
+		om.Set("", "")
+		om.Set("a", "")
+		om.Set("", "value")
 
-				assert.Equal(t, om.Keys(), om2.Keys())
-			},
-		},
-	}
+		assert.Equal(t, 2, om.Len())
+		val, ok := om.Get("")
+		assert.True(t, ok)
+		assert.Equal(t, "value", val)
+	})
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			om := test.setup()
-			test.test(t, om)
-		})
-	}
+	t.Run("Marshal and unmarshal empty strings", func(t *testing.T) {
+		t.Parallel()
+
+		om := NewOrderedMap[string, string]()
+		om.Set("", "empty key")
+		om.Set("normal", "")
+
+		data, err := json.Marshal(om)
+		require.NoError(t, err)
+
+		om2 := NewOrderedMap[string, string]()
+		err = json.Unmarshal(data, om2)
+		require.NoError(t, err)
+
+		assert.Equal(t, om.Keys(), om2.Keys())
+	})
 }
