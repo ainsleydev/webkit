@@ -64,7 +64,7 @@
 	},
 	"overrides": [
 		{
-			"includes": ["**/*.yaml"],
+			"includes": ["*.yaml"],
 			"javascript": {
 				"formatter": {
 					"quoteStyle": "double"
@@ -72,7 +72,7 @@
 			}
 		},
 		{
-			"includes": ["**/*.yml"],
+			"includes": ["*.yml"],
 			"javascript": {
 				"formatter": {
 					"quoteStyle": "double"
