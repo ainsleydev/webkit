@@ -127,59 +127,24 @@ payloadHelper({
 
 #### Previewing emails
 
-Preview your emails with your actual branding:
+Preview your emails with your actual branding directly from your Payload configuration:
 
-1. Create `preview-emails/ForgotPassword.tsx`:
-
-```typescript
-import { renderEmail } from '@ainsleydev/email-templates'
-import { ForgotPasswordEmail } from '@ainsleydev/payload-helper'
-
-export default async function render() {
-	return renderEmail({
-		component: ForgotPasswordEmail,
-		props: {
-			user: { firstName: 'John', email: 'john@example.com' },
-			resetUrl: 'https://yoursite.com/admin/reset/token123',
-		},
-		theme: {
-			branding: {
-				companyName: 'Your Company',
-				logoUrl: 'https://yoursite.com/logo.png',
-				websiteUrl: 'https://yoursite.com',
-			},
-		},
-	})
-}
+```bash
+npx payload-helper preview-emails
 ```
 
-2. Create `preview-emails/VerifyAccount.tsx`:
+This command will:
+- Read your `payload.config.ts` to extract your email theme configuration
+- Generate preview templates with your actual branding
+- Launch a preview server at http://localhost:3000
 
-```typescript
-import { renderEmail } from '@ainsleydev/email-templates'
-import { VerifyAccountEmail } from '@ainsleydev/payload-helper'
+You can optionally specify a custom port:
 
-export default async function render() {
-	return renderEmail({
-		component: VerifyAccountEmail,
-		props: {
-			user: { firstName: 'Jane', email: 'jane@example.com' },
-			verifyUrl: 'https://yoursite.com/admin/users/verify/token789',
-		},
-		theme: {
-			branding: {
-				companyName: 'Your Company',
-				logoUrl: 'https://yoursite.com/logo.png',
-				websiteUrl: 'https://yoursite.com',
-			},
-		},
-	})
-}
+```bash
+npx payload-helper preview-emails --port 3001
 ```
 
-3. Run: `npx email-templates preview ./preview-emails`
-
-Open http://localhost:3000 to view your emails with your branding.
+The preview will show both ForgotPassword and VerifyAccount emails using your configured theme, frontEndUrl, and content overrides.
 
 ## Open Source
 
