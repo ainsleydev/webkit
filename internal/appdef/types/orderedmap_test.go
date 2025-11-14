@@ -203,7 +203,7 @@ func TestOrderedMap_Nil(t *testing.T) {
 func TestOrderedMap_Set_NilValues(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]struct {
+	tt := map[string]struct {
 		setup func() *OrderedMap[string, int]
 		key   string
 		value int
@@ -233,16 +233,16 @@ func TestOrderedMap_Set_NilValues(t *testing.T) {
 		},
 	}
 
-	for name, tc := range tests {
+	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			om := tc.setup()
-			om.Set(tc.key, tc.value)
+			om := test.setup()
+			om.Set(test.key, test.value)
 
-			assert.Equal(t, tc.want, om.Keys())
-			val, ok := om.Get(tc.key)
+			assert.Equal(t, test.want, om.Keys())
+			val, ok := om.Get(test.key)
 			assert.True(t, ok)
-			assert.Equal(t, tc.value, val)
+			assert.Equal(t, test.value, val)
 		})
 	}
 }
@@ -250,7 +250,7 @@ func TestOrderedMap_Set_NilValues(t *testing.T) {
 func TestOrderedMap_UnmarshalJSON_Errors(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]struct {
+	tt := map[string]struct {
 		input   string
 		wantErr bool
 	}{
@@ -300,13 +300,13 @@ func TestOrderedMap_UnmarshalJSON_Errors(t *testing.T) {
 		},
 	}
 
-	for name, tc := range tests {
+	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			om := NewOrderedMap[string, string]()
-			err := json.Unmarshal([]byte(tc.input), om)
+			err := json.Unmarshal([]byte(test.input), om)
 
-			if tc.wantErr {
+			if test.wantErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
@@ -334,7 +334,7 @@ func TestOrderedMap_UnmarshalJSON_InvalidValueDecode(t *testing.T) {
 func TestOrderedMap_MarshalJSON_NilValues(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]struct {
+	tt := map[string]struct {
 		om   *OrderedMap[string, string]
 		want string
 	}{
@@ -361,12 +361,12 @@ func TestOrderedMap_MarshalJSON_NilValues(t *testing.T) {
 		},
 	}
 
-	for name, tc := range tests {
+	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			data, err := json.Marshal(tc.om)
+			data, err := json.Marshal(test.om)
 			require.NoError(t, err)
-			assert.Equal(t, tc.want, string(data))
+			assert.Equal(t, test.want, string(data))
 		})
 	}
 }
@@ -493,7 +493,7 @@ func TestOrderedMap_MarshalJSON_Errors(t *testing.T) {
 func TestOrderedMap_EdgeCases(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]struct {
+	tt := map[string]struct {
 		setup func() *OrderedMap[string, string]
 		test  func(t *testing.T, om *OrderedMap[string, string])
 	}{
@@ -507,6 +507,8 @@ func TestOrderedMap_EdgeCases(t *testing.T) {
 				return om
 			},
 			test: func(t *testing.T, om *OrderedMap[string, string]) {
+				t.Helper()
+
 				keys := om.Keys()
 				assert.Equal(t, []string{"a", "b", "c"}, keys)
 				val, _ := om.Get("b")
@@ -522,6 +524,8 @@ func TestOrderedMap_EdgeCases(t *testing.T) {
 				return om
 			},
 			test: func(t *testing.T, om *OrderedMap[string, string]) {
+				t.Helper()
+
 				assert.Equal(t, 2, om.Len()) // Only 2 unique keys: "" and "a"
 				val, ok := om.Get("")
 				assert.True(t, ok)
@@ -536,6 +540,8 @@ func TestOrderedMap_EdgeCases(t *testing.T) {
 				return om
 			},
 			test: func(t *testing.T, om *OrderedMap[string, string]) {
+				t.Helper()
+
 				data, err := json.Marshal(om)
 				require.NoError(t, err)
 
@@ -548,11 +554,11 @@ func TestOrderedMap_EdgeCases(t *testing.T) {
 		},
 	}
 
-	for name, tc := range tests {
+	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			om := tc.setup()
-			tc.test(t, om)
+			om := test.setup()
+			test.test(t, om)
 		})
 	}
 }
