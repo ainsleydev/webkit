@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.1.1
+
+### Patch Changes
+
+- 7f3a0a5: Barrel Exports
+
 ## 0.1.0
 
 ### Minor Changes
