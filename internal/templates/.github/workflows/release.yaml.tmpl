@@ -145,6 +145,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 2  # Need previous commit for diff comparison
 
       - name: Download WebKit CLI Artifact
         uses: actions/download-artifact@v4
@@ -160,7 +162,20 @@ jobs:
         with:
           terraform_version: {{ ghVar "env.TF_VERSION" }}
 
+      - name: Check if Terraform needed
+        id: diff
+        run: |
+          # Check if app.json changes require Terraform.
+          # Exit code 0 = skip, 1 = run.
+          if ./webkit infra diff --format=github >> $GITHUB_OUTPUT; then
+            echo "::notice::Skipping Terraform - no infrastructure changes detected"
+          else
+            echo "::notice::Running Terraform - infrastructure changes detected"
+          fi
+        continue-on-error: true
+
       - name: Run Terraform Plan
+        if: steps.diff.outputs.skip_terraform != 'true'
         id: plan
         run: |
           echo "🔍 Running terraform plan for production environment..."
@@ -214,21 +229,26 @@ jobs:
           exit $plan_exit_code
 
       - name: Run Terraform Apply
-        if: steps.plan.outputs.sha_only != 'true' && steps.plan.outputs.changes_detected == 'true'
+        if: steps.diff.outputs.skip_terraform != 'true' && steps.plan.outputs.sha_only != 'true' && steps.plan.outputs.changes_detected == 'true'
         run: |
           echo "🚀 Applying terraform changes for production environment..."
           # TODO: Uncomment when ready to apply changes.
           # ./webkit infra apply --silent
           echo "⚠️  Apply is currently disabled - remove this comment to enable"
 
+      - name: Skip Terraform - Diff Only
+        if: steps.diff.outputs.skip_terraform == 'true'
+        run: |
+          echo "⏭️  Skipping terraform plan and apply - {{ ghVar "steps.diff.outputs.reason" }}"
+
       - name: Skip Apply for SHA-only Changes
-        if: steps.plan.outputs.sha_only == 'true'
+        if: steps.diff.outputs.skip_terraform != 'true' && steps.plan.outputs.sha_only == 'true'
         run: |
           echo "⏭️  Skipping terraform apply - only container image SHA changes detected"
           echo "Deploy jobs will handle the container image updates"
 
       - name: Send Slack Notification
-        if: steps.plan.outputs.changes_detected == 'true' && steps.plan.outputs.sha_only != 'true'
+        if: steps.diff.outputs.skip_terraform != 'true' && steps.plan.outputs.changes_detected == 'true' && steps.plan.outputs.sha_only != 'true'
         uses: ./.github/actions/slack-notify
         with:
           title: 'Infra Plan'
