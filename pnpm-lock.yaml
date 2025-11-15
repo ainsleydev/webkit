@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  lexical: 0.38.2
+
 importers:
 
   .:
@@ -3296,11 +3299,6 @@ packages:
     resolution: {integrity: sha512-Cg7TFGpIr01vOQNODXOOaGz2NpCU5gl8x1qJFbb6hbZxR7XrcE2vtbAsTAbJ7/xwJtUuJEw8K8Zr/AE0LHlesg==}
     engines: {node: '>=10', npm: '>=6'}
 
-  babel-preset-current-node-syntax@1.1.0:
-    resolution: {integrity: sha512-ldYss8SbBlWva1bs28q78Ju5Zq1F+8BrqBZZ0VFhLBvhh6lCpC2o3gDJi/5DRLs9FgYZCnmPYIVFU4lRXCkyUw==}
-    peerDependencies:
-      '@babel/core': ^7.0.0
-
   babel-preset-current-node-syntax@1.2.0:
     resolution: {integrity: sha512-E/VlAEzRrsLEb2+dv8yp3bo4scof3l9nR4lrld+Iy5NyVqgVYUJnDAmunkhPMisRI32Qc4iRiz425d8vM++2fg==}
     peerDependencies:
@@ -5301,9 +5299,6 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  lexical@0.35.0:
-    resolution: {integrity: sha512-3VuV8xXhh5xJA6tzvfDvE0YBCMkIZUmxtRilJQDDdCgJCc+eut6qAv2qbN+pbqvarqcQqPN1UF+8YvsjmyOZpw==}
-
   lexical@0.38.2:
     resolution: {integrity: sha512-JJmfsG3c4gwBHzUGffbV7ifMNkKAWMCnYE3xJl87gty7hjyV5f3xq7eqTjP5HFYvO4XpjJvvWO2/djHp5S10tw==}
 
@@ -5935,10 +5930,6 @@ packages:
   pino@9.14.0:
     resolution: {integrity: sha512-8OEwKp5juEvb/MjpIc4hjqfgCNysrS94RIOMXYvpYCdm/jglrKEiAYmiumbmGhCvs+IcInsphYDFwqrjr7398w==}
     hasBin: true
-
-  pirates@4.0.6:
-    resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
-    engines: {node: '>= 6'}
 
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
@@ -8765,7 +8756,7 @@ snapshots:
       jest-regex-util: 29.6.3
       jest-util: 29.7.0
       micromatch: 4.0.8
-      pirates: 4.0.6
+      pirates: 4.0.7
       slash: 3.0.0
       write-file-atomic: 4.0.2
     transitivePeerDependencies:
@@ -8843,7 +8834,7 @@ snapshots:
       '@lexical/list': 0.35.0
       '@lexical/selection': 0.35.0
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/clipboard@0.38.2':
     dependencies:
@@ -8856,7 +8847,7 @@ snapshots:
   '@lexical/code@0.35.0':
     dependencies:
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
       prismjs: 1.30.0
 
   '@lexical/devtools-core@0.35.0(react-dom@19.0.0(react@19.2.0))(react@19.2.0)':
@@ -8866,13 +8857,13 @@ snapshots:
       '@lexical/mark': 0.35.0
       '@lexical/table': 0.35.0
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
       react: 19.2.0
       react-dom: 19.0.0(react@19.2.0)
 
   '@lexical/dragon@0.35.0':
     dependencies:
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/extension@0.38.2':
     dependencies:
@@ -8883,11 +8874,11 @@ snapshots:
   '@lexical/hashtag@0.35.0':
     dependencies:
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/headless@0.35.0':
     dependencies:
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/headless@0.38.2':
     dependencies:
@@ -8897,13 +8888,13 @@ snapshots:
   '@lexical/history@0.35.0':
     dependencies:
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/html@0.35.0':
     dependencies:
       '@lexical/selection': 0.35.0
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/html@0.38.2':
     dependencies:
@@ -8914,13 +8905,13 @@ snapshots:
   '@lexical/link@0.35.0':
     dependencies:
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/list@0.35.0':
     dependencies:
       '@lexical/selection': 0.35.0
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/list@0.38.2':
     dependencies:
@@ -8932,7 +8923,7 @@ snapshots:
   '@lexical/mark@0.35.0':
     dependencies:
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/markdown@0.35.0':
     dependencies:
@@ -8942,22 +8933,22 @@ snapshots:
       '@lexical/rich-text': 0.35.0
       '@lexical/text': 0.35.0
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/offset@0.35.0':
     dependencies:
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/overflow@0.35.0':
     dependencies:
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/plain-text@0.35.0':
     dependencies:
       '@lexical/clipboard': 0.35.0
       '@lexical/selection': 0.35.0
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/react@0.35.0(react-dom@19.0.0(react@19.2.0))(react@19.2.0)(yjs@13.6.24)':
     dependencies:
@@ -8977,7 +8968,7 @@ snapshots:
       '@lexical/text': 0.35.0
       '@lexical/utils': 0.35.0
       '@lexical/yjs': 0.35.0(yjs@13.6.24)
-      lexical: 0.35.0
+      lexical: 0.38.2
       react: 19.2.0
       react-dom: 19.0.0(react@19.2.0)
       react-error-boundary: 3.1.4(react@19.2.0)
@@ -8989,11 +8980,11 @@ snapshots:
       '@lexical/clipboard': 0.35.0
       '@lexical/selection': 0.35.0
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/selection@0.35.0':
     dependencies:
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/selection@0.38.2':
     dependencies:
@@ -9003,7 +8994,7 @@ snapshots:
     dependencies:
       '@lexical/clipboard': 0.35.0
       '@lexical/utils': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/table@0.38.2':
     dependencies:
@@ -9014,14 +9005,14 @@ snapshots:
 
   '@lexical/text@0.35.0':
     dependencies:
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/utils@0.35.0':
     dependencies:
       '@lexical/list': 0.35.0
       '@lexical/selection': 0.35.0
       '@lexical/table': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
 
   '@lexical/utils@0.38.2':
     dependencies:
@@ -9034,7 +9025,7 @@ snapshots:
     dependencies:
       '@lexical/offset': 0.35.0
       '@lexical/selection': 0.35.0
-      lexical: 0.35.0
+      lexical: 0.38.2
       yjs: 13.6.24
 
   '@libsql/client@0.14.0':
@@ -9464,7 +9455,7 @@ snapshots:
       dequal: 2.0.3
       escape-html: 1.0.3
       jsox: 1.2.121
-      lexical: 0.35.0
+      lexical: 0.38.2
       mdast-util-from-markdown: 2.0.2
       mdast-util-mdx-jsx: 3.1.3
       micromark-extension-mdx-jsx: 3.0.1
@@ -10810,7 +10801,7 @@ snapshots:
 
   babel-plugin-istanbul@6.1.1:
     dependencies:
-      '@babel/helper-plugin-utils': 7.26.5
+      '@babel/helper-plugin-utils': 7.27.1
       '@istanbuljs/load-nyc-config': 1.1.0
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-instrument: 5.2.1
@@ -10847,26 +10838,6 @@ snapshots:
       cosmiconfig: 7.1.0
       resolve: 1.22.10
 
-  babel-preset-current-node-syntax@1.1.0(@babel/core@7.28.5):
-    dependencies:
-      '@babel/core': 7.28.5
-      '@babel/plugin-syntax-async-generators': 7.8.4(@babel/core@7.28.5)
-      '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.28.5)
-      '@babel/plugin-syntax-class-properties': 7.12.13(@babel/core@7.28.5)
-      '@babel/plugin-syntax-class-static-block': 7.14.5(@babel/core@7.28.5)
-      '@babel/plugin-syntax-import-attributes': 7.26.0(@babel/core@7.28.5)
-      '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@7.28.5)
-      '@babel/plugin-syntax-json-strings': 7.8.3(@babel/core@7.28.5)
-      '@babel/plugin-syntax-logical-assignment-operators': 7.10.4(@babel/core@7.28.5)
-      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@7.28.5)
-      '@babel/plugin-syntax-numeric-separator': 7.10.4(@babel/core@7.28.5)
-      '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@7.28.5)
-      '@babel/plugin-syntax-optional-catch-binding': 7.8.3(@babel/core@7.28.5)
-      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.28.5)
-      '@babel/plugin-syntax-private-property-in-object': 7.14.5(@babel/core@7.28.5)
-      '@babel/plugin-syntax-top-level-await': 7.14.5(@babel/core@7.28.5)
-    optional: true
-
   babel-preset-current-node-syntax@1.2.0(@babel/core@7.28.5):
     dependencies:
       '@babel/core': 7.28.5
@@ -10890,7 +10861,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.28.5
       babel-plugin-jest-hoist: 29.6.3
-      babel-preset-current-node-syntax: 1.1.0(@babel/core@7.28.5)
+      babel-preset-current-node-syntax: 1.2.0(@babel/core@7.28.5)
     optional: true
 
   babel-preset-jest@30.2.0(@babel/core@7.28.5):
@@ -13364,8 +13335,6 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  lexical@0.35.0: {}
-
   lexical@0.38.2: {}
 
   lib0@0.2.99:
@@ -14145,9 +14114,6 @@ snapshots:
       safe-stable-stringify: 2.5.0
       sonic-boom: 4.2.0
       thread-stream: 3.1.0
-
-  pirates@4.0.6:
-    optional: true
 
   pirates@4.0.7: {}
 
