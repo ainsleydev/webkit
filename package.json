@@ -71,5 +71,11 @@
 		"node": ">=18",
 		"pnpm": ">=9"
 	},
-	"packageManager": "pnpm@10.22.0"
+	"packageManager": "pnpm@10.22.0",
+	"pnpm": {
+		"onlyBuiltDependencies": ["sharp"],
+		"overrides": {
+			"lexical": "0.38.2"
+		}
+	}
 }
