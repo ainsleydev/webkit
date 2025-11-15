@@ -176,22 +176,21 @@ jobs:
             account {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }} \
             key {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
 
-      - name: Dump and Compress Turso Database
+      - name: Export Turso Database
         run: |
           # Fail on errors, undefined vars, and fail if any part of a pipe fails
           set -euo pipefail
 
           # Create vars
           TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
-          BACKUP_FILE="backup-$TIMESTAMP.sql.gz"
+          BACKUP_FILE="backup-$TIMESTAMP.db"
           DATABASE_NAME="{{ $.BucketName }}-{{ .Name }}"
 
-          # Dump and compress
-          turso db shell "$DATABASE_NAME" .dump | gzip > "$BACKUP_FILE"
+          # Export database
+          turso db export "$DATABASE_NAME" --output-file "$BACKUP_FILE" --overwrite
 
           # Verify file
           ls -lh "$BACKUP_FILE"
-          gzip -l "$BACKUP_FILE"
 
           # Make the backup filename available to next steps
           echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
