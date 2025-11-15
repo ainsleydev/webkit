@@ -88,8 +88,6 @@ func TestOutputText(t *testing.T) {
 }
 
 func TestOutputJSON(t *testing.T) {
-	t.Parallel()
-
 	tt := map[string]struct {
 		analysis appdef.ChangeAnalysis
 		wantExit bool
@@ -115,8 +113,6 @@ func TestOutputJSON(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
 			// Capture stdout.
 			oldStdout := os.Stdout
 			r, w, _ := os.Pipe()
@@ -150,8 +146,6 @@ func TestOutputJSON(t *testing.T) {
 }
 
 func TestOutputGitHub(t *testing.T) {
-	t.Parallel()
-
 	tt := map[string]struct {
 		analysis   appdef.ChangeAnalysis
 		wantOutput []string
@@ -185,8 +179,6 @@ func TestOutputGitHub(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
 			// Capture stdout.
 			oldStdout := os.Stdout
 			r, w, _ := os.Pipe()

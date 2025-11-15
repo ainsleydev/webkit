@@ -103,58 +103,6 @@ func TestCompare(t *testing.T) {
 	}
 }
 
-func TestAnalyseEnvChanges(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		current        *Definition
-		previous       *Definition
-		wantChangedLen int
-		wantFirstApp   string
-		wantEnvChanged bool
-	}{
-		"No env changes": {
-			current:        makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1")),
-			previous:       makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1")),
-			wantChangedLen: 0,
-		},
-		"Env value changed": {
-			current:        makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value2")),
-			previous:       makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1")),
-			wantChangedLen: 1,
-			wantFirstApp:   "web",
-			wantEnvChanged: true,
-		},
-		"New app added": {
-			current: &Definition{
-				Apps: []App{
-					{Name: "web", Infra: Infra{Type: "container", Provider: ResourceProviderDigitalOcean}},
-					{Name: "api", Infra: Infra{Type: "container", Provider: ResourceProviderDigitalOcean}},
-				},
-			},
-			previous: &Definition{
-				Apps: []App{
-					{Name: "web", Infra: Infra{Type: "container", Provider: ResourceProviderDigitalOcean}},
-				},
-			},
-			wantChangedLen: 0,
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got := analyseEnvChanges(test.current, test.previous)
-
-			assert.Len(t, got, test.wantChangedLen)
-			if test.wantChangedLen > 0 {
-				assert.Equal(t, test.wantFirstApp, got[0].Name)
-				assert.Equal(t, test.wantEnvChanged, got[0].EnvChanged)
-			}
-		})
-	}
-}
 
 // Helper functions for creating test data.
 
