@@ -218,6 +218,7 @@ locals {
   resource_output_map = {
     postgres = ["id", "urn", "connection_url"]
     s3       = ["id", "urn", "bucket_name", "bucket_url", "region", "endpoint"]
+    sqlite   = ["id", "connection_url", "auth_token", "hostname", "database"]
   }
 
   # Define which outputs each app type has (known at plan time)
