@@ -166,6 +166,14 @@ jobs:
         run: |
           turso --version
 
+      - name: Verify Turso Authentication
+        run: |
+          # Verify that TURSO_API_TOKEN is set and working
+          turso db list || {
+            echo "ERROR: Turso authentication failed. Please check TURSO_API_TOKEN secret."
+            exit 1
+          }
+
       - name: Install rclone
         run: |
           curl https://rclone.org/install.sh | sudo bash
