@@ -19,19 +19,28 @@ const mockTheme: EmailTheme = {
 		text: {
 			heading: '#000000',
 			body: '#333333',
+			action: '#007bff',
+			negative: '#ffffff',
 		},
 		background: {
-			primary: '#ffffff',
+			white: '#ffffff',
+			dark: '#000000',
+			darker: '#0f0f0f',
+			highlight: '#f5f5f5',
 			accent: '#007bff',
+		},
+		border: {
+			light: '#e0e0e0',
+			medium: '#cccccc',
+			dark: '#000000',
+			inverse: '#ffffff',
 		},
 	},
 	branding: {
 		companyName: 'Test Company',
+		logoUrl: 'https://example.com/logo.png',
+		logoWidth: 120,
 		websiteUrl: 'https://example.com',
-	},
-	fonts: {
-		heading: 'Arial, sans-serif',
-		body: 'Arial, sans-serif',
 	},
 };
 
@@ -159,19 +168,28 @@ describe('ForgotPasswordEmail', () => {
 				text: {
 					heading: '#ff0000',
 					body: '#00ff00',
+					action: '#0000ff',
+					negative: '#ffffff',
 				},
 				background: {
-					primary: '#ffffff',
+					white: '#ffffff',
+					dark: '#000000',
+					darker: '#0f0f0f',
+					highlight: '#f5f5f5',
 					accent: '#0000ff',
+				},
+				border: {
+					light: '#e0e0e0',
+					medium: '#cccccc',
+					dark: '#000000',
+					inverse: '#ffffff',
 				},
 			},
 			branding: {
 				companyName: 'Custom Company',
+				logoUrl: 'https://custom.com/logo.png',
+				logoWidth: 150,
 				websiteUrl: 'https://custom.com',
-			},
-			fonts: {
-				heading: 'Georgia, serif',
-				body: 'Georgia, serif',
 			},
 		};
 
