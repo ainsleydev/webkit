@@ -46,7 +46,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Lint Go
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           skip-cache: true
