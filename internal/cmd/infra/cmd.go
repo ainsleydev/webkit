@@ -21,6 +21,7 @@ var Command = &cli.Command{
 	Usage:       "Provision and manage cloud infrastructure",
 	Description: "Commands for planning and applying infrastructure changes defined in app.json",
 	Commands: []*cli.Command{
+		DiffCmd,
 		PlanCmd,
 		ApplyCmd,
 		DestroyCmd,
