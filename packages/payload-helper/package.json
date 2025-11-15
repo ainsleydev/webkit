@@ -78,11 +78,5 @@
 	"engines": {
 		"node": ">=18",
 		"pnpm": ">=9"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": ["sharp"],
-		"overrides": {
-			"lexical": "0.38.2"
-		}
 	}
 }
