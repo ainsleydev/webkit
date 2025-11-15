@@ -1,10 +1,10 @@
-import chalk from 'chalk';
 import { spawn } from 'node:child_process';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { PayloadHelperPluginConfig } from '../../types.js';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import chalk from 'chalk';
 import type { Payload } from 'payload';
+import type { PayloadHelperPluginConfig } from '../../types.js';
 
 /**
  * Escapes a string for safe use in template literals.
@@ -36,9 +36,7 @@ export const previewEmails = async (options: { payload: Payload; port?: number }
 	if (!emailConfig) {
 		console.log(chalk.yellow('⚠️  No email configuration found'));
 		console.log(
-			chalk.yellow(
-				'   Make sure you have configured email in your payloadHelper plugin:\n',
-			),
+			chalk.yellow('   Make sure you have configured email in your payloadHelper plugin:\n'),
 		);
 		console.log(
 			chalk.cyan(`   payloadHelper({

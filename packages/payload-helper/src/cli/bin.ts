@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { Command } from 'commander';
-import { previewEmails } from './commands/preview-emails.js';
 import { fileURLToPath } from 'node:url';
-import { getPayload, type Payload } from 'payload';
+import { Command } from 'commander';
+import { type Payload, getPayload } from 'payload';
+import { previewEmails } from './commands/preview-emails.js';
 
 const program = new Command();
 const filename = fileURLToPath(import.meta.url);

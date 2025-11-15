@@ -1,5 +1,5 @@
-import { describe, expect, test, vi } from 'vitest';
 import type { EmailTheme } from '@ainsleydev/email-templates';
+import { describe, expect, test, vi } from 'vitest';
 import { VerifyAccountEmail } from './VerifyAccountEmail.js';
 import type { VerifyAccountEmailProps } from './VerifyAccountEmail.js';
 
