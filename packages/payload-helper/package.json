@@ -23,6 +23,26 @@
 			"import": "./dist/index.js",
 			"default": "./dist/index.js"
 		},
+		"./collections": {
+			"types": "./dist/collections/index.d.ts",
+			"import": "./dist/collections/index.js"
+		},
+		"./globals": {
+			"types": "./dist/globals/index.d.ts",
+			"import": "./dist/globals/index.js"
+		},
+		"./util": {
+			"types": "./dist/util/index.d.ts",
+			"import": "./dist/util/index.js"
+		},
+		"./common": {
+			"types": "./dist/common/index.d.ts",
+			"import": "./dist/common/index.js"
+		},
+		"./endpoints": {
+			"types": "./dist/endpoints/index.d.ts",
+			"import": "./dist/endpoints/index.js"
+		},
 		"./dist/admin/components/*": {
 			"types": "./dist/admin/components/*.d.ts",
 			"import": "./dist/admin/components/*.js",

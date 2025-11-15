@@ -48,6 +48,157 @@ export default buildConfig({
 })
 ```
 
+## Available Exports
+
+The payload-helper package exports a variety of utilities, collections, globals, and components that you can use directly in your Payload projects.
+
+### Collections
+
+Pre-built Payload collections ready to use:
+
+```typescript
+import { Media, Redirects, imageSizes, imageSizesWithAvif } from '@ainsleydev/payload-helper'
+
+// Use in your Payload config
+export default buildConfig({
+	collections: [
+		Media({ includeAvif: true, additionalFields: [...] }),
+		Redirects(),
+	],
+})
+```
+
+**Subpath imports** (optional):
+```typescript
+import { Media, Redirects } from '@ainsleydev/payload-helper/collections'
+```
+
+### Globals
+
+Pre-configured global types for common website needs:
+
+```typescript
+import { Settings, Navigation, countries, languages } from '@ainsleydev/payload-helper'
+
+export default buildConfig({
+	globals: [
+		Settings({ additionalTabs: [...] }),
+		Navigation({ includeFooter: true }),
+	],
+})
+```
+
+**Subpath imports** (optional):
+```typescript
+import { Settings, Navigation } from '@ainsleydev/payload-helper/globals'
+```
+
+### Utilities
+
+Helpful utility functions for validation, field operations, and Lexical conversion:
+
+```typescript
+import {
+	env,
+	fieldHasName,
+	validateURL,
+	validatePostcode,
+	htmlToLexical,
+	lexicalToHtml,
+} from '@ainsleydev/payload-helper'
+
+// Use in field validation
+{
+	name: 'website',
+	type: 'text',
+	validate: validateURL,
+}
+
+// Convert HTML to Lexical format
+const lexicalData = await htmlToLexical('<p>Hello world</p>')
+
+// Convert Lexical to HTML
+const html = await lexicalToHtml(lexicalData)
+```
+
+**Subpath imports** (optional):
+```typescript
+import { validateURL, htmlToLexical } from '@ainsleydev/payload-helper/util'
+```
+
+### Common/Reusable Fields
+
+Reusable field definitions:
+
+```typescript
+import { SEOFields } from '@ainsleydev/payload-helper'
+import { seoPlugin } from '@payloadcms/plugin-seo'
+
+export default buildConfig({
+	plugins: [
+		seoPlugin({
+			collections: ['pages'],
+			fields: SEOFields,
+		}),
+	],
+})
+```
+
+**Subpath imports** (optional):
+```typescript
+import { SEOFields } from '@ainsleydev/payload-helper/common'
+```
+
+### Endpoints
+
+Custom API endpoints:
+
+```typescript
+import { findBySlug } from '@ainsleydev/payload-helper'
+
+// Use in your collection config
+export const Pages: CollectionConfig = {
+	slug: 'pages',
+	endpoints: [findBySlug],
+}
+```
+
+**Subpath imports** (optional):
+```typescript
+import { findBySlug } from '@ainsleydev/payload-helper/endpoints'
+```
+
+### Email Components
+
+Customizable email templates for authentication flows:
+
+```typescript
+import { ForgotPasswordEmail, VerifyAccountEmail } from '@ainsleydev/payload-helper'
+import type { ForgotPasswordEmailProps, VerifyAccountEmailProps } from '@ainsleydev/payload-helper'
+
+// Use directly in custom email handlers
+const emailHtml = ForgotPasswordEmail({
+	resetPasswordToken: 'token123',
+	frontEndUrl: 'https://yoursite.com',
+	// ...other props
+})
+```
+
+### Schema Utilities
+
+For projects that need JSON schema generation (e.g., Go type generation):
+
+```typescript
+import { fieldMapper, schemas, addGoJSONSchema } from '@ainsleydev/payload-helper'
+import type { SchemaOptions } from '@ainsleydev/payload-helper'
+
+// Apply Go schema mappings
+const config = fieldMapper(sanitizedConfig, {
+	useWebKitMedia: true,
+	assignRelationships: true,
+})
+```
+
 ## Configuration
 
 ### Admin configuration
