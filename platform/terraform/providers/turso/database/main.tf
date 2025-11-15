@@ -5,6 +5,13 @@ resource "turso_database" "this" {
   name              = var.name
   group             = var.group
   size_limit        = var.size_limit
+
+  # Workaround for Turso provider limitation: the 'group' attribute is not
+  # captured during import, causing Terraform to want to replace the database.
+  # We ignore changes to 'group' since databases cannot be moved between groups anyway.
+  lifecycle {
+    ignore_changes = [group]
+  }
 }
 
 # Turso Database Token
