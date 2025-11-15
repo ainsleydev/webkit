@@ -54,14 +54,10 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 
 		case appdef.ResourceTypeSQLite:
 			// NOTE: SQLite backup is currently only compatible with Turso.
+			// The database name is constructed as ${project_name}-${resource_name} (same as in terraform).
+			// Authentication is handled via TURSO_API_TOKEN environment variable.
 			if resource.Provider != appdef.ResourceProviderTurso {
 				continue
-			}
-
-			// For Turso, we need the organization name from config for CLI authentication
-			// The database name is constructed as ${project_name}-${resource_name} (same as in terraform)
-			if org, ok := resource.Config["organisation"].(string); ok {
-				resourceSecrets["Organization"] = org
 			}
 		}
 
