@@ -17,6 +17,19 @@
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./dist/admin/components/*": {
+			"types": "./dist/admin/components/*.d.ts",
+			"import": "./dist/admin/components/*.js",
+			"default": "./dist/admin/components/*.js"
+		},
+		"./package.json": "./package.json"
+	},
 	"scripts": {
 		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
 		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
@@ -24,7 +37,7 @@
 		"format": "biome check --write --unsafe .",
 		"lint": "biome lint --write .",
 		"clean": "rimraf {dist,*.tsbuildinfo}",
-		"test": "jest --passWithNoTests"
+		"test": "vitest run"
 	},
 	"bin": {
 		"payload-helper": "bin.js"
@@ -34,6 +47,7 @@
 		"access": "public"
 	},
 	"dependencies": {
+		"@ainsleydev/email-templates": "workspace:*",
 		"@lexical/headless": "0.38.2",
 		"@lexical/html": "0.38.2",
 		"@nouance/payload-better-fields-plugin": "^2.0.2",
@@ -57,7 +71,6 @@
 	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
-		"@jest/globals": "^30.2.0",
 		"@payloadcms/ui": "3.63.0",
 		"@swc/cli": "^0.7.8",
 		"@swc/core": "^1.7.2",
@@ -71,9 +84,9 @@
 		"next": "^16.0.1",
 		"react": "^19.2.0",
 		"rimraf": "6.1.0",
-		"ts-jest": "^29.2.3",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.5.4"
+		"typescript": "^5.5.4",
+		"vitest": "^2.0.5"
 	},
 	"engines": {
 		"node": ">=18",

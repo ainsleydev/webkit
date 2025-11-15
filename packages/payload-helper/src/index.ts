@@ -1,5 +1,6 @@
 import type { CollectionConfig, Config } from 'payload';
 import { injectAdminIcon, injectAdminLogo } from './plugin/admin.js';
+import { injectEmailTemplates } from './plugin/email.js';
 import { cacheHookCollections, cacheHookGlobals } from './plugin/hooks.js';
 import type { PayloadHelperPluginConfig } from './types.js';
 
@@ -28,6 +29,11 @@ export const payloadHelper =
 		// Inject admin Icon component if icon config is provided
 		if (pluginOptions.admin?.icon) {
 			config = injectAdminIcon(config, pluginOptions.admin.icon, pluginOptions.siteName);
+		}
+
+		// Inject email templates for auth-enabled collections if email config is provided
+		if (pluginOptions.email) {
+			config = injectEmailTemplates(config, pluginOptions.email);
 		}
 
 		// Map collections & add hooks
@@ -80,14 +86,27 @@ export const payloadHelper =
 			};
 		});
 
+		// Store plugin options in config.custom for CLI access (e.g., preview-emails command)
+		config.custom = {
+			...config.custom,
+			payloadHelperOptions: pluginOptions,
+		};
+
 		return config;
 	};
 
 export type { IconProps } from './admin/components/Icon.js';
 export type { LogoProps } from './admin/components/Logo.js';
+export { ForgotPasswordEmail } from './email/ForgotPasswordEmail.js';
+export type { ForgotPasswordEmailProps } from './email/ForgotPasswordEmail.js';
+export { VerifyAccountEmail } from './email/VerifyAccountEmail.js';
+export type { VerifyAccountEmailProps } from './email/VerifyAccountEmail.js';
+export { default as env } from './util/env.js';
 export type {
 	AdminConfig,
 	AdminIconConfig,
 	AdminLogoConfig,
+	EmailConfig,
+	EmailContentOverrides,
 	PayloadHelperPluginConfig,
 } from './types.js';

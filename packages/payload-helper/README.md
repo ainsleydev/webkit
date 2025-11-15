@@ -91,6 +91,82 @@ payloadHelper({
 })
 ```
 
+### Email configuration
+
+Configure branded email templates for Payload authentication flows. Automatically applies to all collections with `auth` enabled.
+
+```typescript
+payloadHelper({
+	siteName: 'My Site',
+	email: {
+		frontEndUrl: 'https://your-site.com', // Optional, defaults to Payload's serverURL
+		theme: {
+			branding: {
+				companyName: 'My Company',
+				logoUrl: 'https://your-site.com/logo.png',
+			},
+			colours: {
+				background: {
+					accent: '#ff5043',
+				},
+			},
+		},
+		forgotPassword: {
+			heading: 'Reset your password',
+			bodyText: 'Click the button below to reset your password.',
+			buttonText: 'Reset Password',
+		},
+		verifyAccount: {
+			heading: 'Welcome aboard',
+			bodyText: 'Please verify your email address.',
+			buttonText: 'Verify Email',
+		},
+	},
+})
+```
+
+#### Previewing emails
+
+Preview your emails with your actual branding directly from your Payload configuration:
+
+```bash
+npx payload-helper preview-emails
+```
+
+This command will:
+- Read your `payload.config.ts` to extract your email theme configuration
+- Generate preview templates with your actual branding
+- Launch a preview server at http://localhost:3000
+
+You can optionally specify a custom port:
+
+```bash
+npx payload-helper preview-emails --port 3001
+```
+
+The preview will show both ForgotPassword and VerifyAccount emails using your configured theme, frontEndUrl, and content overrides.
+
+## Utilities
+
+### Environment Variables
+
+The package exports an `env` utility object that provides access to environment variables required by Payload Helper.
+
+```typescript
+import { env } from '@ainsleydev/payload-helper'
+
+// Access environment variables
+const spaces = {
+	key: env.DO_SPACES_KEY,
+	secret: env.DO_SPACES_SECRET,
+	endpoint: env.DO_SPACES_ENDPOINT,
+	region: env.DO_SPACES_REGION,
+	bucket: env.DO_SPACES_BUCKET,
+}
+```
+
+**Note:** When using ESM modules, always import utilities from the main package entry point as shown above. Direct imports to subpaths (e.g., `@ainsleydev/payload-helper/dist/util/env`) are not supported.
+
 ## Open Source
 
 ainsley.dev permits the use of any HTML, SCSS and Javascript found within the repository for use
