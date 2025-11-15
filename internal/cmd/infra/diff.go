@@ -8,8 +8,8 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/urfave/cli/v3"
 
+	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/infra"
 	"github.com/ainsleydev/webkit/internal/printer"
 )
 
@@ -58,11 +58,17 @@ func Diff(ctx context.Context, input cmdtools.CommandInput) error {
 		printer.Info(fmt.Sprintf("Comparing app.json with %s", baseRef))
 	}
 
-	// Run diff analysis.
-	analysis, err := infra.Diff(ctx, baseRef)
+	// Load current app.json.
+	current := input.AppDef()
+
+	// Load previous app.json from git.
+	previous, err := appdef.LoadFromGit(ctx, baseRef)
 	if err != nil {
 		return err
 	}
+
+	// Compare definitions.
+	analysis := appdef.Compare(current, previous)
 
 	// Output based on format.
 	switch format {
@@ -76,7 +82,7 @@ func Diff(ctx context.Context, input cmdtools.CommandInput) error {
 }
 
 // outputText outputs the analysis in human-readable text format.
-func outputText(analysis infra.ChangeAnalysis, printer *printer.Console, silent bool) error {
+func outputText(analysis appdef.ChangeAnalysis, printer *printer.Console, silent bool) error {
 	if !silent {
 		printer.Print(fmt.Sprintf("Decision: %s", analysis.Reason))
 
@@ -109,7 +115,7 @@ func outputText(analysis infra.ChangeAnalysis, printer *printer.Console, silent 
 }
 
 // outputJSON outputs the analysis in JSON format.
-func outputJSON(analysis infra.ChangeAnalysis) error {
+func outputJSON(analysis appdef.ChangeAnalysis) error {
 	data, err := json.MarshalIndent(analysis, "", "  ")
 	if err != nil {
 		return err
@@ -123,7 +129,7 @@ func outputJSON(analysis infra.ChangeAnalysis) error {
 }
 
 // outputGitHub outputs the analysis in GitHub Actions format.
-func outputGitHub(analysis infra.ChangeAnalysis) error {
+func outputGitHub(analysis appdef.ChangeAnalysis) error {
 	skip := "false"
 	if analysis.Skip {
 		skip = "true"
