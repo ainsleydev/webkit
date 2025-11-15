@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.1.0
+
+### Minor Changes
+
+- 77bc7e9: Email Integration
+
 ## 0.0.40
 
 ### Patch Changes
