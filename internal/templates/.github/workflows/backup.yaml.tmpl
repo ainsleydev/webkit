@@ -142,6 +142,79 @@ jobs:
       - name: Verify Backup
         run: |
           echo "Backup completed successfully!"
+{{- else if eq .Type "sqlite" }}
+  backup-resource-{{ .Name }}:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BUCKET_NAME: '{{ $.BucketName }}'
+      BACKUP_PATH: '/backups/{{ .Name }}/'
+      TURSO_API_TOKEN: ${{"{{"}} secrets.REPO_TURSO_TOKEN || secrets.ORG_TURSO_TOKEN {{ "}}" }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Install Turso CLI
+        run: |
+          curl -sSfL https://get.tur.so/install.sh | bash
+
+          # Add turso to PATH
+          echo "$HOME/.turso" >> $GITHUB_PATH
+
+      - name: Verify Turso CLI Installation
+        run: |
+          turso --version
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone for BackBlaze B2
+        run: |
+          rclone config create b2_backup b2 \
+            account {{ ghSecret "ORG_BACK_BLAZE_KEY_ID" }} \
+            key {{ ghSecret "ORG_BACK_BLAZE_APPLICATION_KEY" }}
+
+      - name: Dump and Compress Turso Database
+        run: |
+          # Fail on errors, undefined vars, and fail if any part of a pipe fails
+          set -euo pipefail
+
+          # Create vars
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          BACKUP_FILE="backup-$TIMESTAMP.sql.gz"
+          DATABASE_NAME="{{ $.BucketName }}-{{ .Name }}"
+
+          # Dump and compress
+          turso db shell "$DATABASE_NAME" .dump | gzip > "$BACKUP_FILE"
+
+          # Verify file
+          ls -lh "$BACKUP_FILE"
+          gzip -l "$BACKUP_FILE"
+
+          # Make the backup filename available to next steps
+          echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
+
+      - name: Upload Backup to B2
+        run: |
+          rclone copy $BACKUP_FILE b2_backup:${BUCKET_NAME}${BACKUP_PATH} --progress
+
+      - name: Retain only 30 latest backups
+        run: |
+          # Delete backups older than 30 days
+          rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
+
+      - name: Notify Slack of Backup Failure
+        if: failure()
+        uses: ./.github/actions/slack-notify
+        with:
+          title: 'Resource {{ .Name }} Database Backup Failed'
+          message: 'The scheduled Turso database backup has failed. This may impact disaster recovery capabilities.'
+          status: 'failure'
+          commit_sha: {{ ghVar "github.sha" }}
+          slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
+          channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
 {{- end }}
 {{- end }}
 
