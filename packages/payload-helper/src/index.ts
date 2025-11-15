@@ -86,6 +86,12 @@ export const payloadHelper =
 			};
 		});
 
+		// Store plugin options in config.custom for CLI access (e.g., preview-emails command)
+		config.custom = {
+			...config.custom,
+			payloadHelperOptions: pluginOptions,
+		};
+
 		return config;
 	};
 

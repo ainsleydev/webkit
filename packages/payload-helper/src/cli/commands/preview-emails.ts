@@ -6,59 +6,71 @@ import type { PayloadHelperPluginConfig } from '../../types.js';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import type { Payload } from 'payload';
 
+/**
+ * Escapes a string for safe use in template literals.
+ */
+const escapeForTemplate = (str: string): string => {
+	return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+};
+
+/**
+ * Retrieves the email configuration from the Payload config.
+ */
+const getEmailConfig = (payload: Payload): PayloadHelperPluginConfig['email'] | undefined => {
+	const custom = payload.config.custom as Record<string, unknown> | undefined;
+	const payloadHelperOptions = custom?.payloadHelperOptions as
+		| PayloadHelperPluginConfig
+		| undefined;
+	return payloadHelperOptions?.email;
+};
+
 export const previewEmails = async (options: { payload: Payload; port?: number }) => {
 	const port = options.port || 3000;
 	const payload = options.payload;
 
-	console.log(chalk.blue('🔍 Looking for payload.config.ts...'));
+	console.log(chalk.blue('🔍 Looking for email configuration...'));
 
-	// Load the config
-	let emailConfig: PayloadHelperPluginConfig['email'];
-	try {
-		const config = payload.config;
+	// Get email config from stored plugin options
+	const emailConfig = getEmailConfig(payload);
 
-		// Try to find payloadHelper plugin config
-		const plugins = config.plugins || [];
-		const helperPlugin = plugins.find((p: unknown) => {
-			if (typeof p === 'object' && p !== null) {
-				const plugin = p as Record<string, unknown>;
-				const pluginOptions = plugin.pluginOptions as Record<string, unknown> | undefined;
-				const pluginConfig = plugin.config as Record<string, unknown> | undefined;
-				return pluginOptions?.email !== undefined || pluginConfig?.email !== undefined;
-			}
-			return false;
-		});
-
-		if (helperPlugin && typeof helperPlugin === 'object') {
-			const plugin = helperPlugin as Record<string, unknown>;
-			const pluginOptions = plugin.pluginOptions as Record<string, unknown> | undefined;
-			const pluginConfig = plugin.config as Record<string, unknown> | undefined;
-			emailConfig = (pluginOptions?.email ||
-				pluginConfig?.email) as PayloadHelperPluginConfig['email'];
-		}
-
-		if (!emailConfig) {
-			console.log(chalk.yellow('⚠️  No email configuration found in payload.config.ts'));
-			console.log(chalk.yellow('   Using default theme for email previews'));
-		} else {
-			console.log(chalk.green('✓ Found email configuration'));
-		}
-	} catch (error) {
-		console.error(chalk.red('❌ Error loading payload.config.ts:'), error);
-		process.exit(1);
+	if (!emailConfig) {
+		console.log(chalk.yellow('⚠️  No email configuration found'));
+		console.log(
+			chalk.yellow(
+				'   Make sure you have configured email in your payloadHelper plugin:\n',
+			),
+		);
+		console.log(
+			chalk.cyan(`   payloadHelper({
+     email: {
+       theme: { /* ... */ },
+       frontEndUrl: 'https://yoursite.com',
+     }
+   })`),
+		);
+		console.log(chalk.yellow('\n   Using default theme for email previews'));
+	} else {
+		console.log(chalk.green('✓ Found email configuration'));
 	}
 
 	// Create temp directory for preview files
-	const tempDir = join(tmpdir(), `payload-helper-preview-${Date.now()}`);
+	const tempDir = join(tmpdir(), `payload-helper-preview-${Date.now()}-${process.pid}`);
 	mkdirSync(tempDir, { recursive: true });
 
 	console.log(chalk.blue('📝 Generating preview templates...'));
 
-	// Extract theme configuration
+	// Extract theme and frontEndUrl
 	const themeConfig = emailConfig?.theme ? JSON.stringify(emailConfig.theme, null, 2) : '{}';
 	const frontEndUrl = emailConfig?.frontEndUrl || 'https://yoursite.com';
 
+	// Safely escape the frontEndUrl for use in template strings
+	const escapedFrontEndUrl = escapeForTemplate(frontEndUrl);
+
 	// Generate ForgotPassword preview
+	const forgotPasswordContent = emailConfig?.forgotPassword
+		? JSON.stringify(emailConfig.forgotPassword, null, 3)
+		: 'undefined';
+
 	const forgotPasswordPreview = `import { renderEmail } from '@ainsleydev/email-templates';
 import { ForgotPasswordEmail } from '@ainsleydev/payload-helper';
 
@@ -67,8 +79,8 @@ export default async function render() {
 		component: ForgotPasswordEmail,
 		props: {
 			user: { firstName: 'John', email: 'john@example.com' },
-			resetUrl: '${frontEndUrl}/admin/reset/token123',
-			content: ${emailConfig?.forgotPassword ? JSON.stringify(emailConfig.forgotPassword, null, 3) : 'undefined'},
+			resetUrl: \`${escapedFrontEndUrl}/admin/reset/token123\`,
+			content: ${forgotPasswordContent},
 		},
 		theme: ${themeConfig},
 	});
@@ -76,6 +88,10 @@ export default async function render() {
 `;
 
 	// Generate VerifyAccount preview
+	const verifyAccountContent = emailConfig?.verifyAccount
+		? JSON.stringify(emailConfig.verifyAccount, null, 3)
+		: 'undefined';
+
 	const verifyAccountPreview = `import { renderEmail } from '@ainsleydev/email-templates';
 import { VerifyAccountEmail } from '@ainsleydev/payload-helper';
 
@@ -84,8 +100,8 @@ export default async function render() {
 		component: VerifyAccountEmail,
 		props: {
 			user: { firstName: 'John', email: 'john@example.com' },
-			verifyUrl: '${frontEndUrl}/admin/verify/token123',
-			content: ${emailConfig?.verifyAccount ? JSON.stringify(emailConfig.verifyAccount, null, 3) : 'undefined'},
+			verifyUrl: \`${escapedFrontEndUrl}/admin/verify/token123\`,
+			content: ${verifyAccountContent},
 		},
 		theme: ${themeConfig},
 	});
