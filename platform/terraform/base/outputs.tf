@@ -28,11 +28,14 @@ output "resources" {
       resource.id != null ? { id = resource.id } : {},
       resource.urn != null ? { urn = resource.urn } : {},
 
-      # Postgres-specific outputs
+      # Database outputs (Postgres & SQLite/Turso)
       resource.connection_url != null ? { connection_url = resource.connection_url } : {},
       resource.host != null ? { host = resource.host } : {},
       resource.port != null ? { port = resource.port } : {},
       resource.database != null ? { database = resource.database } : {},
+
+      # SQLite/Turso-specific outputs
+      resource.auth_token != null ? { auth_token = resource.auth_token } : {},
 
       # S3-specific outputs
       resource.bucket_name != null ? { bucket_name = resource.bucket_name } : {},
