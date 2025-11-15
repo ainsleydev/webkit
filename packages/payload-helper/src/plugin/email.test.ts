@@ -1,7 +1,7 @@
+import type { CollectionConfig, Config } from 'payload';
 import { describe, expect, test, vi } from 'vitest';
-import type { Config, CollectionConfig } from 'payload';
-import { injectEmailTemplates } from './email.js';
 import type { EmailConfig } from '../types.js';
+import { injectEmailTemplates } from './email.js';
 
 // Mock the email templates module
 vi.mock('@ainsleydev/email-templates', () => ({
