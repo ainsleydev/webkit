@@ -171,6 +171,78 @@ func TestBackupWorkflow(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("SQLite Turso", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:     "db",
+					Type:     appdef.ResourceTypeSQLite,
+					Provider: appdef.ResourceProviderTurso,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Multiple Resources Including SQLite", func(t *testing.T) {
+		t.Parallel()
+
+		// This verifies that mixing SQLite with other resource types
+		// generates valid YAML (i.e., sync-to-gdrive depends on all backup jobs).
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:     "db",
+					Type:     appdef.ResourceTypeSQLite,
+					Provider: appdef.ResourceProviderTurso,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+				{
+					Name:     "store",
+					Type:     appdef.ResourceTypeS3,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+	})
+
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 

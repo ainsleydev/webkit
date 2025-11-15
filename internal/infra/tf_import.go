@@ -25,6 +25,8 @@ func buildImportAddresses(projectName string, resource *appdef.Resource, baseID 
 	switch resource.Provider {
 	case appdef.ResourceProviderDigitalOcean:
 		return buildDigitalOceanImports(projectName, resource, baseID)
+	case appdef.ResourceProviderTurso:
+		return buildTursoImports(resource, baseID)
 	default:
 		return nil, fmt.Errorf("import not supported for provider %q", resource.Provider)
 	}
@@ -51,6 +53,16 @@ func buildDigitalOceanImports(projectName string, resource *appdef.Resource, clu
 		return buildS3Imports(resource, clusterID), nil
 	default:
 		return nil, fmt.Errorf("import not supported for resource type %q", resource.Type)
+	}
+}
+
+// buildTursoImports creates import addresses for Turso resources.
+func buildTursoImports(resource *appdef.Resource, databaseID string) ([]importAddress, error) {
+	switch resource.Type {
+	case appdef.ResourceTypeSQLite:
+		return buildTursoSQLiteImports(resource, databaseID), nil
+	default:
+		return nil, fmt.Errorf("import not supported for resource type %q with Turso provider", resource.Type)
 	}
 }
 
@@ -106,28 +118,37 @@ func buildPostgresImports(projectName string, resource *appdef.Resource, cluster
 }
 
 // buildS3Imports creates the import addresses for a DigitalOcean Spaces bucket.
+// Note: The CDN resource requires a different import ID format (just the CDN UUID)
+// compared to the bucket and CORS configuration (which use "region,bucket_name").
 func buildS3Imports(resource *appdef.Resource, bucketID string) []importAddress {
 	baseModule := fmt.Sprintf("module.resources[\"%s\"].module.do_bucket[0]", resource.Name)
 	region, ok := resource.Config["region"].(string)
 	if !ok {
 		region = "ams3"
 	}
-	id := fmt.Sprintf("%s,%s", bucketID, region)
+	bucketImportID := fmt.Sprintf("%s,%s", region, bucketID)
 
-	return []importAddress{
+	addresses := []importAddress{
 		{
 			Address: fmt.Sprintf("%s.digitalocean_spaces_bucket.this", baseModule),
-			ID:      id,
+			ID:      bucketImportID,
 		},
 		{
 			Address: fmt.Sprintf("%s.digitalocean_spaces_bucket_cors_configuration.this", baseModule),
-			ID:      id,
-		},
-		{
-			Address: fmt.Sprintf("%s.digitalocean_cdn.this", baseModule),
-			ID:      id,
+			ID:      bucketImportID,
 		},
 	}
+
+	// CDN uses a different import format - just the CDN UUID, not "region,bucket_name"
+	// Extract cdn_id from config if present
+	if cdnID, ok := resource.Config["cdn_id"].(string); ok && cdnID != "" {
+		addresses = append(addresses, importAddress{
+			Address: fmt.Sprintf("%s.digitalocean_cdn.this", baseModule),
+			ID:      cdnID,
+		})
+	}
+
+	return addresses
 }
 
 // buildDigitalOceanAppImports creates import addresses for DigitalOcean apps.
@@ -163,6 +184,31 @@ func buildDropletImports(app *appdef.App, dropletID string) []importAddress {
 		{
 			Address: fmt.Sprintf("%s.digitalocean_droplet.this", baseModule),
 			ID:      dropletID,
+		},
+	}
+}
+
+// buildTursoSQLiteImports creates the import addresses for a Turso SQLite database.
+// The databaseID should be in the format "organization/database-name".
+//
+// Note: The database name in Turso should follow the pattern "{project-name}-{resource-name}"
+// to match webkit's naming convention (same as DigitalOcean resources).
+// For example, if your project is "my-app" and resource name is "db", the database in Turso
+// should be named "my-app-db", and the import ID would be "my-org/my-app-db".
+//
+// Only the database resource is imported. The authentication token (turso_database_token)
+// cannot be imported as it's a generated resource. Terraform will create a new token during
+// the next apply operation.
+//
+// The function builds the full resource address using the resource module pattern:
+//   - Database: module.resources["<name>"].module.turso_database[0].turso_database.this
+func buildTursoSQLiteImports(resource *appdef.Resource, databaseID string) []importAddress {
+	baseModule := fmt.Sprintf("module.resources[\"%s\"].module.turso_database[0]", resource.Name)
+
+	return []importAddress{
+		{
+			Address: fmt.Sprintf("%s.turso_database.this", baseModule),
+			ID:      databaseID,
 		},
 	}
 }

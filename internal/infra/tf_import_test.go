@@ -82,7 +82,7 @@ func TestBuildImportAddresses(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		"DigitalOcean S3 bucket": {
+		"DigitalOcean S3 bucket without CDN": {
 			projectName: "test-project",
 			resource: &appdef.Resource{
 				Name:     "media-bucket",
@@ -94,15 +94,39 @@ func TestBuildImportAddresses(t *testing.T) {
 			want: []importAddress{
 				{
 					Address: "module.resources[\"media-bucket\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
-					ID:      "bucket-789,ams3",
+					ID:      "ams3,bucket-789",
 				},
 				{
 					Address: "module.resources[\"media-bucket\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
-					ID:      "bucket-789,ams3",
+					ID:      "ams3,bucket-789",
+				},
+			},
+			wantErr: false,
+		},
+		"DigitalOcean S3 bucket with CDN": {
+			projectName: "test-project",
+			resource: &appdef.Resource{
+				Name:     "store",
+				Type:     appdef.ResourceTypeS3,
+				Provider: appdef.ResourceProviderDigitalOcean,
+				Config: map[string]any{
+					"region": "ams3",
+					"cdn_id": "26226874-569d-41d9-9191-e18a09a2d134",
+				},
+			},
+			baseID: "s-clark-store",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "ams3,s-clark-store",
 				},
 				{
-					Address: "module.resources[\"media-bucket\"].module.do_bucket[0].digitalocean_cdn.this",
-					ID:      "bucket-789,ams3",
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "ams3,s-clark-store",
+				},
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_cdn.this",
+					ID:      "26226874-569d-41d9-9191-e18a09a2d134",
 				},
 			},
 			wantErr: false,
@@ -128,6 +152,38 @@ func TestBuildImportAddresses(t *testing.T) {
 				Config:   map[string]any{},
 			},
 			baseID:  "id-456",
+			want:    nil,
+			wantErr: true,
+		},
+		"Turso SQLite database": {
+			projectName: "test-project",
+			resource: &appdef.Resource{
+				Name:     "db",
+				Type:     appdef.ResourceTypeSQLite,
+				Provider: appdef.ResourceProviderTurso,
+				Config: map[string]any{
+					"organisation": "my-org",
+					"group":        "default",
+				},
+			},
+			baseID: "my-org/my-database",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"db\"].module.turso_database[0].turso_database.this",
+					ID:      "my-org/my-database",
+				},
+			},
+			wantErr: false,
+		},
+		"Turso with unsupported resource type": {
+			projectName: "test-project",
+			resource: &appdef.Resource{
+				Name:     "cache",
+				Type:     appdef.ResourceTypePostgres,
+				Provider: appdef.ResourceProviderTurso,
+				Config:   map[string]any{},
+			},
+			baseID:  "my-org/my-db",
 			want:    nil,
 			wantErr: true,
 		},
@@ -255,28 +311,81 @@ func TestBuildPostgresImports(t *testing.T) {
 func TestBuildS3Imports(t *testing.T) {
 	t.Parallel()
 
-	resource := &appdef.Resource{
-		Name: "media",
+	tt := map[string]struct {
+		resource *appdef.Resource
+		bucketID string
+		want     []importAddress
+	}{
+		"Bucket without CDN": {
+			resource: &appdef.Resource{
+				Name:   "media",
+				Config: map[string]any{},
+			},
+			bucketID: "bucket-123",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "ams3,bucket-123",
+				},
+				{
+					Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "ams3,bucket-123",
+				},
+			},
+		},
+		"Bucket with CDN": {
+			resource: &appdef.Resource{
+				Name: "store",
+				Config: map[string]any{
+					"region": "ams3",
+					"cdn_id": "26226874-569d-41d9-9191-e18a09a2d134",
+				},
+			},
+			bucketID: "s-clark-store",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "ams3,s-clark-store",
+				},
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "ams3,s-clark-store",
+				},
+				{
+					Address: "module.resources[\"store\"].module.do_bucket[0].digitalocean_cdn.this",
+					ID:      "26226874-569d-41d9-9191-e18a09a2d134",
+				},
+			},
+		},
+		"Bucket with custom region": {
+			resource: &appdef.Resource{
+				Name: "nyc-bucket",
+				Config: map[string]any{
+					"region": "nyc3",
+				},
+			},
+			bucketID: "my-bucket",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"nyc-bucket\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
+					ID:      "nyc3,my-bucket",
+				},
+				{
+					Address: "module.resources[\"nyc-bucket\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
+					ID:      "nyc3,my-bucket",
+				},
+			},
+		},
 	}
-	bucketID := "bucket-123"
 
-	want := []importAddress{
-		{
-			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket.this",
-			ID:      "bucket-123,ams3",
-		},
-		{
-			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_spaces_bucket_cors_configuration.this",
-			ID:      "bucket-123,ams3",
-		},
-		{
-			Address: "module.resources[\"media\"].module.do_bucket[0].digitalocean_cdn.this",
-			ID:      "bucket-123,ams3",
-		},
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := buildS3Imports(test.resource, test.bucketID)
+			assert.Equal(t, test.want, got)
+		})
 	}
-
-	got := buildS3Imports(resource, bucketID)
-	assert.Equal(t, want, got)
 }
 
 func TestBuildAppImportAddresses(t *testing.T) {
@@ -429,6 +538,102 @@ func TestBuildDigitalOceanAppImports(t *testing.T) {
 			if !test.wantErr {
 				assert.Equal(t, test.want, got)
 			}
+		})
+	}
+}
+
+func TestBuildTursoImports(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		resource   *appdef.Resource
+		databaseID string
+		want       []importAddress
+		wantErr    bool
+	}{
+		"SQLite database": {
+			resource: &appdef.Resource{
+				Name: "db",
+				Type: appdef.ResourceTypeSQLite,
+				Config: map[string]any{
+					"organisation": "my-org",
+					"group":        "default",
+				},
+			},
+			databaseID: "my-org/my-database",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"db\"].module.turso_database[0].turso_database.this",
+					ID:      "my-org/my-database",
+				},
+			},
+			wantErr: false,
+		},
+		"Unsupported resource type": {
+			resource: &appdef.Resource{
+				Name: "cache",
+				Type: appdef.ResourceTypePostgres,
+			},
+			databaseID: "my-org/my-db",
+			want:       nil,
+			wantErr:    true,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := buildTursoImports(test.resource, test.databaseID)
+			assert.Equal(t, test.wantErr, err != nil)
+
+			if !test.wantErr {
+				assert.Equal(t, test.want, got)
+			}
+		})
+	}
+}
+
+func TestBuildTursoSQLiteImports(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		resource   *appdef.Resource
+		databaseID string
+		want       []importAddress
+	}{
+		"Simple database name": {
+			resource: &appdef.Resource{
+				Name: "db",
+			},
+			databaseID: "my-org/my-database",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"db\"].module.turso_database[0].turso_database.this",
+					ID:      "my-org/my-database",
+				},
+			},
+		},
+		"Hyphenated resource name": {
+			resource: &appdef.Resource{
+				Name: "prod-db",
+			},
+			databaseID: "acme-corp/production-db",
+			want: []importAddress{
+				{
+					Address: "module.resources[\"prod-db\"].module.turso_database[0].turso_database.this",
+					ID:      "acme-corp/production-db",
+				},
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := buildTursoSQLiteImports(test.resource, test.databaseID)
+			assert.Equal(t, test.want, got)
 		})
 	}
 }

@@ -207,3 +207,172 @@ Arguments can be passed in to each dockerfile using the `args` parameter as a ke
 - Every app must have a `Dockerfile` at `{app.path}/Dockerfile`
 - Build args are passed to Docker with `--build-arg`
 - For advanced Docker features (multi-stage builds, BuildKit), modify your Dockerfile directly.
+
+## Tools and dependencies
+
+The `tools` field allows you to specify build tools and their versions that are required for CI/CD pipelines. WebKit automatically installs these tools in GitHub Actions workflows before running your commands.
+
+### Default behaviour
+
+WebKit provides sensible defaults for common tools based on your app type. For Go applications, the following tools are installed automatically:
+
+- `golangci-lint` - For linting
+- `templ` - For template generation
+- `sqlc` - For SQL code generation
+
+JavaScript applications (Payload, SvelteKit) don't have default tools, as they typically install dependencies via pnpm.
+
+### Configuring tools
+
+Tools are defined as objects with a `type` field that determines how they're installed. WebKit supports three tool types:
+
+#### Go tools
+
+Go tools are installed via `go install`:
+
+```json
+{
+    "apps": [
+        {
+            "name": "api",
+            "type": "golang",
+            "path": "services/api",
+            "tools": {
+                "custom-tool": {
+                    "type": "go",
+                    "name": "github.com/custom/tool/cmd/mytool",
+                    "version": "v1.0.0"
+                }
+            }
+        }
+    ]
+}
+```
+
+This generates: `go install github.com/custom/tool/cmd/mytool@v1.0.0`
+
+#### pnpm tools
+
+Node.js tools are installed globally via pnpm:
+
+```json
+{
+    "tools": {
+        "eslint": {
+            "type": "pnpm",
+            "name": "eslint",
+            "version": "8.0.0"
+        }
+    }
+}
+```
+
+This generates: `pnpm add -g eslint@8.0.0`
+
+#### Script tools
+
+For custom installation methods (downloading binaries, curl scripts, etc.), use the `script` type:
+
+```json
+{
+    "tools": {
+        "goreleaser": {
+            "type": "script",
+            "install": "curl -sSL https://github.com/goreleaser/goreleaser/releases/download/v1.18.2/goreleaser_Linux_x86_64.tar.gz | tar xz"
+        }
+    }
+}
+```
+
+The `install` command is executed exactly as written.
+
+### Overriding default tools
+
+Default tools are automatically populated by `applyDefaults()`. To customise a default tool (like changing the version), simply include it in your `tools` configuration:
+
+```json
+{
+    "tools": {
+        "templ": {
+            "type": "go",
+            "name": "github.com/a-h/templ/cmd/templ",
+            "version": "v0.2.543"
+        }
+    }
+}
+```
+
+### Install command override
+
+You can override the auto-generated install command for any tool type by providing an `install` field:
+
+```json
+{
+    "tools": {
+        "custom": {
+            "type": "go",
+            "name": "github.com/foo/bar",
+            "version": "v1.0.0",
+            "install": "custom install command"
+        }
+    }
+}
+```
+
+### Attributes
+
+| Key     | Description                                     | Required | Default                    | Notes                                                     |
+|---------|-------------------------------------------------|----------|----------------------------|-----------------------------------------------------------|
+| tools   | Map of tool names to tool configurations        | No       | Auto-populated for Go apps | Each tool is an object with type, name, version, install |
+| type    | Installation method                             | Yes      | -                          | One of: "go", "pnpm", "script"                            |
+| name    | Package path (go) or package name (pnpm)        | No       | -                          | Required for "go" and "pnpm" types                        |
+| version | Version to install                              | No       | -                          | Required for "go" and "pnpm" types                        |
+| install | Custom installation command                     | No       | -                          | Required for "script" type, optional override for others  |
+
+### Example
+
+```json
+{
+    "apps": [
+        {
+            "name": "api",
+            "type": "golang",
+            "path": "services/api",
+            "tools": {
+                "golangci-lint": {
+                    "type": "go",
+                    "name": "github.com/golangci/golangci-lint/cmd/golangci-lint",
+                    "version": "v1.55.2"
+                },
+                "templ": {
+                    "type": "go",
+                    "name": "github.com/a-h/templ/cmd/templ",
+                    "version": "v0.2.543"
+                },
+                "buf": {
+                    "type": "go",
+                    "name": "github.com/bufbuild/buf/cmd/buf",
+                    "version": "v1.28.1"
+                },
+                "custom-binary": {
+                    "type": "script",
+                    "install": "curl -sSL https://example.com/install.sh | sh"
+                }
+            },
+            "commands": {
+                "lint": "golangci-lint run",
+                "generate": "templ generate && buf generate"
+            }
+        }
+    ]
+}
+```
+
+### Notes
+
+- Tools are only installed in CI/CD workflows, not in local development.
+- For local development, install tools manually or use a tool like `asdf`.
+- Version `"latest"` installs the most recent release of the tool.
+- Tool installation happens after Go is set up but before commands are run.
+- Go tools are installed via `go install`, pnpm tools via `pnpm add -g`.
+- For other package managers or custom installation methods, use the `script` type.

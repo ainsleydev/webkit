@@ -51,6 +51,14 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 			resourceSecrets["SecretKey"] = resource.GitHubSecretName(enviro, "secret_key")
 			resourceSecrets["Region"] = resource.GitHubSecretName(enviro, "region")
 			resourceSecrets["BucketName"] = resource.GitHubSecretName(enviro, "bucket_name")
+
+		case appdef.ResourceTypeSQLite:
+			// NOTE: SQLite backup is currently only compatible with Turso.
+			// The database name is constructed as ${project_name}-${resource_name} (same as in terraform).
+			// Authentication is handled via TURSO_API_TOKEN environment variable.
+			if resource.Provider != appdef.ResourceProviderTurso {
+				continue
+			}
 		}
 
 		secretData[resource.Name] = resourceSecrets

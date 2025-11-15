@@ -18,6 +18,20 @@ updates:
           - "@ainsleydev/payload-helper"
           - "^@payloadcms/.*"
           - "^payload$"
+      dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@payloadcms/*"
+          - "payload"
+          - "@ainsleydev/payload-helper"
+          - "next"
+          - "react"
+          - "react-dom"
+          - "graphql"
+          - "sharp"
+          - "cross-env"
+          - "dotenv"
   - package-ecosystem: "github-actions"
     directory: .github/workflows
     schedule:

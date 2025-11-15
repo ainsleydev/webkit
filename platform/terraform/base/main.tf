@@ -136,7 +136,7 @@ module "default_b2_bucket" {
 #
 resource "slack_conversation" "project_channel" {
   name              = "alerts-${var.project_name}"
-  topic             = "CI/CD alerts and notifications for ${var.project_title}"
+  topic             = "CI/CD alerts and notifications for ${replace(var.project_title, "/[^a-zA-Z0-9 ]/", " ")}"
   is_private        = false
   action_on_destroy = "archive"
 
@@ -218,6 +218,7 @@ locals {
   resource_output_map = {
     postgres = ["id", "urn", "connection_url"]
     s3       = ["id", "urn", "bucket_name", "bucket_url", "region", "endpoint"]
+    sqlite   = ["id", "connection_url", "auth_token", "host", "database"]
   }
 
   # Define which outputs each app type has (known at plan time)
@@ -295,6 +296,15 @@ data "external" "project_domains" {
   }
 }
 
+# Count total projects in the account to determine if this should be default
+data "external" "project_count" {
+  program = ["bash", "${path.module}/scripts/count_projects.sh"]
+
+  query = {
+    do_token = var.do_token
+  }
+}
+
 locals {
   # Parse comma-separated domain URNs from external script
   manual_domain_urns = data.external.project_domains.result.domain_urns != "" ? split(",", data.external.project_domains.result.domain_urns) : []
@@ -310,6 +320,9 @@ locals {
     local.terraform_managed_urns,
     local.manual_domain_urns
   )
+
+  # Set as default if this is the only project in the account
+  is_only_project = tonumber(data.external.project_count.result.count) == 1
 }
 
 # Wait for DigitalOcean API propagation after app/resource creation
@@ -324,6 +337,7 @@ resource "digitalocean_project" "this" {
   purpose     = "Web Application"
   environment = title(var.environment)
   resources   = local.all_project_resources
+  is_default  = local.is_only_project
 
   depends_on = [time_sleep.wait_for_propagation]
 }

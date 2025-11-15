@@ -51,6 +51,13 @@
 					"description": "Human-readable app name for display purposes",
 					"type": "string"
 				},
+				"tools": {
+					"description": "Build tools required for CI/CD workflows",
+					"additionalProperties": {
+						"$ref": "#/definitions/AppdefTool"
+					},
+					"type": "object"
+				},
 				"type": {
 					"description": "Application type (payload, svelte-kit, golang)",
 					"type": "string"
@@ -246,7 +253,7 @@
 					"type": "string"
 				},
 				"provider": {
-					"description": "Cloud provider hosting this resource (digitalocean, backblaze)",
+					"description": "Cloud provider hosting this resource (digitalocean, backblaze, turso)",
 					"type": "string"
 				},
 				"terraformManaged": {
@@ -254,7 +261,7 @@
 					"type": ["null", "boolean"]
 				},
 				"type": {
-					"description": "Type of resource to provision (postgres, s3)",
+					"description": "Type of resource to provision (postgres, s3, sqlite)",
 					"type": "string"
 				}
 			},
@@ -274,6 +281,27 @@
 				"env": {
 					"$ref": "#/definitions/AppdefEnvironment",
 					"description": "Environment variables shared across all apps"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefTool": {
+			"properties": {
+				"install": {
+					"description": "Custom installation command (overrides auto-generated command)",
+					"type": "string"
+				},
+				"name": {
+					"description": "Package path (for 'go') or package name (for 'pnpm')",
+					"type": "string"
+				},
+				"type": {
+					"description": "Installation method: 'go', 'pnpm', or 'script'",
+					"type": "string"
+				},
+				"version": {
+					"description": "Version to install (e.g., 'latest', 'v0.2.543')",
+					"type": "string"
 				}
 			},
 			"type": "object"

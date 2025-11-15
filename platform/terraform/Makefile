@@ -51,6 +51,11 @@ test-domains: # Test domain fetching from DigitalOcean project (requires DO_API_
 	@echo '{"project_id":"","project_title":"$(PROJECT_TITLE)","do_token":"$(DO_API_KEY)"}' | ./base/scripts/get_project_domains.sh | jq -r '.domain_urns' | tr ',' '\n' | sed 's/do:domain://'
 .PHONY: test-domains
 
+# Example: DO_API_KEY="dop_..." make test-project-count
+test-project-count: # Test project counting from DigitalOcean (requires DO_API_KEY env var)
+	@echo '{"do_token":"$(DO_API_KEY)"}' | ./base/scripts/count_projects.sh
+.PHONY: test-project-count
+
 pack: # Packs up the folder for AI.
 	npx repopack --ignore "**/*.log,tmp/,**/fixtures/**,.env,.tfvars,**/.terraform/**,.terraform.lock.hcl" --output Terraform.txt
 .PHONY: pack

@@ -105,6 +105,18 @@ Example: For a resource named `db` in production, the connection URL will be ava
 - `turso_database` - The SQLite database instance
 - `turso_database_token` - Authentication token with full access and no expiration
 
+## Database Naming
+
+Turso databases created by webkit follow the naming pattern `{project-name}-{resource-name}`.
+
+For example, if your project is named "my-app" and you define a resource named "db", the actual database created in Turso will be named `my-app-db`. This matches the naming convention used for DigitalOcean resources.
+
+**Importing Existing Databases:**
+When importing an existing Turso database, use the full database name in the import ID:
+```bash
+webkit infra import --resource db --id my-org/my-app-db --env production
+```
+
 ## Notes
 
 - Tokens are created with `expiration: "never"` and `authorization: "full-access"`
