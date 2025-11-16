@@ -152,11 +152,20 @@ This repository contains **{{ len .Definition.Apps }} application{{ if ne (len .
    webkit up
    ```
 
-{{- if .AppsWithPorts }}
+{{- $hasAppsWithPorts := false }}
+{{- range .Definition.Apps }}
+{{- if gt .Build.Port 0 }}
+{{- $hasAppsWithPorts = true }}
+{{- end }}
+{{- end }}
+
+{{- if $hasAppsWithPorts }}
 
 4. Access applications:
-{{- range .AppsWithPorts }}
-   - {{ .Title }}: http://localhost:{{ .Port }}
+{{- range .Definition.Apps }}
+{{- if gt .Build.Port 0 }}
+   - {{ .Title }}: http://localhost:{{ .Build.Port }}
+{{- end }}
 {{- end }}
 {{- end }}
 

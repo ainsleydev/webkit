@@ -36,7 +36,6 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 		"DomainLinks":      formatDomainLinks(appDef),
 		"AppTypeBadges":    collectAppTypeBadges(appDef),
 		"ProviderGroups":   groupByProvider(appDef),
-		"AppsWithPorts":    collectAppsWithPorts(appDef),
 		"PrimaryDomainURL": getPrimaryDomainURL(appDef),
 		"CurrentYear":      time.Now().Year(),
 	}
@@ -146,27 +145,6 @@ func groupByProvider(def *appdef.Definition) map[string]string {
 	}
 
 	return result
-}
-
-type appWithPort struct {
-	Title string
-	Port  int
-}
-
-// collectAppsWithPorts returns all apps that have a build port defined.
-func collectAppsWithPorts(def *appdef.Definition) []appWithPort {
-	var apps []appWithPort
-
-	for _, app := range def.Apps {
-		if app.Build.Port > 0 {
-			apps = append(apps, appWithPort{
-				Title: app.Title,
-				Port:  app.Build.Port,
-			})
-		}
-	}
-
-	return apps
 }
 
 // getPrimaryDomainURL returns the first app's primary domain URL or empty string.
