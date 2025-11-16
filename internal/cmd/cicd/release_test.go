@@ -418,11 +418,14 @@ func TestReleaseWorkflow(t *testing.T) {
 			assert.Contains(t, content, "Infra Plan")
 		}
 
-		t.Log("SHA-only detection logic")
+		t.Log("Diff-based change detection")
 		{
-			assert.Contains(t, content, "sha_only")
-			assert.Contains(t, content, "Skip Apply for SHA-only Changes")
-			assert.Contains(t, content, "if: steps.plan.outputs.sha_only != 'true' && steps.plan.outputs.changes_detected == 'true'")
+			assert.Contains(t, content, "Check if Terraform needed")
+			assert.Contains(t, content, "id: diff")
+			assert.Contains(t, content, "./webkit infra diff --format=github")
+			assert.Contains(t, content, "if: steps.diff.outputs.skip_terraform != 'true'")
+			assert.Contains(t, content, "Skipping Terraform - no infrastructure changes detected")
+			assert.Contains(t, content, "Running Terraform - infrastructure changes detected")
 		}
 
 		t.Log("Deploy jobs depend on terraform apply")

@@ -57,12 +57,17 @@ func Read(root afero.Fs) (*Definition, error) {
 		return nil, err
 	}
 
+	return Parse(data)
+}
+
+// Parse unmarshals JSON bytes into a Definition and applies defaults.
+func Parse(data []byte) (*Definition, error) {
 	def := &Definition{}
-	if err = json.Unmarshal(data, def); err != nil {
+	if err := json.Unmarshal(data, def); err != nil {
 		return nil, errors.New("unmarshalling app definition: " + err.Error())
 	}
 
-	if err = def.ApplyDefaults(); err != nil {
+	if err := def.ApplyDefaults(); err != nil {
 		return nil, err
 	}
 
