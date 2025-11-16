@@ -55,6 +55,13 @@ variable "digitalocean_project_id" {
   default     = ""
 }
 
+variable "hetzner_token" {
+  type        = string
+  description = "Hetzner Cloud API token for authentication"
+  sensitive   = true
+  default     = ""
+}
+
 variable "b2_application_key" {
   type      = string
   sensitive = true

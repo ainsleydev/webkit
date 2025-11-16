@@ -12,6 +12,7 @@ type TFEnvironment struct {
 	DigitalOceanAPIKey          string `env:"DO_API_KEY,required"`
 	DigitalOceanSpacesAccessKey string `env:"DO_SPACES_ACCESS_KEY,required"`
 	DigitalOceanSpacesSecretKey string `env:"DO_SPACES_SECRET_KEY,required"`
+	HetznerToken                string `env:"HETZNER_TOKEN,required"`
 	BackBlazeBucket             string `env:"BACK_BLAZE_BUCKET,required"`
 	BackBlazeKeyID              string `env:"BACK_BLAZE_KEY_ID,required"`
 	BackBlazeApplicationKey     string `env:"BACK_BLAZE_APPLICATION_KEY,required"`
@@ -39,6 +40,7 @@ func (t *TFEnvironment) varStrings() []string {
 		"do_token=" + t.DigitalOceanAPIKey,
 		"do_spaces_access_id=" + t.DigitalOceanSpacesAccessKey,
 		"do_spaces_secret_key=" + t.DigitalOceanSpacesSecretKey,
+		"hetzner_token=" + t.HetznerToken,
 		"b2_application_key=" + t.BackBlazeApplicationKey,
 		"b2_application_key_id=" + t.BackBlazeKeyID,
 		"turso_api_token=" + t.TursoToken,

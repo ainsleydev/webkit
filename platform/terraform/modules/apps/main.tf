@@ -17,6 +17,19 @@ module "do_droplet" {
   server_user    = var.server_user
 }
 
+# Hetzner Server (VM)
+module "hetzner_server" {
+  count  = var.platform_provider == "hetzner" && var.platform_type == "vm" ? 1 : 0
+  source = "../../providers/hetzner/server"
+
+  name        = "${var.project_name}-${var.name}"
+  server_type = try(var.platform_config.size, "cx11")
+  location    = try(var.platform_config.region, "nbg1")
+  ssh_key_ids = var.hetzner_ssh_key_ids
+  tags        = try(var.tags, [])
+  server_user = var.server_user
+}
+
 # DigitalOcean App Platform (Container)
 module "do_app" {
   count  = var.platform_provider == "digitalocean" && var.platform_type == "container" ? 1 : 0

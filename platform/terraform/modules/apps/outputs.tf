@@ -8,6 +8,7 @@ output "ip_address" {
   description = "IP address of the VM"
   value = (
     var.platform_type == "vm" && var.platform_provider == "digitalocean" ? module.do_droplet[0].ip_address :
+    var.platform_type == "vm" && var.platform_provider == "hetzner" ? module.hetzner_server[0].ip_address :
     null
   )
 }
@@ -24,6 +25,7 @@ output "ssh_private_key" {
   description = "SSH private key for the VM"
   value = (
     var.platform_type == "vm" && var.platform_provider == "digitalocean" ? module.do_droplet[0].ssh_private_key :
+    var.platform_type == "vm" && var.platform_provider == "hetzner" ? module.hetzner_server[0].ssh_private_key :
     null
   )
   sensitive = true
@@ -33,6 +35,7 @@ output "server_user" {
   description = "SSH user for the VM"
   value = (
     var.platform_type == "vm" && var.platform_provider == "digitalocean" ? module.do_droplet[0].server_user :
+    var.platform_type == "vm" && var.platform_provider == "hetzner" ? module.hetzner_server[0].server_user :
     null
   )
 }
