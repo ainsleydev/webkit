@@ -143,7 +143,7 @@ variable "tags" {
 }
 
 variable "ssh_keys" {
-  description = "List of SSH key names to apply to droplets"
+  description = "List of SSH key names to apply to VMs (e.g., [\"hello@ainsley.dev\"])"
   type        = list(string)
   default     = []
 }

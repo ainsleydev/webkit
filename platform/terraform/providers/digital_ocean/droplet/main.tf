@@ -29,7 +29,7 @@ resource "digitalocean_droplet" "this" {
     ignore_changes        = [user_data]
   }
 
-  user_data = templatefile("${path.module}/templates/server.yaml", {
+  user_data = templatefile("${path.root}/templates/cloud-init/ubuntu-server.yaml", {
     name = var.name
   })
 }
