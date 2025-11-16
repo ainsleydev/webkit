@@ -398,7 +398,8 @@ jobs:
 
   claude-code-review:
     # Only run when PR is first opened, not on subsequent commits
-    if: github.event.action == 'opened'
+    # Skip automated bot PRs (dependabot, ainsley-dev-bot, github-actions)
+    if: github.event.action == 'opened' && github.actor != 'dependabot[bot]' && github.actor != 'ainsley-dev-bot[bot]' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
