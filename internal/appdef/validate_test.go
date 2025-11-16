@@ -51,6 +51,7 @@ func TestDefinition_Validate(t *testing.T) {
 				d.Apps[0].Domains = []Domain{{Name: "example.com"}}
 				d.Resources = []Resource{{
 					Name:     "db",
+					Title:    "Database",
 					Type:     ResourceTypePostgres,
 					Provider: ResourceProviderDigitalOcean,
 				}}
@@ -112,6 +113,7 @@ func TestDefinition_Validate(t *testing.T) {
 				}
 				d.Resources = []Resource{{
 					Name:     "db",
+					Title:    "Database",
 					Type:     ResourceTypePostgres,
 					Provider: ResourceProviderDigitalOcean,
 				}}
@@ -768,6 +770,7 @@ func TestDefinition_ValidateEnvReferences(t *testing.T) {
 				Resources: []Resource{
 					{
 						Name:     "storage",
+						Title:    "Storage",
 						Type:     ResourceTypeS3,
 						Provider: ResourceProviderDigitalOcean,
 					},

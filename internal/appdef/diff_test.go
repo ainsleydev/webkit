@@ -97,7 +97,7 @@ func TestCompare(t *testing.T) {
 					{Name: "web", Infra: Infra{Type: "container", Provider: ResourceProviderDigitalOcean}},
 				},
 				Resources: []Resource{
-					{Name: "db", Type: ResourceTypePostgres, Provider: ResourceProviderDigitalOcean},
+					{Name: "db", Title: "Database", Type: ResourceTypePostgres, Provider: ResourceProviderDigitalOcean},
 				},
 			},
 			previous: &Definition{

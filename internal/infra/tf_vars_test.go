@@ -73,6 +73,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			Resources: []appdef.Resource{
 				{
 					Name:     "db",
+					Title:    "Database",
 					Type:     appdef.ResourceTypePostgres,
 					Provider: appdef.ResourceProviderDigitalOcean,
 					Config: map[string]any{

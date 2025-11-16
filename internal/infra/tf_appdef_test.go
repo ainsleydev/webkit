@@ -28,6 +28,7 @@ func TestTerraform_Resources(t *testing.T) {
 			Resources: []appdef.Resource{
 				{
 					Name:     "db",
+					Title:    "Database",
 					Type:     appdef.ResourceTypePostgres,
 					Provider: appdef.ResourceProviderDigitalOcean,
 					Config: map[string]any{
@@ -174,6 +175,7 @@ func TestTerraform_Resources(t *testing.T) {
 			Resources: []appdef.Resource{
 				{
 					Name:     "storage",
+					Title:    "Storage",
 					Type:     appdef.ResourceTypeS3,
 					Provider: appdef.ResourceProviderDigitalOcean,
 					Config: map[string]any{

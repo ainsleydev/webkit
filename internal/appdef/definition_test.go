@@ -652,7 +652,7 @@ func TestDefinition_ApplyDefaults(t *testing.T) {
 
 		def := &Definition{
 			Resources: []Resource{
-				{Name: "db", Type: ResourceTypePostgres, Provider: ResourceProviderDigitalOcean},
+				{Name: "db", Title: "Database", Type: ResourceTypePostgres, Provider: ResourceProviderDigitalOcean},
 			},
 		}
 

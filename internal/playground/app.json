@@ -29,6 +29,7 @@
 	"resources": [
 		{
 			"name": "db",
+			"title": "Database",
 			"type": "postgres",
 			"provider": "digitalocean",
 			"config": {
@@ -42,6 +43,7 @@
 		},
 		{
 			"name": "store",
+			"title": "Storage",
 			"type": "s3",
 			"provider": "digitalocean",
 			"config": {
