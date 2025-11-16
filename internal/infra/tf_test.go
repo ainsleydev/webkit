@@ -50,6 +50,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("DO_API_KEY", "key")
 	t.Setenv("DO_SPACES_ACCESS_KEY", "access")
 	t.Setenv("DO_SPACES_SECRET_KEY", "secret")
+	t.Setenv("HETZNER_TOKEN", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	t.Setenv("BACK_BLAZE_BUCKET", "bucket")
 	t.Setenv("BACK_BLAZE_KEY_ID", "id")
 	t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
@@ -67,6 +68,7 @@ func teardownEnv(t *testing.T) {
 		"DO_API_KEY",
 		"DO_SPACES_ACCESS_KEY",
 		"DO_SPACES_SECRET_KEY",
+		"HETZNER_TOKEN",
 		"BACK_BLAZE_BUCKET",
 		"BACK_BLAZE_KEY_ID",
 		"BACK_BLAZE_APPLICATION_KEY",
@@ -374,7 +376,7 @@ func TestTerraform_Apply(t *testing.T) {
 		tf.tf = mock
 
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
@@ -393,7 +395,7 @@ func TestTerraform_Apply(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mock := tfmocks.NewMockterraformExecutor(ctrl)
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("authentication failed")).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)

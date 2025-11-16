@@ -7,7 +7,7 @@ on:
 
 jobs:
 {{- range .Apps }}
-{{- if and (eq .Infra.Provider "digitalocean") (eq .Infra.Type "vm") }}
+{{- if and (or (eq .Infra.Provider "digitalocean") (eq .Infra.Provider "hetzner")) (eq .Infra.Type "vm") }}
   maintenance-vm-{{ .Name }}:
     runs-on: ubuntu-latest
     environment:

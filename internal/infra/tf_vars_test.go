@@ -274,7 +274,8 @@ func TestTFVarsFromDefinition(t *testing.T) {
 
 		t.Log("SSH")
 		{
-			assert.ElementsMatch(t, []string{"Ainsley - Mac Studio"}, got.SSHKeys)
+			assert.ElementsMatch(t, []string{"Ainsley - Mac Studio"}, got.DigitalOceanSSHKeys)
+			assert.ElementsMatch(t, []string{"hello@ainsley.dev"}, got.HetznerSSHKeys)
 		}
 
 		t.Log("Apps")
