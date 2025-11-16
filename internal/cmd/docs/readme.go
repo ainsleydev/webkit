@@ -26,28 +26,20 @@ const (
 // the base template with project data from app.json.
 func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	baseTemplate := templates.MustLoadTemplate("docs/README.md")
-
-	logoURL := detectLogoURL(input.FS)
-	domainBadges := collectDomainBadges(input.AppDef())
-	domainLinks := formatDomainLinks(input.AppDef())
-	appTypeBadges := collectAppTypeBadges(input.AppDef())
-	providerGroups := groupByProvider(input.AppDef())
-	appsWithPorts := collectAppsWithPorts(input.AppDef())
-	primaryDomainURL := getPrimaryDomainURL(input.AppDef())
-	enrichedResources := enrichResources(input.AppDef().Resources)
+	appDef := input.AppDef()
 
 	data := map[string]any{
-		"Definition":       input.AppDef(),
+		"Definition":       appDef,
 		"Content":          mustLoadCustomContent(input.FS, "README.md"),
-		"LogoURL":          logoURL,
-		"DomainBadges":     domainBadges,
-		"DomainLinks":      domainLinks,
-		"AppTypeBadges":    appTypeBadges,
-		"ProviderGroups":   providerGroups,
-		"AppsWithPorts":    appsWithPorts,
-		"PrimaryDomainURL": primaryDomainURL,
+		"LogoURL":          detectLogoURL(input.FS),
+		"DomainBadges":     collectDomainBadges(appDef),
+		"DomainLinks":      formatDomainLinks(appDef),
+		"AppTypeBadges":    collectAppTypeBadges(appDef),
+		"ProviderGroups":   groupByProvider(appDef),
+		"AppsWithPorts":    collectAppsWithPorts(appDef),
+		"PrimaryDomainURL": getPrimaryDomainURL(appDef),
 		"CurrentYear":      time.Now().Year(),
-		"Resources":        enrichedResources,
+		"Resources":        appdef.EnrichResources(appDef.Resources),
 	}
 
 	err := input.Generator().Template(
@@ -186,77 +178,4 @@ func getPrimaryDomainURL(def *appdef.Definition) string {
 		}
 	}
 	return ""
-}
-
-type (
-	enrichedResource struct {
-		appdef.Resource
-		Description string
-		Outputs     []resourceOutput
-	}
-	resourceOutput struct {
-		Name        string
-		Description string
-	}
-)
-
-// enrichResources adds descriptions and outputs to resources for template use.
-func enrichResources(resources []appdef.Resource) []enrichedResource {
-	enriched := make([]enrichedResource, len(resources))
-
-	for i, resource := range resources {
-		enriched[i] = enrichedResource{
-			Resource:    resource,
-			Description: getResourceDescription(resource.Type),
-			Outputs:     getResourceOutputs(resource.Type),
-		}
-	}
-
-	return enriched
-}
-
-// getResourceDescription returns a human-readable description for a resource type.
-func getResourceDescription(resourceType appdef.ResourceType) string {
-	descriptions := map[appdef.ResourceType]string{
-		appdef.ResourceTypePostgres: "PostgreSQL database for application data storage.",
-		appdef.ResourceTypeS3:       "S3-compatible object storage for media and assets.",
-		appdef.ResourceTypeSQLite:   "SQLite database with Turso for edge deployment.",
-	}
-
-	if desc, ok := descriptions[resourceType]; ok {
-		return desc
-	}
-
-	return fmt.Sprintf("%s resource.", resourceType)
-}
-
-// getResourceOutputs returns the available outputs for a resource type with descriptions.
-func getResourceOutputs(resourceType appdef.ResourceType) []resourceOutput {
-	outputs := map[appdef.ResourceType][]resourceOutput{
-		appdef.ResourceTypePostgres: {
-			{Name: "connection_url", Description: "Full PostgreSQL connection string"},
-			{Name: "host", Description: "Database host address"},
-			{Name: "port", Description: "Database port number"},
-			{Name: "database", Description: "Database name"},
-			{Name: "user", Description: "Database username"},
-			{Name: "password", Description: "Database password"},
-		},
-		appdef.ResourceTypeS3: {
-			{Name: "bucket_name", Description: "S3 bucket identifier"},
-			{Name: "bucket_url", Description: "Public bucket URL"},
-			{Name: "region", Description: "Bucket region"},
-		},
-		appdef.ResourceTypeSQLite: {
-			{Name: "connection_url", Description: "Full SQLite connection string"},
-			{Name: "host", Description: "Turso database host"},
-			{Name: "database", Description: "Database name"},
-			{Name: "auth_token", Description: "Authentication token"},
-		},
-	}
-
-	if out, ok := outputs[resourceType]; ok {
-		return out
-	}
-
-	return []resourceOutput{}
 }

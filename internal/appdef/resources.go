@@ -147,3 +147,78 @@ func (r *Resource) applyDefaults() {
 		}
 	}
 }
+
+type (
+	// EnrichedResource wraps a Resource with additional documentation fields.
+	EnrichedResource struct {
+		Resource
+		Description string
+		Outputs     []ResourceOutput
+	}
+	// ResourceOutput represents a single resource output with documentation.
+	ResourceOutput struct {
+		Name        string
+		Description string
+	}
+)
+
+// EnrichResources adds descriptions and outputs to resources for documentation.
+func EnrichResources(resources []Resource) []EnrichedResource {
+	enriched := make([]EnrichedResource, len(resources))
+
+	for i, resource := range resources {
+		enriched[i] = EnrichedResource{
+			Resource:    resource,
+			Description: resource.Type.Description(),
+			Outputs:     resource.Type.OutputDocumentation(),
+		}
+	}
+
+	return enriched
+}
+
+// Description returns a human-readable description for a resource type.
+func (r ResourceType) Description() string {
+	descriptions := map[ResourceType]string{
+		ResourceTypePostgres: "PostgreSQL database for application data storage.",
+		ResourceTypeS3:       "S3-compatible object storage for media and assets.",
+		ResourceTypeSQLite:   "SQLite database with Turso for edge deployment.",
+	}
+
+	if desc, ok := descriptions[r]; ok {
+		return desc
+	}
+
+	return fmt.Sprintf("%s resource.", r)
+}
+
+// OutputDocumentation returns the available outputs for a resource type with descriptions.
+func (r ResourceType) OutputDocumentation() []ResourceOutput {
+	outputs := map[ResourceType][]ResourceOutput{
+		ResourceTypePostgres: {
+			{Name: "connection_url", Description: "Full PostgreSQL connection string"},
+			{Name: "host", Description: "Database host address"},
+			{Name: "port", Description: "Database port number"},
+			{Name: "database", Description: "Database name"},
+			{Name: "user", Description: "Database username"},
+			{Name: "password", Description: "Database password"},
+		},
+		ResourceTypeS3: {
+			{Name: "bucket_name", Description: "S3 bucket identifier"},
+			{Name: "bucket_url", Description: "Public bucket URL"},
+			{Name: "region", Description: "Bucket region"},
+		},
+		ResourceTypeSQLite: {
+			{Name: "connection_url", Description: "Full SQLite connection string"},
+			{Name: "host", Description: "Turso database host"},
+			{Name: "database", Description: "Database name"},
+			{Name: "auth_token", Description: "Authentication token"},
+		},
+	}
+
+	if out, ok := outputs[r]; ok {
+		return out
+	}
+
+	return []ResourceOutput{}
+}
