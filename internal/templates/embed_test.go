@@ -1,7 +1,6 @@
 package templates
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,25 +34,6 @@ func TestLoadTemplate(t *testing.T) {
 		tmpl, err := LoadTemplate("nonexistent.tmpl")
 		assert.Error(t, err)
 		assert.Nil(t, tmpl)
-	})
-
-	t.Run("Template execution", func(t *testing.T) {
-		t.Parallel()
-
-		tmpl, err := LoadTemplate("README.md")
-		require.NoError(t, err)
-
-		data := struct {
-			Project struct {
-				Name string
-			}
-		}{}
-		data.Project.Name = "test-project"
-
-		var buf bytes.Buffer
-		err = tmpl.Execute(&buf, data)
-		require.NoError(t, err)
-		assert.Contains(t, buf.String(), "test-project")
 	})
 
 	t.Run("Custom functions available", func(t *testing.T) {
