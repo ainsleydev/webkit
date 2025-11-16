@@ -169,11 +169,11 @@ func collectAppsWithPorts(def *appdef.Definition) []appWithPort {
 	return apps
 }
 
-// getPrimaryDomainURL returns the first primary domain URL or empty string.
+// getPrimaryDomainURL returns the first app's primary domain URL or empty string.
 func getPrimaryDomainURL(def *appdef.Definition) string {
 	for _, app := range def.Apps {
-		if primaryDomain := app.PrimaryDomain(); primaryDomain != "" {
-			return fmt.Sprintf("https://%s", primaryDomain)
+		if url := app.PrimaryDomainURL(); url != "" {
+			return url
 		}
 	}
 	return ""

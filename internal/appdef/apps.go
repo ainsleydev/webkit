@@ -169,6 +169,16 @@ func (a *App) PrimaryDomain() string {
 	return ""
 }
 
+// PrimaryDomainURL returns the full HTTPS URL for the primary domain.
+// If the app has no primary domain, it returns an empty string.
+func (a *App) PrimaryDomainURL() string {
+	domain := a.PrimaryDomain()
+	if domain == "" {
+		return ""
+	}
+	return fmt.Sprintf("https://%s", domain)
+}
+
 // InstallCommands returns the shell commands needed to install all tools for this app.
 // Commands are generated based on the tool's Type field:
 //   - "go": generates "go install <name>@<version>"
