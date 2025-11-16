@@ -127,14 +127,32 @@ jobs:
           delete-only-untagged-versions: false
 
   # Terraform Apply - Production
-  # NOTE: Currently running 'plan' as a dry run to test the workflow.
-  # Change to 'apply' when ready for actual infrastructure provisioning.
+  # Strategy: Run plan to detect SHA-only changes, then conditionally skip apply.
+  # SHA-only changes (container image updates) are handled by deploy jobs, not terraform.
+  # Note: Plan runs twice for real infrastructure changes (once here, once in apply).
+  # Future optimisation: Save plan file and pass to apply (requires webkit CLI changes).
   terraform-apply-production:
     runs-on: ubuntu-latest
     needs: [setup-webkit, build-and-push]
+    env:
+      SOPS_AGE_KEY: ${{ secrets.ORG_AGE_SECRET }}
+      DO_API_KEY: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
+      DO_SPACES_ACCESS_KEY: ${{ secrets.REPO_DO_SPACES_ACCESS_KEY || secrets.ORG_DO_SPACES_ACCESS_KEY }}
+      DO_SPACES_SECRET_KEY: ${{ secrets.REPO_DO_SPACES_SECRET_KEY || secrets.ORG_DO_SPACES_SECRET_KEY }}
+      HETZNER_TOKEN: ${{ secrets.REPO_HETZNER_TOKEN || secrets.ORG_HETZNER_TOKEN }}
+      BACK_BLAZE_BUCKET: ${{ secrets.ORG_BACK_BLAZE_TF_BUCKET }}
+      BACK_BLAZE_KEY_ID: ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}
+      BACK_BLAZE_APPLICATION_KEY: ${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}
+      TURSO_TOKEN: ${{ secrets.ORG_TURSO_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+      GITHUB_TOKEN_CLASSIC: ${{ secrets.ORG_GITHUB_TOKEN_CLASSIC }}
+      SLACK_BOT_TOKEN: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
+      SLACK_USER_TOKEN: ${{ secrets.ORG_SLACK_USER_TOKEN }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Full history for accurate comparison
 
       - name: Download WebKit CLI Artifact
         uses: actions/download-artifact@v4
@@ -150,27 +168,25 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Run Terraform Plan (Dry Run)
+      - name: Check if Terraform needed
+        id: diff
+        run: |
+          # Check if app.json changes require Terraform.
+          # Exit code 0 = skip, 1 = run.
+          if ./webkit infra diff --format=github >> $GITHUB_OUTPUT; then
+            echo "::notice::Skipping Terraform - no infrastructure changes detected"
+          else
+            echo "::notice::Running Terraform - infrastructure changes detected"
+          fi
+        continue-on-error: true
+
+      - name: Run Terraform Plan
+        if: steps.diff.outputs.skip_terraform != 'true'
         id: plan
-        env:
-          SOPS_AGE_KEY: ${{ secrets.ORG_AGE_SECRET }}
-          DO_API_KEY: ${{ secrets.ORG_DO_ACCESS_TOKEN }}
-          DO_SPACES_ACCESS_KEY: ${{ secrets.ORG_DO_SPACES_ACCESS_KEY }}
-          DO_SPACES_SECRET_KEY: ${{ secrets.ORG_DO_SPACES_SECRET_KEY }}
-          BACK_BLAZE_BUCKET: ${{ secrets.ORG_BACK_BLAZE_TF_BUCKET }}
-          BACK_BLAZE_KEY_ID: ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}
-          BACK_BLAZE_APPLICATION_KEY: ${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}
-          GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
-          GITHUB_TOKEN_CLASSIC: ${{ secrets.ORG_GITHUB_TOKEN_CLASSIC }}
-          SLACK_BOT_TOKEN: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
-          SLACK_USER_TOKEN: ${{ secrets.ORG_SLACK_USER_TOKEN }}
         run: |
           echo "🔍 Running terraform plan for production environment..."
-          echo "⚠️  NOTE: Currently in dry-run mode (running plan, not apply)"
 
-          # TODO: Change to 'apply' when ready for actual infrastructure provisioning.
-          # ./webkit infra apply
-          if ./webkit infra plan > plan-output.txt 2>&1; then
+          if ./webkit infra plan --silent > plan-output.txt 2>&1; then
             plan_exit_code=0
           else
             plan_exit_code=$?
@@ -179,10 +195,26 @@ jobs:
           # Check if there are changes in the plan output.
           if grep -q "No changes" plan-output.txt || grep -q "0 to add, 0 to change, 0 to destroy" plan-output.txt; then
             echo "changes_detected=false" >> $GITHUB_OUTPUT
-            status="🟢 No infrastructure changes"
+            echo "sha_only=false" >> $GITHUB_OUTPUT
+            status_emoji="🟢"
+            status_text="No infrastructure changes"
           else
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-            status="⚠️ Infrastructure changes detected"
+            # Detect if changes are SHA-only (image tag updates).
+            sha_changes=$(grep -E '^\s*~\s+tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' plan-output.txt || true)
+            other_changes=$(grep -E '^\s*~\s+\w+\s+=.*' plan-output.txt | grep -v -E 'tag\s+=.*"sha-[a-f0-9]+".*->.*"sha-[a-f0-9]+"' || true)
+
+            # If we have SHA changes but no other changes, it's SHA-only.
+            if [ -n "$sha_changes" ] && [ -z "$other_changes" ]; then
+              echo "changes_detected=true" >> $GITHUB_OUTPUT
+              echo "sha_only=true" >> $GITHUB_OUTPUT
+              status_emoji="🟢"
+              status_text="SHA-only deployment update"
+            else
+              echo "changes_detected=true" >> $GITHUB_OUTPUT
+              echo "sha_only=false" >> $GITHUB_OUTPUT
+              status_emoji="🟡"
+              status_text="Infrastructure changes detected"
+            fi
           fi
 
           # Format Slack message.
@@ -190,8 +222,7 @@ jobs:
             echo 'slack_message<<EOF'
             echo "*Infra Plan*"
             echo ""
-            echo "$status"
-            echo ""
+            echo "$status_emoji **$status_text**"
             echo "\`\`\`"
             cat plan-output.txt | head -50
             echo "\`\`\`"
@@ -203,11 +234,30 @@ jobs:
 
           exit $plan_exit_code
 
+      - name: Run Terraform Apply
+        if: steps.diff.outputs.skip_terraform != 'true' && steps.plan.outputs.sha_only != 'true' && steps.plan.outputs.changes_detected == 'true'
+        run: |
+          echo "🚀 Applying terraform changes for production environment..."
+          # TODO: Uncomment when ready to apply changes.
+          # ./webkit infra apply --silent
+          echo "⚠️  Apply is currently disabled - remove this comment to enable"
+
+      - name: Skip Terraform - Diff Only
+        if: steps.diff.outputs.skip_terraform == 'true'
+        run: |
+          echo "⏭️  Skipping terraform plan and apply - ${{ steps.diff.outputs.reason }}"
+
+      - name: Skip Apply for SHA-only Changes
+        if: steps.diff.outputs.skip_terraform != 'true' && steps.plan.outputs.sha_only == 'true'
+        run: |
+          echo "⏭️  Skipping terraform apply - only container image SHA changes detected"
+          echo "Deploy jobs will handle the container image updates"
+
       - name: Send Slack Notification
-        if: always()
+        if: steps.diff.outputs.skip_terraform != 'true' && steps.plan.outputs.changes_detected == 'true' && steps.plan.outputs.sha_only != 'true'
         uses: ./.github/actions/slack-notify
         with:
-          title: 'Terraform Plan - Production'
+          title: 'Infra Plan'
           message: ${{ steps.plan.outputs.slack_message }}
           status: ${{ steps.plan.outcome }}
           commit_sha: ${{ github.sha }}
@@ -272,12 +322,14 @@ jobs:
       - name: Generate production env file for CMS
         env:
           SOPS_AGE_KEY: ${{ secrets.ORG_AGE_SECRET }}
-          DO_API_KEY: ${{ secrets.ORG_DO_ACCESS_TOKEN }}
-          DO_SPACES_ACCESS_KEY: ${{ secrets.ORG_DO_SPACES_ACCESS_KEY }}
-          DO_SPACES_SECRET_KEY: ${{ secrets.ORG_DO_SPACES_SECRET_KEY }}
+          DO_API_KEY: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
+          DO_SPACES_ACCESS_KEY: ${{ secrets.REPO_DO_SPACES_ACCESS_KEY || secrets.ORG_DO_SPACES_ACCESS_KEY }}
+          DO_SPACES_SECRET_KEY: ${{ secrets.REPO_DO_SPACES_SECRET_KEY || secrets.ORG_DO_SPACES_SECRET_KEY }}
+          HETZNER_TOKEN: ${{ secrets.REPO_HETZNER_TOKEN || secrets.ORG_HETZNER_TOKEN }}
           BACK_BLAZE_BUCKET: ${{ secrets.ORG_BACK_BLAZE_TF_BUCKET }}
           BACK_BLAZE_KEY_ID: ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}
           BACK_BLAZE_APPLICATION_KEY: ${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}
+          TURSO_TOKEN: ${{ secrets.ORG_TURSO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
           GITHUB_TOKEN_CLASSIC: ${{ secrets.ORG_GITHUB_TOKEN_CLASSIC }}
           SLACK_BOT_TOKEN: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
@@ -339,15 +391,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
+      - name: Build domain buttons
+        id: buttons
+        run: |
+          # Build JSON array of domain buttons for deployed apps
+          BUTTONS='[{"text":"View CMS","url":"https://cms.my-website.com"}]'
+          echo "buttons=$BUTTONS" >> $GITHUB_OUTPUT
+
       - name: Send Success Notification
         uses: ./.github/actions/slack-notify
         with:
           title: 'Release Successful'
-          message: 'All applications have been successfully deployed to production.\n\n*Deployed Apps:*\n- CMS\n- Web\n- API\n'
+          message: 'All applications have been successfully deployed to production.\n\n*Deployed Apps:*\n- CMS (cms.my-website.com)\n- Web\n- API\n'
           status: 'success'
           commit_sha: ${{ github.sha }}
           slack_bot_token: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
           channel_id: ${{ secrets.TF_SLACK_CHANNEL_ID }}
+          buttons: ${{ steps.buttons.outputs.buttons }}
 
   # Notify Slack on release failure
   notify-failure:
@@ -358,12 +418,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
+      - name: Build domain buttons
+        id: buttons
+        run: |
+          # Build JSON array of domain buttons for deployed apps
+          BUTTONS='[{"text":"View CMS","url":"https://cms.my-website.com"}]'
+          echo "buttons=$BUTTONS" >> $GITHUB_OUTPUT
+
       - name: Send Failure Notification
         uses: ./.github/actions/slack-notify
         with:
           title: 'Release Failed'
-          message: 'One or more steps in the release pipeline failed. The release pipeline has been halted and applications may not be running the latest code.'
+          message: 'One or more steps in the release pipeline failed. The release pipeline has been halted and applications may not be running the latest code.\n\n*Apps:*\n- CMS (cms.my-website.com)\n- Web\n- API\n'
           status: 'failure'
           commit_sha: ${{ github.sha }}
           slack_bot_token: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
           channel_id: ${{ secrets.TF_SLACK_CHANNEL_ID }}
+          buttons: ${{ steps.buttons.outputs.buttons }}

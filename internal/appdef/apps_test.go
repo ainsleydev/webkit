@@ -630,6 +630,45 @@ func TestApp_PrimaryDomain(t *testing.T) {
 	}
 }
 
+func TestApp_PrimaryDomainURL(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		domains []Domain
+		want    string
+	}{
+		"Returns HTTPS URL when primary domain present": {
+			domains: []Domain{
+				{Name: "example.com", Type: DomainTypePrimary},
+			},
+			want: "https://example.com",
+		},
+		"Returns HTTPS URL for first domain when no primary": {
+			domains: []Domain{
+				{Name: "www.example.com", Type: DomainTypeAlias},
+			},
+			want: "https://www.example.com",
+		},
+		"Returns empty string when no domains": {
+			domains: []Domain{},
+			want:    "",
+		},
+		"Returns empty string when domains is nil": {
+			domains: nil,
+			want:    "",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			app := App{Domains: test.domains}
+			got := app.PrimaryDomainURL()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestApp_InstallCommands(t *testing.T) {
 	t.Parallel()
 

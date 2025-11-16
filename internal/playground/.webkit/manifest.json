@@ -1,6 +1,6 @@
 {
-	"version": "v0.1.8",
-	"generated_at": "2025-11-12T09:39:12.704319Z",
+	"version": "v0.4.9",
+	"generated_at": "2025-11-16T17:58:36.237392Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -9,6 +9,14 @@
 			"hash": "ab566c1c6cb968859aa8df09d347a87bedd703b47881e28aaa74bc35e3e23069",
 			"scaffolded": false,
 			"generated_at": "2025-11-12T09:39:12.700409Z"
+		},
+		".claude/settings.json": {
+			"path": ".claude/settings.json",
+			"generator": "files:ClaudeSettings",
+			"source": "project",
+			"hash": "8d0a8b26f7d9b862650fada984474f82f91642955c88674db79436dd47baa3a3",
+			"scaffolded": false,
+			"generated_at": "2025-11-16T17:58:36.229089Z"
 		},
 		".editorconfig": {
 			"path": ".editorconfig",
@@ -54,17 +62,17 @@
 			"path": ".github/actions/slack-notify/action.yaml",
 			"generator": "cicd:ActionTemplates",
 			"source": "project",
-			"hash": "8f56601e603907c1cf363570af537106e1cb9cdbbdb0980ef4bfc06ee7c19571",
+			"hash": "9a2e3e138db450b2890e3bb01d5285f61659ca762d072eb2e6823c22c98aa1ab",
 			"scaffolded": false,
-			"generated_at": "2025-11-12T09:39:12.702694Z"
+			"generated_at": "2025-11-16T17:58:36.235035Z"
 		},
 		".github/dependabot.yaml": {
 			"path": ".github/dependabot.yaml",
 			"generator": "files:GitSettings",
 			"source": "project",
-			"hash": "59d62cf8d9972220acc74610d85bd29193abd825dc4cc7468590ed35929434bd",
+			"hash": "9b5f8524a11c476db3e6e65e6164e6b4f2c6bd6f2632b4cc64919fcdbbefbcc7",
 			"scaffolded": false,
-			"generated_at": "2025-11-12T09:39:12.697912Z"
+			"generated_at": "2025-11-16T17:58:36.231923Z"
 		},
 		".github/settings.yml": {
 			"path": ".github/settings.yml",
@@ -78,25 +86,25 @@
 			"path": ".github/workflows/backup.yaml",
 			"generator": "cicd:BackupWorkflow",
 			"source": "resource:store",
-			"hash": "54e3d6fb8630e0a349c6dcb41248734744aae2522399f47e17716859d9fb6248",
+			"hash": "c80a3a02b1bc1b1da79630a41010896580b8f49ffda35101ee0fc15a0138fef2",
 			"scaffolded": false,
-			"generated_at": "2025-11-12T09:39:12.701903Z"
+			"generated_at": "2025-11-16T17:58:36.234333Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "e698c0ce51c35ede841da63a55ece9340ce489f7d0410d87b7c84a85894ab72f",
+			"hash": "be892d7c4edc03cb8fdd427480f6cc22281d885b98f767abe5ebe6a45d2bc5bc",
 			"scaffolded": false,
-			"generated_at": "2025-11-12T09:39:12.700903Z"
+			"generated_at": "2025-11-16T17:58:36.233348Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "ebd2805155dd61b698606875eff9e755106b07f866e8ed37054908ad1aa1eb0e",
+			"hash": "f10ce7d271cb8caaa8a18049d35aa8a2eb6446d76722fc6a74d219e5b646fad3",
 			"scaffolded": false,
-			"generated_at": "2025-11-12T09:39:12.70153Z"
+			"generated_at": "2025-11-16T17:58:36.2341Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",
@@ -110,9 +118,9 @@
 			"path": ".gitignore",
 			"generator": "files:GitSettings",
 			"source": "project",
-			"hash": "933bae0470e0614ed3aa5f4f8d20e00bb87098f061c06b45348aa4f560cc6d08",
+			"hash": "c1071b2d634ee639dc848407b3a823c6ad76a97e44ea57e2c7ed5b20a81d9fc7",
 			"scaffolded": false,
-			"generated_at": "2025-11-12T09:39:12.697667Z"
+			"generated_at": "2025-11-16T17:58:36.231451Z"
 		},
 		".prettierignore": {
 			"path": ".prettierignore",
@@ -137,6 +145,14 @@
 			"hash": "6411c7c0d3b83e06a09d2bc67410b517370fdb88aec63cdc9ef3b453b90d70d8",
 			"scaffolded": false,
 			"generated_at": "2025-11-12T09:39:12.7031Z"
+		},
+		"README.md": {
+			"path": "README.md",
+			"generator": "docs:Readme",
+			"source": "project",
+			"hash": "a990075f7a3ec29d30632be9fad8bcba6ea0bb58443575dff76071ca3cacfd61",
+			"scaffolded": false,
+			"generated_at": "2025-11-16T17:58:36.236292Z"
 		},
 		"api/.env": {
 			"path": "api/.env",

@@ -4,10 +4,6 @@
 
 Create and update the `docs` folder with coherent documentation for WebKit.
 
-## README Generation
-
-Create beautiful looking README's from the `app.json` data.
-
 ## Misc
 
 - BetterStack/OneUptime Providers for Infra.

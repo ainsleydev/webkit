@@ -67,7 +67,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.ORG_GITLEAKS_LICENSE }}
-
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
@@ -203,14 +202,15 @@ jobs:
           comment-body: ${{ steps.diff.outputs.diff_message }}
           issue-number: ${{ github.event.pull_request.number }}
           private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
-
   terraform-plan-production:
     runs-on: ubuntu-latest
     needs: [setup-webkit, detect-changes]
-    if: ${{ needs.detect-changes.outputs.shared-changed }} == 'true'
+    if: ${{ needs.detect-changes.outputs.shared-changed }} == 'true' && github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Full history for accurate comparison with main
 
       - name: Download WebKit CLI Artifact
         uses: actions/download-artifact@v4
@@ -226,16 +226,40 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
+      - name: Analyse Infrastructure Changes
+        id: diff
+        run: |
+          echo "## Infrastructure Change Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Run diff command and capture output
+          if ./webkit infra diff --base=origin/main --format=text > diff-output.txt 2>&1; then
+            diff_exit_code=0
+            echo "skip_terraform=true" >> $GITHUB_OUTPUT
+          else
+            diff_exit_code=$?
+            echo "skip_terraform=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Add output to step summary
+          cat diff-output.txt >> $GITHUB_STEP_SUMMARY
+
+          # Store reason for PR comment
+          reason=$(grep -oP '(?<=Decision: ).*' diff-output.txt || echo "Unknown")
+          echo "reason=$reason" >> $GITHUB_OUTPUT
+
       - name: Run Terraform Plan
         id: plan
         env:
           SOPS_AGE_KEY: ${{ secrets.ORG_AGE_SECRET }}
-          DO_API_KEY: ${{ secrets.ORG_DO_ACCESS_TOKEN }}
-          DO_SPACES_ACCESS_KEY: ${{ secrets.ORG_DO_SPACES_ACCESS_KEY }}
-          DO_SPACES_SECRET_KEY: ${{ secrets.ORG_DO_SPACES_SECRET_KEY }}
+          DO_API_KEY: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
+          DO_SPACES_ACCESS_KEY: ${{ secrets.REPO_DO_SPACES_ACCESS_KEY || secrets.ORG_DO_SPACES_ACCESS_KEY }}
+          DO_SPACES_SECRET_KEY: ${{ secrets.REPO_DO_SPACES_SECRET_KEY || secrets.ORG_DO_SPACES_SECRET_KEY }}
+          HETZNER_TOKEN: ${{ secrets.REPO_HETZNER_TOKEN || secrets.ORG_HETZNER_TOKEN }}
           BACK_BLAZE_BUCKET: ${{ secrets.ORG_BACK_BLAZE_TF_BUCKET }}
           BACK_BLAZE_KEY_ID: ${{ secrets.ORG_BACK_BLAZE_KEY_ID }}
           BACK_BLAZE_APPLICATION_KEY: ${{ secrets.ORG_BACK_BLAZE_APPLICATION_KEY }}
+          TURSO_TOKEN: ${{ secrets.ORG_TURSO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
           GITHUB_TOKEN_CLASSIC: ${{ secrets.ORG_GITHUB_TOKEN_CLASSIC }}
           SLACK_BOT_TOKEN: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
@@ -282,6 +306,8 @@ jobs:
             echo ""
             echo "$status_emoji **$status_text**"
             echo ""
+            echo "**On merge:** ${{ steps.diff.outputs.reason }}"
+            echo ""
             echo "<details>"
             echo "<summary>View terraform plan output</summary>"
             echo ""
@@ -309,6 +335,68 @@ jobs:
           comment-body: ${{ steps.plan.outputs.plan_message }}
           issue-number: ${{ github.event.pull_request.number }}
           private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
+  validate-app-json:
+    runs-on: ubuntu-latest
+    needs: setup-webkit
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Download WebKit CLI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webkit
+          path: ./
+
+      - name: Make WebKit executable
+        run: chmod +x ./webkit
+
+      - name: Run Validation
+        id: validate
+        run: |
+          if ./webkit validate > validation-output.txt 2>&1; then
+            echo "validation_failed=false" >> $GITHUB_OUTPUT
+            status_emoji="🟢"
+            status_text="Validation passed"
+          else
+            echo "validation_failed=true" >> $GITHUB_OUTPUT
+            status_emoji="🔴"
+            status_text="Validation failed"
+          fi
+
+          {
+            echo 'validation_message<<EOF'
+            echo "<!-- validation-result -->"
+            echo "### app.json Validation"
+            echo ""
+            echo "$status_emoji **$status_text**"
+            echo ""
+            echo "<details>"
+            echo "<summary>View validation output</summary>"
+            echo ""
+            echo '```'
+            cat validation-output.txt
+            echo '```'
+            echo ""
+            echo "</details>"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: ./.github/actions/pr-comment
+        with:
+          body-includes: '<!-- validation-result -->'
+          comment-body: ${{ steps.validate.outputs.validation_message }}
+          issue-number: ${{ github.event.pull_request.number }}
+          private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Fail Workflow if Validation Failed
+        if: steps.validate.outputs.validation_failed == 'true'
+        run: |
+          echo "Validation failed. Please fix the errors in app.json"
+          exit 1
+
   app-cms:
     runs-on: ubuntu-latest
     needs: detect-changes
@@ -331,6 +419,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build
+        working-directory: cms
+        run: pnpm build
+
       - name: Format
         working-directory: cms
         run: pnpm format
@@ -342,10 +434,6 @@ jobs:
       - name: Test
         working-directory: cms
         run: pnpm test
-
-      - name: Build
-        working-directory: cms
-        run: pnpm build
   app-web:
     runs-on: ubuntu-latest
     needs: detect-changes
@@ -368,6 +456,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build
+        working-directory: web
+        run: pnpm build
+
       - name: Format
         working-directory: web
         run: pnpm format
@@ -379,10 +471,6 @@ jobs:
       - name: Test
         working-directory: web
         run: pnpm test
-
-      - name: Build
-        working-directory: web
-        run: pnpm build
   app-api:
     runs-on: ubuntu-latest
     needs: detect-changes
@@ -397,6 +485,15 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+      - name: Install Build Tools
+        run: |
+          go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          go install github.com/a-h/templ/cmd/templ@latest
+
+      - name: Build
+        working-directory: api
+        run: go build main.go
 
       - name: Format
         working-directory: api
@@ -409,10 +506,6 @@ jobs:
       - name: Test
         working-directory: api
         run: go test ./...
-
-      - name: Build
-        working-directory: api
-        run: go build main.go
   migration-check-cms:
     runs-on: ubuntu-latest
     needs: detect-changes

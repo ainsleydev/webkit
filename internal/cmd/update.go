@@ -55,7 +55,8 @@ var updateOps = []runner{
 	{cicd.BackupWorkflow, "CICD: Create backup workflows"},
 	{cicd.VMMaintenanceWorkflow, "CICD: Create maintenance workflow"},
 	{cicd.ActionTemplates, "CICD: Create action templates"},
-	{docs.Agents, "Docs: Agents AGENTS.md"},
+	{docs.Readme, "Docs: README.md"},
+	{docs.Agents, "Docs: AGENTS.md"},
 
 	// Lastly
 	{env.Scaffold, "Env: Sync .env files"},

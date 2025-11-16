@@ -1,0 +1,108 @@
+package docs
+
+import (
+	"context"
+	"fmt"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/pkg/errors"
+	"github.com/spf13/afero"
+
+	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/cmdtools"
+	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/templates"
+)
+
+const (
+	webkitSymbolURL = "https://github.com/ainsleydev/webkit/blob/main/resources/symbol.png?raw=true"
+	resourcesDir    = "resources"
+)
+
+// Readme creates the README.md file at the project root by combining
+// the base template with project data from app.json.
+func Readme(_ context.Context, input cmdtools.CommandInput) error {
+	appDef := input.AppDef()
+
+	data := map[string]any{
+		"Definition":     appDef,
+		"Content":        mustLoadCustomContent(input.FS, "README.md"),
+		"LogoURL":        detectLogoURL(input.FS),
+		"DomainLinks":    formatDomainLinks(appDef),
+		"ProviderGroups": groupByProvider(appDef),
+		"CurrentYear":    time.Now().Year(),
+	}
+
+	err := input.Generator().Template(
+		"README.md",
+		templates.MustLoadTemplate("README.md"),
+		data,
+		scaffold.WithTracking(manifest.SourceProject()),
+	)
+	if err != nil {
+		return errors.Wrap(err, "generating README.md")
+	}
+
+	return nil
+}
+
+// detectLogoURL checks for logo files in resources directory and returns
+// the path or falls back to the WebKit symbol URL.
+func detectLogoURL(fs afero.Fs) string {
+	extensions := []string{"svg", "png", "jpg"}
+
+	for _, ext := range extensions {
+		logoPath := filepath.Join(resourcesDir, fmt.Sprintf("logo.%s", ext))
+		exists, err := afero.Exists(fs, logoPath)
+		if err == nil && exists {
+			return fmt.Sprintf("./%s", logoPath)
+		}
+	}
+
+	return webkitSymbolURL
+}
+
+// formatDomainLinks creates the HTML links for all primary domains.
+func formatDomainLinks(def *appdef.Definition) string {
+	var links []string
+
+	for _, app := range def.Apps {
+		if uri := app.PrimaryDomainURL(); uri != "" {
+			link := fmt.Sprintf(`<a href="%s"><strong>%s</strong></a>`, uri, app.Title)
+			links = append(links, link)
+		}
+	}
+
+	return strings.Join(links, " · ")
+}
+
+// groupByProvider groups apps and resources by their infrastructure provider.
+func groupByProvider(def *appdef.Definition) map[string]string {
+	groups := make(map[appdef.ResourceProvider][]string)
+
+	for _, app := range def.Apps {
+		if app.Infra.Provider != "" {
+			groups[app.Infra.Provider] = append(
+				groups[app.Infra.Provider],
+				fmt.Sprintf("%s (App)", app.Title),
+			)
+		}
+	}
+
+	for _, resource := range def.Resources {
+		groups[resource.Provider] = append(
+			groups[resource.Provider],
+			fmt.Sprintf("%s (%s)", resource.Name, resource.Type),
+		)
+	}
+
+	result := make(map[string]string)
+	for provider, items := range groups {
+		result[string(provider)] = strings.Join(items, ", ")
+	}
+
+	return result
+}
