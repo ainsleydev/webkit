@@ -153,9 +153,10 @@ func TestReadme(t *testing.T) {
 			},
 			Resources: []appdef.Resource{
 				{
-					Name:     "db",
-					Type:     appdef.ResourceTypePostgres,
-					Provider: appdef.ResourceProviderDigitalOcean,
+					Name:        "db",
+					Type:        appdef.ResourceTypePostgres,
+					Description: "PostgreSQL database for application data.",
+					Provider:    appdef.ResourceProviderDigitalOcean,
 					Config: map[string]any{
 						"size": "db-s-1vcpu-1gb",
 					},
@@ -176,7 +177,7 @@ func TestReadme(t *testing.T) {
 		assert.Contains(t, string(got), "Web App")
 		assert.Contains(t, string(got), "svelte-kit")
 		assert.Contains(t, string(got), "## Resources")
-		assert.Contains(t, string(got), "PostgreSQL database for application data storage.")
+		assert.Contains(t, string(got), "PostgreSQL database for application data.")
 		assert.Contains(t, string(got), "example.com")
 	})
 

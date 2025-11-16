@@ -39,7 +39,6 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 		"AppsWithPorts":    collectAppsWithPorts(appDef),
 		"PrimaryDomainURL": getPrimaryDomainURL(appDef),
 		"CurrentYear":      time.Now().Year(),
-		"Resources":        appdef.EnrichResources(appDef.Resources),
 	}
 
 	err := input.Generator().Template(

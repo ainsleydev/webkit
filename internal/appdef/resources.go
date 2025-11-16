@@ -15,6 +15,7 @@ type (
 	Resource struct {
 		Name             string               `json:"name" required:"true" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the resource (used in environment variable references)"`
 		Type             ResourceType         `json:"type" required:"true" validate:"required,oneof=postgres s3 sqlite" description:"Type of resource to provision (postgres, s3, sqlite)"`
+		Description      string               `json:"description,omitempty" validate:"omitempty,max=200" description:"Brief description of the resource's purpose and functionality"`
 		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean hetzner backblaze turso" description:"Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)"`
 		Config           map[string]any       `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
 		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
@@ -58,6 +59,12 @@ func (r ResourceProvider) String() string {
 	return string(r)
 }
 
+// ResourceOutput represents a single resource output with documentation.
+type ResourceOutput struct {
+	Name        string
+	Description string
+}
+
 // requiredOutputs is a global lookup of all required outputs
 // from a resource type.
 var requiredOutputs = map[ResourceType][]string{
@@ -82,6 +89,30 @@ var requiredOutputs = map[ResourceType][]string{
 		"host",
 		"database",
 		"auth_token",
+	},
+}
+
+// resourceOutputDocumentation is a global lookup of output documentation
+// for resource types.
+var resourceOutputDocumentation = map[ResourceType][]ResourceOutput{
+	ResourceTypePostgres: {
+		{Name: "connection_url", Description: "Full PostgreSQL connection string"},
+		{Name: "host", Description: "Database host address"},
+		{Name: "port", Description: "Database port number"},
+		{Name: "database", Description: "Database name"},
+		{Name: "user", Description: "Database username"},
+		{Name: "password", Description: "Database password"},
+	},
+	ResourceTypeS3: {
+		{Name: "bucket_name", Description: "S3 bucket identifier"},
+		{Name: "bucket_url", Description: "Public bucket URL"},
+		{Name: "region", Description: "Bucket region"},
+	},
+	ResourceTypeSQLite: {
+		{Name: "connection_url", Description: "Full SQLite connection string"},
+		{Name: "host", Description: "Turso database host"},
+		{Name: "database", Description: "Database name"},
+		{Name: "auth_token", Description: "Authentication token"},
 	},
 }
 
@@ -148,77 +179,11 @@ func (r *Resource) applyDefaults() {
 	}
 }
 
-type (
-	// EnrichedResource wraps a Resource with additional documentation fields.
-	EnrichedResource struct {
-		Resource
-		Description string
-		Outputs     []ResourceOutput
-	}
-	// ResourceOutput represents a single resource output with documentation.
-	ResourceOutput struct {
-		Name        string
-		Description string
-	}
-)
-
-// EnrichResources adds descriptions and outputs to resources for documentation.
-func EnrichResources(resources []Resource) []EnrichedResource {
-	enriched := make([]EnrichedResource, len(resources))
-
-	for i, resource := range resources {
-		enriched[i] = EnrichedResource{
-			Resource:    resource,
-			Description: resource.Type.Description(),
-			Outputs:     resource.Type.OutputDocumentation(),
-		}
-	}
-
-	return enriched
-}
-
-// Description returns a human-readable description for a resource type.
-func (r ResourceType) Description() string {
-	descriptions := map[ResourceType]string{
-		ResourceTypePostgres: "PostgreSQL database for application data storage.",
-		ResourceTypeS3:       "S3-compatible object storage for media and assets.",
-		ResourceTypeSQLite:   "SQLite database with Turso for edge deployment.",
-	}
-
-	if desc, ok := descriptions[r]; ok {
-		return desc
-	}
-
-	return fmt.Sprintf("%s resource.", r)
-}
-
-// OutputDocumentation returns the available outputs for a resource type with descriptions.
-func (r ResourceType) OutputDocumentation() []ResourceOutput {
-	outputs := map[ResourceType][]ResourceOutput{
-		ResourceTypePostgres: {
-			{Name: "connection_url", Description: "Full PostgreSQL connection string"},
-			{Name: "host", Description: "Database host address"},
-			{Name: "port", Description: "Database port number"},
-			{Name: "database", Description: "Database name"},
-			{Name: "user", Description: "Database username"},
-			{Name: "password", Description: "Database password"},
-		},
-		ResourceTypeS3: {
-			{Name: "bucket_name", Description: "S3 bucket identifier"},
-			{Name: "bucket_url", Description: "Public bucket URL"},
-			{Name: "region", Description: "Bucket region"},
-		},
-		ResourceTypeSQLite: {
-			{Name: "connection_url", Description: "Full SQLite connection string"},
-			{Name: "host", Description: "Turso database host"},
-			{Name: "database", Description: "Database name"},
-			{Name: "auth_token", Description: "Authentication token"},
-		},
-	}
-
-	if out, ok := outputs[r]; ok {
+// Documentation returns the available outputs for a resource type
+// with descriptions, this is directly tied to Terraform outputs.
+func (r ResourceType) Documentation() []ResourceOutput {
+	if out, ok := resourceOutputDocumentation[r]; ok {
 		return out
 	}
-
 	return []ResourceOutput{}
 }

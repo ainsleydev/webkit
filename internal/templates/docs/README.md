@@ -90,18 +90,20 @@ This repository contains **{{ len .Definition.Apps }} application{{ if ne (len .
 {{- end }}
 {{- end }}
 
-{{- if .Resources }}
+{{- if .Definition.Resources }}
 
 ---
 
 ## Resources
-{{- range .Resources }}
+{{- range .Definition.Resources }}
 
 ### {{ .Name }}
 
 **Type:** {{ .Type }} | **Provider:** {{ .Provider }} | **Backups:** {{ if .Backup.Enabled }}Enabled{{ else }}Disabled{{ end }}
+{{- if .Description }}
 
 {{ .Description }}
+{{- end }}
 
 **Configuration:**
 | Setting | Value |
@@ -111,7 +113,7 @@ This repository contains **{{ len .Definition.Apps }} application{{ if ne (len .
 {{- end }}
 
 **Available Outputs:**
-{{- range .Outputs }}
+{{- range .Type.Documentation }}
 - `{{ .Name }}` - {{ .Description }}
 {{- end }}
 {{- end }}
