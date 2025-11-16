@@ -12,7 +12,7 @@ type TFEnvironment struct {
 	DigitalOceanAPIKey          string `env:"DO_API_KEY,required"`
 	DigitalOceanSpacesAccessKey string `env:"DO_SPACES_ACCESS_KEY,required"`
 	DigitalOceanSpacesSecretKey string `env:"DO_SPACES_SECRET_KEY,required"`
-	HetznerToken                string `env:"HETZNER_TOKEN,required"`
+	HetznerToken                string `env:"HETZNER_TOKEN"`
 	BackBlazeBucket             string `env:"BACK_BLAZE_BUCKET,required"`
 	BackBlazeKeyID              string `env:"BACK_BLAZE_KEY_ID,required"`
 	BackBlazeApplicationKey     string `env:"BACK_BLAZE_APPLICATION_KEY,required"`
