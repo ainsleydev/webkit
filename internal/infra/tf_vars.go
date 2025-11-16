@@ -30,7 +30,8 @@ type (
 		GithubConfig            tfGithubConfig `json:"github_config"`
 		Apps                    []tfApp        `json:"apps"`
 		Resources               []tfResource   `json:"resources"`
-		SSHKeys                 []string       `json:"ssh_keys"`
+		DigitalOceanSSHKeys     []string       `json:"digitalocean_ssh_keys"`
+		HetznerSSHKeys          []string       `json:"hetzner_ssh_keys"`
 		NotificationsWebhookURL string         `json:"notifications_webhook_url"`
 	}
 	// tfResource represents a resource in Terraform variable format.
@@ -89,7 +90,8 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		Environment:             env.String(),
 		Apps:                    make([]tfApp, 0, len(t.appDef.Apps)),
 		Resources:               make([]tfResource, 0, len(t.appDef.Resources)),
-		SSHKeys:                 []string{"Ainsley - Mac Studio"},
+		DigitalOceanSSHKeys:     []string{"Ainsley - Mac Studio"},
+		HetznerSSHKeys:          []string{"hello@ainsley.dev"},
 		NotificationsWebhookURL: t.appDef.Notifications.WebhookURL,
 		GithubConfig: tfGithubConfig{
 			Owner: t.appDef.Project.Repo.Owner,

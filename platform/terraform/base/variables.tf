@@ -55,6 +55,13 @@ variable "digitalocean_project_id" {
   default     = ""
 }
 
+variable "hetzner_token" {
+  type        = string
+  description = "Hetzner Cloud API token for authentication"
+  sensitive   = true
+  default     = ""
+}
+
 variable "b2_application_key" {
   type      = string
   sensitive = true
@@ -135,8 +142,14 @@ variable "tags" {
   default     = []
 }
 
-variable "ssh_keys" {
-  description = "List of SSH key names to apply to droplets"
+variable "digitalocean_ssh_keys" {
+  description = "List of SSH key names for DigitalOcean VMs"
+  type        = list(string)
+  default     = []
+}
+
+variable "hetzner_ssh_keys" {
+  description = "List of SSH key names for Hetzner VMs"
   type        = list(string)
   default     = []
 }

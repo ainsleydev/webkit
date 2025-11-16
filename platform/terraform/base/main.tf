@@ -10,6 +10,10 @@ terraform {
       source  = "digitalocean/digitalocean"
       version = "~> 2.0"
     }
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "~> 1.0"
+    }
     b2 = {
       source  = "Backblaze/b2"
       version = "~> 0.10.0"
@@ -40,6 +44,10 @@ provider "digitalocean" {
   token             = var.do_token
   spaces_access_id  = var.do_spaces_access_id
   spaces_secret_key = var.do_spaces_secret_key
+}
+
+provider "hcloud" {
+  token = var.hetzner_token
 }
 
 provider "b2" {
@@ -96,22 +104,25 @@ locals {
 # Determine which providers are actually being used for VMs
 locals {
   uses_digitalocean_vms = anytrue([for a in var.apps : a.platform_provider == "digitalocean" && a.platform_type == "vm"])
-  # Future providers can be added here:
-  # uses_hetzner_vms = anytrue([for a in var.apps : a.platform_provider == "hetzner" && a.platform_type == "vm"])
+  uses_hetzner_vms      = anytrue([for a in var.apps : a.platform_provider == "hetzner" && a.platform_type == "vm"])
 }
 
 # DigitalOcean SSH Keys (only lookup if DO VMs are in use)
 data "digitalocean_ssh_key" "personal_keys" {
-  for_each = local.uses_digitalocean_vms ? toset(var.ssh_keys) : toset([])
+  for_each = local.uses_digitalocean_vms ? toset(var.digitalocean_ssh_keys) : toset([])
+  name     = each.value
+}
+
+# Hetzner SSH Keys (only lookup if Hetzner VMs are in use)
+data "hcloud_ssh_key" "personal_keys" {
+  for_each = local.uses_hetzner_vms ? toset(var.hetzner_ssh_keys) : toset([])
   name     = each.value
 }
 
 locals {
   # Provider-specific SSH key ID lists
-  do_ssh_key_ids = [for k in data.digitalocean_ssh_key.personal_keys : k.id]
-
-  # Future providers:
-  # hetzner_ssh_key_ids = [for k in data.hcloud_ssh_key.personal_keys : k.id]
+  do_ssh_key_ids      = [for k in data.digitalocean_ssh_key.personal_keys : k.id]
+  hetzner_ssh_key_ids = [for k in data.hcloud_ssh_key.personal_keys : k.id]
 }
 
 #
@@ -196,6 +207,7 @@ module "apps" {
     token = var.github_token_classic
   }
   do_ssh_key_ids            = local.do_ssh_key_ids
+  hetzner_ssh_key_ids       = local.hetzner_ssh_key_ids
   domains                   = try(each.value.domains, [])
   env_vars                  = try(each.value.env_vars, [])
   tags                      = local.common_tags

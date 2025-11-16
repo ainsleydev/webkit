@@ -15,7 +15,7 @@ type (
 	Resource struct {
 		Name             string               `json:"name" required:"true" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the resource (used in environment variable references)"`
 		Type             ResourceType         `json:"type" required:"true" validate:"required,oneof=postgres s3 sqlite" description:"Type of resource to provision (postgres, s3, sqlite)"`
-		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean backblaze turso" description:"Cloud provider hosting this resource (digitalocean, backblaze, turso)"`
+		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean hetzner backblaze turso" description:"Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)"`
 		Config           map[string]any       `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
 		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
 		TerraformManaged *bool                `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`
@@ -48,6 +48,7 @@ type ResourceProvider string
 // ResourceProvider constants.
 const (
 	ResourceProviderDigitalOcean ResourceProvider = "digitalocean"
+	ResourceProviderHetzner      ResourceProvider = "hetzner"
 	ResourceProviderBackBlaze    ResourceProvider = "backblaze"
 	ResourceProviderTurso        ResourceProvider = "turso"
 )

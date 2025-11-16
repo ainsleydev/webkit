@@ -19,12 +19,12 @@ variable "platform_type" {
 }
 
 variable "platform_provider" {
-  description = "Platform provider (digitalocean, aws, etc.)"
+  description = "Platform provider (digitalocean, hetzner, etc.)"
   type        = string
 
   validation {
-    condition     = contains(["digitalocean"], var.platform_provider)
-    error_message = "Provider must be: digitalocean"
+    condition     = contains(["digitalocean", "hetzner"], var.platform_provider)
+    error_message = "Provider must be one of: digitalocean, hetzner"
   }
 }
 
@@ -91,12 +91,11 @@ variable "do_ssh_key_ids" {
   default     = []
 }
 
-# Future providers can add their own SSH key variables here:
-# variable "hetzner_ssh_key_ids" {
-#   description = "List of Hetzner SSH key IDs to apply to VMs"
-#   type        = list(string)
-#   default     = []
-# }
+variable "hetzner_ssh_key_ids" {
+  description = "List of Hetzner SSH key IDs to apply to VMs"
+  type        = list(number)
+  default     = []
+}
 
 variable "tags" {
   description = "Additional tags"
