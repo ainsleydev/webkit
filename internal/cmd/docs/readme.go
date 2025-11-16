@@ -3,7 +3,6 @@ package docs
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -32,9 +31,7 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 		"Definition":     appDef,
 		"Content":        mustLoadCustomContent(input.FS, "README.md"),
 		"LogoURL":        detectLogoURL(input.FS),
-		"DomainBadges":   collectDomainBadges(appDef),
 		"DomainLinks":    formatDomainLinks(appDef),
-		"AppTypeBadges":  collectAppTypeBadges(appDef),
 		"ProviderGroups": groupByProvider(appDef),
 		"CurrentYear":    time.Now().Year(),
 	}
@@ -68,32 +65,6 @@ func detectLogoURL(fs afero.Fs) string {
 	return webkitSymbolURL
 }
 
-// badge represents a shields.io badge with a name and color.
-type badge struct {
-	Name  string
-	Color string
-}
-
-// collectDomainBadges returns all primary domains for badge generation.
-func collectDomainBadges(def *appdef.Definition) []badge {
-	var badges []badge
-	seen := make(map[string]bool)
-
-	for _, app := range def.Apps {
-		for _, domain := range app.Domains {
-			if domain.Type == appdef.DomainTypePrimary && !seen[domain.Name] {
-				badges = append(badges, badge{
-					Name:  domain.Name,
-					Color: "", // Domain badges don't use color
-				})
-				seen[domain.Name] = true
-			}
-		}
-	}
-
-	return badges
-}
-
 // formatDomainLinks creates the HTML links for all primary domains.
 func formatDomainLinks(def *appdef.Definition) string {
 	var links []string
@@ -106,24 +77,6 @@ func formatDomainLinks(def *appdef.Definition) string {
 	}
 
 	return strings.Join(links, " · ")
-}
-
-// collectAppTypeBadges returns all unique app types for badge generation.
-func collectAppTypeBadges(def *appdef.Definition) []badge {
-	seen := make(map[appdef.AppType]bool)
-	var badges []badge
-
-	for _, app := range def.Apps {
-		if !seen[app.Type] {
-			badges = append(badges, badge{
-				Name:  url.PathEscape(string(app.Type)),
-				Color: "purple",
-			})
-			seen[app.Type] = true
-		}
-	}
-
-	return badges
 }
 
 // groupByProvider groups apps and resources by their infrastructure provider.
