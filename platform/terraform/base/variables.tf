@@ -142,8 +142,14 @@ variable "tags" {
   default     = []
 }
 
-variable "ssh_keys" {
-  description = "List of SSH key names to apply to VMs (e.g., [\"hello@ainsley.dev\"])"
+variable "digitalocean_ssh_keys" {
+  description = "List of SSH key names for DigitalOcean VMs"
+  type        = list(string)
+  default     = []
+}
+
+variable "hetzner_ssh_keys" {
+  description = "List of SSH key names for Hetzner VMs"
   type        = list(string)
   default     = []
 }

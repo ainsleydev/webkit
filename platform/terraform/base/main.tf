@@ -109,13 +109,13 @@ locals {
 
 # DigitalOcean SSH Keys (only lookup if DO VMs are in use)
 data "digitalocean_ssh_key" "personal_keys" {
-  for_each = local.uses_digitalocean_vms ? toset(var.ssh_keys) : toset([])
+  for_each = local.uses_digitalocean_vms ? toset(var.digitalocean_ssh_keys) : toset([])
   name     = each.value
 }
 
 # Hetzner SSH Keys (only lookup if Hetzner VMs are in use)
 data "hcloud_ssh_key" "personal_keys" {
-  for_each = local.uses_hetzner_vms ? toset(var.ssh_keys) : toset([])
+  for_each = local.uses_hetzner_vms ? toset(var.hetzner_ssh_keys) : toset([])
   name     = each.value
 }
 
