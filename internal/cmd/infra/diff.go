@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/goccy/go-json"
@@ -73,9 +74,9 @@ func Diff(ctx context.Context, input cmdtools.CommandInput) error {
 	// Output based on format.
 	switch format {
 	case "json":
-		return outputJSON(analysis)
+		return outputJSON(analysis, os.Stdout)
 	case "github":
-		return outputGitHub(analysis)
+		return outputGitHub(analysis, os.Stdout)
 	default:
 		return outputText(analysis, printer, silent)
 	}
@@ -115,12 +116,12 @@ func outputText(analysis appdef.ChangeAnalysis, printer *printer.Console, silent
 }
 
 // outputJSON outputs the analysis in JSON format.
-func outputJSON(analysis appdef.ChangeAnalysis) error {
+func outputJSON(analysis appdef.ChangeAnalysis, w io.Writer) error {
 	data, err := json.MarshalIndent(analysis, "", "  ")
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(os.Stdout, string(data))
+	fmt.Fprintln(w, string(data))
 
 	if analysis.Skip {
 		return nil
@@ -129,18 +130,18 @@ func outputJSON(analysis appdef.ChangeAnalysis) error {
 }
 
 // outputGitHub outputs the analysis in GitHub Actions format.
-func outputGitHub(analysis appdef.ChangeAnalysis) error {
+func outputGitHub(analysis appdef.ChangeAnalysis, w io.Writer) error {
 	skip := "false"
 	if analysis.Skip {
 		skip = "true"
 	}
 
 	// Output GitHub Actions output variables.
-	fmt.Fprintf(os.Stdout, "skip_terraform=%s\n", skip)
-	fmt.Fprintf(os.Stdout, "reason=%s\n", analysis.Reason)
+	fmt.Fprintf(w, "skip_terraform=%s\n", skip)
+	fmt.Fprintf(w, "reason=%s\n", analysis.Reason)
 
 	// Output as GitHub Actions notice.
-	fmt.Fprintf(os.Stdout, "::notice::%s\n", analysis.Reason)
+	fmt.Fprintf(w, "::notice::%s\n", analysis.Reason)
 
 	if analysis.Skip {
 		return nil

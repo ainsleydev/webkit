@@ -3,7 +3,6 @@ package infra
 import (
 	"bytes"
 	"encoding/json"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,194 +15,164 @@ import (
 func TestOutputText(t *testing.T) {
 	t.Parallel()
 
-	tt := map[string]struct {
-		analysis   appdef.ChangeAnalysis
-		silent     bool
-		wantOutput []string
-		wantExit   bool
-	}{
-		"Skip with reason": {
-			analysis: appdef.ChangeAnalysis{
-				Skip:   true,
-				Reason: "app.json unchanged",
+	t.Run("Skip with reason", func(t *testing.T) {
+		t.Parallel()
+
+		analysis := appdef.ChangeAnalysis{
+			Skip:   true,
+			Reason: "app.json unchanged",
+		}
+		buf := &bytes.Buffer{}
+		p := printer.New(buf)
+
+		err := outputText(analysis, p, false)
+
+		output := buf.String()
+		assert.Contains(t, output, "Decision: app.json unchanged")
+		assert.Contains(t, output, "Terraform apply can be skipped")
+		require.NoError(t, err)
+	})
+
+	t.Run("Skip silent mode", func(t *testing.T) {
+		t.Parallel()
+
+		analysis := appdef.ChangeAnalysis{
+			Skip:   true,
+			Reason: "app.json unchanged",
+		}
+		buf := &bytes.Buffer{}
+		p := printer.New(buf)
+
+		err := outputText(analysis, p, true)
+
+		output := buf.String()
+		assert.Empty(t, output)
+		require.NoError(t, err)
+	})
+
+	t.Run("Terraform needed", func(t *testing.T) {
+		t.Parallel()
+
+		analysis := appdef.ChangeAnalysis{
+			Skip:   false,
+			Reason: "Infrastructure config changed",
+		}
+		buf := &bytes.Buffer{}
+		p := printer.New(buf)
+
+		err := outputText(analysis, p, false)
+
+		output := buf.String()
+		assert.Contains(t, output, "Decision: Infrastructure config changed")
+		assert.Contains(t, output, "Terraform apply is needed")
+		require.Error(t, err)
+	})
+
+	t.Run("With changed apps", func(t *testing.T) {
+		t.Parallel()
+
+		analysis := appdef.ChangeAnalysis{
+			Skip:   false,
+			Reason: "DigitalOcean container app env values changed",
+			ChangedApps: []appdef.AppChange{
+				{Name: "web", EnvChanged: true},
+				{Name: "api", InfraChanged: true},
 			},
-			silent:     false,
-			wantOutput: []string{"Decision: app.json unchanged", "Terraform apply can be skipped"},
-			wantExit:   false,
-		},
-		"Skip silent mode": {
-			analysis: appdef.ChangeAnalysis{
-				Skip:   true,
-				Reason: "app.json unchanged",
-			},
-			silent:     true,
-			wantOutput: []string{},
-			wantExit:   false,
-		},
-		"Terraform needed": {
-			analysis: appdef.ChangeAnalysis{
-				Skip:   false,
-				Reason: "Infrastructure config changed",
-			},
-			silent:     false,
-			wantOutput: []string{"Decision: Infrastructure config changed", "Terraform apply is needed"},
-			wantExit:   true,
-		},
-		"With changed apps": {
-			analysis: appdef.ChangeAnalysis{
-				Skip:   false,
-				Reason: "DigitalOcean container app env values changed",
-				ChangedApps: []appdef.AppChange{
-					{Name: "web", EnvChanged: true},
-					{Name: "api", InfraChanged: true},
-				},
-			},
-			silent:     false,
-			wantOutput: []string{"Changed apps:", "web: env changed", "api: infrastructure changed"},
-			wantExit:   true,
-		},
-	}
+		}
+		buf := &bytes.Buffer{}
+		p := printer.New(buf)
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+		err := outputText(analysis, p, false)
 
-			buf := &bytes.Buffer{}
-			p := printer.New(buf)
-
-			err := outputText(test.analysis, p, test.silent)
-
-			output := buf.String()
-			for _, want := range test.wantOutput {
-				assert.Contains(t, output, want)
-			}
-
-			if test.wantExit {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-		})
-	}
+		output := buf.String()
+		assert.Contains(t, output, "Changed apps:")
+		assert.Contains(t, output, "web: env changed")
+		assert.Contains(t, output, "api: infrastructure changed")
+		require.Error(t, err)
+	})
 }
 
 func TestOutputJSON(t *testing.T) {
-	tt := map[string]struct {
-		analysis appdef.ChangeAnalysis
-		wantExit bool
-	}{
-		"Skip": {
-			analysis: appdef.ChangeAnalysis{
-				Skip:   true,
-				Reason: "app.json unchanged",
+	t.Parallel()
+
+	t.Run("Skip", func(t *testing.T) {
+		t.Parallel()
+
+		analysis := appdef.ChangeAnalysis{
+			Skip:   true,
+			Reason: "app.json unchanged",
+		}
+		buf := &bytes.Buffer{}
+
+		err := outputJSON(analysis, buf)
+
+		var result appdef.ChangeAnalysis
+		jsonErr := json.Unmarshal(buf.Bytes(), &result)
+		require.NoError(t, jsonErr)
+		assert.Equal(t, analysis.Skip, result.Skip)
+		assert.Equal(t, analysis.Reason, result.Reason)
+		require.NoError(t, err)
+	})
+
+	t.Run("Terraform needed", func(t *testing.T) {
+		t.Parallel()
+
+		analysis := appdef.ChangeAnalysis{
+			Skip:   false,
+			Reason: "Infrastructure config changed",
+			ChangedApps: []appdef.AppChange{
+				{Name: "web", EnvChanged: true},
 			},
-			wantExit: false,
-		},
-		"Terraform needed": {
-			analysis: appdef.ChangeAnalysis{
-				Skip:   false,
-				Reason: "Infrastructure config changed",
-				ChangedApps: []appdef.AppChange{
-					{Name: "web", EnvChanged: true},
-				},
-			},
-			wantExit: true,
-		},
-	}
+		}
+		buf := &bytes.Buffer{}
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			// Capture stdout.
-			oldStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
+		err := outputJSON(analysis, buf)
 
-			err := outputJSON(test.analysis)
-
-			// Restore stdout.
-			w.Close()
-			os.Stdout = oldStdout
-
-			// Read captured output.
-			buf := make([]byte, 4096)
-			n, _ := r.Read(buf)
-			output := string(buf[:n])
-
-			// Verify JSON is valid and contains expected data.
-			var result appdef.ChangeAnalysis
-			jsonErr := json.Unmarshal([]byte(output), &result)
-			require.NoError(t, jsonErr)
-			assert.Equal(t, test.analysis.Skip, result.Skip)
-			assert.Equal(t, test.analysis.Reason, result.Reason)
-
-			if test.wantExit {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-		})
-	}
+		var result appdef.ChangeAnalysis
+		jsonErr := json.Unmarshal(buf.Bytes(), &result)
+		require.NoError(t, jsonErr)
+		assert.Equal(t, analysis.Skip, result.Skip)
+		assert.Equal(t, analysis.Reason, result.Reason)
+		require.Error(t, err)
+	})
 }
 
 func TestOutputGitHub(t *testing.T) {
-	tt := map[string]struct {
-		analysis   appdef.ChangeAnalysis
-		wantOutput []string
-		wantExit   bool
-	}{
-		"Skip": {
-			analysis: appdef.ChangeAnalysis{
-				Skip:   true,
-				Reason: "app.json unchanged",
-			},
-			wantOutput: []string{
-				"skip_terraform=true",
-				"reason=app.json unchanged",
-				"::notice::app.json unchanged",
-			},
-			wantExit: false,
-		},
-		"Terraform needed": {
-			analysis: appdef.ChangeAnalysis{
-				Skip:   false,
-				Reason: "Infrastructure config changed",
-			},
-			wantOutput: []string{
-				"skip_terraform=false",
-				"reason=Infrastructure config changed",
-				"::notice::Infrastructure config changed",
-			},
-			wantExit: true,
-		},
-	}
+	t.Parallel()
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			// Capture stdout.
-			oldStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
+	t.Run("Skip", func(t *testing.T) {
+		t.Parallel()
 
-			err := outputGitHub(test.analysis)
+		analysis := appdef.ChangeAnalysis{
+			Skip:   true,
+			Reason: "app.json unchanged",
+		}
+		buf := &bytes.Buffer{}
 
-			// Restore stdout.
-			w.Close()
-			os.Stdout = oldStdout
+		err := outputGitHub(analysis, buf)
 
-			// Read captured output.
-			buf := make([]byte, 4096)
-			n, _ := r.Read(buf)
-			output := string(buf[:n])
+		output := buf.String()
+		assert.Contains(t, output, "skip_terraform=true")
+		assert.Contains(t, output, "reason=app.json unchanged")
+		assert.Contains(t, output, "::notice::app.json unchanged")
+		require.NoError(t, err)
+	})
 
-			for _, want := range test.wantOutput {
-				assert.Contains(t, output, want)
-			}
+	t.Run("Terraform needed", func(t *testing.T) {
+		t.Parallel()
 
-			if test.wantExit {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-		})
-	}
+		analysis := appdef.ChangeAnalysis{
+			Skip:   false,
+			Reason: "Infrastructure config changed",
+		}
+		buf := &bytes.Buffer{}
+
+		err := outputGitHub(analysis, buf)
+
+		output := buf.String()
+		assert.Contains(t, output, "skip_terraform=false")
+		assert.Contains(t, output, "reason=Infrastructure config changed")
+		assert.Contains(t, output, "::notice::Infrastructure config changed")
+		require.Error(t, err)
+	})
 }
