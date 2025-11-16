@@ -1,5 +1,6 @@
 {
-	"webkit_version": "v0.1.8",
+	"$schema": "https://raw.githubusercontent.com/ainsleydev/webkit/main/schema.json",
+	"webkit_version": "v0.4.9",
 	"project": {
 		"name": "my-website",
 		"title": "My Website",
@@ -152,6 +153,11 @@
 			},
 			"env": {},
 			"usesNPM": null,
+			"tools": {
+				"golangci-lint": {"type": "go", "name": "github.com/golangci/golangci-lint/cmd/golangci-lint", "version": "latest"},
+				"sqlc": {"type": "go", "name": "github.com/sqlc-dev/sqlc/cmd/sqlc", "version": "latest"},
+				"templ": {"type": "go", "name": "github.com/a-h/templ/cmd/templ", "version": "latest"}
+			},
 			"commands": {
 				"build": {"command": "go build main.go"},
 				"format": {"command": "gofmt -w ."},

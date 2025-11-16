@@ -1,0 +1,38 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(go:*)",
+			"Bash(gofumpt:*)",
+			"Bash(git checkout:*)",
+			"Bash(git add:*)",
+			"Bash(git restore:*)",
+			"Bash(git push:*)",
+			"Bash(git branch:*)",
+			"Bash(git commit:*)",
+			"Bash(git mv:*)",
+			"Bash(gh pr create:*)",
+			"Bash(pnpm build:*)",
+			"Bash(pnpm format:*)",
+			"Bash(pnpm lint:*)",
+			"Bash(./webkit:*)",
+			"Bash(webkit:*)",
+			"Bash(cat:*)",
+			"Bash(find:*)",
+			"Bash(curl:*)",
+			"WebFetch(domain:github.com)",
+			"WebFetch(domain:pkg.go.dev)",
+			"WebFetch(domain:registry.terraform.io)",
+			"WebSearch"
+		],
+		"deny": [
+			"Read(.env)",
+			"Read(.env.local)",
+			"Read(.env.production)",
+			"Bash(cat .env)",
+			"Bash(cat .env.local)",
+			"Bash(cat .env.production)",
+			"Bash(rm -rf:*)"
+		],
+		"ask": []
+	}
+}

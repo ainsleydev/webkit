@@ -120,8 +120,8 @@ jobs:
           rclone config create do_spaces s3 \
             env_auth false \
             provider DigitalOcean \
-            access_key_id ${{ secrets.ORG_DO_SPACES_ACCESS_KEY }} \
-            secret_access_key ${{ secrets.ORG_DO_SPACES_SECRET_KEY }} \
+            access_key_id ${{ secrets.REPO_DO_SPACES_ACCESS_KEY || secrets.ORG_DO_SPACES_ACCESS_KEY }} \
+            secret_access_key ${{ secrets.REPO_DO_SPACES_SECRET_KEY || secrets.ORG_DO_SPACES_SECRET_KEY }} \
             region ${{ secrets.TF_PROD_STORE_REGION }} \
             endpoint https://${{ secrets.TF_PROD_STORE_REGION }}.digitaloceanspaces.com
 
