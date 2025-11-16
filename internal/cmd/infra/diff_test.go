@@ -69,7 +69,7 @@ func TestOutputText(t *testing.T) {
 			t.Parallel()
 
 			buf := &bytes.Buffer{}
-			p := printer.NewConsole(buf, buf, buf)
+			p := printer.New(buf)
 
 			err := outputText(test.analysis, p, test.silent)
 

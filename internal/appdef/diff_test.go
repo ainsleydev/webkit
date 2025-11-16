@@ -10,14 +10,14 @@ func TestCompare(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		current  *Definition
-		previous *Definition
-		wantSkip bool
+		current    *Definition
+		previous   *Definition
+		wantSkip   bool
 		wantReason string
 	}{
 		"Identical definitions": {
-			current:    makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1")),
-			previous:   makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1")),
+			current:    makeTestDefinition("container", "digitalocean", makeEnv("KEY1", "value1")),
+			previous:   makeTestDefinition("container", "digitalocean", makeEnv("KEY1", "value1")),
 			wantSkip:   true,
 			wantReason: "app.json unchanged",
 		},
@@ -48,26 +48,26 @@ func TestCompare(t *testing.T) {
 			wantReason: "Infrastructure config changed (domains/sizes/regions/resources/etc)",
 		},
 		"DO container env values unchanged": {
-			current:    makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1")),
-			previous:   makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1")),
+			current:    makeTestDefinition("container", "digitalocean", makeEnv("KEY1", "value1")),
+			previous:   makeTestDefinition("container", "digitalocean", makeEnv("KEY1", "value1")),
 			wantSkip:   true,
 			wantReason: "app.json unchanged",
 		},
 		"DO container env values changed": {
-			current:    makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value2")),
-			previous:   makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1")),
+			current:    makeTestDefinition("container", "digitalocean", makeEnv("KEY1", "value2")),
+			previous:   makeTestDefinition("container", "digitalocean", makeEnv("KEY1", "value1")),
 			wantSkip:   false,
 			wantReason: "DigitalOcean container app env values changed",
 		},
 		"VM app env changed": {
-			current:    makeTestDefinition("web", "vm", "digitalocean", makeEnv("KEY1", "value2")),
-			previous:   makeTestDefinition("web", "vm", "digitalocean", makeEnv("KEY1", "value1")),
+			current:    makeTestDefinition("vm", "digitalocean", makeEnv("KEY1", "value2")),
+			previous:   makeTestDefinition("vm", "digitalocean", makeEnv("KEY1", "value1")),
 			wantSkip:   false,
 			wantReason: "VM or non-DigitalOcean container app env changes detected",
 		},
 		"New env var added to DO container": {
-			current:    makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1", "KEY2", "value2")),
-			previous:   makeTestDefinition("web", "container", "digitalocean", makeEnv("KEY1", "value1")),
+			current:    makeTestDefinition("container", "digitalocean", makeEnv("KEY1", "value1", "KEY2", "value2")),
+			previous:   makeTestDefinition("container", "digitalocean", makeEnv("KEY1", "value1")),
 			wantSkip:   false,
 			wantReason: "DigitalOcean container app env values changed",
 		},
@@ -103,10 +103,10 @@ func TestCompare(t *testing.T) {
 	}
 }
 
-
 // Helper functions for creating test data.
 
-func makeTestDefinition(appName, infraType, provider string, env Environment) *Definition {
+//nolint:unparam // provider parameter designed for reusability across different test scenarios.
+func makeTestDefinition(infraType, provider string, env Environment) *Definition {
 	providerType := ResourceProviderDigitalOcean
 	if provider != "digitalocean" {
 		providerType = ResourceProvider(provider)
@@ -115,7 +115,7 @@ func makeTestDefinition(appName, infraType, provider string, env Environment) *D
 	return &Definition{
 		Apps: []App{
 			{
-				Name:  appName,
+				Name:  "web",
 				Infra: Infra{Type: infraType, Provider: providerType},
 				Env:   env,
 			},

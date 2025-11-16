@@ -50,9 +50,9 @@ Exit codes:
 // Diff executes the diff command to analyse infrastructure changes.
 func Diff(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
-	baseRef := input.Cmd().String("base")
-	format := input.Cmd().String("format")
-	silent := input.Cmd().Bool("silent")
+	baseRef := input.Command.String("base")
+	format := input.Command.String("format")
+	silent := input.Command.Bool("silent")
 
 	if !silent && format == "text" {
 		printer.Info(fmt.Sprintf("Comparing app.json with %s", baseRef))
@@ -109,7 +109,7 @@ func outputText(analysis appdef.ChangeAnalysis, printer *printer.Console, silent
 	}
 
 	if !silent {
-		printer.Warning("Terraform apply is needed")
+		printer.Warn("Terraform apply is needed")
 	}
 	return cli.Exit("", 1)
 }
@@ -120,7 +120,7 @@ func outputJSON(analysis appdef.ChangeAnalysis) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(data))
+	fmt.Fprintln(os.Stdout, string(data))
 
 	if analysis.Skip {
 		return nil
