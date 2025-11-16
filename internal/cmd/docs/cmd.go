@@ -19,5 +19,11 @@ var Command = &cli.Command{
 			Description: "Generates AGENTS.md file from base template and optional custom content",
 			Action:      cmdtools.Wrap(Agents),
 		},
+		{
+			Name:        "readme",
+			Usage:       "Generate README.md file",
+			Description: "Generates README.md file from app.json with optional custom content from docs/README.md",
+			Action:      cmdtools.Wrap(Readme),
+		},
 	},
 }
