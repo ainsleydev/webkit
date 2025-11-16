@@ -14,14 +14,8 @@
 					"description": "Build configuration for Docker containerisation"
 				},
 				"commands": {
-					"description": "Custom commands for linting, testing, formatting, and building",
-					"additionalProperties": {
-						"$ref": "#/definitions/AppdefCommandSpec"
-					},
-					"type": [
-						"object",
-						"null"
-					]
+					"$ref": "#/definitions/TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]",
+					"description": "Custom commands for linting, testing, formatting, and building"
 				},
 				"description": {
 					"description": "Brief description of the app's purpose and functionality",
@@ -104,34 +98,6 @@
 				}
 			},
 			"type": "object"
-		},
-		"AppdefCommandSpec": {
-			"properties": {
-				"command": {
-					"description": "The shell command to execute (e.g., 'pnpm build')",
-					"type": "string"
-				},
-				"skip_ci": {
-					"description": "Whether to skip running this command in CI/CD pipelines",
-					"type": "boolean"
-				},
-				"timeout": {
-					"description": "Maximum execution time for the command (e.g., '5m', '1h')",
-					"type": "string"
-				}
-			},
-			"type": "object",
-			"oneOf": [
-				{
-					"type": "boolean"
-				},
-				{
-					"type": "string"
-				},
-				{
-					"$ref": "#/definitions/AppdefCommandSpec"
-				}
-			]
 		},
 		"AppdefDomain": {
 			"properties": {
@@ -263,6 +229,7 @@
 		"AppdefResource": {
 			"required": [
 				"name",
+				"title",
 				"type",
 				"provider"
 			],
@@ -279,12 +246,16 @@
 						"null"
 					]
 				},
+				"description": {
+					"description": "Brief description of the resource's purpose and functionality",
+					"type": "string"
+				},
 				"name": {
 					"description": "Unique identifier for the resource (used in environment variable references)",
 					"type": "string"
 				},
 				"provider": {
-					"description": "Cloud provider hosting this resource (digitalocean, backblaze, turso)",
+					"description": "Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)",
 					"type": "string"
 				},
 				"terraformManaged": {
@@ -293,6 +264,10 @@
 						"null",
 						"boolean"
 					]
+				},
+				"title": {
+					"description": "Human-readable resource name for display purposes",
+					"type": "string"
 				},
 				"type": {
 					"description": "Type of resource to provision (postgres, s3, sqlite)",
@@ -338,6 +313,9 @@
 					"type": "string"
 				}
 			},
+			"type": "object"
+		},
+		"TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]": {
 			"type": "object"
 		}
 	},

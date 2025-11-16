@@ -95,7 +95,7 @@ func groupByProvider(def *appdef.Definition) map[string]string {
 	for _, resource := range def.Resources {
 		groups[resource.Provider] = append(
 			groups[resource.Provider],
-			fmt.Sprintf("%s (%s)", resource.Name, resource.Type),
+			fmt.Sprintf("%s (%s)", resource.Title, resource.Type),
 		)
 	}
 

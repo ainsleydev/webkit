@@ -91,7 +91,7 @@ This repository contains **{{ len .Definition.Apps }} application{{ if ne (len .
 
 {{- range .Definition.Resources }}
 
-### {{ .Name }}
+### {{ .Title }}
 
 {{ if eq .Type "postgres" }}
 <img src="https://img.shields.io/badge/-PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white"/>

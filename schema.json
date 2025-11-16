@@ -1,7 +1,11 @@
 {
 	"title": "WebKit App Definition",
 	"description": "Schema for webkit app.json configuration files",
-	"required": ["webkit_version", "project", "apps"],
+	"required": [
+		"webkit_version",
+		"project",
+		"apps"
+	],
 	"definitions": {
 		"AppdefApp": {
 			"properties": {
@@ -10,11 +14,8 @@
 					"description": "Build configuration for Docker containerisation"
 				},
 				"commands": {
-					"description": "Custom commands for linting, testing, formatting, and building",
-					"additionalProperties": {
-						"$ref": "#/definitions/AppdefCommandSpec"
-					},
-					"type": ["object", "null"]
+					"$ref": "#/definitions/TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]",
+					"description": "Custom commands for linting, testing, formatting, and building"
 				},
 				"description": {
 					"description": "Brief description of the app's purpose and functionality",
@@ -25,7 +26,10 @@
 					"items": {
 						"$ref": "#/definitions/AppdefDomain"
 					},
-					"type": ["array", "null"]
+					"type": [
+						"array",
+						"null"
+					]
 				},
 				"env": {
 					"$ref": "#/definitions/AppdefEnvironment",
@@ -45,7 +49,10 @@
 				},
 				"terraformManaged": {
 					"description": "Whether this app's infrastructure is managed by Terraform (defaults to true)",
-					"type": ["null", "boolean"]
+					"type": [
+						"null",
+						"boolean"
+					]
 				},
 				"title": {
 					"description": "Human-readable app name for display purposes",
@@ -64,7 +71,10 @@
 				},
 				"usesNPM": {
 					"description": "Whether this app should be included in the pnpm workspace (auto-detected if not set)",
-					"type": ["null", "boolean"]
+					"type": [
+						"null",
+						"boolean"
+					]
 				}
 			},
 			"type": "object"
@@ -81,38 +91,13 @@
 				},
 				"release": {
 					"description": "Whether to build and release this app in CI/CD (defaults to true)",
-					"type": ["null", "boolean"]
+					"type": [
+						"null",
+						"boolean"
+					]
 				}
 			},
 			"type": "object"
-		},
-		"AppdefCommandSpec": {
-			"properties": {
-				"command": {
-					"description": "The shell command to execute (e.g., 'pnpm build')",
-					"type": "string"
-				},
-				"skip_ci": {
-					"description": "Whether to skip running this command in CI/CD pipelines",
-					"type": "boolean"
-				},
-				"timeout": {
-					"description": "Maximum execution time for the command (e.g., '5m', '1h')",
-					"type": "string"
-				}
-			},
-			"type": "object",
-			"oneOf": [
-				{
-					"type": "boolean"
-				},
-				{
-					"type": "string"
-				},
-				{
-					"$ref": "#/definitions/AppdefCommandSpec"
-				}
-			]
 		},
 		"AppdefDomain": {
 			"properties": {
@@ -136,7 +121,9 @@
 			"type": "object"
 		},
 		"AppdefEnvValue": {
-			"required": ["source"],
+			"required": [
+				"source"
+			],
 			"properties": {
 				"source": {
 					"description": "Source type for the variable value (value, resource, sops)",
@@ -193,7 +180,10 @@
 				"config": {
 					"description": "Provider-specific infrastructure configuration options",
 					"additionalProperties": {},
-					"type": ["object", "null"]
+					"type": [
+						"object",
+						"null"
+					]
 				},
 				"provider": {
 					"description": "Cloud infrastructure provider (digitalocean, backblaze)",
@@ -237,7 +227,12 @@
 			"type": "object"
 		},
 		"AppdefResource": {
-			"required": ["name", "type", "provider"],
+			"required": [
+				"name",
+				"title",
+				"type",
+				"provider"
+			],
 			"properties": {
 				"backup": {
 					"$ref": "#/definitions/AppdefResourceBackupConfig",
@@ -246,19 +241,33 @@
 				"config": {
 					"description": "Provider-specific resource configuration (e.g., size, region, version)",
 					"additionalProperties": {},
-					"type": ["object", "null"]
+					"type": [
+						"object",
+						"null"
+					]
+				},
+				"description": {
+					"description": "Brief description of the resource's purpose and functionality",
+					"type": "string"
 				},
 				"name": {
 					"description": "Unique identifier for the resource (used in environment variable references)",
 					"type": "string"
 				},
 				"provider": {
-					"description": "Cloud provider hosting this resource (digitalocean, backblaze, turso)",
+					"description": "Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)",
 					"type": "string"
 				},
 				"terraformManaged": {
 					"description": "Whether this resource is managed by Terraform (defaults to true)",
-					"type": ["null", "boolean"]
+					"type": [
+						"null",
+						"boolean"
+					]
+				},
+				"title": {
+					"description": "Human-readable resource name for display purposes",
+					"type": "string"
 				},
 				"type": {
 					"description": "Type of resource to provision (postgres, s3, sqlite)",
@@ -305,6 +314,9 @@
 				}
 			},
 			"type": "object"
+		},
+		"TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]": {
+			"type": "object"
 		}
 	},
 	"properties": {
@@ -318,7 +330,10 @@
 				"$ref": "#/definitions/AppdefApp"
 			},
 			"minItems": 1,
-			"type": ["array", "null"]
+			"type": [
+				"array",
+				"null"
+			]
 		},
 		"notifications": {
 			"$ref": "#/definitions/AppdefNotifications",
@@ -333,7 +348,10 @@
 			"items": {
 				"$ref": "#/definitions/AppdefResource"
 			},
-			"type": ["array", "null"]
+			"type": [
+				"array",
+				"null"
+			]
 		},
 		"shared": {
 			"$ref": "#/definitions/AppdefShared",

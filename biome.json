@@ -29,7 +29,8 @@
 			"**/.next",
 			"**/plugins/**",
 			"internal/templates/**",
-			"internal/playground/**"
+			"internal/playground/**",
+			"schema.json"
 		]
 	},
 	"formatter": {
