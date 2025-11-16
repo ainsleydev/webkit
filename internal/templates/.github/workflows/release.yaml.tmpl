@@ -147,7 +147,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
         with:
-          fetch-depth: 2  # Need previous commit for diff comparison
+          fetch-depth: 0  # Full history for accurate comparison
 
       - name: Download WebKit CLI Artifact
         uses: actions/download-artifact@v4

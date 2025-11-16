@@ -48,7 +48,8 @@ type (
 // It performs a hierarchical comparison:
 // 1. If definitions are identical → skip Terraform
 // 2. If infrastructure config changed (non-env fields) → run Terraform
-// 3. If only env vars changed → analyse per app:
+// 3. If apps were added or removed → run Terraform
+// 4. If only env vars changed → analyse per app:
 //   - VM or non-DigitalOcean apps → run Terraform
 //   - DigitalOcean container apps with env value changes → run Terraform
 //   - DigitalOcean container apps with no actual env changes → skip (drift only)
@@ -61,6 +62,37 @@ func Compare(current, previous *Definition) ChangeAnalysis {
 		return ChangeAnalysis{
 			Skip:   true,
 			Reason: "app.json unchanged",
+		}
+	}
+
+	// Check for added or deleted apps.
+	previousAppNames := make(map[string]bool)
+	for i := range previous.Apps {
+		previousAppNames[previous.Apps[i].Name] = true
+	}
+
+	currentAppNames := make(map[string]bool)
+	for i := range current.Apps {
+		currentAppNames[current.Apps[i].Name] = true
+	}
+
+	// Check for new apps.
+	for appName := range currentAppNames {
+		if !previousAppNames[appName] {
+			return ChangeAnalysis{
+				Skip:   false,
+				Reason: "New app added: " + appName,
+			}
+		}
+	}
+
+	// Check for deleted apps.
+	for appName := range previousAppNames {
+		if !currentAppNames[appName] {
+			return ChangeAnalysis{
+				Skip:   false,
+				Reason: "App deleted: " + appName,
+			}
 		}
 	}
 
@@ -127,7 +159,7 @@ func analyseEnvChanges(current, previous *Definition) []AppChange {
 		currentApp := &current.Apps[i]
 		previousApp, exists := previousApps[currentApp.Name]
 
-		// New app added - infrastructure change.
+		// Skip new apps - they're handled in Compare().
 		if !exists {
 			continue
 		}
