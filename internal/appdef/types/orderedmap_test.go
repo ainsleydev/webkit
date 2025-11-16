@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/swaggest/jsonschema-go"
 )
 
 func TestOrderedMap_PreservesInsertionOrder(t *testing.T) {
@@ -537,5 +538,182 @@ func TestOrderedMap_EdgeCases(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, om.Keys(), om2.Keys())
+	})
+}
+
+func TestOrderedMap_JSONSchema(t *testing.T) {
+	t.Parallel()
+
+	t.Run("String values", func(t *testing.T) {
+		t.Parallel()
+
+		om := NewOrderedMap[string, string]()
+		schema, err := om.JSONSchema()
+		require.NoError(t, err)
+
+		t.Log("Verify schema type is object")
+		{
+			assert.NotNil(t, schema.Type)
+			assert.NotNil(t, schema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Object, *schema.Type.SimpleTypes)
+		}
+
+		t.Log("Verify additionalProperties is set")
+		{
+			assert.NotNil(t, schema.AdditionalProperties)
+			assert.NotNil(t, schema.AdditionalProperties.TypeObject)
+		}
+
+		t.Log("Verify additionalProperties schema for string type")
+		{
+			valueSchema := schema.AdditionalProperties.TypeObject
+			assert.NotNil(t, valueSchema.Type)
+			assert.NotNil(t, valueSchema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.String, *valueSchema.Type.SimpleTypes)
+		}
+	})
+
+	t.Run("Integer values", func(t *testing.T) {
+		t.Parallel()
+
+		om := NewOrderedMap[string, int]()
+		schema, err := om.JSONSchema()
+		require.NoError(t, err)
+
+		t.Log("Verify schema type is object")
+		{
+			assert.NotNil(t, schema.Type)
+			assert.NotNil(t, schema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Object, *schema.Type.SimpleTypes)
+		}
+
+		t.Log("Verify additionalProperties schema for int type")
+		{
+			assert.NotNil(t, schema.AdditionalProperties)
+			assert.NotNil(t, schema.AdditionalProperties.TypeObject)
+			valueSchema := schema.AdditionalProperties.TypeObject
+			assert.NotNil(t, valueSchema.Type)
+			assert.NotNil(t, valueSchema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Integer, *valueSchema.Type.SimpleTypes)
+		}
+	})
+
+	t.Run("Complex struct values", func(t *testing.T) {
+		t.Parallel()
+
+		type TestStruct struct {
+			Command string `json:"command"`
+			SkipCI  bool   `json:"skip_ci"`
+			Timeout string `json:"timeout"`
+		}
+
+		om := NewOrderedMap[string, TestStruct]()
+		schema, err := om.JSONSchema()
+		require.NoError(t, err)
+
+		t.Log("Verify schema type is object")
+		{
+			assert.NotNil(t, schema.Type)
+			assert.NotNil(t, schema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Object, *schema.Type.SimpleTypes)
+		}
+
+		t.Log("Verify additionalProperties contains struct schema")
+		{
+			assert.NotNil(t, schema.AdditionalProperties)
+			assert.NotNil(t, schema.AdditionalProperties.TypeObject)
+
+			valueSchema := schema.AdditionalProperties.TypeObject
+			assert.NotNil(t, valueSchema.Type)
+			assert.NotNil(t, valueSchema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Object, *valueSchema.Type.SimpleTypes)
+		}
+
+		t.Log("Verify struct properties are in schema")
+		{
+			valueSchema := schema.AdditionalProperties.TypeObject
+			assert.NotNil(t, valueSchema.Properties)
+			assert.Contains(t, valueSchema.Properties, "command")
+			assert.Contains(t, valueSchema.Properties, "skip_ci")
+			assert.Contains(t, valueSchema.Properties, "timeout")
+		}
+	})
+
+	t.Run("Boolean values", func(t *testing.T) {
+		t.Parallel()
+
+		om := NewOrderedMap[string, bool]()
+		schema, err := om.JSONSchema()
+		require.NoError(t, err)
+
+		t.Log("Verify schema type is object")
+		{
+			assert.NotNil(t, schema.Type)
+			assert.NotNil(t, schema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Object, *schema.Type.SimpleTypes)
+		}
+
+		t.Log("Verify additionalProperties schema for bool type")
+		{
+			assert.NotNil(t, schema.AdditionalProperties)
+			valueSchema := schema.AdditionalProperties.TypeObject
+			assert.NotNil(t, valueSchema)
+			assert.NotNil(t, valueSchema.Type)
+			assert.NotNil(t, valueSchema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Boolean, *valueSchema.Type.SimpleTypes)
+		}
+	})
+
+	t.Run("Nil OrderedMap", func(t *testing.T) {
+		t.Parallel()
+
+		var om *OrderedMap[string, string]
+		schema, err := om.JSONSchema()
+		require.NoError(t, err)
+
+		t.Log("Should still return valid object schema")
+		{
+			assert.NotNil(t, schema.Type)
+			assert.NotNil(t, schema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Object, *schema.Type.SimpleTypes)
+		}
+	})
+
+	t.Run("Empty OrderedMap", func(t *testing.T) {
+		t.Parallel()
+
+		om := NewOrderedMap[string, string]()
+		schema, err := om.JSONSchema()
+		require.NoError(t, err)
+
+		t.Log("Empty map should still generate proper schema")
+		{
+			assert.NotNil(t, schema.Type)
+			assert.NotNil(t, schema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Object, *schema.Type.SimpleTypes)
+			assert.NotNil(t, schema.AdditionalProperties)
+		}
+	})
+
+	t.Run("Nested struct with pointer", func(t *testing.T) {
+		t.Parallel()
+
+		type NestedConfig struct {
+			Name  string `json:"name"`
+			Value *int   `json:"value,omitempty"`
+		}
+
+		om := NewOrderedMap[string, NestedConfig]()
+		schema, err := om.JSONSchema()
+		require.NoError(t, err)
+
+		t.Log("Verify schema structure for nested struct")
+		{
+			assert.NotNil(t, schema.Type)
+			assert.NotNil(t, schema.Type.SimpleTypes)
+			assert.Equal(t, jsonschema.Object, *schema.Type.SimpleTypes)
+			assert.NotNil(t, schema.AdditionalProperties)
+			assert.NotNil(t, schema.AdditionalProperties.TypeObject)
+		}
 	})
 }

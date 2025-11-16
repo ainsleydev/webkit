@@ -184,25 +184,21 @@ func (om *OrderedMap[K, V]) MarshalJSON() ([]byte, error) {
 // This ensures OrderedMap is represented as a plain JSON object in schemas
 // rather than exposing internal Go type information.
 func (om *OrderedMap[K, V]) JSONSchema() (jsonschema.Schema, error) {
-	// Create a reflector to get the schema for the value type
+	schema := jsonschema.Schema{}
+	schema.AddType(jsonschema.Object)
+
+	// Create a reflector to get the schema for the value type.
 	reflector := jsonschema.Reflector{}
 	var zeroValue V
 	valueSchema, err := reflector.Reflect(zeroValue)
 	if err != nil {
-		// If reflection fails, fall back to a generic object schema
-		return jsonschema.Schema{
-			Type: &jsonschema.Type{SimpleTypes: &jsonschema.SimpleType("object")},
-		}, nil
+		// If reflection fails, fall back to a generic object schema.
+		return schema, nil
 	}
 
-	// Return an object schema with additionalProperties matching the value type
-	schema := jsonschema.Schema{
-		Type: &jsonschema.Type{SimpleTypes: &jsonschema.SimpleType("object")},
-	}
-
-	// Set additionalProperties to the value type schema
+	// Set additionalProperties to the value type schema.
 	schema.AdditionalProperties = &jsonschema.SchemaOrBool{
-		TypeObject: valueSchema,
+		TypeObject: &valueSchema,
 	}
 
 	return schema, nil
