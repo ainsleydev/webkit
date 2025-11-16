@@ -50,7 +50,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("DO_API_KEY", "key")
 	t.Setenv("DO_SPACES_ACCESS_KEY", "access")
 	t.Setenv("DO_SPACES_SECRET_KEY", "secret")
-	t.Setenv("HETZNER_TOKEN", "hetzner-test-token")
+	t.Setenv("HETZNER_TOKEN", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	t.Setenv("BACK_BLAZE_BUCKET", "bucket")
 	t.Setenv("BACK_BLAZE_KEY_ID", "id")
 	t.Setenv("BACK_BLAZE_APPLICATION_KEY", "appkey")
