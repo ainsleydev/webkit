@@ -3,6 +3,7 @@ package docs
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -25,24 +26,22 @@ const (
 // Readme creates the README.md file at the project root by combining
 // the base template with project data from app.json.
 func Readme(_ context.Context, input cmdtools.CommandInput) error {
-	baseTemplate := templates.MustLoadTemplate("docs/README.md")
 	appDef := input.AppDef()
 
 	data := map[string]any{
-		"Definition":       appDef,
-		"Content":          mustLoadCustomContent(input.FS, "README.md"),
-		"LogoURL":          detectLogoURL(input.FS),
-		"DomainBadges":     collectDomainBadges(appDef),
-		"DomainLinks":      formatDomainLinks(appDef),
-		"AppTypeBadges":    collectAppTypeBadges(appDef),
-		"ProviderGroups":   groupByProvider(appDef),
-		"PrimaryDomainURL": getPrimaryDomainURL(appDef),
-		"CurrentYear":      time.Now().Year(),
+		"Definition":     appDef,
+		"Content":        mustLoadCustomContent(input.FS, "README.md"),
+		"LogoURL":        detectLogoURL(input.FS),
+		"DomainBadges":   collectDomainBadges(appDef),
+		"DomainLinks":    formatDomainLinks(appDef),
+		"AppTypeBadges":  collectAppTypeBadges(appDef),
+		"ProviderGroups": groupByProvider(appDef),
+		"CurrentYear":    time.Now().Year(),
 	}
 
 	err := input.Generator().Template(
 		"README.md",
-		baseTemplate,
+		templates.MustLoadTemplate("README.md"),
 		data,
 		scaffold.WithTracking(manifest.SourceProject()),
 	)
@@ -69,19 +68,24 @@ func detectLogoURL(fs afero.Fs) string {
 	return webkitSymbolURL
 }
 
-type domainBadge struct {
-	Name string
+// badge represents a shields.io badge with a name and color.
+type badge struct {
+	Name  string
+	Color string
 }
 
 // collectDomainBadges returns all primary domains for badge generation.
-func collectDomainBadges(def *appdef.Definition) []domainBadge {
-	var badges []domainBadge
+func collectDomainBadges(def *appdef.Definition) []badge {
+	var badges []badge
 	seen := make(map[string]bool)
 
 	for _, app := range def.Apps {
 		for _, domain := range app.Domains {
 			if domain.Type == appdef.DomainTypePrimary && !seen[domain.Name] {
-				badges = append(badges, domainBadge{Name: domain.Name})
+				badges = append(badges, badge{
+					Name:  domain.Name,
+					Color: "", // Domain badges don't use color
+				})
 				seen[domain.Name] = true
 			}
 		}
@@ -95,8 +99,8 @@ func formatDomainLinks(def *appdef.Definition) string {
 	var links []string
 
 	for _, app := range def.Apps {
-		if primaryDomain := app.PrimaryDomain(); primaryDomain != "" {
-			link := fmt.Sprintf(`<a href="https://%s"><strong>%s</strong></a>`, primaryDomain, app.Title)
+		if uri := app.PrimaryDomainURL(); uri != "" {
+			link := fmt.Sprintf(`<a href="%s"><strong>%s</strong></a>`, uri, app.Title)
 			links = append(links, link)
 		}
 	}
@@ -105,13 +109,16 @@ func formatDomainLinks(def *appdef.Definition) string {
 }
 
 // collectAppTypeBadges returns all unique app types for badge generation.
-func collectAppTypeBadges(def *appdef.Definition) []domainBadge {
+func collectAppTypeBadges(def *appdef.Definition) []badge {
 	seen := make(map[appdef.AppType]bool)
-	var badges []domainBadge
+	var badges []badge
 
 	for _, app := range def.Apps {
 		if !seen[app.Type] {
-			badges = append(badges, domainBadge{Name: string(app.Type)})
+			badges = append(badges, badge{
+				Name:  url.PathEscape(string(app.Type)),
+				Color: "purple",
+			})
 			seen[app.Type] = true
 		}
 	}
@@ -145,14 +152,4 @@ func groupByProvider(def *appdef.Definition) map[string]string {
 	}
 
 	return result
-}
-
-// getPrimaryDomainURL returns the first app's primary domain URL or empty string.
-func getPrimaryDomainURL(def *appdef.Definition) string {
-	for _, app := range def.Apps {
-		if url := app.PrimaryDomainURL(); url != "" {
-			return url
-		}
-	}
-	return ""
 }

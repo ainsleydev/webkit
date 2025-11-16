@@ -14,10 +14,10 @@ func TestLoadTemplate(t *testing.T) {
 	t.Run("Success README", func(t *testing.T) {
 		t.Parallel()
 
-		tmpl, err := LoadTemplate("README.md.tmpl")
+		tmpl, err := LoadTemplate("README.md")
 		require.NoError(t, err)
 		assert.NotNil(t, tmpl)
-		assert.Equal(t, "README.md.tmpl", tmpl.Name())
+		assert.Equal(t, "README.md", tmpl.Name())
 	})
 
 	t.Run("Success eslint config", func(t *testing.T) {
@@ -40,7 +40,7 @@ func TestLoadTemplate(t *testing.T) {
 	t.Run("Template execution", func(t *testing.T) {
 		t.Parallel()
 
-		tmpl, err := LoadTemplate("README.md.tmpl")
+		tmpl, err := LoadTemplate("README.md")
 		require.NoError(t, err)
 
 		data := struct {
@@ -59,7 +59,7 @@ func TestLoadTemplate(t *testing.T) {
 	t.Run("Custom functions available", func(t *testing.T) {
 		t.Parallel()
 
-		tmpl, err := LoadTemplate("README.md.tmpl")
+		tmpl, err := LoadTemplate("README.md")
 		require.NoError(t, err)
 
 		funcs := tmpl.Funcs(templateFuncs())
@@ -73,9 +73,9 @@ func TestMustLoadTemplate(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
-		tmpl := MustLoadTemplate("README.md.tmpl")
+		tmpl := MustLoadTemplate("README.md")
 		assert.NotNil(t, tmpl)
-		assert.Equal(t, "README.md.tmpl", tmpl.Name())
+		assert.Equal(t, "README.md", tmpl.Name())
 	})
 
 	t.Run("Panic on error", func(t *testing.T) {
@@ -138,7 +138,7 @@ func TestEmbed(t *testing.T) {
 	t.Run("Can read from embed", func(t *testing.T) {
 		t.Parallel()
 
-		data, err := Embed.ReadFile("README.md.tmpl")
+		data, err := Embed.ReadFile("README.md")
 		require.NoError(t, err)
 		assert.NotEmpty(t, data)
 	})

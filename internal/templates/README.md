@@ -1,12 +1,8 @@
 <p align="center">
   {{- if .LogoURL }}
-  <a href="{{ .PrimaryDomainURL }}">
-    <img src="{{ .LogoURL }}" height="96">
-    <h3 align="center">{{ .Definition.Project.Title }}</h3>
-  </a>
-  {{- else }}
-  <h3 align="center">{{ .Definition.Project.Title }}</h3>
+  <img src="{{ .LogoURL }}" height="96">
   {{- end }}
+  <h3 align="center">{{ .Definition.Project.Title }}</h3>
 </p>
 
 <p align="center">
@@ -24,7 +20,7 @@
 
 ![WebKit](https://img.shields.io/badge/webkit-{{ .Definition.WebkitVersion }}-blue)
 {{- range .AppTypeBadges }}
-![{{ .Name }}](https://img.shields.io/badge/{{ .Name }}-active-purple)
+![{{ .Name }}](https://img.shields.io/badge/{{ .Name }}-active-{{ .Color }})
 {{- end }}
 {{- range .DomainBadges }}
 [![{{ .Name }}](https://img.shields.io/website?url=https://{{ .Name }})](https://{{ .Name }})
