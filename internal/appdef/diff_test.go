@@ -71,6 +71,26 @@ func TestCompare(t *testing.T) {
 			wantSkip:   false,
 			wantReason: "DigitalOcean container app env values changed",
 		},
+		"Shared env var changed": {
+			current: &Definition{
+				Shared: Shared{
+					Env: makeEnv("SHARED_KEY", "new_value"),
+				},
+				Apps: []App{
+					{Name: "web", Infra: Infra{Type: "container", Provider: ResourceProviderDigitalOcean}},
+				},
+			},
+			previous: &Definition{
+				Shared: Shared{
+					Env: makeEnv("SHARED_KEY", "old_value"),
+				},
+				Apps: []App{
+					{Name: "web", Infra: Infra{Type: "container", Provider: ResourceProviderDigitalOcean}},
+				},
+			},
+			wantSkip:   false,
+			wantReason: "DigitalOcean container app env values changed",
+		},
 		"Resource added": {
 			current: &Definition{
 				Apps: []App{

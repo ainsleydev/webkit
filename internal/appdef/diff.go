@@ -113,6 +113,9 @@ func Compare(current, previous *Definition) ChangeAnalysis {
 func analyseEnvChanges(current, previous *Definition) []AppChange {
 	changes := make([]AppChange, 0)
 
+	// Check if shared env vars changed - this affects all apps.
+	sharedEnvChanged := !cmp.Equal(current.Shared.Env, previous.Shared.Env)
+
 	// Create a map of previous apps for easier lookup.
 	previousApps := make(map[string]*App)
 	for i := range previous.Apps {
@@ -129,8 +132,11 @@ func analyseEnvChanges(current, previous *Definition) []AppChange {
 			continue
 		}
 
-		// Check if env vars changed using cmp.
-		envChanged := !cmp.Equal(currentApp.Env, previousApp.Env)
+		// Check if app-specific env vars changed.
+		appEnvChanged := !cmp.Equal(currentApp.Env, previousApp.Env)
+
+		// An app has env changes if either shared env or app-specific env changed.
+		envChanged := sharedEnvChanged || appEnvChanged
 
 		if envChanged {
 			changes = append(changes, AppChange{
