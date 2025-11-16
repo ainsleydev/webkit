@@ -7,6 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 
+	"github.com/ainsleydev/webkit/internal/appdef/types"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 
@@ -52,8 +53,11 @@ type (
 //   - DigitalOcean container apps with env value changes → run Terraform
 //   - DigitalOcean container apps with no actual env changes → skip (drift only)
 func Compare(current, previous *Definition) ChangeAnalysis {
+	// Ignore unexported fields in OrderedMap.
+	ignoreOrderedMap := cmpopts.IgnoreUnexported(types.OrderedMap[Command, CommandSpec]{})
+
 	// Quick check: if definitions are identical, skip.
-	if cmp.Equal(current, previous) {
+	if cmp.Equal(current, previous, ignoreOrderedMap) {
 		return ChangeAnalysis{
 			Skip:   true,
 			Reason: "app.json unchanged",
@@ -66,7 +70,7 @@ func Compare(current, previous *Definition) ChangeAnalysis {
 	ignoreSharedEnv := cmpopts.IgnoreFields(Shared{}, "Env")
 	ignoreAppEnv := cmpopts.IgnoreFields(App{}, "Env")
 
-	if !cmp.Equal(current, previous, ignoreEnvs, ignoreSharedEnv, ignoreAppEnv) {
+	if !cmp.Equal(current, previous, ignoreOrderedMap, ignoreEnvs, ignoreSharedEnv, ignoreAppEnv) {
 		return ChangeAnalysis{
 			Skip:   false,
 			Reason: "Infrastructure config changed (domains/sizes/regions/resources/etc)",
