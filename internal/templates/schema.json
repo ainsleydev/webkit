@@ -14,8 +14,35 @@
 					"description": "Build configuration for Docker containerisation"
 				},
 				"commands": {
-					"$ref": "#/definitions/TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]",
-					"description": "Custom commands for linting, testing, formatting, and building"
+					"description": "Custom commands for linting, testing, formatting, and building",
+					"type": "object",
+					"additionalProperties": {
+						"oneOf": [
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"properties": {
+									"command": {
+										"description": "The shell command to execute (e.g., 'pnpm build')",
+										"type": "string"
+									},
+									"skip_ci": {
+										"description": "Whether to skip running this command in CI/CD pipelines",
+										"type": "boolean"
+									},
+									"timeout": {
+										"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+										"type": "string"
+									}
+								}
+							}
+						]
+					}
 				},
 				"description": {
 					"description": "Brief description of the app's purpose and functionality",
@@ -313,9 +340,6 @@
 					"type": "string"
 				}
 			},
-			"type": "object"
-		},
-		"TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]": {
 			"type": "object"
 		}
 	},
