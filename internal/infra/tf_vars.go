@@ -23,10 +23,10 @@ type (
 	// tfVars represents the root structure of Terraform variables
 	// that will be written to webkit.auto.tfvars.json
 	tfVars struct {
-		ProjectName             string         `json:"project_name"`
-		ProjectTitle            string         `json:"project_title"`
-		ProjectDescription      string         `json:"project_description"`
-		Environment             string         `json:"environment"`
+		ProjectName              string         `json:"project_name"`
+		ProjectTitle             string         `json:"project_title"`
+		ProjectDescription       string         `json:"project_description"`
+		Environment              string         `json:"environment"`
 		GithubConfig             tfGithubConfig `json:"github_config"`
 		Apps                     []tfApp        `json:"apps"`
 		Resources                []tfResource   `json:"resources"`
