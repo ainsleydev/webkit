@@ -25,26 +25,26 @@ export const noGaps = false;
 	<slot />
 </div>
 
-<style>
+<style lang="scss">
 	.row {
+		$self: &;
+
 		--row-gap: 1rem;
 
 		display: flex;
 		flex-wrap: wrap;
 		margin-inline: calc(var(--row-gap) * -1);
-	}
 
-	.row--no-gaps {
-		margin-inline: 0;
-	}
+		&--no-gaps {
+			margin-inline: 0;
 
-	.row--no-gaps :global(.col),
-	.row--no-gaps :global([class*='col-']) {
-		padding-inline: 0;
-	}
+			:global(.col),
+			:global([class*='col-']) {
+				padding-inline: 0;
+			}
+		}
 
-	@media (max-width: 568px) {
-		.row {
+		@media (max-width: 568px) {
 			--row-gap: 0.5rem;
 		}
 	}

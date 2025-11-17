@@ -128,7 +128,7 @@ const fallbackUrl = $derived(sources[sources.length - 1]?.url ?? data?.url ?? ''
 	</video>
 {/if}
 
-<style>
+<style lang="scss">
 	img,
 	video {
 		max-width: 100%;

@@ -11,8 +11,9 @@ pnpm add @ainsleydev/sveltekit-helper
 ## Features
 
 - **Grid System**: Responsive Container, Row, and Column components with CSS variables
-- **Form Utilities**: Client-side form management with Zod validation
+- **Form Utilities**: Schema generation and error helpers for Zod validation
 - **Payload CMS Integration**: Ready-to-use components for Payload CMS forms and media
+- **SCSS with BEM**: All components use SCSS with BEM naming convention
 
 ## Grid Components
 
@@ -76,106 +77,31 @@ Flexbox row container with gap management.
 
 ### Column
 
-Responsive column with 12-column grid system.
+Base column component with customisable gap. Consumers should define their own grid classes in global styles.
 
 ```svelte
-<!-- Full width on mobile, half on tablet, third on desktop -->
 <Column class="col-12 col-tab-6 col-desk-4">
 	Content
-</Column>
-
-<!-- With offset -->
-<Column class="col-8 offset-desk-2">
-	Centred content
 </Column>
 ```
 
 #### Customisation
 
 ```css
-[class*='col-'] {
+.col {
 	--col-gap: 1.5rem;
 }
-```
 
-#### Responsive Classes
+/* Define your own grid classes */
+.col-12 { width: 100%; }
+.col-6 { width: 50%; }
 
-- **Base**: `col-1` to `col-12`, `col-auto`
-- **Tablet (768px+)**: `col-tab-1` to `col-tab-12`, `col-tab-auto`
-- **Desktop (1024px+)**: `col-desk-1` to `col-desk-12`, `col-desk-auto`
-- **Offsets**: `offset-tab-1` to `offset-tab-11`, `offset-desk-1` to `offset-desk-11`
-
-## Form Utilities
-
-### clientForm
-
-Creates a reactive client-side form store with validation and submission handling.
-
-```svelte
-<script>
-	import { z } from 'zod'
-	import { clientForm } from '@ainsleydev/sveltekit-helper/utils/forms'
-
-	const schema = z.object({
-		email: z.string().email(),
-		password: z.string().min(8)
-	})
-
-	const { fields, errors, validate, submitting, enhance } = clientForm(
-		schema,
-		{ submissionDelay: 300 },
-		async (data) => {
-			const response = await fetch('/api/login', {
-				method: 'POST',
-				body: JSON.stringify(data)
-			})
-		}
-	)
-</script>
-
-<form use:enhance method="POST">
-	<input
-		type="email"
-		name="email"
-		bind:value={$fields.email}
-		on:blur={() => validate({ field: 'email' })}
-	/>
-	{#if $errors.email}
-		<span class="error">{$errors.email}</span>
-	{/if}
-
-	<button type="submit" disabled={$submitting}>
-		{$submitting ? 'Submitting...' : 'Submit'}
-	</button>
-</form>
-```
-
-### serverForm
-
-Validates form data on the server using Zod schema.
-
-```typescript
-// src/routes/login/+page.server.ts
-import { serverForm } from '@ainsleydev/sveltekit-helper/utils/forms'
-import { z } from 'zod'
-
-export const actions = {
-	default: async ({ request }) => {
-		const schema = z.object({
-			email: z.string().email(),
-			password: z.string().min(8)
-		})
-
-		const { valid, data, errors } = await serverForm(request, schema)
-
-		if (!valid) {
-			return { errors }
-		}
-
-		// Process form...
-	}
+@media (min-width: 768px) {
+	.col-tab-6 { width: 50%; }
 }
 ```
+
+## Form Utilities
 
 ### generateFormSchema
 
@@ -192,6 +118,23 @@ const fields = [
 
 const schema = generateFormSchema(fields)
 // Returns Zod schema with appropriate validation
+```
+
+### flattenZodErrors
+
+Converts Zod validation errors into a simple key-value object.
+
+```typescript
+import { flattenZodErrors } from '@ainsleydev/sveltekit-helper/utils/forms'
+import { z } from 'zod'
+
+const schema = z.object({ email: z.string().email() })
+const result = schema.safeParse({ email: 'invalid' })
+
+if (!result.success) {
+	const errors = flattenZodErrors(result.error)
+	// { email: 'Invalid email' }
+}
 ```
 
 ## Payload CMS Components
