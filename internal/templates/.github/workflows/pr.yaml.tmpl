@@ -227,66 +227,15 @@ jobs:
 
       - name: Detect Infrastructure Changes
         id: changes
+        uses: ./.github/actions/detect-infra-changes
+        with:
+          base_ref: origin/main
+
+      - name: Add Analysis to Step Summary
         run: |
           echo "## Infrastructure Change Analysis" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Detect infrastructure-related file changes via git diff.
-          # This replaces the webkit infra diff command with git-based detection + version tracking.
-          # Strategy: Check for changes in user-controlled files (app.json, secrets) and webkit version.
-
-          BASE_REF="origin/main"
-          CHANGED_FILES=$(git diff --name-only $BASE_REF 2>/dev/null || echo "")
-
-          INFRASTRUCTURE_CHANGED=false
-          CHANGES_LIST=""
-
-          # Check if app.json changed
-          if echo "$CHANGED_FILES" | grep -q '^app\.json$'; then
-            INFRASTRUCTURE_CHANGED=true
-            CHANGES_LIST="${CHANGES_LIST}- app.json modified\n"
-            echo "::notice::Infrastructure change detected: app.json modified"
-          fi
-
-          # Check if secrets files changed
-          if echo "$CHANGED_FILES" | grep -qE '^resources/secrets/.*\.yaml$'; then
-            INFRASTRUCTURE_CHANGED=true
-            CHANGES_LIST="${CHANGES_LIST}- Secrets files modified\n"
-            echo "::notice::Infrastructure change detected: secrets files modified"
-          fi
-
-          # Check if webkit version changed (detects webkit binary updates with new Terraform modules)
-          PREV_VERSION=$(git show $BASE_REF:.webkit/manifest.json 2>/dev/null | jq -r '.version // ""' || echo "")
-          CURR_VERSION=$(jq -r '.version // ""' .webkit/manifest.json 2>/dev/null || echo "")
-
-          if [ -z "$PREV_VERSION" ]; then
-            # First deployment - no previous manifest.json
-            INFRASTRUCTURE_CHANGED=true
-            CHANGES_LIST="${CHANGES_LIST}- First deployment (no previous manifest.json)\n"
-            echo "::notice::First deployment detected - will run Terraform on merge"
-          elif [ "$PREV_VERSION" != "$CURR_VERSION" ] && [ -n "$CURR_VERSION" ]; then
-            INFRASTRUCTURE_CHANGED=true
-            CHANGES_LIST="${CHANGES_LIST}- Webkit version changed ($PREV_VERSION → $CURR_VERSION)\n"
-            echo "::notice::Infrastructure change detected: webkit version $PREV_VERSION → $CURR_VERSION"
-          fi
-
-          # Format reason for output
-          if [ "$INFRASTRUCTURE_CHANGED" = "true" ]; then
-            echo "skip_terraform=false" >> $GITHUB_OUTPUT
-            REASON="Terraform will run on merge due to:\n${CHANGES_LIST}"
-            echo -e "**Changes detected:**\n${CHANGES_LIST}" >> $GITHUB_STEP_SUMMARY
-            echo "::notice::Infrastructure changes detected - Terraform will run on merge"
-          else
-            echo "skip_terraform=true" >> $GITHUB_OUTPUT
-            REASON="No infrastructure changes detected (DigitalOcean drift will be ignored)"
-            echo "No infrastructure changes detected. Terraform will be skipped on merge." >> $GITHUB_STEP_SUMMARY
-            echo "::notice::No infrastructure changes - Terraform will be skipped on merge"
-          fi
-
-          # Store reason for PR comment (must be single line for GitHub Actions output)
-          echo "reason<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$REASON" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "{{ ghVar "steps.changes.outputs.reason" }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Run Terraform Plan
         id: plan

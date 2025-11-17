@@ -170,56 +170,9 @@ jobs:
 
       - name: Detect Infrastructure Changes
         id: changes
-        run: |
-          # Detect infrastructure-related file changes via git diff.
-          # This replaces the webkit infra diff command with git-based detection + version tracking.
-          # Strategy: Check for changes in user-controlled files (app.json, secrets) and webkit version.
-
-          BASE_REF="HEAD~1"
-          CHANGED_FILES=$(git diff --name-only $BASE_REF 2>/dev/null || echo "")
-
-          INFRASTRUCTURE_CHANGED=false
-          REASON=""
-
-          # Check if app.json changed
-          if echo "$CHANGED_FILES" | grep -q '^app\.json$'; then
-            INFRASTRUCTURE_CHANGED=true
-            REASON="app.json modified"
-            echo "::notice::Infrastructure change detected: app.json modified"
-          fi
-
-          # Check if secrets files changed
-          if echo "$CHANGED_FILES" | grep -qE '^resources/secrets/.*\.yaml$'; then
-            INFRASTRUCTURE_CHANGED=true
-            REASON="secrets files modified"
-            echo "::notice::Infrastructure change detected: secrets files modified"
-          fi
-
-          # Check if webkit version changed (detects webkit binary updates with new Terraform modules)
-          PREV_VERSION=$(git show $BASE_REF:.webkit/manifest.json 2>/dev/null | jq -r '.version // ""' || echo "")
-          CURR_VERSION=$(jq -r '.version // ""' .webkit/manifest.json 2>/dev/null || echo "")
-
-          if [ -z "$PREV_VERSION" ]; then
-            # First deployment - no previous manifest.json
-            INFRASTRUCTURE_CHANGED=true
-            REASON="first deployment (no previous manifest.json)"
-            echo "::notice::First deployment detected - running Terraform"
-          elif [ "$PREV_VERSION" != "$CURR_VERSION" ] && [ -n "$CURR_VERSION" ]; then
-            INFRASTRUCTURE_CHANGED=true
-            REASON="webkit version changed ($PREV_VERSION → $CURR_VERSION)"
-            echo "::notice::Infrastructure change detected: webkit version $PREV_VERSION → $CURR_VERSION"
-          fi
-
-          # Set outputs for workflow decision
-          if [ "$INFRASTRUCTURE_CHANGED" = "true" ]; then
-            echo "skip_terraform=false" >> $GITHUB_OUTPUT
-            echo "reason=$REASON" >> $GITHUB_OUTPUT
-            echo "::notice::Running Terraform - $REASON"
-          else
-            echo "skip_terraform=true" >> $GITHUB_OUTPUT
-            echo "reason=No infrastructure changes detected (DigitalOcean drift ignored)" >> $GITHUB_OUTPUT
-            echo "::notice::Skipping Terraform - no infrastructure changes detected"
-          fi
+        uses: ./.github/actions/detect-infra-changes
+        with:
+          base_ref: HEAD~1
 
       - name: Run Terraform Plan
         if: steps.changes.outputs.skip_terraform != 'true'
