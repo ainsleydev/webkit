@@ -226,56 +226,68 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Detect infrastructure file changes
+      - name: Detect Infrastructure Changes
         id: changes
         run: |
           echo "## Infrastructure Change Analysis" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Check if any infrastructure-related files changed compared to main branch.
-          # This includes app.json, secrets files, and Terraform modules.
+          # Detect infrastructure-related file changes via git diff.
+          # This replaces the webkit infra diff command with git-based detection + version tracking.
+          # Strategy: Check for changes in user-controlled files (app.json, secrets) and webkit version.
+
           BASE_REF="origin/main"
-          CHANGED=$(git diff --name-only $BASE_REF)
+          CHANGED_FILES=$(git diff --name-only $BASE_REF 2>/dev/null || echo "")
 
-          # Categorise changes
-          APP_JSON_CHANGED=false
-          SECRETS_CHANGED=false
-          TERRAFORM_MODULES_CHANGED=false
+          INFRASTRUCTURE_CHANGED=false
+          CHANGES_LIST=""
 
-          if echo "$CHANGED" | grep -q '^app\.json$'; then
-            APP_JSON_CHANGED=true
+          # Check if app.json changed
+          if echo "$CHANGED_FILES" | grep -q '^app\.json$'; then
+            INFRASTRUCTURE_CHANGED=true
+            CHANGES_LIST="${CHANGES_LIST}- app.json modified\n"
+            echo "::notice::Infrastructure change detected: app.json modified"
           fi
 
-          if echo "$CHANGED" | grep -q '^resources/secrets/.*\.yaml$'; then
-            SECRETS_CHANGED=true
+          # Check if secrets files changed
+          if echo "$CHANGED_FILES" | grep -qE '^resources/secrets/.*\.yaml$'; then
+            INFRASTRUCTURE_CHANGED=true
+            CHANGES_LIST="${CHANGES_LIST}- Secrets files modified\n"
+            echo "::notice::Infrastructure change detected: secrets files modified"
           fi
 
-          if echo "$CHANGED" | grep -q '^platform/terraform/'; then
-            TERRAFORM_MODULES_CHANGED=true
+          # Check if webkit version changed (detects webkit binary updates with new Terraform modules)
+          PREV_VERSION=$(git show $BASE_REF:.webkit/manifest.json 2>/dev/null | jq -r '.version // ""' || echo "")
+          CURR_VERSION=$(jq -r '.version // ""' .webkit/manifest.json 2>/dev/null || echo "")
+
+          if [ -z "$PREV_VERSION" ]; then
+            # First deployment - no previous manifest.json
+            INFRASTRUCTURE_CHANGED=true
+            CHANGES_LIST="${CHANGES_LIST}- First deployment (no previous manifest.json)\n"
+            echo "::notice::First deployment detected - will run Terraform on merge"
+          elif [ "$PREV_VERSION" != "$CURR_VERSION" ] && [ -n "$CURR_VERSION" ]; then
+            INFRASTRUCTURE_CHANGED=true
+            CHANGES_LIST="${CHANGES_LIST}- Webkit version changed ($PREV_VERSION → $CURR_VERSION)\n"
+            echo "::notice::Infrastructure change detected: webkit version $PREV_VERSION → $CURR_VERSION"
           fi
 
-          # Determine if we should skip Terraform
-          if [ "$APP_JSON_CHANGED" = "true" ] || [ "$SECRETS_CHANGED" = "true" ] || [ "$TERRAFORM_MODULES_CHANGED" = "true" ]; then
+          # Format reason for output
+          if [ "$INFRASTRUCTURE_CHANGED" = "true" ]; then
             echo "skip_terraform=false" >> $GITHUB_OUTPUT
-
-            # Build reason message
-            CHANGES_LIST=""
-            [ "$APP_JSON_CHANGED" = "true" ] && CHANGES_LIST="${CHANGES_LIST}- app.json modified\n"
-            [ "$SECRETS_CHANGED" = "true" ] && CHANGES_LIST="${CHANGES_LIST}- secrets files modified\n"
-            [ "$TERRAFORM_MODULES_CHANGED" = "true" ] && CHANGES_LIST="${CHANGES_LIST}- Terraform modules modified\n"
-
-            echo "reason=Infrastructure files changed" >> $GITHUB_OUTPUT
-            echo "**Decision:** Run Terraform" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Changes detected:**" >> $GITHUB_STEP_SUMMARY
-            echo -e "$CHANGES_LIST" >> $GITHUB_STEP_SUMMARY
+            REASON="Terraform will run on merge due to:\n${CHANGES_LIST}"
+            echo -e "**Changes detected:**\n${CHANGES_LIST}" >> $GITHUB_STEP_SUMMARY
+            echo "::notice::Infrastructure changes detected - Terraform will run on merge"
           else
             echo "skip_terraform=true" >> $GITHUB_OUTPUT
-            echo "reason=No infrastructure changes detected" >> $GITHUB_OUTPUT
-            echo "**Decision:** Skip Terraform" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "No infrastructure-related files changed since main branch." >> $GITHUB_STEP_SUMMARY
+            REASON="No infrastructure changes detected (DigitalOcean drift will be ignored)"
+            echo "No infrastructure changes detected. Terraform will be skipped on merge." >> $GITHUB_STEP_SUMMARY
+            echo "::notice::No infrastructure changes - Terraform will be skipped on merge"
           fi
+
+          # Store reason for PR comment (must be single line for GitHub Actions output)
+          echo "reason<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$REASON" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Run Terraform Plan
         id: plan

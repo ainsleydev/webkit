@@ -163,20 +163,61 @@ jobs:
         with:
           terraform_version: {{ ghVar "env.TF_VERSION" }}
 
-      - name: Check if Terraform needed
-        id: diff
+      - name: Detect Infrastructure Changes
+        id: changes
         run: |
-          # Check if app.json changes require Terraform.
-          # Exit code 0 = skip, 1 = run.
-          if ./webkit infra diff --format=github >> $GITHUB_OUTPUT; then
-            echo "::notice::Skipping Terraform - no infrastructure changes detected"
-          else
-            echo "::notice::Running Terraform - infrastructure changes detected"
+          # Detect infrastructure-related file changes via git diff.
+          # This replaces the webkit infra diff command with git-based detection + version tracking.
+          # Strategy: Check for changes in user-controlled files (app.json, secrets) and webkit version.
+
+          BASE_REF="HEAD~1"
+          CHANGED_FILES=$(git diff --name-only $BASE_REF 2>/dev/null || echo "")
+
+          INFRASTRUCTURE_CHANGED=false
+          REASON=""
+
+          # Check if app.json changed
+          if echo "$CHANGED_FILES" | grep -q '^app\.json$'; then
+            INFRASTRUCTURE_CHANGED=true
+            REASON="app.json modified"
+            echo "::notice::Infrastructure change detected: app.json modified"
           fi
-        continue-on-error: true
+
+          # Check if secrets files changed
+          if echo "$CHANGED_FILES" | grep -qE '^resources/secrets/.*\.yaml$'; then
+            INFRASTRUCTURE_CHANGED=true
+            REASON="secrets files modified"
+            echo "::notice::Infrastructure change detected: secrets files modified"
+          fi
+
+          # Check if webkit version changed (detects webkit binary updates with new Terraform modules)
+          PREV_VERSION=$(git show $BASE_REF:.webkit/manifest.json 2>/dev/null | jq -r '.version // ""' || echo "")
+          CURR_VERSION=$(jq -r '.version // ""' .webkit/manifest.json 2>/dev/null || echo "")
+
+          if [ -z "$PREV_VERSION" ]; then
+            # First deployment - no previous manifest.json
+            INFRASTRUCTURE_CHANGED=true
+            REASON="first deployment (no previous manifest.json)"
+            echo "::notice::First deployment detected - running Terraform"
+          elif [ "$PREV_VERSION" != "$CURR_VERSION" ] && [ -n "$CURR_VERSION" ]; then
+            INFRASTRUCTURE_CHANGED=true
+            REASON="webkit version changed ($PREV_VERSION → $CURR_VERSION)"
+            echo "::notice::Infrastructure change detected: webkit version $PREV_VERSION → $CURR_VERSION"
+          fi
+
+          # Set outputs for workflow decision
+          if [ "$INFRASTRUCTURE_CHANGED" = "true" ]; then
+            echo "skip_terraform=false" >> $GITHUB_OUTPUT
+            echo "reason=$REASON" >> $GITHUB_OUTPUT
+            echo "::notice::Running Terraform - $REASON"
+          else
+            echo "skip_terraform=true" >> $GITHUB_OUTPUT
+            echo "reason=No infrastructure changes detected (DigitalOcean drift ignored)" >> $GITHUB_OUTPUT
+            echo "::notice::Skipping Terraform - no infrastructure changes detected"
+          fi
 
       - name: Run Terraform Plan
-        if: steps.diff.outputs.skip_terraform != 'true'
+        if: steps.changes.outputs.skip_terraform != 'true'
         id: plan
         run: |
           echo "🔍 Running terraform plan for production environment..."
@@ -230,26 +271,26 @@ jobs:
           exit $plan_exit_code
 
       - name: Run Terraform Apply
-        if: steps.diff.outputs.skip_terraform != 'true' && steps.plan.outputs.sha_only != 'true' && steps.plan.outputs.changes_detected == 'true'
+        if: steps.changes.outputs.skip_terraform != 'true' && steps.plan.outputs.sha_only != 'true' && steps.plan.outputs.changes_detected == 'true'
         run: |
           echo "🚀 Applying terraform changes for production environment..."
           # TODO: Uncomment when ready to apply changes.
           # ./webkit infra apply --silent
           echo "⚠️  Apply is currently disabled - remove this comment to enable"
 
-      - name: Skip Terraform - Diff Only
-        if: steps.diff.outputs.skip_terraform == 'true'
+      - name: Skip Terraform - No Infrastructure Changes
+        if: steps.changes.outputs.skip_terraform == 'true'
         run: |
-          echo "⏭️  Skipping terraform plan and apply - {{ ghVar "steps.diff.outputs.reason" }}"
+          echo "⏭️  Skipping terraform plan and apply - {{ ghVar "steps.changes.outputs.reason" }}"
 
       - name: Skip Apply for SHA-only Changes
-        if: steps.diff.outputs.skip_terraform != 'true' && steps.plan.outputs.sha_only == 'true'
+        if: steps.changes.outputs.skip_terraform != 'true' && steps.plan.outputs.sha_only == 'true'
         run: |
           echo "⏭️  Skipping terraform apply - only container image SHA changes detected"
           echo "Deploy jobs will handle the container image updates"
 
       - name: Send Slack Notification
-        if: steps.diff.outputs.skip_terraform != 'true' && steps.plan.outputs.changes_detected == 'true' && steps.plan.outputs.sha_only != 'true'
+        if: steps.changes.outputs.skip_terraform != 'true' && steps.plan.outputs.changes_detected == 'true' && steps.plan.outputs.sha_only != 'true'
         uses: ./.github/actions/slack-notify
         with:
           title: 'Infra Plan'
