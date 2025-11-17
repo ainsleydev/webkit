@@ -226,27 +226,56 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Analyse Infrastructure Changes
-        id: diff
+      - name: Detect infrastructure file changes
+        id: changes
         run: |
           echo "## Infrastructure Change Analysis" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Run diff command and capture output
-          if ./webkit infra diff --base=origin/main --format=text > diff-output.txt 2>&1; then
-            diff_exit_code=0
-            echo "skip_terraform=true" >> $GITHUB_OUTPUT
-          else
-            diff_exit_code=$?
-            echo "skip_terraform=false" >> $GITHUB_OUTPUT
+          # Check if any infrastructure-related files changed compared to main branch.
+          # This includes app.json, secrets files, and Terraform modules.
+          BASE_REF="origin/main"
+          CHANGED=$(git diff --name-only $BASE_REF)
+
+          # Categorise changes
+          APP_JSON_CHANGED=false
+          SECRETS_CHANGED=false
+          TERRAFORM_MODULES_CHANGED=false
+
+          if echo "$CHANGED" | grep -q '^app\.json$'; then
+            APP_JSON_CHANGED=true
           fi
 
-          # Add output to step summary
-          cat diff-output.txt >> $GITHUB_STEP_SUMMARY
+          if echo "$CHANGED" | grep -q '^resources/secrets/.*\.yaml$'; then
+            SECRETS_CHANGED=true
+          fi
 
-          # Store reason for PR comment
-          reason=$(grep -oP '(?<=Decision: ).*' diff-output.txt || echo "Unknown")
-          echo "reason=$reason" >> $GITHUB_OUTPUT
+          if echo "$CHANGED" | grep -q '^platform/terraform/'; then
+            TERRAFORM_MODULES_CHANGED=true
+          fi
+
+          # Determine if we should skip Terraform
+          if [ "$APP_JSON_CHANGED" = "true" ] || [ "$SECRETS_CHANGED" = "true" ] || [ "$TERRAFORM_MODULES_CHANGED" = "true" ]; then
+            echo "skip_terraform=false" >> $GITHUB_OUTPUT
+
+            # Build reason message
+            CHANGES_LIST=""
+            [ "$APP_JSON_CHANGED" = "true" ] && CHANGES_LIST="${CHANGES_LIST}- app.json modified\n"
+            [ "$SECRETS_CHANGED" = "true" ] && CHANGES_LIST="${CHANGES_LIST}- secrets files modified\n"
+            [ "$TERRAFORM_MODULES_CHANGED" = "true" ] && CHANGES_LIST="${CHANGES_LIST}- Terraform modules modified\n"
+
+            echo "reason=Infrastructure files changed" >> $GITHUB_OUTPUT
+            echo "**Decision:** Run Terraform" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Changes detected:**" >> $GITHUB_STEP_SUMMARY
+            echo -e "$CHANGES_LIST" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "skip_terraform=true" >> $GITHUB_OUTPUT
+            echo "reason=No infrastructure changes detected" >> $GITHUB_OUTPUT
+            echo "**Decision:** Skip Terraform" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No infrastructure-related files changed since main branch." >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Run Terraform Plan
         id: plan
@@ -306,7 +335,7 @@ jobs:
             echo ""
             echo "$status_emoji **$status_text**"
             echo ""
-            echo "**On merge:** ${{ steps.diff.outputs.reason }}"
+            echo "**On merge:** ${{ steps.changes.outputs.reason }}"
             echo ""
             echo "<details>"
             echo "<summary>View terraform plan output</summary>"

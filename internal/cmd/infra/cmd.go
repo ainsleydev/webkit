@@ -26,7 +26,6 @@ var Command = &cli.Command{
 		DestroyCmd,
 		OutputCmd,
 		ImportCmd,
-		DiffCmd,
 	},
 	Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
 		_, err := infra.ParseTFEnvironment()
