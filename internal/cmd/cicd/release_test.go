@@ -418,14 +418,14 @@ func TestReleaseWorkflow(t *testing.T) {
 			assert.Contains(t, content, "Infra Plan")
 		}
 
-		t.Log("Diff-based change detection")
+		t.Log("Infrastructure change detection via composite action")
 		{
-			assert.Contains(t, content, "Check if Terraform needed")
-			assert.Contains(t, content, "id: diff")
-			assert.Contains(t, content, "./webkit infra diff --format=github")
-			assert.Contains(t, content, "if: steps.diff.outputs.skip_terraform != 'true'")
-			assert.Contains(t, content, "Skipping Terraform - no infrastructure changes detected")
-			assert.Contains(t, content, "Running Terraform - infrastructure changes detected")
+			assert.Contains(t, content, "Detect Infrastructure Changes")
+			assert.Contains(t, content, "id: changes")
+			assert.Contains(t, content, "uses: ./.github/actions/detect-infra-changes")
+			assert.Contains(t, content, "base_ref: HEAD~1")
+			assert.Contains(t, content, "if: steps.changes.outputs.skip_terraform != 'true'")
+			assert.Contains(t, content, "Skip Terraform - No Infrastructure Changes")
 		}
 
 		t.Log("Deploy jobs depend on terraform apply")

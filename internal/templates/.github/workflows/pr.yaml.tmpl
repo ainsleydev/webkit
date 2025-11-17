@@ -225,27 +225,17 @@ jobs:
         with:
           terraform_version: {{ ghVar "env.TF_VERSION" }}
 
-      - name: Analyse Infrastructure Changes
-        id: diff
+      - name: Detect Infrastructure Changes
+        id: changes
+        uses: ./.github/actions/detect-infra-changes
+        with:
+          base_ref: origin/main
+
+      - name: Add Analysis to Step Summary
         run: |
           echo "## Infrastructure Change Analysis" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Run diff command and capture output
-          if ./webkit infra diff --base=origin/main --format=text > diff-output.txt 2>&1; then
-            diff_exit_code=0
-            echo "skip_terraform=true" >> $GITHUB_OUTPUT
-          else
-            diff_exit_code=$?
-            echo "skip_terraform=false" >> $GITHUB_OUTPUT
-          fi
-
-          # Add output to step summary
-          cat diff-output.txt >> $GITHUB_STEP_SUMMARY
-
-          # Store reason for PR comment
-          reason=$(grep -oP '(?<=Decision: ).*' diff-output.txt || echo "Unknown")
-          echo "reason=$reason" >> $GITHUB_OUTPUT
+          echo "{{ ghVar "steps.changes.outputs.reason" }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Run Terraform Plan
         id: plan
@@ -305,7 +295,7 @@ jobs:
             echo ""
             echo "$status_emoji **$status_text**"
             echo ""
-            echo "**On merge:** {{ ghVar "steps.diff.outputs.reason" }}"
+            echo "**On merge:** {{ ghVar "steps.changes.outputs.reason" }}"
             echo ""
             echo "<details>"
             echo "<summary>View terraform plan output</summary>"
