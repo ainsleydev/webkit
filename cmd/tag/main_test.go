@@ -200,17 +200,55 @@ func TestGitDeleteRemoteTag(t *testing.T) {
 	})
 }
 
-func TestGitCommitVersionFile(t *testing.T) {
+func TestRunGoGenerate(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
 		runner := executil.NewMemRunner()
-		runner.AddStub("git add internal/version/version.go", executil.Result{Output: ""}, nil)
+		runner.AddStub("go generate ./...", executil.Result{Output: ""}, nil)
+
+		err := runGoGenerate(runner, context.Background())
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error on go generate failure", func(t *testing.T) {
+		t.Parallel()
+
+		runner := executil.NewMemRunner()
+		runner.AddStub("go generate ./...", executil.Result{Output: "generation failed"}, errors.New("generate failed"))
+
+		err := runGoGenerate(runner, context.Background())
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "go generate failed")
+		assert.Contains(t, err.Error(), "generation failed")
+	})
+}
+
+func TestGitCommitAllChanges(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		runner := executil.NewMemRunner()
+		runner.AddStub("git add -A", executil.Result{Output: ""}, nil)
+		runner.AddStub("git diff --cached --quiet", executil.Result{Output: ""}, errors.New("changes staged"))
 		runner.AddStub("git commit -m chore: Updating version to v1.0.0", executil.Result{Output: "[main abc123] chore: Updating version to v1.0.0"}, nil)
 
-		err := gitCommitVersionFile(runner, context.Background(), "v1.0.0")
+		err := gitCommitAllChanges(runner, context.Background(), "v1.0.0")
+		assert.NoError(t, err)
+	})
+
+	t.Run("No changes to commit", func(t *testing.T) {
+		t.Parallel()
+
+		runner := executil.NewMemRunner()
+		runner.AddStub("git add -A", executil.Result{Output: ""}, nil)
+		runner.AddStub("git diff --cached --quiet", executil.Result{Output: ""}, nil)
+
+		err := gitCommitAllChanges(runner, context.Background(), "v1.0.0")
 		assert.NoError(t, err)
 	})
 
@@ -218,9 +256,9 @@ func TestGitCommitVersionFile(t *testing.T) {
 		t.Parallel()
 
 		runner := executil.NewMemRunner()
-		runner.AddStub("git add internal/version/version.go", executil.Result{Output: "file not found"}, errors.New("add failed"))
+		runner.AddStub("git add -A", executil.Result{Output: "file not found"}, errors.New("add failed"))
 
-		err := gitCommitVersionFile(runner, context.Background(), "v1.0.0")
+		err := gitCommitAllChanges(runner, context.Background(), "v1.0.0")
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "git add failed")
 	})
@@ -229,10 +267,11 @@ func TestGitCommitVersionFile(t *testing.T) {
 		t.Parallel()
 
 		runner := executil.NewMemRunner()
-		runner.AddStub("git add internal/version/version.go", executil.Result{Output: ""}, nil)
+		runner.AddStub("git add -A", executil.Result{Output: ""}, nil)
+		runner.AddStub("git diff --cached --quiet", executil.Result{Output: ""}, errors.New("changes staged"))
 		runner.AddStub("git commit -m chore: Updating version to v1.0.0", executil.Result{Output: "nothing to commit"}, errors.New("commit failed"))
 
-		err := gitCommitVersionFile(runner, context.Background(), "v1.0.0")
+		err := gitCommitAllChanges(runner, context.Background(), "v1.0.0")
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "git commit failed")
 	})

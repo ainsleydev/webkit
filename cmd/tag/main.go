@@ -119,21 +119,29 @@ func createTag(console *printer.Console, reader *bufio.Reader) {
 		return
 	}
 
+	// Run go generate to ensure all generated files are up to date
+	console.Printf("\nRunning go generate...\n")
+	if err := runGoGenerate(runner, ctx); err != nil {
+		console.Error(fmt.Sprintf("Error running go generate: %s", err))
+		os.Exit(1)
+	}
+	console.Success("Generated files updated")
+
 	// Generate version file with new tag
-	console.Printf("\nGenerating version file...\n")
+	console.Printf("Generating version file...\n")
 	if err := generateVersionFile(console, newTag); err != nil {
 		console.Error(fmt.Sprintf("Error generating version file: %s", err))
 		os.Exit(1)
 	}
 	console.Success("Version file generated")
 
-	// Commit the version file
-	console.Printf("Committing version file...\n")
-	if err := gitCommitVersionFile(runner, ctx, newTag); err != nil {
-		console.Error(fmt.Sprintf("Error committing version file: %s", err))
+	// Commit all changes (generated files + version file)
+	console.Printf("Committing changes...\n")
+	if err := gitCommitAllChanges(runner, ctx, newTag); err != nil {
+		console.Error(fmt.Sprintf("Error committing changes: %s", err))
 		os.Exit(1)
 	}
-	console.Success("Version file committed")
+	console.Success("Changes committed")
 
 	// Create and push tag
 	console.Printf("Creating tag...\n")
@@ -341,12 +349,29 @@ const Version = %q
 	return gen.Code("internal/version/version.go", content)
 }
 
-func gitCommitVersionFile(runner executil.Runner, ctx context.Context, tag string) error {
-	// Add the version file
-	addCmd := executil.NewCommand("git", "add", "internal/version/version.go")
+func runGoGenerate(runner executil.Runner, ctx context.Context) error {
+	cmd := executil.NewCommand("go", "generate", "./...")
+	result, err := runner.Run(ctx, cmd)
+	if err != nil {
+		return fmt.Errorf("go generate failed: %s: %s", err, result.Output)
+	}
+	return nil
+}
+
+func gitCommitAllChanges(runner executil.Runner, ctx context.Context, tag string) error {
+	// Add all changes (generated files + version file)
+	addCmd := executil.NewCommand("git", "add", "-A")
 	result, err := runner.Run(ctx, addCmd)
 	if err != nil {
 		return fmt.Errorf("git add failed: %s: %s", err, result.Output)
+	}
+
+	// Check if there are any changes to commit
+	statusCmd := executil.NewCommand("git", "diff", "--cached", "--quiet")
+	_, err = runner.Run(ctx, statusCmd)
+	if err == nil {
+		// No changes to commit
+		return nil
 	}
 
 	// Commit with a message
