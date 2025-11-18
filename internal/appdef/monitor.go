@@ -8,15 +8,18 @@ import (
 )
 
 type (
-	// MonitoringConfig is the user-facing config in app.json.
+	// Monitoring is the user-facing config in app.json.
 	// It's intentionally simple - just an enabled flag.
-	MonitoringConfig struct {
+	Monitoring struct {
 		Enabled bool `json:"enabled" description:"Whether to enable uptime monitoring for this app or resource (defaults to true)"`
 	}
 
 	// Monitor contains internal monitoring configuration with smart defaults.
 	// This struct is passed to Terraform and contains all the sophisticated logic
 	// that users don't need to configure manually.
+	//
+	// Reference: https://github.com/louislam/uptime-kuma/wiki/API-Documentation
+	// See monitor object structure for supported fields and types.
 	Monitor struct {
 		Name    string      // Unique monitor name.
 		Type    MonitorType // Monitor type (http, postgres, push).
@@ -64,7 +67,7 @@ func (m MonitorType) String() string {
 // It generates one monitor per domain (primary + aliases), excluding unmanaged domains.
 // Monitoring must be explicitly enabled in the app configuration.
 func (a *App) GenerateMonitors() []Monitor {
-	if !a.IsMonitoringEnabled() {
+	if !a.Monitoring.Enabled {
 		return nil
 	}
 
@@ -109,17 +112,11 @@ func (a *App) healthCheckPath() string {
 	return "/"
 }
 
-// IsMonitoringEnabled returns whether monitoring is enabled for this app.
-// Monitoring is enabled by default (opt-out).
-func (a *App) IsMonitoringEnabled() bool {
-	return a.Monitoring.Enabled
-}
-
 // GenerateMonitors creates monitors for resources based on their type.
 // Currently only Postgres databases are supported for monitoring.
 // Monitoring must be explicitly enabled in the resource configuration.
-func (r *Resource) GenerateMonitors(enviro env.Environment) []Monitor {
-	if !r.IsMonitoringEnabled() {
+func (r *Resource) GenerateMonitors(enviro env.Environment, dbURLGenerator func(*Resource, env.Environment, string) string) []Monitor {
+	if !r.Monitoring.Enabled {
 		return nil
 	}
 
@@ -133,7 +130,7 @@ func (r *Resource) GenerateMonitors(enviro env.Environment) []Monitor {
 			Name:           fmt.Sprintf("%s-%s", r.Name, enviro),
 			Type:           MonitorTypePostgres,
 			Enabled:        true,
-			DatabaseURL:    r.terraformOutputReference(enviro, "connection_url"),
+			DatabaseURL:    dbURLGenerator(r, enviro, "connection_url"),
 			ConnectionType: "postgres",
 			Interval:       300, // 5 minutes for databases.
 			RetryInterval:  60,  // 1 minute.
@@ -159,27 +156,6 @@ func (r *Resource) GenerateHeartbeatMonitor(cronSchedule string) Monitor {
 		MaxRetries:       2,
 		UpsideDown:       false,
 	}
-}
-
-// IsMonitoringEnabled returns whether monitoring is enabled for this resource.
-// Monitoring is enabled by default (opt-out).
-func (r *Resource) IsMonitoringEnabled() bool {
-	return r.Monitoring.Enabled
-}
-
-// terraformOutputReference returns a Terraform interpolation string for a resource output.
-// This is used to reference Terraform module outputs in the generated configuration.
-//
-// Example:
-//
-//	r.terraformOutputReference(env.Production, "connection_url")
-//	↓
-//	"${module.resources.db_production_connection_url}"
-func (r *Resource) terraformOutputReference(enviro env.Environment, output string) string {
-	return fmt.Sprintf("${module.resources.%s_%s_%s}",
-		r.Name,
-		enviro,
-		output)
 }
 
 // calculateHeartbeatInterval parses a cron schedule and calculates the expected

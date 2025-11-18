@@ -67,7 +67,7 @@
 					"description": "Infrastructure and deployment configuration"
 				},
 				"monitoring": {
-					"$ref": "#/definitions/AppdefMonitoringConfig",
+					"$ref": "#/definitions/AppdefMonitoring",
 					"description": "Uptime monitoring configuration for this app"
 				},
 				"name": {
@@ -282,7 +282,7 @@
 					"type": "string"
 				},
 				"monitoring": {
-					"$ref": "#/definitions/AppdefMonitoringConfig",
+					"$ref": "#/definitions/AppdefMonitoring",
 					"description": "Uptime monitoring configuration for this resource"
 				},
 				"name": {
@@ -320,7 +320,7 @@
 			},
 			"type": "object"
 		},
-		"AppdefMonitoringConfig": {
+		"AppdefMonitoring": {
 			"properties": {
 				"enabled": {
 					"description": "Whether to enable uptime monitoring for this app or resource (defaults to true)",

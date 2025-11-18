@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -272,7 +273,7 @@ func (t *Terraform) generateMonitors(enviro env.Environment) []tfMonitor {
 
 	// Generate monitors from resources.
 	for _, resource := range t.appDef.Resources {
-		for _, monitor := range resource.GenerateMonitors(enviro) {
+		for _, monitor := range resource.GenerateMonitors(enviro, terraformOutputReference) {
 			monitors = append(monitors, tfMonitorFromAppdef(monitor))
 		}
 
@@ -287,6 +288,21 @@ func (t *Terraform) generateMonitors(enviro env.Environment) []tfMonitor {
 	}
 
 	return monitors
+}
+
+// terraformOutputReference returns a Terraform interpolation string for a resource output.
+// This is used to reference Terraform module outputs in the generated configuration.
+//
+// Example:
+//
+//	terraformOutputReference(resource, env.Production, "connection_url")
+//	↓
+//	"${module.resources.db_production_connection_url}"
+func terraformOutputReference(r *appdef.Resource, enviro env.Environment, output string) string {
+	return fmt.Sprintf("${module.resources.%s_%s_%s}",
+		r.Name,
+		enviro,
+		output)
 }
 
 // tfMonitorFromAppdef converts an appdef.Monitor to tfMonitor for Terraform.
