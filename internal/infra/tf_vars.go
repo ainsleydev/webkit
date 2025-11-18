@@ -35,17 +35,7 @@ type (
 		UptimeKumaNotificationIDs []int          `json:"uptime_kuma_notification_ids"`
 		DigitalOceanSSHKeys       []string       `json:"digitalocean_ssh_keys"`
 		HetznerSSHKeys            []string       `json:"hetzner_ssh_keys"`
-		NotificationsWebhookURL   string         `json:"notifications_webhook_url"`
-		ProjectName         string         `json:"project_name"`
-		ProjectTitle        string         `json:"project_title"`
-		ProjectDescription  string         `json:"project_description"`
-		Environment         string         `json:"environment"`
-		GithubConfig        tfGithubConfig `json:"github_config"`
-		Apps                []tfApp        `json:"apps"`
-		Resources           []tfResource   `json:"resources"`
-		DigitalOceanSSHKeys []string       `json:"digitalocean_ssh_keys"`
-		HetznerSSHKeys      []string       `json:"hetzner_ssh_keys"`
-		SlackWebhookURL     string         `json:"slack_webhook_url"`
+		SlackWebhookURL           string         `json:"slack_webhook_url"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {

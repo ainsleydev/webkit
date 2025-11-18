@@ -191,13 +191,6 @@ variable "github_config" {
   sensitive   = true
 }
 
-# --------------------------------------- TODO --------------------------------------- #
-
-# variable "better_stack_token" {
-#   type      = string
-#   sensitive = true
-# }
-
 variable "slack_bot_token" {
   type        = string
   description = "Slack bot token for CI/CD notifications"
