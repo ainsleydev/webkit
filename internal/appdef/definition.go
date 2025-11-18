@@ -20,13 +20,12 @@ type (
 	// It defines the structure of the app.json file used to configure
 	// all aspects of a webkit project including apps, resources, and infrastructure.
 	Definition struct {
-		Schema        string        `json:"$schema,omitempty" jsonschema:"-" description:"JSON Schema reference for IDE validation and autocomplete"`
-		WebkitVersion string        `json:"webkit_version" required:"true" validate:"required" description:"The version of webkit used to generate this configuration"`
-		Project       Project       `json:"project" required:"true" validate:"required" description:"Project metadata including name, title, and repository information"`
-		Notifications Notifications `json:"notifications" description:"Alert and notification settings for the project"`
-		Shared        Shared        `json:"shared" description:"Shared configuration that applies to all apps"`
-		Resources     []Resource    `json:"resources" description:"Infrastructure resources such as databases and storage buckets"`
-		Apps          []App         `json:"apps" required:"true" validate:"required,min=1,dive" minItems:"1" description:"Application definitions for all apps in the project"`
+		Schema        string     `json:"$schema,omitempty" jsonschema:"-" description:"JSON Schema reference for IDE validation and autocomplete"`
+		WebkitVersion string     `json:"webkit_version" required:"true" validate:"required" description:"The version of webkit used to generate this configuration"`
+		Project       Project    `json:"project" required:"true" validate:"required" description:"Project metadata including name, title, and repository information"`
+		Shared        Shared     `json:"shared" description:"Shared configuration that applies to all apps"`
+		Resources     []Resource `json:"resources" description:"Infrastructure resources such as databases and storage buckets"`
+		Apps          []App      `json:"apps" required:"true" validate:"required,min=1,dive" minItems:"1" description:"Application definitions for all apps in the project"`
 	}
 	// Shared contains configuration that is shared across all applications
 	// in the project, such as common environment variables.

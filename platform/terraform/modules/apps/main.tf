@@ -48,9 +48,10 @@ module "do_app" {
   instance_count            = try(var.platform_config.instance_count, 1)
   http_port                 = try(var.platform_config.port, 3000)
   image_tag                 = var.image_tag
-  github_config             = var.github_config
-  health_check_path         = try(var.platform_config.health_check_path, "/")
-  notifications_webhook_url = var.notifications_webhook_url
+  github_config      = var.github_config
+  health_check_path  = try(var.platform_config.health_check_path, "/")
+  slack_webhook_url  = var.slack_webhook_url
+  slack_channel_name = var.slack_channel_name
 
   envs = [
     for env in var.env_vars : {

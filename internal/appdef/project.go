@@ -17,9 +17,4 @@ type (
 		Owner string `json:"owner" validate:"required" description:"GitHub username or organisation that owns the repository"`
 		Name  string `json:"name" validate:"required" description:"Repository name on GitHub"`
 	}
-	// Notifications defines alert and notification settings for the project.
-	// Provider-agnostic configuration supporting Slack, Discord, and other webhook-based services.
-	Notifications struct {
-		WebhookURL string `json:"webhook_url,omitzero" validate:"omitempty,uri" description:"Webhook URL for sending notifications (e.g., Slack webhook)"`
-	}
 )

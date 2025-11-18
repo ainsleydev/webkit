@@ -80,9 +80,19 @@ variable "envs" {
   default = []
 }
 
-variable "notifications_webhook_url" {
-  description = "Webhook URL for notifications (Slack, Discord, etc.) - sourced from app.json"
+variable "slack_webhook_url" {
+  description = "Slack webhook URL for infrastructure alerts - sourced from SLACK_WEBHOOK_URL environment variable"
   type        = string
   default     = ""
   sensitive   = false
+}
+
+variable "slack_channel_name" {
+  description = "Slack channel name created by Terraform for alert notifications"
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9-_]+$", var.slack_channel_name))
+    error_message = "Slack channel name must contain only lowercase letters, numbers, hyphens, and underscores."
+  }
 }
