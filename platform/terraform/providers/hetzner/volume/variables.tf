@@ -47,9 +47,3 @@ variable "tags" {
   description = "Tags to apply to the volume (converted to labels)"
   default     = []
 }
-
-variable "prevent_destroy" {
-  type        = bool
-  description = "Prevent accidental destruction of the volume"
-  default     = false
-}
