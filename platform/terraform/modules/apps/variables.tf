@@ -92,8 +92,8 @@ variable "do_ssh_key_ids" {
 }
 
 variable "hetzner_ssh_key_ids" {
-  description = "List of Hetzner SSH key IDs to apply to VMs"
-  type        = list(number)
+  description = "List of Hetzner SSH key IDs or names to apply to VMs"
+  type        = list(string)
   default     = []
 }
 
