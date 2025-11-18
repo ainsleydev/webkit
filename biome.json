@@ -80,6 +80,16 @@
 					"quoteStyle": "double"
 				}
 			}
+		},
+		{
+			"include": ["*.svelte"],
+			"linter": {
+				"rules": {
+					"style": {
+						"useConst": "off"
+					}
+				}
+			}
 		}
 	]
 }
