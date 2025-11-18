@@ -110,8 +110,13 @@ variable "server_user" {
 }
 
 variable "notifications_webhook_url" {
-  description = "Webhook URL for notifications (Slack, Discord, etc.) - sourced from app.json"
+  description = "Webhook URL for notifications (Slack, Discord, etc.) - sourced from environment variable"
   type        = string
   default     = ""
   sensitive   = false
+}
+
+variable "slack_channel_name" {
+  description = "Slack channel name created by Terraform for alert notifications"
+  type        = string
 }

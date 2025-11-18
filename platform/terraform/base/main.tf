@@ -212,6 +212,7 @@ module "apps" {
   env_vars                  = try(each.value.env_vars, [])
   tags                      = local.common_tags
   notifications_webhook_url = var.notifications_webhook_url
+  slack_channel_name        = slack_conversation.project_channel.name
 
   # Apps may depend on resources being created first.
   resource_outputs = module.resources

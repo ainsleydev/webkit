@@ -43,6 +43,14 @@ resource "digitalocean_app" "this" {
         operator = "GREATER_THAN"
         window   = "FIVE_MINUTES"
         rule     = "CPU_UTILIZATION"
+        disabled = var.notifications_webhook_url == ""
+
+        destinations {
+          slack_webhooks {
+            channel = var.slack_channel_name
+            url     = var.notifications_webhook_url
+          }
+        }
       }
 
       alert {
@@ -50,6 +58,14 @@ resource "digitalocean_app" "this" {
         operator = "GREATER_THAN"
         window   = "FIVE_MINUTES"
         rule     = "MEM_UTILIZATION"
+        disabled = var.notifications_webhook_url == ""
+
+        destinations {
+          slack_webhooks {
+            channel = var.slack_channel_name
+            url     = var.notifications_webhook_url
+          }
+        }
       }
 
       alert {
@@ -57,6 +73,14 @@ resource "digitalocean_app" "this" {
         operator = "GREATER_THAN"
         window   = "FIVE_MINUTES"
         rule     = "RESTART_COUNT"
+        disabled = var.notifications_webhook_url == ""
+
+        destinations {
+          slack_webhooks {
+            channel = var.slack_channel_name
+            url     = var.notifications_webhook_url
+          }
+        }
       }
 
       dynamic "env" {

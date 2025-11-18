@@ -51,6 +51,7 @@ module "do_app" {
   github_config             = var.github_config
   health_check_path         = try(var.platform_config.health_check_path, "/")
   notifications_webhook_url = var.notifications_webhook_url
+  slack_channel_name        = var.slack_channel_name
 
   envs = [
     for env in var.env_vars : {
