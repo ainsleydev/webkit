@@ -23,16 +23,16 @@ type (
 	// tfVars represents the root structure of Terraform variables
 	// that will be written to webkit.auto.tfvars.json
 	tfVars struct {
-		ProjectName             string         `json:"project_name"`
-		ProjectTitle            string         `json:"project_title"`
-		ProjectDescription      string         `json:"project_description"`
-		Environment             string         `json:"environment"`
-		GithubConfig            tfGithubConfig `json:"github_config"`
-		Apps                    []tfApp        `json:"apps"`
-		Resources               []tfResource   `json:"resources"`
-		DigitalOceanSSHKeys     []string       `json:"digitalocean_ssh_keys"`
-		HetznerSSHKeys          []string       `json:"hetzner_ssh_keys"`
-		NotificationsWebhookURL string         `json:"notifications_webhook_url"`
+		ProjectName         string         `json:"project_name"`
+		ProjectTitle        string         `json:"project_title"`
+		ProjectDescription  string         `json:"project_description"`
+		Environment         string         `json:"environment"`
+		GithubConfig        tfGithubConfig `json:"github_config"`
+		Apps                []tfApp        `json:"apps"`
+		Resources           []tfResource   `json:"resources"`
+		DigitalOceanSSHKeys []string       `json:"digitalocean_ssh_keys"`
+		HetznerSSHKeys      []string       `json:"hetzner_ssh_keys"`
+		SlackWebhookURL     string         `json:"slack_webhook_url"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -84,15 +84,15 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 	}
 
 	vars := tfVars{
-		ProjectName:             t.appDef.Project.Name,
-		ProjectTitle:            t.appDef.Project.Title,
-		ProjectDescription:      t.appDef.Project.Description,
-		Environment:             env.String(),
-		Apps:                    make([]tfApp, 0, len(t.appDef.Apps)),
-		Resources:               make([]tfResource, 0, len(t.appDef.Resources)),
-		DigitalOceanSSHKeys:     []string{"Ainsley - Mac Studio"},
-		HetznerSSHKeys:          []string{"hello@ainsley.dev"},
-		NotificationsWebhookURL: t.env.SlackWebhookURL,
+		ProjectName:         t.appDef.Project.Name,
+		ProjectTitle:        t.appDef.Project.Title,
+		ProjectDescription:  t.appDef.Project.Description,
+		Environment:         env.String(),
+		Apps:                make([]tfApp, 0, len(t.appDef.Apps)),
+		Resources:           make([]tfResource, 0, len(t.appDef.Resources)),
+		DigitalOceanSSHKeys: []string{"Ainsley - Mac Studio"},
+		HetznerSSHKeys:      []string{"hello@ainsley.dev"},
+		SlackWebhookURL:     t.env.SlackWebhookURL,
 		GithubConfig: tfGithubConfig{
 			Owner: t.appDef.Project.Repo.Owner,
 			Repo:  t.appDef.Project.Repo.Name,
