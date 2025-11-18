@@ -83,7 +83,6 @@ func TestApp_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, "https://example.com/health", m.URL)
 		assert.Equal(t, "GET", m.Method)
 		assert.Equal(t, []int{200}, m.ExpectedStatus)
-		assert.Equal(t, "/health", m.HealthCheckPath)
 		assert.Equal(t, 60, m.Interval)
 		assert.Equal(t, 60, m.RetryInterval)
 		assert.Equal(t, 3, m.MaxRetries)
@@ -109,7 +108,6 @@ func TestApp_GenerateMonitors(t *testing.T) {
 
 		assert.Equal(t, "api-api-example-com", monitors[0].Name)
 		assert.Equal(t, "https://api.example.com/", monitors[0].URL)
-		assert.Equal(t, "/", monitors[0].HealthCheckPath)
 
 		assert.Equal(t, "api-www-api-example-com", monitors[1].Name)
 		assert.Equal(t, "https://www.api.example.com/", monitors[1].URL)
@@ -217,7 +215,6 @@ func TestResource_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, MonitorTypePostgres, m.Type)
 		assert.True(t, m.Enabled)
 		assert.Equal(t, "${module.resources.db_production_connection_url}", m.DatabaseURL)
-		assert.Equal(t, "postgres", m.ConnectionType)
 		assert.Equal(t, 300, m.Interval)
 		assert.Equal(t, 60, m.RetryInterval)
 		assert.Equal(t, 3, m.MaxRetries)

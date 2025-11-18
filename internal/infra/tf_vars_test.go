@@ -894,7 +894,6 @@ func TestGenerateMonitors(t *testing.T) {
 		assert.Equal(t, "db-production", m.Name)
 		assert.Equal(t, "postgres", m.Type)
 		assert.Equal(t, "${module.resources.db_production_connection_url}", m.DatabaseURL)
-		assert.Equal(t, "postgres", m.ConnectionType)
 		assert.Equal(t, 300, m.Interval)
 	})
 
@@ -992,9 +991,7 @@ func TestTfMonitorFromAppdef(t *testing.T) {
 		URL:              "https://example.com",
 		Method:           "GET",
 		ExpectedStatus:   []int{200, 201},
-		HealthCheckPath:  "/health",
 		DatabaseURL:      "",
-		ConnectionType:   "",
 		ExpectedInterval: 0,
 		Interval:         60,
 		RetryInterval:    30,
@@ -1011,7 +1008,6 @@ func TestTfMonitorFromAppdef(t *testing.T) {
 	assert.Equal(t, "https://example.com", got.URL)
 	assert.Equal(t, "GET", got.Method)
 	assert.Equal(t, []int{200, 201}, got.ExpectedStatus)
-	assert.Equal(t, "/health", got.HealthCheckPath)
 	assert.Equal(t, 60, got.Interval)
 	assert.Equal(t, 30, got.RetryInterval)
 	assert.Equal(t, 3, got.MaxRetries)

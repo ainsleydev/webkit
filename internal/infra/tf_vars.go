@@ -83,14 +83,12 @@ type (
 		Enabled bool   `json:"enabled"`
 
 		// HTTP fields
-		URL             string `json:"url,omitempty"`
-		Method          string `json:"method,omitempty"`
-		ExpectedStatus  []int  `json:"expected_status,omitempty"`
-		HealthCheckPath string `json:"health_check_path,omitempty"`
+		URL            string `json:"url,omitempty"`
+		Method         string `json:"method,omitempty"`
+		ExpectedStatus []int  `json:"expected_status,omitempty"`
 
 		// Database fields
-		DatabaseURL    string `json:"database_url,omitempty"`
-		ConnectionType string `json:"connection_type,omitempty"`
+		DatabaseURL string `json:"database_url,omitempty"`
 
 		// Push fields
 		ExpectedInterval int `json:"expected_interval,omitempty"`
@@ -314,9 +312,7 @@ func tfMonitorFromAppdef(m appdef.Monitor) tfMonitor {
 		URL:              m.URL,
 		Method:           m.Method,
 		ExpectedStatus:   m.ExpectedStatus,
-		HealthCheckPath:  m.HealthCheckPath,
 		DatabaseURL:      m.DatabaseURL,
-		ConnectionType:   m.ConnectionType,
 		ExpectedInterval: m.ExpectedInterval,
 		Interval:         m.Interval,
 		RetryInterval:    m.RetryInterval,
