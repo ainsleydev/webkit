@@ -206,12 +206,13 @@ module "apps" {
     repo  = var.github_config.repo
     token = var.github_token_classic
   }
-  do_ssh_key_ids            = local.do_ssh_key_ids
-  hetzner_ssh_key_ids       = local.hetzner_ssh_key_ids
-  domains                   = try(each.value.domains, [])
-  env_vars                  = try(each.value.env_vars, [])
-  tags                      = local.common_tags
-  notifications_webhook_url = var.notifications_webhook_url
+  do_ssh_key_ids     = local.do_ssh_key_ids
+  hetzner_ssh_key_ids = local.hetzner_ssh_key_ids
+  domains            = try(each.value.domains, [])
+  env_vars           = try(each.value.env_vars, [])
+  tags               = local.common_tags
+  slack_webhook_url  = var.slack_webhook_url
+  slack_channel_name = slack_conversation.project_channel.name
 
   # Apps may depend on resources being created first.
   resource_outputs = module.resources

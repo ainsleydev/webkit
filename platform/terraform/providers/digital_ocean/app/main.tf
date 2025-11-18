@@ -1,6 +1,11 @@
 # App Platform
 # Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/app
 
+locals {
+  # Enable Slack notifications only when both webhook URL and channel name are provided.
+  slack_notifications_enabled = var.slack_webhook_url != "" && var.slack_channel_name != ""
+}
+
 resource "digitalocean_app" "this" {
 
   spec {
@@ -43,6 +48,17 @@ resource "digitalocean_app" "this" {
         operator = "GREATER_THAN"
         window   = "FIVE_MINUTES"
         rule     = "CPU_UTILIZATION"
+        disabled = !local.slack_notifications_enabled
+
+        dynamic "destinations" {
+          for_each = local.slack_notifications_enabled ? [1] : []
+          content {
+            slack_webhooks {
+              channel = var.slack_channel_name
+              url     = var.slack_webhook_url
+            }
+          }
+        }
       }
 
       alert {
@@ -50,6 +66,17 @@ resource "digitalocean_app" "this" {
         operator = "GREATER_THAN"
         window   = "FIVE_MINUTES"
         rule     = "MEM_UTILIZATION"
+        disabled = !local.slack_notifications_enabled
+
+        dynamic "destinations" {
+          for_each = local.slack_notifications_enabled ? [1] : []
+          content {
+            slack_webhooks {
+              channel = var.slack_channel_name
+              url     = var.slack_webhook_url
+            }
+          }
+        }
       }
 
       alert {
@@ -57,6 +84,17 @@ resource "digitalocean_app" "this" {
         operator = "GREATER_THAN"
         window   = "FIVE_MINUTES"
         rule     = "RESTART_COUNT"
+        disabled = !local.slack_notifications_enabled
+
+        dynamic "destinations" {
+          for_each = local.slack_notifications_enabled ? [1] : []
+          content {
+            slack_webhooks {
+              channel = var.slack_channel_name
+              url     = var.slack_webhook_url
+            }
+          }
+        }
       }
 
       dynamic "env" {

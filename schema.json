@@ -223,15 +223,6 @@
 			},
 			"type": "object"
 		},
-		"AppdefNotifications": {
-			"properties": {
-				"webhook_url": {
-					"description": "Webhook URL for sending notifications (e.g., Slack webhook)",
-					"type": "string"
-				}
-			},
-			"type": "object"
-		},
 		"AppdefProject": {
 			"properties": {
 				"description": {
@@ -358,10 +349,6 @@
 				"array",
 				"null"
 			]
-		},
-		"notifications": {
-			"$ref": "#/definitions/AppdefNotifications",
-			"description": "Alert and notification settings for the project"
 		},
 		"project": {
 			"$ref": "#/definitions/AppdefProject",

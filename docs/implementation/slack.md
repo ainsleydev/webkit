@@ -23,16 +23,18 @@ Before setting up Slack integration, ensure you have:
 
 ### Step 1: Configure environment variables
 
-WebKit requires Slack tokens to be available as environment variables when running Terraform operations:
+WebKit requires Slack tokens and webhook URL to be available as environment variables when running Terraform operations:
 
 ```bash
 export SLACK_BOT_TOKEN="xoxb-your-bot-token"
 export SLACK_USER_TOKEN="xoxp-your-user-token"
+export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
 ```
 
-These tokens are used to:
-- Create a dedicated Slack channel for your project alerts.
+These environment variables are used to:
+- Create a dedicated Slack channel for your project alerts (bot and user tokens).
 - Store the channel ID in GitHub secrets automatically.
+- Configure DigitalOcean App Platform alerts to send notifications to the channel (webhook URL).
 
 ### Step 2: Run Terraform
 
@@ -65,13 +67,13 @@ gh secret list
 # TF_SLACK_CHANNEL_ID  Updated 2025-11-07
 ```
 
-### Step 4: Set up infrastructure alerts (optional)
+### Step 3: Create Slack webhook (one-time setup)
 
-To receive DigitalOcean App Platform alerts in Slack, you need to create an incoming webhook manually.
+To receive DigitalOcean App Platform alerts in Slack, create an incoming webhook manually and set it as an environment variable.
 
 #### Why manual?
 
-DigitalOcean requires a webhook URL for alerts, and Slack's incoming webhooks cannot be created programmatically via Terraform. This is a one-time setup per project.
+Slack's incoming webhooks cannot be created programmatically via Terraform. This is a one-time setup that can be reused across all projects.
 
 #### Steps:
 
@@ -85,38 +87,25 @@ DigitalOcean requires a webhook URL for alerts, and Slack's incoming webhooks ca
 
 3. **Create a new webhook:**
    - Scroll down and click "Add New Webhook to Workspace".
-   - Select the channel created by Terraform (e.g., `alerts-my-project`).
+   - Select any channel (the channel will be overridden by Terraform automatically).
    - Authorise the webhook.
 
-4. **Copy the webhook URL:**
-   ```
-   https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX
-   ```
-
-5. **Add to your `app.json`:**
-   ```json
-   {
-     "project": {
-       "name": "my-project",
-       "title": "My Project",
-       "notifications": {
-         "webhook_url": "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
-       }
-     }
-   }
+4. **Copy the webhook URL and set it as an environment variable:**
+   ```bash
+   export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
    ```
 
-6. **Run Terraform again:**
+5. **Run Terraform:**
    ```bash
    webkit infra apply
    ```
 
-Terraform will now configure DigitalOcean App Platform to send alerts to your Slack channel via the webhook URL from your `app.json`.
+Terraform will automatically configure DigitalOcean App Platform to send alerts to the project-specific Slack channel created in Step 2.
 
-**Note:** The webhook URL is stored in `app.json` (not as a secret) because:
-- Webhook URLs are designed to be embedded in applications.
-- They can only POST messages to a specific channel (limited blast radius).
-- This approach works for both Slack and Discord (Discord supports Slack-compatible webhooks by appending `/slack` to the URL).
+**Note:** The webhook URL is centralised at the infrastructure level rather than per-project because:
+- One webhook URL works for all projects - Terraform specifies the target channel dynamically.
+- Simplifies project configuration by removing the need for webhook URLs in `app.json`.
+- More secure - webhook URL is an environment variable, not committed to version control.
 
 ## What gets notified?
 
@@ -222,7 +211,7 @@ All notifications use Slack's Block Kit format with rich formatting:
 |----------|----------|-------------|
 | `SLACK_BOT_TOKEN` | Yes | Bot User OAuth token for Terraform operations |
 | `SLACK_USER_TOKEN` | Yes | User OAuth token for Terraform operations |
-| `SLACK_WEBHOOK_URL` | No | Incoming webhook URL for DO app alerts |
+| `SLACK_WEBHOOK_URL` | Yes | Incoming webhook URL for infrastructure alerts |
 
 ### GitHub secrets (automatically created)
 

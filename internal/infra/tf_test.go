@@ -59,6 +59,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("GITHUB_TOKEN_CLASSIC", "token")
 	t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
 	t.Setenv("SLACK_USER_TOKEN", "xoxp-test-token")
+	t.Setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/test")
 }
 
 func teardownEnv(t *testing.T) {

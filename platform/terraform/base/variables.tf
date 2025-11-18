@@ -182,9 +182,9 @@ variable "slack_user_token" {
   sensitive   = true
 }
 
-variable "notifications_webhook_url" {
+variable "slack_webhook_url" {
   type        = string
-  description = "Webhook URL for notifications (Slack, Discord, etc.) - sourced from app.json"
+  description = "Slack webhook URL for infrastructure alerts - sourced from SLACK_WEBHOOK_URL environment variable"
   sensitive   = false
   default     = ""
 }
