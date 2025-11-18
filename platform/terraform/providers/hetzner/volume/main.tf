@@ -8,10 +8,6 @@ resource "hcloud_volume" "this" {
   location = var.location
   format   = var.format
   labels   = { for tag in var.tags : tag => "true" }
-
-  lifecycle {
-    prevent_destroy = var.prevent_destroy
-  }
 }
 
 resource "hcloud_volume_attachment" "this" {
