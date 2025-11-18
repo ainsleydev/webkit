@@ -20,6 +20,7 @@ type (
 		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean hetzner backblaze turso" description:"Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)"`
 		Config           map[string]any       `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
 		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
+		Monitoring       MonitoringConfig     `json:"monitoring,omitempty" description:"Uptime monitoring configuration for this resource"`
 		TerraformManaged *bool                `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`
 	}
 	// ResourceBackupConfig defines backup behaviour for a resource.
@@ -159,6 +160,10 @@ func (r *Resource) applyDefaults() {
 	}
 
 	r.Backup = ResourceBackupConfig{
+		Enabled: true,
+	}
+
+	r.Monitoring = MonitoringConfig{
 		Enabled: true,
 	}
 

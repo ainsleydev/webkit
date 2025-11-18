@@ -101,6 +101,34 @@ variable "resources" {
   default     = []
 }
 
+variable "monitors" {
+  type = list(object({
+    name              = string
+    type              = string # "http", "postgres", "push"
+    enabled           = bool
+    url               = optional(string)
+    method            = optional(string)
+    expected_status   = optional(list(number))
+    health_check_path = optional(string)
+    database_url      = optional(string)
+    connection_type   = optional(string)
+    expected_interval = optional(number)
+    interval          = number
+    retry_interval    = number
+    max_retries       = number
+    upside_down       = optional(bool, false)
+    ignore_tls        = optional(bool, false)
+  }))
+  description = "List of monitors to create in Uptime Kuma"
+  default     = []
+}
+
+variable "uptime_kuma_notification_ids" {
+  type        = list(number)
+  description = "List of Uptime Kuma notification IDs to attach to monitors"
+  default     = []
+}
+
 variable "apps" {
   type = list(object({
     name              = string
@@ -173,6 +201,24 @@ variable "github_config" {
 variable "slack_bot_token" {
   type        = string
   description = "Slack bot token for CI/CD notifications"
+  sensitive   = true
+}
+
+variable "uptime_kuma_url" {
+  type        = string
+  description = "Uptime Kuma Web API adapter URL"
+  default     = "https://uptime.ainsley.dev"
+}
+
+variable "uptime_kuma_username" {
+  type        = string
+  description = "Uptime Kuma username for authentication"
+  sensitive   = true
+}
+
+variable "uptime_kuma_password" {
+  type        = string
+  description = "Uptime Kuma password for authentication"
   sensitive   = true
 }
 

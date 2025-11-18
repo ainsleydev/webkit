@@ -23,16 +23,18 @@ type (
 	// tfVars represents the root structure of Terraform variables
 	// that will be written to webkit.auto.tfvars.json
 	tfVars struct {
-		ProjectName             string         `json:"project_name"`
-		ProjectTitle            string         `json:"project_title"`
-		ProjectDescription      string         `json:"project_description"`
-		Environment             string         `json:"environment"`
-		GithubConfig            tfGithubConfig `json:"github_config"`
-		Apps                    []tfApp        `json:"apps"`
-		Resources               []tfResource   `json:"resources"`
-		DigitalOceanSSHKeys     []string       `json:"digitalocean_ssh_keys"`
-		HetznerSSHKeys          []string       `json:"hetzner_ssh_keys"`
-		NotificationsWebhookURL string         `json:"notifications_webhook_url"`
+		ProjectName               string         `json:"project_name"`
+		ProjectTitle              string         `json:"project_title"`
+		ProjectDescription        string         `json:"project_description"`
+		Environment               string         `json:"environment"`
+		GithubConfig              tfGithubConfig `json:"github_config"`
+		Apps                      []tfApp        `json:"apps"`
+		Resources                 []tfResource   `json:"resources"`
+		Monitors                  []tfMonitor    `json:"monitors"`
+		UptimeKumaNotificationIDs []int          `json:"uptime_kuma_notification_ids"`
+		DigitalOceanSSHKeys       []string       `json:"digitalocean_ssh_keys"`
+		HetznerSSHKeys            []string       `json:"hetzner_ssh_keys"`
+		NotificationsWebhookURL   string         `json:"notifications_webhook_url"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -72,6 +74,32 @@ type (
 	tfGithubConfig struct {
 		Owner string `json:"owner"`
 		Repo  string `json:"repo"`
+	}
+	// tfMonitor represents a monitoring configuration for Terraform.
+	tfMonitor struct {
+		Name    string `json:"name"`
+		Type    string `json:"type"` // "http", "postgres", "push"
+		Enabled bool   `json:"enabled"`
+
+		// HTTP fields
+		URL             string `json:"url,omitempty"`
+		Method          string `json:"method,omitempty"`
+		ExpectedStatus  []int  `json:"expected_status,omitempty"`
+		HealthCheckPath string `json:"health_check_path,omitempty"`
+
+		// Database fields
+		DatabaseURL    string `json:"database_url,omitempty"`
+		ConnectionType string `json:"connection_type,omitempty"`
+
+		// Push fields
+		ExpectedInterval int `json:"expected_interval,omitempty"`
+
+		// Common fields
+		Interval      int  `json:"interval"`
+		RetryInterval int  `json:"retry_interval"`
+		MaxRetries    int  `json:"max_retries"`
+		UpsideDown    bool `json:"upside_down"`
+		IgnoreTLS     bool `json:"ignore_tls"`
 	}
 )
 
@@ -152,6 +180,10 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		vars.Apps = append(vars.Apps, tfA)
 	}
 
+	// Generate monitors from apps and resources.
+	vars.Monitors = t.generateMonitors(env)
+	vars.UptimeKumaNotificationIDs = t.getNotificationIDs()
+
 	return vars, nil
 }
 
@@ -224,4 +256,65 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 	}
 
 	return nil
+}
+
+// generateMonitors creates monitor configurations from apps and resources.
+// It transforms appdef.Monitor structs into tfMonitor for Terraform consumption.
+func (t *Terraform) generateMonitors(enviro env.Environment) []tfMonitor {
+	monitors := make([]tfMonitor, 0)
+
+	// Generate monitors from apps.
+	for _, app := range t.appDef.Apps {
+		for _, monitor := range app.GenerateMonitors() {
+			monitors = append(monitors, tfMonitorFromAppdef(monitor))
+		}
+	}
+
+	// Generate monitors from resources.
+	for _, resource := range t.appDef.Resources {
+		for _, monitor := range resource.GenerateMonitors(enviro) {
+			monitors = append(monitors, tfMonitorFromAppdef(monitor))
+		}
+
+		// Generate backup heartbeat monitors.
+		if resource.Backup.Enabled {
+			cronSchedule := "0 2 * * *" // Daily at 2am (from backup template).
+			heartbeat := resource.GenerateHeartbeatMonitor(cronSchedule)
+			if heartbeat.Enabled {
+				monitors = append(monitors, tfMonitorFromAppdef(heartbeat))
+			}
+		}
+	}
+
+	return monitors
+}
+
+// tfMonitorFromAppdef converts an appdef.Monitor to tfMonitor for Terraform.
+func tfMonitorFromAppdef(m appdef.Monitor) tfMonitor {
+	return tfMonitor{
+		Name:             m.Name,
+		Type:             string(m.Type),
+		Enabled:          m.Enabled,
+		URL:              m.URL,
+		Method:           m.Method,
+		ExpectedStatus:   m.ExpectedStatus,
+		HealthCheckPath:  m.HealthCheckPath,
+		DatabaseURL:      m.DatabaseURL,
+		ConnectionType:   m.ConnectionType,
+		ExpectedInterval: m.ExpectedInterval,
+		Interval:         m.Interval,
+		RetryInterval:    m.RetryInterval,
+		MaxRetries:       m.MaxRetries,
+		UpsideDown:       m.UpsideDown,
+		IgnoreTLS:        m.IgnoreTLS,
+	}
+}
+
+// getNotificationIDs returns the list of Uptime Kuma notification IDs.
+// For now, this returns an empty list since notifications are configured manually in Uptime Kuma UI.
+// TODO: Make this configurable via environment variable or app.json.
+func (t *Terraform) getNotificationIDs() []int {
+	// Placeholder: Return empty list for now.
+	// The user will need to configure notification IDs manually or via environment variable.
+	return []int{}
 }

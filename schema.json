@@ -66,6 +66,10 @@
 					"$ref": "#/definitions/AppdefInfra",
 					"description": "Infrastructure and deployment configuration"
 				},
+				"monitoring": {
+					"$ref": "#/definitions/AppdefMonitoringConfig",
+					"description": "Uptime monitoring configuration for this app"
+				},
 				"name": {
 					"description": "Unique identifier for the app (lowercase, hyphenated)",
 					"type": "string"
@@ -277,6 +281,10 @@
 					"description": "Brief description of the resource's purpose and functionality",
 					"type": "string"
 				},
+				"monitoring": {
+					"$ref": "#/definitions/AppdefMonitoringConfig",
+					"description": "Uptime monitoring configuration for this resource"
+				},
 				"name": {
 					"description": "Unique identifier for the resource (used in environment variable references)",
 					"type": "string"
@@ -307,6 +315,15 @@
 			"properties": {
 				"enabled": {
 					"description": "Whether to enable automated backups for this resource",
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefMonitoringConfig": {
+			"properties": {
+				"enabled": {
+					"description": "Whether to enable uptime monitoring for this app or resource (defaults to true)",
 					"type": "boolean"
 				}
 			},
