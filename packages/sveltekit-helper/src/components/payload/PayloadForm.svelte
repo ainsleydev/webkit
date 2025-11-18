@@ -14,14 +14,14 @@ export let form: {
 /**
  * API endpoint to submit form data to (defaults to '/api/forms')
  */
-export const apiEndpoint = '/api/forms';
+export let apiEndpoint = '/api/forms';
 
 /**
  * Custom submit handler (overrides default API submission)
  */
-export const onSubmit: ((data: Record<string, unknown>) => Promise<void>) | undefined = undefined;
+export let onSubmit: ((data: Record<string, unknown>) => Promise<void>) | undefined = undefined;
 
-const formData: Record<string, unknown> = $state({});
+let formData = $state<Record<string, unknown>>({});
 let errors: Record<string, string> = $state({});
 let success = $state(false);
 let error: string | null = $state(null);
@@ -97,7 +97,7 @@ async function handleSubmit(event: SubmitEvent) {
 		{#each form.fields as field, index (index)}
 			{@const required = field.required ?? false}
 			{@const name = field.name}
-			<div class="payload-form__group" class:payload-form__group--error={$errors[name]}>
+			<div class="payload-form__group" class:payload-form__group--error={errors[name]}>
 				{#if field.blockType === 'text' || field.blockType === 'email' || field.blockType === 'number'}
 					<label for={field.id || name} class="payload-form__label">
 						{field.label}
@@ -189,7 +189,9 @@ async function handleSubmit(event: SubmitEvent) {
 		--form-input-bg: #ffffff;
 		--form-input-text: #111827;
 		--form-error-color: #ef4444;
+		--form-error-bg: #fee2e2;
 		--form-success-color: #10b981;
+		--form-success-bg: #d1fae5;
 		--form-button-bg: #3b82f6;
 		--form-button-text: #ffffff;
 		--form-button-hover-bg: #2563eb;
@@ -267,7 +269,7 @@ async function handleSubmit(event: SubmitEvent) {
 
 		&__success {
 			padding: 1rem;
-			background-color: #d1fae5;
+			background-color: var(--form-success-bg);
 			color: var(--form-success-color);
 			border-radius: var(--form-input-border-radius);
 			font-weight: 500;
@@ -275,7 +277,7 @@ async function handleSubmit(event: SubmitEvent) {
 
 		&__alert {
 			padding: 1rem;
-			background-color: #fee2e2;
+			background-color: var(--form-error-bg);
 			color: var(--form-error-color);
 			border-radius: var(--form-input-border-radius);
 			font-weight: 500;
