@@ -1,0 +1,88 @@
+{
+	"name": "@ainsleydev/sveltekit-helper",
+	"version": "0.1.0",
+	"description": "SvelteKit utilities, components and helpers for ainsley.dev builds",
+	"license": "MIT",
+	"type": "module",
+	"keywords": ["sveltekit", "svelte", "utilities", "components", "typescript"],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ainsleydev/webkit.git",
+		"directory": "packages/sveltekit-helper"
+	},
+	"author": {
+		"name": "ainsley.dev",
+		"email": "hello@ainsley.dev",
+		"url": "https://ainsley.dev"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./components/Grid": {
+			"types": "./dist/components/Grid/index.d.ts",
+			"import": "./dist/components/Grid/index.js"
+		},
+		"./components/payload": {
+			"types": "./dist/components/payload/index.d.ts",
+			"import": "./dist/components/payload/index.js"
+		},
+		"./utils/forms": {
+			"types": "./dist/utils/forms/index.d.ts",
+			"import": "./dist/utils/forms/index.js"
+		},
+		"./utils/strings": {
+			"types": "./dist/utils/strings/index.d.ts",
+			"import": "./dist/utils/strings/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
+		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+		"build:types": "tsc --emitDeclarationOnly --outDir dist",
+		"format": "biome check --write --unsafe .",
+		"lint": "biome lint --write .",
+		"clean": "rimraf {dist,*.tsbuildinfo}",
+		"test": "vitest run"
+	},
+	"files": ["dist"],
+	"publishConfig": {
+		"access": "public"
+	},
+	"peerDependencies": {
+		"@sveltejs/kit": "^2.0.0",
+		"svelte": "^5.0.0"
+	},
+	"peerDependenciesMeta": {
+		"payload": {
+			"optional": true
+		},
+		"zod": {
+			"optional": true
+		}
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@ainsleydev/eslint-config": "workspace:*",
+		"@sveltejs/kit": "^2.0.0",
+		"@sveltejs/package": "^2.0.0",
+		"@swc/cli": "^0.7.8",
+		"@swc/core": "^1.7.2",
+		"@types/node": "^24.10.1",
+		"payload": "3.63.0",
+		"rimraf": "6.1.0",
+		"svelte": "^5.0.0",
+		"typescript": "^5.5.4",
+		"vitest": "^2.0.5",
+		"zod": "^3.24.3"
+	},
+	"engines": {
+		"node": ">=18",
+		"pnpm": ">=9"
+	}
+}
