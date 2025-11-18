@@ -16,8 +16,8 @@ variable "location" {
 }
 
 variable "ssh_key_ids" {
-  type        = list(number)
-  description = "List of Hetzner SSH key IDs to apply to the server"
+  type        = list(string)
+  description = "List of Hetzner SSH key IDs or names to apply to the server"
   default     = []
 }
 
