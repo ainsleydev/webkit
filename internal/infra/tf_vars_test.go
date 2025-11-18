@@ -738,3 +738,297 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 		assert.Equal(t, "sha-ci-sha-123", got.Apps[0].ImageTag)
 	})
 }
+
+func TestTerraformOutputReference(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		resource *appdef.Resource
+		enviro   env.Environment
+		output   string
+		want     string
+	}{
+		"Postgres Production Connection URL": {
+			resource: &appdef.Resource{Name: "db"},
+			enviro:   env.Production,
+			output:   "connection_url",
+			want:     "${module.resources.db_production_connection_url}",
+		},
+		"Postgres Staging Host": {
+			resource: &appdef.Resource{Name: "analytics-db"},
+			enviro:   env.Staging,
+			output:   "host",
+			want:     "${module.resources.analytics-db_staging_host}",
+		},
+		"S3 Dev Bucket Name": {
+			resource: &appdef.Resource{Name: "storage"},
+			enviro:   env.Development,
+			output:   "bucket_name",
+			want:     "${module.resources.storage_development_bucket_name}",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := terraformOutputReference(test.resource, test.enviro, test.output)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestGenerateMonitors(t *testing.T) {
+	t.Run("No Apps Or Resources", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project:   appdef.Project{Name: "empty"},
+			Apps:      []appdef.App{},
+			Resources: []appdef.Resource{},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		assert.Empty(t, monitors)
+	})
+
+	t.Run("Single App With Monitoring Enabled", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Domains: []appdef.Domain{
+						{Name: "example.com", Type: appdef.DomainTypePrimary},
+					},
+					Infra: appdef.Infra{
+						Config: map[string]any{"health_check_path": "/health"},
+					},
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		require.Len(t, monitors, 1)
+
+		m := monitors[0]
+		assert.Equal(t, "web-example-com", m.Name)
+		assert.Equal(t, "http", m.Type)
+		assert.True(t, m.Enabled)
+		assert.Equal(t, "https://example.com/health", m.URL)
+		assert.Equal(t, "GET", m.Method)
+		assert.Equal(t, []int{200}, m.ExpectedStatus)
+		assert.Equal(t, 60, m.Interval)
+	})
+
+	t.Run("App With Monitoring Disabled", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Domains: []appdef.Domain{
+						{Name: "example.com", Type: appdef.DomainTypePrimary},
+					},
+					Monitoring: appdef.Monitoring{Enabled: false},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		assert.Empty(t, monitors)
+	})
+
+	t.Run("Multiple Apps Multiple Domains", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Domains: []appdef.Domain{
+						{Name: "example.com", Type: appdef.DomainTypePrimary},
+						{Name: "www.example.com", Type: appdef.DomainTypeAlias},
+					},
+					Infra:      appdef.Infra{},
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+				{
+					Name: "api",
+					Domains: []appdef.Domain{
+						{Name: "api.example.com", Type: appdef.DomainTypePrimary},
+					},
+					Infra:      appdef.Infra{},
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		require.Len(t, monitors, 3)
+
+		assert.Equal(t, "web-example-com", monitors[0].Name)
+		assert.Equal(t, "web-www-example-com", monitors[1].Name)
+		assert.Equal(t, "api-api-example-com", monitors[2].Name)
+	})
+
+	t.Run("Postgres Resource With Monitoring", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Resources: []appdef.Resource{
+				{
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		require.Len(t, monitors, 1)
+
+		m := monitors[0]
+		assert.Equal(t, "db-production", m.Name)
+		assert.Equal(t, "postgres", m.Type)
+		assert.Equal(t, "${module.resources.db_production_connection_url}", m.DatabaseURL)
+		assert.Equal(t, "postgres", m.ConnectionType)
+		assert.Equal(t, 300, m.Interval)
+	})
+
+	t.Run("S3 Resource Monitoring Skipped", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Resources: []appdef.Resource{
+				{
+					Name:       "storage",
+					Type:       appdef.ResourceTypeS3,
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		assert.Empty(t, monitors) // S3 not supported.
+	})
+
+	t.Run("Backup Heartbeat Monitor", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Resources: []appdef.Resource{
+				{
+					Name: "db",
+					Type: appdef.ResourceTypePostgres,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+					Monitoring: appdef.Monitoring{Enabled: false}, // Monitoring disabled but backup enabled.
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		require.Len(t, monitors, 1) // Only heartbeat monitor.
+
+		m := monitors[0]
+		assert.Equal(t, "backup-db", m.Name)
+		assert.Equal(t, "push", m.Type)
+		assert.Equal(t, 95040, m.ExpectedInterval) // 26.4 hours.
+		assert.Equal(t, 2, m.MaxRetries)
+	})
+
+	t.Run("Mixed Apps And Resources", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Domains: []appdef.Domain{
+						{Name: "example.com", Type: appdef.DomainTypePrimary},
+					},
+					Infra:      appdef.Infra{},
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Monitoring: appdef.Monitoring{Enabled: true},
+					Backup:     appdef.ResourceBackupConfig{Enabled: true},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		require.Len(t, monitors, 3)
+
+		// HTTP monitor for app.
+		assert.Equal(t, "web-example-com", monitors[0].Name)
+		assert.Equal(t, "http", monitors[0].Type)
+
+		// Postgres monitor for resource.
+		assert.Equal(t, "db-production", monitors[1].Name)
+		assert.Equal(t, "postgres", monitors[1].Type)
+
+		// Heartbeat monitor for backup.
+		assert.Equal(t, "backup-db", monitors[2].Name)
+		assert.Equal(t, "push", monitors[2].Type)
+	})
+}
+
+func TestTfMonitorFromAppdef(t *testing.T) {
+	t.Parallel()
+
+	input := appdef.Monitor{
+		Name:             "test-monitor",
+		Type:             appdef.MonitorTypeHTTP,
+		Enabled:          true,
+		URL:              "https://example.com",
+		Method:           "GET",
+		ExpectedStatus:   []int{200, 201},
+		HealthCheckPath:  "/health",
+		DatabaseURL:      "",
+		ConnectionType:   "",
+		ExpectedInterval: 0,
+		Interval:         60,
+		RetryInterval:    30,
+		MaxRetries:       3,
+		UpsideDown:       false,
+		IgnoreTLS:        false,
+	}
+
+	got := tfMonitorFromAppdef(input)
+
+	assert.Equal(t, "test-monitor", got.Name)
+	assert.Equal(t, "http", got.Type)
+	assert.True(t, got.Enabled)
+	assert.Equal(t, "https://example.com", got.URL)
+	assert.Equal(t, "GET", got.Method)
+	assert.Equal(t, []int{200, 201}, got.ExpectedStatus)
+	assert.Equal(t, "/health", got.HealthCheckPath)
+	assert.Equal(t, 60, got.Interval)
+	assert.Equal(t, 30, got.RetryInterval)
+	assert.Equal(t, 3, got.MaxRetries)
+	assert.False(t, got.UpsideDown)
+	assert.False(t, got.IgnoreTLS)
+}
+
+func TestGetNotificationIDs(t *testing.T) {
+	t.Parallel()
+
+	input := &appdef.Definition{
+		Project: appdef.Project{Name: "test"},
+	}
+
+	tf := setupTfVars(t, input)
+	got := tf.getNotificationIDs()
+
+	// Should return empty list for now.
+	assert.Empty(t, got)
+}
