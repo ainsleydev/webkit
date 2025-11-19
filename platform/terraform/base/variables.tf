@@ -188,13 +188,15 @@ variable "uptime_kuma_url" {
 
 variable "uptime_kuma_username" {
   type        = string
-  description = "Uptime Kuma username for authentication"
+  description = "Uptime Kuma username for authentication (only required when monitoring is enabled)"
+  default     = ""
   sensitive   = true
 }
 
 variable "uptime_kuma_password" {
   type        = string
-  description = "Uptime Kuma password for authentication"
+  description = "Uptime Kuma password for authentication (only required when monitoring is enabled)"
+  default     = ""
   sensitive   = true
 }
 

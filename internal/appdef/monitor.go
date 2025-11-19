@@ -53,6 +53,7 @@ func (a *App) GenerateMonitors() []Monitor {
 	monitors := make([]Monitor, 0)
 
 	// Create HTTP monitor for each domain (primary + aliases).
+	// Monitors check the root path "/" for simplicity.
 	for _, domain := range a.Domains {
 		if domain.Type == DomainTypeUnmanaged {
 			continue
@@ -61,26 +62,12 @@ func (a *App) GenerateMonitors() []Monitor {
 		monitors = append(monitors, Monitor{
 			Name:   fmt.Sprintf("%s-%s", a.Name, sanitiseMonitorName(domain.Name)),
 			Type:   MonitorTypeHTTP,
-			URL:    fmt.Sprintf("https://%s%s", domain.Name, a.healthCheckPath()),
+			URL:    fmt.Sprintf("https://%s", domain.Name),
 			Method: "GET",
 		})
 	}
 
 	return monitors
-}
-
-// healthCheckPath extracts the health check path from the app's infra config.
-// It defaults to "/" if not specified.
-func (a *App) healthCheckPath() string {
-	if a.Infra.Config == nil {
-		return "/"
-	}
-
-	if path, ok := a.Infra.Config["health_check_path"].(string); ok && path != "" {
-		return path
-	}
-
-	return "/"
 }
 
 // GenerateMonitors creates monitors for resources based on their type.

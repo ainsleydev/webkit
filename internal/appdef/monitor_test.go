@@ -69,7 +69,6 @@ func TestApp_GenerateMonitors(t *testing.T) {
 			Domains: []Domain{
 				{Name: "example.com", Type: DomainTypePrimary},
 			},
-			Infra:      Infra{Config: map[string]any{"health_check_path": "/health"}},
 			Monitoring: Monitoring{Enabled: true},
 		}
 
@@ -79,7 +78,7 @@ func TestApp_GenerateMonitors(t *testing.T) {
 		m := monitors[0]
 		assert.Equal(t, "web-example-com", m.Name)
 		assert.Equal(t, MonitorTypeHTTP, m.Type)
-		assert.Equal(t, "https://example.com/health", m.URL)
+		assert.Equal(t, "https://example.com", m.URL)
 		assert.Equal(t, "GET", m.Method)
 	})
 
@@ -100,10 +99,10 @@ func TestApp_GenerateMonitors(t *testing.T) {
 		require.Len(t, monitors, 2)
 
 		assert.Equal(t, "api-api-example-com", monitors[0].Name)
-		assert.Equal(t, "https://api.example.com/", monitors[0].URL)
+		assert.Equal(t, "https://api.example.com", monitors[0].URL)
 
 		assert.Equal(t, "api-www-api-example-com", monitors[1].Name)
-		assert.Equal(t, "https://www.api.example.com/", monitors[1].URL)
+		assert.Equal(t, "https://www.api.example.com", monitors[1].URL)
 	})
 
 	t.Run("Unmanaged Domains Skipped", func(t *testing.T) {
@@ -128,35 +127,8 @@ func TestApp_GenerateMonitors(t *testing.T) {
 	})
 }
 
-func TestApp_healthCheckPath(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		config map[string]any
-		want   string
-	}{
-		"Default Slash":       {config: nil, want: "/"},
-		"Empty Config":        {config: map[string]any{}, want: "/"},
-		"Custom Path":         {config: map[string]any{"health_check_path": "/health"}, want: "/health"},
-		"Custom API Path":     {config: map[string]any{"health_check_path": "/api/health"}, want: "/api/health"},
-		"Empty String Path":   {config: map[string]any{"health_check_path": ""}, want: "/"},
-		"Non String Value":    {config: map[string]any{"health_check_path": 123}, want: "/"},
-		"Other Config Fields": {config: map[string]any{"port": 8080}, want: "/"},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			app := &App{
-				Infra: Infra{Config: test.config},
-			}
-
-			got := app.healthCheckPath()
-			assert.Equal(t, test.want, got)
-		})
-	}
-}
+// TestApp_healthCheckPath removed - health check paths are no longer used for monitoring
+// Monitors now check the root path "/" for simplicity
 
 func TestResource_GenerateMonitors(t *testing.T) {
 	t.Parallel()

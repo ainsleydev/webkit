@@ -233,8 +233,16 @@ module "apps" {
 #
 # Uptime Kuma Monitoring
 #
+# Only create the monitoring module if there are monitors configured.
+# This prevents requiring the uptimekuma provider when monitoring is not in use.
+#
 module "monitoring" {
+  count  = length(var.monitors) > 0 ? 1 : 0
   source = "../modules/monitoring"
+
+  providers = {
+    uptimekuma = uptimekuma
+  }
 
   project_name = var.project_name
   monitors     = var.monitors

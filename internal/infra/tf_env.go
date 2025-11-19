@@ -22,9 +22,9 @@ type TFEnvironment struct {
 	SlackBotToken               string `env:"SLACK_BOT_TOKEN,required"`
 	SlackUserToken              string `env:"SLACK_USER_TOKEN,required"`
 	SlackWebhookURL             string `env:"SLACK_WEBHOOK_URL,required"`
-	UptimeKumaURL               string `env:"UPTIME_KUMA_URL,required"`
-	UptimeKumaUsername          string `env:"UPTIME_KUMA_USERNAME,required"`
-	UptimeKumaPassword          string `env:"UPTIME_KUMA_PASSWORD,required"`
+	UptimeKumaURL               string `env:"UPTIME_KUMA_URL"`      // Optional - only needed when monitoring is enabled
+	UptimeKumaUsername          string `env:"UPTIME_KUMA_USERNAME"` // Optional - only needed when monitoring is enabled
+	UptimeKumaPassword          string `env:"UPTIME_KUMA_PASSWORD"` // Optional - only needed when monitoring is enabled
 }
 
 // ParseTFEnvironment reads and validates Terraform-related
@@ -40,7 +40,7 @@ func ParseTFEnvironment() (TFEnvironment, error) {
 // varStrings maps the environment to Terraform variable strings
 // to pass to the execer.
 func (t *TFEnvironment) varStrings() []string {
-	return []string{
+	vars := []string{
 		"do_token=" + t.DigitalOceanAPIKey,
 		"do_spaces_access_id=" + t.DigitalOceanSpacesAccessKey,
 		"do_spaces_secret_key=" + t.DigitalOceanSpacesSecretKey,
@@ -52,8 +52,18 @@ func (t *TFEnvironment) varStrings() []string {
 		"github_token_classic=" + t.GithubTokenClassic,
 		"slack_bot_token=" + t.SlackBotToken,
 		"slack_user_token=" + t.SlackUserToken,
-		"uptime_kuma_url=" + t.UptimeKumaURL,
-		"uptime_kuma_username=" + t.UptimeKumaUsername,
-		"uptime_kuma_password=" + t.UptimeKumaPassword,
 	}
+
+	// Only include UptimeKuma variables if they are set (monitoring enabled)
+	if t.UptimeKumaURL != "" {
+		vars = append(vars, "uptime_kuma_url="+t.UptimeKumaURL)
+	}
+	if t.UptimeKumaUsername != "" {
+		vars = append(vars, "uptime_kuma_username="+t.UptimeKumaUsername)
+	}
+	if t.UptimeKumaPassword != "" {
+		vars = append(vars, "uptime_kuma_password="+t.UptimeKumaPassword)
+	}
+
+	return vars
 }

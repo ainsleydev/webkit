@@ -9,10 +9,6 @@ output "http_monitors" {
   }
 }
 
-# TODO: Re-enable when resource monitoring is implemented
-# output "postgres_monitors" - Removed, postgres monitoring disabled
-# output "push_monitors" - Removed, push monitoring disabled
-
 output "all_monitor_ids" {
   description = "All monitor IDs for reference"
   value       = [for m in uptimekuma_monitor.http : m.id]

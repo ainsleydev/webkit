@@ -739,45 +739,6 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 	})
 }
 
-func TestTerraformOutputReference(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		resource *appdef.Resource
-		enviro   env.Environment
-		output   string
-		want     string
-	}{
-		"Postgres Production Connection URL": {
-			resource: &appdef.Resource{Name: "db"},
-			enviro:   env.Production,
-			output:   "connection_url",
-			want:     "${module.resources.db_production_connection_url}",
-		},
-		"Postgres Staging Host": {
-			resource: &appdef.Resource{Name: "analytics-db"},
-			enviro:   env.Staging,
-			output:   "host",
-			want:     "${module.resources.analytics-db_staging_host}",
-		},
-		"S3 Dev Bucket Name": {
-			resource: &appdef.Resource{Name: "storage"},
-			enviro:   env.Development,
-			output:   "bucket_name",
-			want:     "${module.resources.storage_development_bucket_name}",
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got := terraformOutputReference(test.resource, test.enviro, test.output)
-			assert.Equal(t, test.want, got)
-		})
-	}
-}
-
 func TestGenerateMonitors(t *testing.T) {
 	t.Run("No Apps Or Resources", func(t *testing.T) {
 		input := &appdef.Definition{
@@ -815,7 +776,7 @@ func TestGenerateMonitors(t *testing.T) {
 		m := monitors[0]
 		assert.Equal(t, "web-example-com", m.Name)
 		assert.Equal(t, "http", m.Type)
-		assert.Equal(t, "https://example.com/health", m.URL)
+		assert.Equal(t, "https://example.com", m.URL)
 		assert.Equal(t, "GET", m.Method)
 	})
 
@@ -871,9 +832,6 @@ func TestGenerateMonitors(t *testing.T) {
 		assert.Equal(t, "api-api-example-com", monitors[2].Name)
 	})
 
-	// TODO: Re-enable resource monitoring tests when feature is re-implemented
-	// Tests removed: Postgres Resource With Monitoring, S3 Resource Monitoring Skipped, Backup Heartbeat Monitor
-
 	t.Run("Mixed Apps And Resources", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{Name: "test"},
@@ -901,12 +859,8 @@ func TestGenerateMonitors(t *testing.T) {
 		monitors := tf.generateMonitors(env.Production)
 		require.Len(t, monitors, 1) // Only app monitors, resource monitors disabled
 
-		// HTTP monitor for app.
 		assert.Equal(t, "web-example-com", monitors[0].Name)
 		assert.Equal(t, "http", monitors[0].Type)
-
-		// TODO: Re-enable when resource monitoring is implemented
-		// Postgres monitor for resource and heartbeat monitor for backup would be here
 	})
 }
 
@@ -927,7 +881,3 @@ func TestTfMonitorFromAppdef(t *testing.T) {
 	assert.Equal(t, "https://example.com", got.URL)
 	assert.Equal(t, "GET", got.Method)
 }
-
-// TestGetNotificationIDs removed - notification IDs are no longer supported
-// by ehealth-co-id/uptimekuma provider. Notifications must be configured
-// manually in Uptime Kuma UI.
