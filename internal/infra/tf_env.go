@@ -21,7 +21,7 @@ type TFEnvironment struct {
 	GithubTokenClassic          string `env:"GITHUB_TOKEN_CLASSIC,required"`
 	SlackBotToken               string `env:"SLACK_BOT_TOKEN,required"`
 	SlackUserToken              string `env:"SLACK_USER_TOKEN,required"`
-	SlackWebhookURL             string `env:"SLACK_WEBHOOK_URL,required"`
+	SlackWebhookURL             string `env:"SLACK_WEBHOOK_URL"`
 	UptimeKumaURL               string `env:"UPTIME_KUMA_URL,required"`
 	UptimeKumaUsername          string `env:"UPTIME_KUMA_USERNAME,required"`
 	UptimeKumaPassword          string `env:"UPTIME_KUMA_PASSWORD,required"`
