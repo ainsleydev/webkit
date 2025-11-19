@@ -3,8 +3,6 @@ package appdef
 import (
 	"fmt"
 	"strings"
-
-	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 type (
@@ -70,51 +68,9 @@ func (a *App) GenerateMonitors() []Monitor {
 	return monitors
 }
 
-// GenerateMonitors creates monitors for resources based on their type.
-// Currently only Postgres databases are supported for monitoring.
-// Monitoring must be explicitly enabled in the resource configuration.
-func (r *Resource) GenerateMonitors(enviro env.Environment, dbURLGenerator func(*Resource, env.Environment, string) string) []Monitor {
-	if !r.Monitoring.Enabled {
-		return nil
-	}
-
-	// Only Postgres supported for now (Uptime Kuma limitation).
-	if r.Type != ResourceTypePostgres {
-		return nil
-	}
-
-	return []Monitor{
-		{
-			Name:   fmt.Sprintf("%s-%s", r.Name, enviro),
-			Type:   MonitorTypePostgres,
-			URL:    dbURLGenerator(r, enviro, "connection_url"),
-			Method: "", // Empty for database monitors.
-		},
-	}
-}
-
-// GenerateHeartbeatMonitor creates a push monitor for backup job heartbeats.
-// The monitor expects a heartbeat signal after each successful backup.
-// Note: Push monitors don't use URL or Method fields.
-func (r *Resource) GenerateHeartbeatMonitor() Monitor {
-	if !r.Backup.Enabled {
-		return Monitor{}
-	}
-
-	return Monitor{
-		Name:   fmt.Sprintf("backup-%s", r.Name),
-		Type:   MonitorTypePush,
-		URL:    "", // Empty for push monitors.
-		Method: "", // Empty for push monitors.
-	}
-}
-
 // sanitiseMonitorName converts a domain name to a valid monitor name component.
-// It replaces dots with hyphens to create Terraform-safe resource names.
 //
-// Example:
-//
-//	sanitiseMonitorName("api.example.com") -> "api-example-com"
+// For example: "api.example.com" -> "api-example-com"
 func sanitiseMonitorName(domain string) string {
 	return strings.ReplaceAll(domain, ".", "-")
 }

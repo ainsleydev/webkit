@@ -5,8 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 func TestMonitorType_String(t *testing.T) {
@@ -124,125 +122,6 @@ func TestApp_GenerateMonitors(t *testing.T) {
 
 		assert.Equal(t, "web-example-com", monitors[0].Name)
 		assert.Equal(t, "web-www-example-com", monitors[1].Name)
-	})
-}
-
-// TestApp_healthCheckPath removed - health check paths are no longer used for monitoring
-// Monitors now check the root path "/" for simplicity
-
-func TestResource_GenerateMonitors(t *testing.T) {
-	t.Parallel()
-
-	mockURLGen := func(r *Resource, enviro env.Environment, output string) string {
-		return "${module.resources." + r.Name + "_" + enviro.String() + "_" + output + "}"
-	}
-
-	t.Run("Monitoring Disabled", func(t *testing.T) {
-		t.Parallel()
-
-		resource := &Resource{
-			Name:       "db",
-			Type:       ResourceTypePostgres,
-			Monitoring: Monitoring{Enabled: false},
-		}
-
-		monitors := resource.GenerateMonitors(env.Production, mockURLGen)
-		assert.Empty(t, monitors)
-	})
-
-	t.Run("Non Postgres Resource", func(t *testing.T) {
-		t.Parallel()
-
-		resource := &Resource{
-			Name:       "bucket",
-			Type:       ResourceTypeS3,
-			Monitoring: Monitoring{Enabled: true},
-		}
-
-		monitors := resource.GenerateMonitors(env.Production, mockURLGen)
-		assert.Empty(t, monitors)
-	})
-
-	t.Run("Postgres Resource Production", func(t *testing.T) {
-		t.Parallel()
-
-		resource := &Resource{
-			Name:       "db",
-			Type:       ResourceTypePostgres,
-			Monitoring: Monitoring{Enabled: true},
-		}
-
-		monitors := resource.GenerateMonitors(env.Production, mockURLGen)
-		require.Len(t, monitors, 1)
-
-		m := monitors[0]
-		assert.Equal(t, "db-production", m.Name)
-		assert.Equal(t, MonitorTypePostgres, m.Type)
-		assert.Equal(t, "${module.resources.db_production_connection_url}", m.URL)
-		assert.Equal(t, "", m.Method)
-	})
-
-	t.Run("Postgres Resource Staging", func(t *testing.T) {
-		t.Parallel()
-
-		resource := &Resource{
-			Name:       "analytics-db",
-			Type:       ResourceTypePostgres,
-			Monitoring: Monitoring{Enabled: true},
-		}
-
-		monitors := resource.GenerateMonitors(env.Staging, mockURLGen)
-		require.Len(t, monitors, 1)
-
-		m := monitors[0]
-		assert.Equal(t, "analytics-db-staging", m.Name)
-		assert.Equal(t, "${module.resources.analytics-db_staging_connection_url}", m.URL)
-	})
-}
-
-func TestResource_GenerateHeartbeatMonitor(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Backup Disabled", func(t *testing.T) {
-		t.Parallel()
-
-		resource := &Resource{
-			Name:   "db",
-			Backup: ResourceBackupConfig{Enabled: false},
-		}
-
-		monitor := resource.GenerateHeartbeatMonitor()
-		assert.Empty(t, monitor.Name)
-		assert.Empty(t, monitor.Type)
-	})
-
-	t.Run("Backup Enabled", func(t *testing.T) {
-		t.Parallel()
-
-		resource := &Resource{
-			Name:   "db",
-			Backup: ResourceBackupConfig{Enabled: true},
-		}
-
-		monitor := resource.GenerateHeartbeatMonitor()
-
-		assert.Equal(t, "backup-db", monitor.Name)
-		assert.Equal(t, MonitorTypePush, monitor.Type)
-		assert.Empty(t, monitor.URL)
-		assert.Empty(t, monitor.Method)
-	})
-
-	t.Run("Multiple Resources", func(t *testing.T) {
-		t.Parallel()
-
-		r1 := &Resource{Name: "primary-db", Backup: ResourceBackupConfig{Enabled: true}}
-		r2 := &Resource{Name: "analytics-db", Backup: ResourceBackupConfig{Enabled: true}}
-
-		m1 := r1.GenerateHeartbeatMonitor()
-		m2 := r2.GenerateHeartbeatMonitor()
-
-		assert.Equal(t, "backup-primary-db", m1.Name)
-		assert.Equal(t, "backup-analytics-db", m2.Name)
 	})
 }
 

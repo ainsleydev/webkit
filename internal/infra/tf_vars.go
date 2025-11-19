@@ -240,7 +240,7 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 
 // generateMonitors creates monitor configurations from apps and resources.
 // It transforms appdef.Monitor structs into tfMonitor for Terraform consumption.
-func (t *Terraform) generateMonitors(enviro env.Environment) []tfMonitor {
+func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
 	monitors := make([]tfMonitor, 0)
 
 	// Generate monitors from apps.

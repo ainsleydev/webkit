@@ -34,10 +34,6 @@ terraform {
       source  = "hashicorp/time"
       version = "~> 0.9"
     }
-    uptimekuma = {
-      source  = "ehealth-co-id/uptimekuma"
-      version = "~> 0.0.2"
-    }
   }
 }
 
@@ -70,13 +66,6 @@ provider "github" {
 
 provider "slack" {
   token = var.slack_bot_token
-}
-
-provider "uptimekuma" {
-  base_url       = var.uptime_kuma_url
-  username       = var.uptime_kuma_username
-  password       = var.uptime_kuma_password
-  insecure_https = false
 }
 
 #
@@ -231,24 +220,21 @@ module "apps" {
 }
 
 #
-# Uptime Kuma Monitoring
+# Monitoring
 #
-# Only create the monitoring module if there are monitors configured.
-# This prevents requiring the uptimekuma provider when monitoring is not in use.
+# The monitoring module contains its own provider configuration and will only create
+# resources when monitors are defined. It cannot use count/for_each due to Terraform
+# restrictions on modules with local provider configs.
 #
 module "monitoring" {
-  count  = length(var.monitors) > 0 ? 1 : 0
   source = "../modules/monitoring"
-
-  providers = {
-    uptimekuma = uptimekuma
-  }
 
   project_name = var.project_name
   monitors     = var.monitors
 
-  # Monitoring depends on apps and resources being created.
-  depends_on = [module.apps, module.resources]
+  uptime_kuma_url      = var.uptime_kuma_url
+  uptime_kuma_username = var.uptime_kuma_username
+  uptime_kuma_password = var.uptime_kuma_password
 }
 
 #

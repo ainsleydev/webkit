@@ -21,6 +21,7 @@ resource "uptimekuma_monitor" "http" {
   for_each = { for m in local.http_monitors : m.name => m }
 
   name           = "${var.project_name}-${each.value.name}"
+  description    = "HTTP monitor for ${each.value.name}"
   type           = "http"
   url            = each.value.url
   method         = coalesce(each.value.method, "GET")
@@ -39,6 +40,7 @@ resource "uptimekuma_monitor" "push" {
   for_each = { for m in local.push_monitors : m.name => m }
 
   name        = "${var.project_name}-${each.value.name}"
+  description = "Push monitor for ${each.value.name}"
   type        = "push"
   max_retries = 2
 }
