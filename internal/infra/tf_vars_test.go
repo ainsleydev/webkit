@@ -815,11 +815,8 @@ func TestGenerateMonitors(t *testing.T) {
 		m := monitors[0]
 		assert.Equal(t, "web-example-com", m.Name)
 		assert.Equal(t, "http", m.Type)
-		assert.True(t, m.Enabled)
 		assert.Equal(t, "https://example.com/health", m.URL)
 		assert.Equal(t, "GET", m.Method)
-		assert.Equal(t, []int{200}, m.ExpectedStatus)
-		assert.Equal(t, 60, m.Interval)
 	})
 
 	t.Run("App With Monitoring Disabled", func(t *testing.T) {
@@ -893,8 +890,8 @@ func TestGenerateMonitors(t *testing.T) {
 		m := monitors[0]
 		assert.Equal(t, "db-production", m.Name)
 		assert.Equal(t, "postgres", m.Type)
-		assert.Equal(t, "${module.resources.db_production_connection_url}", m.DatabaseURL)
-		assert.Equal(t, 300, m.Interval)
+		assert.Equal(t, "${module.resources.db_production_connection_url}", m.URL)
+		assert.Empty(t, m.Method) // Empty for database monitors
 	})
 
 	t.Run("S3 Resource Monitoring Skipped", func(t *testing.T) {
@@ -936,8 +933,8 @@ func TestGenerateMonitors(t *testing.T) {
 		m := monitors[0]
 		assert.Equal(t, "backup-db", m.Name)
 		assert.Equal(t, "push", m.Type)
-		assert.Equal(t, 95040, m.ExpectedInterval) // 26.4 hours.
-		assert.Equal(t, 2, m.MaxRetries)
+		assert.Empty(t, m.URL)    // Empty for push monitors
+		assert.Empty(t, m.Method) // Empty for push monitors
 	})
 
 	t.Run("Mixed Apps And Resources", func(t *testing.T) {
@@ -985,34 +982,18 @@ func TestTfMonitorFromAppdef(t *testing.T) {
 	t.Parallel()
 
 	input := appdef.Monitor{
-		Name:             "test-monitor",
-		Type:             appdef.MonitorTypeHTTP,
-		Enabled:          true,
-		URL:              "https://example.com",
-		Method:           "GET",
-		ExpectedStatus:   []int{200, 201},
-		DatabaseURL:      "",
-		ExpectedInterval: 0,
-		Interval:         60,
-		RetryInterval:    30,
-		MaxRetries:       3,
-		UpsideDown:       false,
-		IgnoreTLS:        false,
+		Name:   "test-monitor",
+		Type:   appdef.MonitorTypeHTTP,
+		URL:    "https://example.com",
+		Method: "GET",
 	}
 
 	got := tfMonitorFromAppdef(input)
 
 	assert.Equal(t, "test-monitor", got.Name)
 	assert.Equal(t, "http", got.Type)
-	assert.True(t, got.Enabled)
 	assert.Equal(t, "https://example.com", got.URL)
 	assert.Equal(t, "GET", got.Method)
-	assert.Equal(t, []int{200, 201}, got.ExpectedStatus)
-	assert.Equal(t, 60, got.Interval)
-	assert.Equal(t, 30, got.RetryInterval)
-	assert.Equal(t, 3, got.MaxRetries)
-	assert.False(t, got.UpsideDown)
-	assert.False(t, got.IgnoreTLS)
 }
 
 func TestGetNotificationIDs(t *testing.T) {

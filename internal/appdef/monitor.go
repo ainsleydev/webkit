@@ -13,38 +13,18 @@ type (
 	Monitoring struct {
 		Enabled bool `json:"enabled" description:"Whether to enable uptime monitoring for this app or resource (defaults to true)"`
 	}
-	// Monitor contains internal monitoring configuration with smart defaults.
-	// This struct is passed to Terraform and contains all the sophisticated logic
-	// that users don't need to configure manually.
+	// Monitor contains minimal monitoring configuration.
+	// Defaults are applied by the Terraform layer based on monitor type.
 	//
-	// Reference: https://github.com/louislam/uptime-kuma/wiki/API-Documentation
-	// See monitor object structure for supported fields and types.
-	//
-	// Note: HTTP monitors use URL field, database monitors use DatabaseURL field.
-	// This separation mirrors the Uptime Kuma API's polymorphic design where
-	// different monitor types use different connection fields (url vs databaseConnectionString).
+	// Field usage by monitor type:
+	// - HTTP monitors: URL contains the full URL (including path), Method contains HTTP method
+	// - Database monitors: URL contains database connection string or Terraform reference, Method is empty
+	// - Push monitors: URL and Method are empty
 	Monitor struct {
-		Name    string      // Unique monitor name.
-		Type    MonitorType // Monitor type (http, postgres, push).
-		Enabled bool        // Whether monitor is enabled.
-
-		// HTTP-specific fields.
-		URL            string // Full URL to monitor (including path).
-		Method         string // HTTP method (default: "GET").
-		ExpectedStatus []int  // Expected HTTP status codes (default: [200]).
-
-		// Database-specific fields.
-		DatabaseURL string // Database connection URL.
-
-		// Push/Heartbeat-specific fields.
-		ExpectedInterval int // Seconds, auto-calculated from cron.
-
-		// Common settings with sensible defaults.
-		Interval      int  // Check interval in seconds.
-		RetryInterval int  // Retry interval in seconds.
-		MaxRetries    int  // Maximum retry attempts.
-		UpsideDown    bool // Inverted status (up=down, down=up).
-		IgnoreTLS     bool // Skip TLS certificate validation.
+		Name   string      // Unique monitor name.
+		Type   MonitorType // Monitor type (http, postgres, push).
+		URL    string      // URL for HTTP monitors, database connection string for postgres monitors.
+		Method string      // HTTP method for HTTP monitors (e.g., "GET"), empty for other types.
 	}
 	// MonitorType defines the type of monitor.
 	MonitorType string
@@ -79,17 +59,10 @@ func (a *App) GenerateMonitors() []Monitor {
 		}
 
 		monitors = append(monitors, Monitor{
-			Name:           fmt.Sprintf("%s-%s", a.Name, sanitiseMonitorName(domain.Name)),
-			Type:           MonitorTypeHTTP,
-			Enabled:        true,
-			URL:            fmt.Sprintf("https://%s%s", domain.Name, a.healthCheckPath()),
-			Method:         "GET",
-			ExpectedStatus: []int{200},
-			Interval:       60, // 1 minute.
-			RetryInterval:  60, // 1 minute.
-			MaxRetries:     3,
-			UpsideDown:     false,
-			IgnoreTLS:      false,
+			Name:   fmt.Sprintf("%s-%s", a.Name, sanitiseMonitorName(domain.Name)),
+			Type:   MonitorTypeHTTP,
+			URL:    fmt.Sprintf("https://%s%s", domain.Name, a.healthCheckPath()),
+			Method: "GET",
 		})
 	}
 
@@ -125,57 +98,28 @@ func (r *Resource) GenerateMonitors(enviro env.Environment, dbURLGenerator func(
 
 	return []Monitor{
 		{
-			Name:          fmt.Sprintf("%s-%s", r.Name, enviro),
-			Type:          MonitorTypePostgres,
-			Enabled:       true,
-			DatabaseURL:   dbURLGenerator(r, enviro, "connection_url"),
-			Interval:      300, // 5 minutes for databases.
-			RetryInterval: 60,  // 1 minute.
-			MaxRetries:    3,
-			UpsideDown:    false,
-			IgnoreTLS:     false,
+			Name:   fmt.Sprintf("%s-%s", r.Name, enviro),
+			Type:   MonitorTypePostgres,
+			URL:    dbURLGenerator(r, enviro, "connection_url"),
+			Method: "", // Empty for database monitors.
 		},
 	}
 }
 
 // GenerateHeartbeatMonitor creates a push monitor for backup job heartbeats.
 // The monitor expects a heartbeat signal after each successful backup.
+// Note: Push monitors don't use URL or Method fields.
 func (r *Resource) GenerateHeartbeatMonitor(cronSchedule string) Monitor {
 	if !r.Backup.Enabled {
 		return Monitor{}
 	}
 
 	return Monitor{
-		Name:             fmt.Sprintf("backup-%s", r.Name),
-		Type:             MonitorTypePush,
-		Enabled:          true,
-		ExpectedInterval: calculateHeartbeatInterval(cronSchedule),
-		MaxRetries:       2,
-		UpsideDown:       false,
+		Name:   fmt.Sprintf("backup-%s", r.Name),
+		Type:   MonitorTypePush,
+		URL:    "", // Empty for push monitors.
+		Method: "", // Empty for push monitors.
 	}
-}
-
-// calculateHeartbeatInterval parses a cron schedule and calculates the expected
-// heartbeat interval with a 10% buffer for timing variations.
-//
-// For now, this is a simplified implementation that assumes daily backups.
-// TODO: Implement proper cron parsing using a library like github.com/robfig/cron.
-func calculateHeartbeatInterval(cronSchedule string) int {
-	// Suppress unused parameter warning until cron parsing is implemented.
-	_ = cronSchedule
-
-	// Parse "0 2 * * *" (daily at 2am) -> 24 hours.
-	// Add 10% buffer -> 26.4 hours = 95040 seconds.
-	const (
-		dailySeconds = 86400 // 24 hours.
-		bufferFactor = 1.1   // 10% buffer.
-	)
-
-	// TODO: Implement proper cron parsing.
-	// For now, assume daily schedule and apply buffer.
-	baseInterval := dailySeconds
-
-	return int(float64(baseInterval) * bufferFactor)
 }
 
 // sanitiseMonitorName converts a domain name to a valid monitor name component.

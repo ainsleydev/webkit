@@ -79,15 +79,8 @@ func TestApp_GenerateMonitors(t *testing.T) {
 		m := monitors[0]
 		assert.Equal(t, "web-example-com", m.Name)
 		assert.Equal(t, MonitorTypeHTTP, m.Type)
-		assert.True(t, m.Enabled)
 		assert.Equal(t, "https://example.com/health", m.URL)
 		assert.Equal(t, "GET", m.Method)
-		assert.Equal(t, []int{200}, m.ExpectedStatus)
-		assert.Equal(t, 60, m.Interval)
-		assert.Equal(t, 60, m.RetryInterval)
-		assert.Equal(t, 3, m.MaxRetries)
-		assert.False(t, m.UpsideDown)
-		assert.False(t, m.IgnoreTLS)
 	})
 
 	t.Run("Multiple Domains Primary And Alias", func(t *testing.T) {
@@ -213,13 +206,8 @@ func TestResource_GenerateMonitors(t *testing.T) {
 		m := monitors[0]
 		assert.Equal(t, "db-production", m.Name)
 		assert.Equal(t, MonitorTypePostgres, m.Type)
-		assert.True(t, m.Enabled)
-		assert.Equal(t, "${module.resources.db_production_connection_url}", m.DatabaseURL)
-		assert.Equal(t, 300, m.Interval)
-		assert.Equal(t, 60, m.RetryInterval)
-		assert.Equal(t, 3, m.MaxRetries)
-		assert.False(t, m.UpsideDown)
-		assert.False(t, m.IgnoreTLS)
+		assert.Equal(t, "${module.resources.db_production_connection_url}", m.URL)
+		assert.Equal(t, "", m.Method)
 	})
 
 	t.Run("Postgres Resource Staging", func(t *testing.T) {
@@ -236,7 +224,7 @@ func TestResource_GenerateMonitors(t *testing.T) {
 
 		m := monitors[0]
 		assert.Equal(t, "analytics-db-staging", m.Name)
-		assert.Equal(t, "${module.resources.analytics-db_staging_connection_url}", m.DatabaseURL)
+		assert.Equal(t, "${module.resources.analytics-db_staging_connection_url}", m.URL)
 	})
 }
 
@@ -252,8 +240,8 @@ func TestResource_GenerateHeartbeatMonitor(t *testing.T) {
 		}
 
 		monitor := resource.GenerateHeartbeatMonitor("0 2 * * *")
-		assert.False(t, monitor.Enabled)
 		assert.Empty(t, monitor.Name)
+		assert.Empty(t, monitor.Type)
 	})
 
 	t.Run("Backup Enabled", func(t *testing.T) {
@@ -268,10 +256,8 @@ func TestResource_GenerateHeartbeatMonitor(t *testing.T) {
 
 		assert.Equal(t, "backup-db", monitor.Name)
 		assert.Equal(t, MonitorTypePush, monitor.Type)
-		assert.True(t, monitor.Enabled)
-		assert.Equal(t, 95040, monitor.ExpectedInterval) // 26.4 hours in seconds.
-		assert.Equal(t, 2, monitor.MaxRetries)
-		assert.False(t, monitor.UpsideDown)
+		assert.Empty(t, monitor.URL)
+		assert.Empty(t, monitor.Method)
 	})
 
 	t.Run("Multiple Resources", func(t *testing.T) {
@@ -286,30 +272,6 @@ func TestResource_GenerateHeartbeatMonitor(t *testing.T) {
 		assert.Equal(t, "backup-primary-db", m1.Name)
 		assert.Equal(t, "backup-analytics-db", m2.Name)
 	})
-}
-
-func TestCalculateHeartbeatInterval(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		cronSchedule string
-		want         int
-	}{
-		"Daily At 2am":     {cronSchedule: "0 2 * * *", want: 95040},
-		"Ignored For Now":  {cronSchedule: "0 */6 * * *", want: 95040}, // TODO: Proper cron parsing.
-		"Another Schedule": {cronSchedule: "30 4 * * *", want: 95040},
-		"Empty String":     {cronSchedule: "", want: 95040},
-		"Invalid Cron":     {cronSchedule: "invalid", want: 95040},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got := calculateHeartbeatInterval(test.cronSchedule)
-			assert.Equal(t, test.want, got)
-		})
-	}
 }
 
 func TestSanitiseMonitorName(t *testing.T) {

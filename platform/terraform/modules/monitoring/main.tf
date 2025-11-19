@@ -10,13 +10,13 @@ resource "uptimekuma_monitor" "http" {
   name                 = "${var.project_name}-${each.value.name}"
   type                 = "http"
   url                  = each.value.url
-  method               = each.value.method
-  expected_status_code = each.value.expected_status
-  interval             = each.value.interval
-  retry_interval       = each.value.retry_interval
-  max_retries          = each.value.max_retries
-  upside_down          = each.value.upside_down
-  ignore_tls           = each.value.ignore_tls
+  method               = coalesce(each.value.method, "GET")
+  expected_status_code = [200]
+  interval             = 60  # 1 minute
+  retry_interval       = 60  # 1 minute
+  max_retries          = 3
+  upside_down          = false
+  ignore_tls           = false
   notification_id_list = var.notification_ids
 }
 
@@ -31,10 +31,10 @@ resource "uptimekuma_monitor" "postgres" {
 
   name                 = "${var.project_name}-${each.value.name}"
   type                 = "postgres"
-  database_url         = each.value.database_url
-  interval             = each.value.interval
-  retry_interval       = each.value.retry_interval
-  max_retries          = each.value.max_retries
+  database_url         = each.value.url
+  interval             = 300 # 5 minutes
+  retry_interval       = 60  # 1 minute
+  max_retries          = 3
   notification_id_list = var.notification_ids
 }
 
@@ -49,7 +49,7 @@ resource "uptimekuma_monitor" "push" {
 
   name                 = "${var.project_name}-${each.value.name}"
   type                 = "push"
-  expected_interval    = each.value.expected_interval
-  max_retries          = each.value.max_retries
+  expected_interval    = 95040 # 26.4 hours (daily backup with 10% buffer)
+  max_retries          = 2
   notification_id_list = var.notification_ids
 }

@@ -77,28 +77,12 @@ type (
 		Repo  string `json:"repo"`
 	}
 	// tfMonitor represents a monitoring configuration for Terraform.
+	// Minimal fields are set from appdef; defaults are applied in Terraform.
 	tfMonitor struct {
-		Name    string `json:"name"`
-		Type    string `json:"type"` // "http", "postgres", "push"
-		Enabled bool   `json:"enabled"`
-
-		// HTTP fields
-		URL            string `json:"url,omitempty"`
-		Method         string `json:"method,omitempty"`
-		ExpectedStatus []int  `json:"expected_status,omitempty"`
-
-		// Database fields
-		DatabaseURL string `json:"database_url,omitempty"`
-
-		// Push fields
-		ExpectedInterval int `json:"expected_interval,omitempty"`
-
-		// Common fields
-		Interval      int  `json:"interval"`
-		RetryInterval int  `json:"retry_interval"`
-		MaxRetries    int  `json:"max_retries"`
-		UpsideDown    bool `json:"upside_down"`
-		IgnoreTLS     bool `json:"ignore_tls"`
+		Name   string `json:"name"`
+		Type   string `json:"type"` // "http", "postgres", "push"
+		URL    string `json:"url,omitempty"`
+		Method string `json:"method,omitempty"`
 	}
 )
 
@@ -279,7 +263,7 @@ func (t *Terraform) generateMonitors(enviro env.Environment) []tfMonitor {
 		if resource.Backup.Enabled {
 			cronSchedule := "0 2 * * *" // Daily at 2am (from backup template).
 			heartbeat := resource.GenerateHeartbeatMonitor(cronSchedule)
-			if heartbeat.Enabled {
+			if heartbeat.Name != "" { // Check if monitor was created.
 				monitors = append(monitors, tfMonitorFromAppdef(heartbeat))
 			}
 		}
@@ -304,21 +288,13 @@ func terraformOutputReference(r *appdef.Resource, enviro env.Environment, output
 }
 
 // tfMonitorFromAppdef converts an appdef.Monitor to tfMonitor for Terraform.
+// All defaults are applied by Terraform based on monitor type.
 func tfMonitorFromAppdef(m appdef.Monitor) tfMonitor {
 	return tfMonitor{
-		Name:             m.Name,
-		Type:             string(m.Type),
-		Enabled:          m.Enabled,
-		URL:              m.URL,
-		Method:           m.Method,
-		ExpectedStatus:   m.ExpectedStatus,
-		DatabaseURL:      m.DatabaseURL,
-		ExpectedInterval: m.ExpectedInterval,
-		Interval:         m.Interval,
-		RetryInterval:    m.RetryInterval,
-		MaxRetries:       m.MaxRetries,
-		UpsideDown:       m.UpsideDown,
-		IgnoreTLS:        m.IgnoreTLS,
+		Name:   m.Name,
+		Type:   string(m.Type),
+		URL:    m.URL,
+		Method: m.Method,
 	}
 }
 
