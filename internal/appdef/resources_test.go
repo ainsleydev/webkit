@@ -91,6 +91,9 @@ func TestResourceApplyDefaults(t *testing.T) {
 				Backup: ResourceBackupConfig{
 					Enabled: true,
 				},
+				Monitoring: Monitoring{
+					Enabled: true,
+				},
 			},
 		},
 		"Existing Config And Outputs": {
@@ -100,6 +103,9 @@ func TestResourceApplyDefaults(t *testing.T) {
 			want: Resource{
 				Config: map[string]any{"size": "small"},
 				Backup: ResourceBackupConfig{
+					Enabled: true,
+				},
+				Monitoring: Monitoring{
 					Enabled: true,
 				},
 			},
