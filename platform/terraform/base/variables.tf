@@ -101,6 +101,17 @@ variable "resources" {
   default     = []
 }
 
+variable "monitors" {
+  type = list(object({
+    name   = string
+    type   = string # "http", "postgres", "push"
+    url    = optional(string)
+    method = optional(string)
+  }))
+  description = "List of monitors to create in Uptime Kuma. Defaults (interval, retries, etc.) are applied based on monitor type."
+  default     = []
+}
+
 variable "apps" {
   type = list(object({
     name              = string
@@ -163,16 +174,29 @@ variable "github_config" {
   sensitive   = true
 }
 
-# --------------------------------------- TODO --------------------------------------- #
-
-# variable "better_stack_token" {
-#   type      = string
-#   sensitive = true
-# }
-
 variable "slack_bot_token" {
   type        = string
   description = "Slack bot token for CI/CD notifications"
+  sensitive   = true
+}
+
+variable "uptime_kuma_url" {
+  type        = string
+  description = "Uptime Kuma Web API adapter URL"
+  default     = "https://uptime.ainsley.dev"
+}
+
+variable "uptime_kuma_username" {
+  type        = string
+  description = "Uptime Kuma username for authentication (only required when monitoring is enabled)"
+  default     = ""
+  sensitive   = true
+}
+
+variable "uptime_kuma_password" {
+  type        = string
+  description = "Uptime Kuma password for authentication (only required when monitoring is enabled)"
+  default     = ""
   sensitive   = true
 }
 

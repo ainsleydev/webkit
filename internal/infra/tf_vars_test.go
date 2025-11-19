@@ -738,3 +738,146 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 		assert.Equal(t, "sha-ci-sha-123", got.Apps[0].ImageTag)
 	})
 }
+
+func TestGenerateMonitors(t *testing.T) {
+	t.Run("No Apps Or Resources", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project:   appdef.Project{Name: "empty"},
+			Apps:      []appdef.App{},
+			Resources: []appdef.Resource{},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		assert.Empty(t, monitors)
+	})
+
+	t.Run("Single App With Monitoring Enabled", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Domains: []appdef.Domain{
+						{Name: "example.com", Type: appdef.DomainTypePrimary},
+					},
+					Infra: appdef.Infra{
+						Config: map[string]any{"health_check_path": "/health"},
+					},
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		require.Len(t, monitors, 1)
+
+		m := monitors[0]
+		assert.Equal(t, "web-example-com", m.Name)
+		assert.Equal(t, "http", m.Type)
+		assert.Equal(t, "https://example.com", m.URL)
+		assert.Equal(t, "GET", m.Method)
+	})
+
+	t.Run("App With Monitoring Disabled", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Domains: []appdef.Domain{
+						{Name: "example.com", Type: appdef.DomainTypePrimary},
+					},
+					Monitoring: appdef.Monitoring{Enabled: false},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		assert.Empty(t, monitors)
+	})
+
+	t.Run("Multiple Apps Multiple Domains", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Domains: []appdef.Domain{
+						{Name: "example.com", Type: appdef.DomainTypePrimary},
+						{Name: "www.example.com", Type: appdef.DomainTypeAlias},
+					},
+					Infra:      appdef.Infra{},
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+				{
+					Name: "api",
+					Domains: []appdef.Domain{
+						{Name: "api.example.com", Type: appdef.DomainTypePrimary},
+					},
+					Infra:      appdef.Infra{},
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		require.Len(t, monitors, 3)
+
+		assert.Equal(t, "web-example-com", monitors[0].Name)
+		assert.Equal(t, "web-www-example-com", monitors[1].Name)
+		assert.Equal(t, "api-api-example-com", monitors[2].Name)
+	})
+
+	t.Run("Mixed Apps And Resources", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{Name: "test"},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Domains: []appdef.Domain{
+						{Name: "example.com", Type: appdef.DomainTypePrimary},
+					},
+					Infra:      appdef.Infra{},
+					Monitoring: appdef.Monitoring{Enabled: true},
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Monitoring: appdef.Monitoring{Enabled: true},
+					Backup:     appdef.ResourceBackupConfig{Enabled: true},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+		require.Len(t, monitors, 1) // Only app monitors, resource monitors disabled
+
+		assert.Equal(t, "web-example-com", monitors[0].Name)
+		assert.Equal(t, "http", monitors[0].Type)
+	})
+}
+
+func TestTfMonitorFromAppdef(t *testing.T) {
+	t.Parallel()
+
+	input := appdef.Monitor{
+		Name:   "test-monitor",
+		Type:   appdef.MonitorTypeHTTP,
+		URL:    "https://example.com",
+		Method: "GET",
+	}
+
+	got := tfMonitorFromAppdef(input)
+
+	assert.Equal(t, "test-monitor", got.Name)
+	assert.Equal(t, "http", got.Type)
+	assert.Equal(t, "https://example.com", got.URL)
+	assert.Equal(t, "GET", got.Method)
+}

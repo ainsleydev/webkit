@@ -30,6 +30,7 @@ type (
 		GithubConfig        tfGithubConfig `json:"github_config"`
 		Apps                []tfApp        `json:"apps"`
 		Resources           []tfResource   `json:"resources"`
+		Monitors            []tfMonitor    `json:"monitors"`
 		DigitalOceanSSHKeys []string       `json:"digitalocean_ssh_keys"`
 		HetznerSSHKeys      []string       `json:"hetzner_ssh_keys"`
 		SlackWebhookURL     string         `json:"slack_webhook_url"`
@@ -72,6 +73,14 @@ type (
 	tfGithubConfig struct {
 		Owner string `json:"owner"`
 		Repo  string `json:"repo"`
+	}
+	// tfMonitor represents a monitoring configuration for Terraform.
+	// Minimal fields are set from appdef; defaults are applied in Terraform.
+	tfMonitor struct {
+		Name   string `json:"name"`
+		Type   string `json:"type"` // "http", "postgres", "push"
+		URL    string `json:"url,omitempty"`
+		Method string `json:"method,omitempty"`
 	}
 )
 
@@ -152,6 +161,9 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		vars.Apps = append(vars.Apps, tfA)
 	}
 
+	// Generate monitors from apps and resources.
+	vars.Monitors = t.generateMonitors(env)
+
 	return vars, nil
 }
 
@@ -224,4 +236,34 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 	}
 
 	return nil
+}
+
+// generateMonitors creates monitor configurations from apps and resources.
+// It transforms appdef.Monitor structs into tfMonitor for Terraform consumption.
+func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
+	monitors := make([]tfMonitor, 0)
+
+	// Generate monitors from apps.
+	for _, app := range t.appDef.Apps {
+		for _, monitor := range app.GenerateMonitors() {
+			monitors = append(monitors, tfMonitorFromAppdef(monitor))
+		}
+	}
+
+	// TODO: Re-enable resource monitors when needed.
+	// Resource monitoring (database, backup heartbeats) has been temporarily disabled
+	// to simplify the initial monitoring implementation with kill3r-queen/uptimekuma provider.
+
+	return monitors
+}
+
+// tfMonitorFromAppdef converts an appdef.Monitor to tfMonitor for Terraform.
+// All defaults are applied by Terraform based on monitor type.
+func tfMonitorFromAppdef(m appdef.Monitor) tfMonitor {
+	return tfMonitor{
+		Name:   m.Name,
+		Type:   string(m.Type),
+		URL:    m.URL,
+		Method: m.Method,
+	}
 }

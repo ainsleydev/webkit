@@ -1,0 +1,76 @@
+package appdef
+
+import (
+	"fmt"
+	"strings"
+)
+
+type (
+	// Monitoring is the user-facing config in app.json.
+	// It's intentionally simple - just an enabled flag.
+	Monitoring struct {
+		Enabled bool `json:"enabled" description:"Whether to enable uptime monitoring for this app or resource (defaults to true)"`
+	}
+	// Monitor contains minimal monitoring configuration.
+	// Defaults are applied by the Terraform layer based on monitor type.
+	//
+	// Field usage by monitor type:
+	// - HTTP monitors: URL contains the full URL (including path), Method contains HTTP method
+	// - Database monitors: URL contains database connection string or Terraform reference, Method is empty
+	// - Push monitors: URL and Method are empty
+	Monitor struct {
+		Name   string      // Unique monitor name.
+		Type   MonitorType // Monitor type (http, postgres, push).
+		URL    string      // URL for HTTP monitors, database connection string for postgres monitors.
+		Method string      // HTTP method for HTTP monitors (e.g., "GET"), empty for other types.
+	}
+	// MonitorType defines the type of monitor.
+	MonitorType string
+)
+
+// MonitorType constants.
+const (
+	MonitorTypeHTTP     MonitorType = "http"
+	MonitorTypePostgres MonitorType = "postgres"
+	MonitorTypePush     MonitorType = "push"
+)
+
+// String implements fmt.Stringer on MonitorType.
+func (m MonitorType) String() string {
+	return string(m)
+}
+
+// GenerateMonitors creates HTTP monitors for all domains in the app.
+// It generates one monitor per domain (primary + aliases), excluding unmanaged domains.
+// Monitoring must be explicitly enabled in the app configuration.
+func (a *App) GenerateMonitors() []Monitor {
+	if !a.Monitoring.Enabled {
+		return nil
+	}
+
+	monitors := make([]Monitor, 0)
+
+	// Create HTTP monitor for each domain (primary + aliases).
+	// Monitors check the root path "/" for simplicity.
+	for _, domain := range a.Domains {
+		if domain.Type == DomainTypeUnmanaged {
+			continue
+		}
+
+		monitors = append(monitors, Monitor{
+			Name:   fmt.Sprintf("%s-%s", a.Name, sanitiseMonitorName(domain.Name)),
+			Type:   MonitorTypeHTTP,
+			URL:    fmt.Sprintf("https://%s", domain.Name),
+			Method: "GET",
+		})
+	}
+
+	return monitors
+}
+
+// sanitiseMonitorName converts a domain name to a valid monitor name component.
+//
+// For example: "api.example.com" -> "api-example-com"
+func sanitiseMonitorName(domain string) string {
+	return strings.ReplaceAll(domain, ".", "-")
+}

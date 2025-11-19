@@ -60,6 +60,9 @@ func setupEnv(t *testing.T) {
 	t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
 	t.Setenv("SLACK_USER_TOKEN", "xoxp-test-token")
 	t.Setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/test")
+	t.Setenv("UPTIME_KUMA_URL", "https://uptime.test.dev")
+	t.Setenv("UPTIME_KUMA_USERNAME", "test-admin")
+	t.Setenv("UPTIME_KUMA_PASSWORD", "test-password")
 }
 
 func teardownEnv(t *testing.T) {
@@ -78,6 +81,9 @@ func teardownEnv(t *testing.T) {
 		"GITHUB_TOKEN_CLASSIC",
 		"SLACK_BOT_TOKEN",
 		"SLACK_USER_TOKEN",
+		"UPTIME_KUMA_URL",
+		"UPTIME_KUMA_USERNAME",
+		"UPTIME_KUMA_PASSWORD",
 	}
 
 	for _, key := range envVars {
@@ -377,7 +383,7 @@ func TestTerraform_Apply(t *testing.T) {
 		tf.tf = mock
 
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
@@ -396,7 +402,7 @@ func TestTerraform_Apply(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mock := tfmocks.NewMockterraformExecutor(ctrl)
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("authentication failed")).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)

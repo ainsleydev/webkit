@@ -21,6 +21,7 @@ type (
 		Build            Build                                   `json:"build" description:"Build configuration for Docker containerisation"`
 		Infra            Infra                                   `json:"infra" validate:"required" description:"Infrastructure and deployment configuration"`
 		Env              Environment                             `json:"env" description:"Environment variables specific to this app"`
+		Monitoring       Monitoring                              `json:"monitoring,omitempty" description:"Uptime monitoring configuration for this app"`
 		UsesNPM          *bool                                   `json:"usesNPM" description:"Whether this app should be included in the pnpm workspace (auto-detected if not set)"`
 		TerraformManaged *bool                                   `json:"terraformManaged,omitempty" description:"Whether this app's infrastructure is managed by Terraform (defaults to true)"`
 		Domains          []Domain                                `json:"domains,omitzero" description:"Domain configurations for accessing this app"`
@@ -268,6 +269,9 @@ func (a *App) applyDefaults() error {
 	if a.Path != "" {
 		a.Path = filepath.Clean(a.Path)
 	}
+
+	// Default monitoring to enabled (opt-out).
+	a.Monitoring.Enabled = true
 
 	return nil
 }

@@ -34,6 +34,10 @@ terraform {
       source  = "hashicorp/time"
       version = "~> 0.9"
     }
+    uptimekuma = {
+      source  = "kill3r-queen/uptimekuma"
+      version = "~> 0.0.12"
+    }
   }
 }
 
@@ -66,6 +70,13 @@ provider "github" {
 
 provider "slack" {
   token = var.slack_bot_token
+}
+
+provider "uptimekuma" {
+  base_url       = var.uptime_kuma_url
+  username       = var.uptime_kuma_username
+  password       = var.uptime_kuma_password
+  insecure_https = false
 }
 
 #
@@ -217,6 +228,27 @@ module "apps" {
   # Apps may depend on resources being created first.
   resource_outputs = module.resources
   depends_on       = [module.resources]
+}
+
+#
+# Monitoring
+#
+# Only create the monitoring module if there are monitors configured.
+# This prevents provider initialization when monitoring is not in use.
+#
+module "monitoring" {
+  count  = length(var.monitors) > 0 ? 1 : 0
+  source = "../modules/monitoring"
+
+  providers = {
+    uptimekuma = uptimekuma
+  }
+
+  project_name = var.project_name
+  monitors     = var.monitors
+
+  # Monitoring depends on apps and resources being created.
+  depends_on = [module.apps, module.resources]
 }
 
 #
