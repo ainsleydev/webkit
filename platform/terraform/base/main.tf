@@ -236,9 +236,8 @@ module "apps" {
 module "monitoring" {
   source = "../modules/monitoring"
 
-  project_name     = var.project_name
-  monitors         = var.monitors
-  notification_ids = var.uptime_kuma_notification_ids
+  project_name = var.project_name
+  monitors     = var.monitors
 
   # Monitoring depends on apps and resources being created.
   depends_on = [module.apps, module.resources]
