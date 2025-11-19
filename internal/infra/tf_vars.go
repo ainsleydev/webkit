@@ -24,18 +24,17 @@ type (
 	// tfVars represents the root structure of Terraform variables
 	// that will be written to webkit.auto.tfvars.json
 	tfVars struct {
-		ProjectName               string         `json:"project_name"`
-		ProjectTitle              string         `json:"project_title"`
-		ProjectDescription        string         `json:"project_description"`
-		Environment               string         `json:"environment"`
-		GithubConfig              tfGithubConfig `json:"github_config"`
-		Apps                      []tfApp        `json:"apps"`
-		Resources                 []tfResource   `json:"resources"`
-		Monitors                  []tfMonitor    `json:"monitors"`
-		UptimeKumaNotificationIDs []int          `json:"uptime_kuma_notification_ids"`
-		DigitalOceanSSHKeys       []string       `json:"digitalocean_ssh_keys"`
-		HetznerSSHKeys            []string       `json:"hetzner_ssh_keys"`
-		SlackWebhookURL           string         `json:"slack_webhook_url"`
+		ProjectName         string         `json:"project_name"`
+		ProjectTitle        string         `json:"project_title"`
+		ProjectDescription  string         `json:"project_description"`
+		Environment         string         `json:"environment"`
+		GithubConfig        tfGithubConfig `json:"github_config"`
+		Apps                []tfApp        `json:"apps"`
+		Resources           []tfResource   `json:"resources"`
+		Monitors            []tfMonitor    `json:"monitors"`
+		DigitalOceanSSHKeys []string       `json:"digitalocean_ssh_keys"`
+		HetznerSSHKeys      []string       `json:"hetzner_ssh_keys"`
+		SlackWebhookURL     string         `json:"slack_webhook_url"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -165,7 +164,6 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 
 	// Generate monitors from apps and resources.
 	vars.Monitors = t.generateMonitors(env)
-	vars.UptimeKumaNotificationIDs = t.getNotificationIDs()
 
 	return vars, nil
 }
@@ -295,13 +293,4 @@ func tfMonitorFromAppdef(m appdef.Monitor) tfMonitor {
 		URL:    m.URL,
 		Method: m.Method,
 	}
-}
-
-// getNotificationIDs returns the list of Uptime Kuma notification IDs.
-// For now, this returns an empty list since notifications are configured manually in Uptime Kuma UI.
-// TODO: Make this configurable via environment variable or app.json.
-func (t *Terraform) getNotificationIDs() []int {
-	// Placeholder: Return empty list for now.
-	// The user will need to configure notification IDs manually or via environment variable.
-	return []int{}
 }

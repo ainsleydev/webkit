@@ -996,16 +996,6 @@ func TestTfMonitorFromAppdef(t *testing.T) {
 	assert.Equal(t, "GET", got.Method)
 }
 
-func TestGetNotificationIDs(t *testing.T) {
-	t.Parallel()
-
-	input := &appdef.Definition{
-		Project: appdef.Project{Name: "test"},
-	}
-
-	tf := setupTfVars(t, input)
-	got := tf.getNotificationIDs()
-
-	// Should return empty list for now.
-	assert.Empty(t, got)
-}
+// TestGetNotificationIDs removed - notification IDs are no longer supported
+// by ehealth-co-id/uptimekuma provider. Notifications must be configured
+// manually in Uptime Kuma UI.

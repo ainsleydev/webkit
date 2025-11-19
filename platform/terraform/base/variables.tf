@@ -103,29 +103,12 @@ variable "resources" {
 
 variable "monitors" {
   type = list(object({
-    name              = string
-    type              = string # "http", "postgres", "push"
-    enabled           = bool
-    url               = optional(string)
-    method            = optional(string)
-    expected_status   = optional(list(number))
-    health_check_path = optional(string)
-    database_url      = optional(string)
-    connection_type   = optional(string)
-    expected_interval = optional(number)
-    interval          = number
-    retry_interval    = number
-    max_retries       = number
-    upside_down       = optional(bool, false)
-    ignore_tls        = optional(bool, false)
+    name   = string
+    type   = string # "http", "postgres", "push"
+    url    = optional(string)
+    method = optional(string)
   }))
-  description = "List of monitors to create in Uptime Kuma"
-  default     = []
-}
-
-variable "uptime_kuma_notification_ids" {
-  type        = list(number)
-  description = "List of Uptime Kuma notification IDs to attach to monitors"
+  description = "List of monitors to create in Uptime Kuma. Defaults (interval, retries, etc.) are applied based on monitor type."
   default     = []
 }
 

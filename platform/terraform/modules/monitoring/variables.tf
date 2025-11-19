@@ -13,9 +13,3 @@ variable "monitors" {
   }))
   default = []
 }
-
-variable "notification_ids" {
-  description = "List of notification IDs to attach to monitors"
-  type        = list(number)
-  default     = []
-}

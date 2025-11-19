@@ -7,17 +7,17 @@
 resource "uptimekuma_monitor" "http" {
   for_each = { for m in local.http_monitors : m.name => m }
 
-  name                 = "${var.project_name}-${each.value.name}"
-  type                 = "http"
-  url                  = each.value.url
-  method               = coalesce(each.value.method, "GET")
-  expected_status_code = [200]
-  interval             = 60  # 1 minute
-  retry_interval       = 60  # 1 minute
-  max_retries          = 3
-  upside_down          = false
-  ignore_tls           = false
-  notification_id_list = var.notification_ids
+  name           = "${var.project_name}-${each.value.name}"
+  type           = "http"
+  url            = each.value.url
+  method         = coalesce(each.value.method, "GET")
+  interval       = 60  # 1 minute
+  retry_interval = 60  # 1 minute
+  max_retries    = 3
+  upside_down    = false
+  ignore_tls     = false
+  # Note: accepted_status_codes and notification_id_list not supported by ehealth-co-id/uptimekuma provider
+  # These need to be configured manually in Uptime Kuma UI or use ainsleydev/uptimekuma fork
 }
 
 #
@@ -29,13 +29,13 @@ resource "uptimekuma_monitor" "http" {
 resource "uptimekuma_monitor" "postgres" {
   for_each = { for m in local.postgres_monitors : m.name => m }
 
-  name                 = "${var.project_name}-${each.value.name}"
-  type                 = "postgres"
-  database_url         = each.value.url
-  interval             = 300 # 5 minutes
-  retry_interval       = 60  # 1 minute
-  max_retries          = 3
-  notification_id_list = var.notification_ids
+  name     = "${var.project_name}-${each.value.name}"
+  type     = "postgres"
+  hostname = each.value.url # Provider doesn't support database_connection_string, using hostname as workaround
+  interval = 300            # 5 minutes
+  retry_interval = 60       # 1 minute
+  max_retries    = 3
+  # Note: notification_id_list not supported by ehealth-co-id/uptimekuma provider
 }
 
 #
@@ -47,9 +47,9 @@ resource "uptimekuma_monitor" "postgres" {
 resource "uptimekuma_monitor" "push" {
   for_each = { for m in local.push_monitors : m.name => m }
 
-  name                 = "${var.project_name}-${each.value.name}"
-  type                 = "push"
-  expected_interval    = 95040 # 26.4 hours (daily backup with 10% buffer)
-  max_retries          = 2
-  notification_id_list = var.notification_ids
+  name        = "${var.project_name}-${each.value.name}"
+  type        = "push"
+  max_retries = 2
+  # Note: expected_interval and notification_id_list not supported by ehealth-co-id/uptimekuma provider
+  # Push monitors track heartbeat pings automatically. Notifications must be configured in Uptime Kuma UI.
 }
