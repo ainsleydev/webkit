@@ -36,7 +36,7 @@ terraform {
     }
     uptimekuma = {
       source  = "ehealth-co-id/uptimekuma"
-      version = "~> 1.0"
+      version = "~> 0.0.2"
     }
   }
 }
