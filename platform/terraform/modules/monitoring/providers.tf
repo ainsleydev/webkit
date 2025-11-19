@@ -6,10 +6,3 @@ terraform {
     }
   }
 }
-
-provider "uptimekuma" {
-  base_url       = var.uptime_kuma_url
-  username       = var.uptime_kuma_username != "" ? var.uptime_kuma_username : "unused"
-  password       = var.uptime_kuma_password != "" ? var.uptime_kuma_password : "unused"
-  insecure_https = false
-}

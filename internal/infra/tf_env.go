@@ -52,5 +52,8 @@ func (t *TFEnvironment) varStrings() []string {
 		"github_token_classic=" + t.GithubTokenClassic,
 		"slack_bot_token=" + t.SlackBotToken,
 		"slack_user_token=" + t.SlackUserToken,
+		"uptime_kuma_url=" + t.UptimeKumaURL,
+		"uptime_kuma_username=" + t.UptimeKumaUsername,
+		"uptime_kuma_password=" + t.UptimeKumaPassword,
 	}
 }
