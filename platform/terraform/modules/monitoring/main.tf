@@ -3,7 +3,8 @@
 # Generates module calls based on monitoring[] in resources and apps.
 #
 # TODO: Re-enable when resource monitoring is implemented
-# Postgres and Push monitors have been removed to simplify initial implementation.
+# Postgres and Push monitors have been removed to simplify initial implementation
+# with kill3r-queen/uptimekuma provider.
 #
 #
 locals {

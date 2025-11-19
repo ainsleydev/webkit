@@ -252,7 +252,7 @@ func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
 
 	// TODO: Re-enable resource monitors when needed.
 	// Resource monitoring (database, backup heartbeats) has been temporarily disabled
-	// to simplify the initial monitoring implementation with ehealth-co-id/uptimekuma provider.
+	// to simplify the initial monitoring implementation with kill3r-queen/uptimekuma provider.
 
 	return monitors
 }
