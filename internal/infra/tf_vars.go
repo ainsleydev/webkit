@@ -261,8 +261,7 @@ func (t *Terraform) generateMonitors(enviro env.Environment) []tfMonitor {
 
 		// Generate backup heartbeat monitors.
 		if resource.Backup.Enabled {
-			cronSchedule := "0 2 * * *" // Daily at 2am (from backup template).
-			heartbeat := resource.GenerateHeartbeatMonitor(cronSchedule)
+			heartbeat := resource.GenerateHeartbeatMonitor()
 			if heartbeat.Name != "" { // Check if monitor was created.
 				monitors = append(monitors, tfMonitorFromAppdef(heartbeat))
 			}

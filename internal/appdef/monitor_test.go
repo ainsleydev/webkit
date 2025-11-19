@@ -239,7 +239,7 @@ func TestResource_GenerateHeartbeatMonitor(t *testing.T) {
 			Backup: ResourceBackupConfig{Enabled: false},
 		}
 
-		monitor := resource.GenerateHeartbeatMonitor("0 2 * * *")
+		monitor := resource.GenerateHeartbeatMonitor()
 		assert.Empty(t, monitor.Name)
 		assert.Empty(t, monitor.Type)
 	})
@@ -252,7 +252,7 @@ func TestResource_GenerateHeartbeatMonitor(t *testing.T) {
 			Backup: ResourceBackupConfig{Enabled: true},
 		}
 
-		monitor := resource.GenerateHeartbeatMonitor("0 2 * * *")
+		monitor := resource.GenerateHeartbeatMonitor()
 
 		assert.Equal(t, "backup-db", monitor.Name)
 		assert.Equal(t, MonitorTypePush, monitor.Type)
@@ -266,8 +266,8 @@ func TestResource_GenerateHeartbeatMonitor(t *testing.T) {
 		r1 := &Resource{Name: "primary-db", Backup: ResourceBackupConfig{Enabled: true}}
 		r2 := &Resource{Name: "analytics-db", Backup: ResourceBackupConfig{Enabled: true}}
 
-		m1 := r1.GenerateHeartbeatMonitor("0 2 * * *")
-		m2 := r2.GenerateHeartbeatMonitor("0 2 * * *")
+		m1 := r1.GenerateHeartbeatMonitor()
+		m2 := r2.GenerateHeartbeatMonitor()
 
 		assert.Equal(t, "backup-primary-db", m1.Name)
 		assert.Equal(t, "backup-analytics-db", m2.Name)

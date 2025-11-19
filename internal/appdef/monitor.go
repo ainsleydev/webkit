@@ -109,7 +109,7 @@ func (r *Resource) GenerateMonitors(enviro env.Environment, dbURLGenerator func(
 // GenerateHeartbeatMonitor creates a push monitor for backup job heartbeats.
 // The monitor expects a heartbeat signal after each successful backup.
 // Note: Push monitors don't use URL or Method fields.
-func (r *Resource) GenerateHeartbeatMonitor(cronSchedule string) Monitor {
+func (r *Resource) GenerateHeartbeatMonitor() Monitor {
 	if !r.Backup.Enabled {
 		return Monitor{}
 	}
