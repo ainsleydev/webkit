@@ -3,11 +3,15 @@
 # Orchestrates Peekaping resources for monitoring apps and infrastructure.
 #
 # This module creates:
-# - Tags for organising monitors (project, environment, webkit)
+# - Project-specific tag (unique per project)
 # - Slack notification channel for alerts
 # - HTTP monitors for app domains
 # - DNS monitors for domain resolution
 # - Public status page
+#
+# This module references:
+# - Shared "WebKit" tag (looked up via data source)
+# - Shared environment tags like "Production" (looked up via data source)
 #
 
 #
@@ -28,8 +32,8 @@ locals {
   # All tag IDs for monitors.
   tag_ids = [
     peekaping_tag.project.id,
-    peekaping_tag.environment.id,
-    peekaping_tag.webkit.id
+    data.peekaping_tag.environment.id,
+    data.peekaping_tag.webkit.id
   ]
 
   # Notification IDs.
@@ -37,10 +41,27 @@ locals {
 }
 
 #
-# Tags
+# Shared Tags (Data Sources)
 #
-# Tags are used to organise and categorise monitors.
-# Each project gets: project name tag, environment tag, and webkit tag.
+# Look up existing shared tags that are used across multiple webkit repos.
+# These tags should be created once manually or by a central terraform config.
+#
+# Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/data-sources/tag
+#
+
+data "peekaping_tag" "webkit" {
+  name = "WebKit"
+}
+
+data "peekaping_tag" "environment" {
+  name = title(var.environment)
+}
+
+#
+# Project Tag (Resource)
+#
+# Create a unique tag for this specific project.
+# This tag is project-specific and won't conflict with other repos.
 #
 # Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/tag
 #
@@ -49,18 +70,6 @@ resource "peekaping_tag" "project" {
   name        = var.project_title
   color       = local.tag_color
   description = "Monitor for ${var.project_title}"
-}
-
-resource "peekaping_tag" "environment" {
-  name        = title(var.environment)
-  color       = local.tag_color
-  description = "${title(var.environment)} environment"
-}
-
-resource "peekaping_tag" "webkit" {
-  name        = "WebKit"
-  color       = "#10B981" # Green for webkit
-  description = "Managed by WebKit infrastructure"
 }
 
 #
