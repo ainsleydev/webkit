@@ -866,7 +866,7 @@ func TestGenerateMonitors(t *testing.T) {
 
 	t.Run("Single App With Monitoring Enabled", func(t *testing.T) {
 		input := &appdef.Definition{
-			Project: appdef.Project{Name: "test"},
+			Project: appdef.Project{Name: "test", Title: "Test Project"},
 			Apps: []appdef.App{
 				{
 					Name:  "web",
@@ -887,13 +887,13 @@ func TestGenerateMonitors(t *testing.T) {
 		require.Len(t, monitors, 2) // HTTP + DNS
 
 		// HTTP monitor.
-		assert.Equal(t, "Web - example.com", monitors[0].Name)
+		assert.Equal(t, "Test Project, Web - example.com", monitors[0].Name)
 		assert.Equal(t, "http", monitors[0].Type)
 		assert.Equal(t, "https://example.com", monitors[0].URL)
 		assert.Equal(t, "GET", monitors[0].Method)
 
 		// DNS monitor.
-		assert.Equal(t, "Web DNS - example.com", monitors[1].Name)
+		assert.Equal(t, "Test Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, "dns", monitors[1].Type)
 		assert.Equal(t, "example.com", monitors[1].Domain)
 	})
@@ -919,7 +919,7 @@ func TestGenerateMonitors(t *testing.T) {
 
 	t.Run("Multiple Apps Multiple Domains", func(t *testing.T) {
 		input := &appdef.Definition{
-			Project: appdef.Project{Name: "test"},
+			Project: appdef.Project{Name: "test", Title: "Test Project"},
 			Apps: []appdef.App{
 				{
 					Name:  "web",
@@ -947,23 +947,23 @@ func TestGenerateMonitors(t *testing.T) {
 		monitors := tf.generateMonitors(env.Production)
 		require.Len(t, monitors, 6) // 3 domains × 2 types (HTTP + DNS)
 
-		assert.Equal(t, "Web - example.com", monitors[0].Name)
+		assert.Equal(t, "Test Project, Web - example.com", monitors[0].Name)
 		assert.Equal(t, "http", monitors[0].Type)
-		assert.Equal(t, "Web DNS - example.com", monitors[1].Name)
+		assert.Equal(t, "Test Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, "dns", monitors[1].Type)
-		assert.Equal(t, "Web - www.example.com", monitors[2].Name)
+		assert.Equal(t, "Test Project, Web - www.example.com", monitors[2].Name)
 		assert.Equal(t, "http", monitors[2].Type)
-		assert.Equal(t, "Web DNS - www.example.com", monitors[3].Name)
+		assert.Equal(t, "Test Project, Web DNS - www.example.com", monitors[3].Name)
 		assert.Equal(t, "dns", monitors[3].Type)
-		assert.Equal(t, "API - api.example.com", monitors[4].Name)
+		assert.Equal(t, "Test Project, API - api.example.com", monitors[4].Name)
 		assert.Equal(t, "http", monitors[4].Type)
-		assert.Equal(t, "API DNS - api.example.com", monitors[5].Name)
+		assert.Equal(t, "Test Project, API DNS - api.example.com", monitors[5].Name)
 		assert.Equal(t, "dns", monitors[5].Type)
 	})
 
 	t.Run("Mixed Apps And Resources", func(t *testing.T) {
 		input := &appdef.Definition{
-			Project: appdef.Project{Name: "test"},
+			Project: appdef.Project{Name: "test", Title: "Test Project"},
 			Apps: []appdef.App{
 				{
 					Name:  "web",
@@ -990,11 +990,11 @@ func TestGenerateMonitors(t *testing.T) {
 		require.Len(t, monitors, 2) // HTTP + DNS (resource monitoring not implemented)
 
 		// HTTP monitor.
-		assert.Equal(t, "Web - example.com", monitors[0].Name)
+		assert.Equal(t, "Test Project, Web - example.com", monitors[0].Name)
 		assert.Equal(t, "http", monitors[0].Type)
 
 		// DNS monitor.
-		assert.Equal(t, "Web DNS - example.com", monitors[1].Name)
+		assert.Equal(t, "Test Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, "dns", monitors[1].Type)
 	})
 }
