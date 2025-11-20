@@ -14,35 +14,8 @@
 					"description": "Build configuration for Docker containerisation"
 				},
 				"commands": {
-					"description": "Custom commands for linting, testing, formatting, and building",
-					"type": "object",
-					"additionalProperties": {
-						"oneOf": [
-							{
-								"type": "boolean"
-							},
-							{
-								"type": "string"
-							},
-							{
-								"type": "object",
-								"properties": {
-									"command": {
-										"description": "The shell command to execute (e.g., 'pnpm build')",
-										"type": "string"
-									},
-									"skip_ci": {
-										"description": "Whether to skip running this command in CI/CD pipelines",
-										"type": "boolean"
-									},
-									"timeout": {
-										"description": "Maximum execution time for the command (e.g., '5m', '1h')",
-										"type": "string"
-									}
-								}
-							}
-						]
-					}
+					"$ref": "#/definitions/TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]",
+					"description": "Custom commands for linting, testing, formatting, and building"
 				},
 				"description": {
 					"description": "Brief description of the app's purpose and functionality",
@@ -106,6 +79,23 @@
 						"null",
 						"boolean"
 					]
+				}
+			},
+			"type": "object"
+		},
+		"AppdefBrand": {
+			"properties": {
+				"logoUrl": {
+					"description": "URL to the project's logo image",
+					"type": "string"
+				},
+				"primaryColor": {
+					"description": "Primary brand colour in hex format (e.g., #3B82F6)",
+					"type": "string"
+				},
+				"secondaryColor": {
+					"description": "Secondary brand colour in hex format (e.g., #10B981)",
+					"type": "string"
 				}
 			},
 			"type": "object"
@@ -227,8 +217,21 @@
 			},
 			"type": "object"
 		},
+		"AppdefMonitoring": {
+			"properties": {
+				"enabled": {
+					"description": "Whether to enable uptime monitoring for this app or resource (defaults to true)",
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
 		"AppdefProject": {
 			"properties": {
+				"brand": {
+					"$ref": "#/definitions/AppdefBrand",
+					"description": "Branding configuration for the project including colours and logo"
+				},
 				"description": {
 					"description": "Brief description of the project's purpose and functionality",
 					"type": "string"
@@ -311,15 +314,6 @@
 			},
 			"type": "object"
 		},
-		"AppdefMonitoring": {
-			"properties": {
-				"enabled": {
-					"description": "Whether to enable uptime monitoring for this app or resource (defaults to true)",
-					"type": "boolean"
-				}
-			},
-			"type": "object"
-		},
 		"AppdefShared": {
 			"properties": {
 				"env": {
@@ -347,6 +341,37 @@
 					"description": "Version to install (e.g., 'latest', 'v0.2.543')",
 					"type": "string"
 				}
+			},
+			"type": "object"
+		},
+		"TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]": {
+			"additionalProperties": {
+				"properties": {
+					"command": {
+						"description": "The shell command to execute (e.g., 'pnpm build')",
+						"type": "string"
+					},
+					"skip_ci": {
+						"description": "Whether to skip running this command in CI/CD pipelines",
+						"type": "boolean"
+					},
+					"timeout": {
+						"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"oneOf": [
+					{
+						"type": "boolean"
+					},
+					{
+						"type": "string"
+					},
+					{
+						"$ref": "#"
+					}
+				]
 			},
 			"type": "object"
 		}

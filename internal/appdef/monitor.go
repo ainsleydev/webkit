@@ -16,13 +16,15 @@ type (
 	//
 	// Field usage by monitor type:
 	// - HTTP monitors: URL contains the full URL (including path), Method contains HTTP method
+	// - DNS monitors: Domain contains the domain name to check
 	// - Database monitors: URL contains database connection string or Terraform reference, Method is empty
 	// - Push monitors: URL and Method are empty
 	Monitor struct {
 		Name   string      // Unique monitor name.
-		Type   MonitorType // Monitor type (http, postgres, push).
+		Type   MonitorType // Monitor type (http, dns, postgres, push).
 		URL    string      // URL for HTTP monitors, database connection string for postgres monitors.
 		Method string      // HTTP method for HTTP monitors (e.g., "GET"), empty for other types.
+		Domain string      // Domain name for DNS monitors.
 	}
 	// MonitorType defines the type of monitor.
 	MonitorType string
@@ -31,6 +33,7 @@ type (
 // MonitorType constants.
 const (
 	MonitorTypeHTTP     MonitorType = "http"
+	MonitorTypeDNS      MonitorType = "dns"
 	MonitorTypePostgres MonitorType = "postgres"
 	MonitorTypePush     MonitorType = "push"
 )
@@ -40,9 +43,9 @@ func (m MonitorType) String() string {
 	return string(m)
 }
 
-// GenerateMonitors creates HTTP monitors for all domains in the app.
-// It generates one monitor per domain (primary + aliases), excluding unmanaged domains.
-// Monitoring must be explicitly enabled in the app configuration.
+// GenerateMonitors creates HTTP and DNS monitors for all domains in the app.
+// It generates two monitors per domain (HTTP + DNS) for primary and alias domains,
+// excluding unmanaged domains. Monitoring must be explicitly enabled in the app configuration.
 func (a *App) GenerateMonitors() []Monitor {
 	if !a.Monitoring.Enabled {
 		return nil
@@ -50,18 +53,26 @@ func (a *App) GenerateMonitors() []Monitor {
 
 	monitors := make([]Monitor, 0)
 
-	// Create HTTP monitor for each domain (primary + aliases).
-	// Monitors check the root path "/" for simplicity.
 	for _, domain := range a.Domains {
 		if domain.Type == DomainTypeUnmanaged {
 			continue
 		}
 
+		sanitisedName := sanitiseMonitorName(domain.Name)
+
+		// HTTP monitor - checks the availability of the web application.
 		monitors = append(monitors, Monitor{
-			Name:   fmt.Sprintf("%s-%s", a.Name, sanitiseMonitorName(domain.Name)),
+			Name:   fmt.Sprintf("%s-%s", a.Name, sanitisedName),
 			Type:   MonitorTypeHTTP,
 			URL:    fmt.Sprintf("https://%s", domain.Name),
 			Method: "GET",
+		})
+
+		// DNS monitor - checks domain name resolution.
+		monitors = append(monitors, Monitor{
+			Name:   fmt.Sprintf("%s-%s", a.Name, sanitisedName),
+			Type:   MonitorTypeDNS,
+			Domain: domain.Name,
 		})
 	}
 

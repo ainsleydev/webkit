@@ -104,12 +104,25 @@ variable "resources" {
 variable "monitors" {
   type = list(object({
     name   = string
-    type   = string # "http", "postgres", "push"
+    type   = string # "http", "dns", "push"
     url    = optional(string)
     method = optional(string)
+    domain = optional(string) # For DNS monitors
   }))
-  description = "List of monitors to create in Uptime Kuma. Defaults (interval, retries, etc.) are applied based on monitor type."
+  description = "List of monitors to create in Peekaping. Defaults (interval, retries, etc.) are applied based on monitor type."
   default     = []
+}
+
+variable "brand_primary_color" {
+  type        = string
+  description = "Primary brand colour for monitor tags (hex format)"
+  default     = null
+}
+
+variable "brand_logo_url" {
+  type        = string
+  description = "Logo URL for status page"
+  default     = null
 }
 
 variable "apps" {
@@ -180,22 +193,22 @@ variable "slack_bot_token" {
   sensitive   = true
 }
 
-variable "uptime_kuma_url" {
+variable "peekaping_endpoint" {
   type        = string
-  description = "Uptime Kuma Web API adapter URL"
+  description = "Peekaping API endpoint URL"
   default     = "https://uptime.ainsley.dev"
 }
 
-variable "uptime_kuma_username" {
+variable "peekaping_email" {
   type        = string
-  description = "Uptime Kuma username for authentication (only required when monitoring is enabled)"
+  description = "Peekaping account email for authentication (only required when monitoring is enabled)"
   default     = ""
   sensitive   = true
 }
 
-variable "uptime_kuma_password" {
+variable "peekaping_password" {
   type        = string
-  description = "Uptime Kuma password for authentication (only required when monitoring is enabled)"
+  description = "Peekaping account password for authentication (only required when monitoring is enabled)"
   default     = ""
   sensitive   = true
 }

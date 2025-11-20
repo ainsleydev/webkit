@@ -60,9 +60,9 @@ func setupEnv(t *testing.T) {
 	t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
 	t.Setenv("SLACK_USER_TOKEN", "xoxp-test-token")
 	t.Setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/test")
-	t.Setenv("UPTIME_KUMA_URL", "https://uptime.test.dev")
-	t.Setenv("UPTIME_KUMA_USERNAME", "test-admin")
-	t.Setenv("UPTIME_KUMA_PASSWORD", "test-password")
+	t.Setenv("PEEKAPING_ENDPOINT", "https://uptime.test.dev")
+	t.Setenv("PEEKAPING_EMAIL", "test@example.com")
+	t.Setenv("PEEKAPING_PASSWORD", "test-password")
 }
 
 func teardownEnv(t *testing.T) {

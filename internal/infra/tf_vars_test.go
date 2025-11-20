@@ -771,13 +771,18 @@ func TestGenerateMonitors(t *testing.T) {
 
 		tf := setupTfVars(t, input)
 		monitors := tf.generateMonitors(env.Production)
-		require.Len(t, monitors, 1)
+		require.Len(t, monitors, 2) // HTTP + DNS
 
-		m := monitors[0]
-		assert.Equal(t, "web-example-com", m.Name)
-		assert.Equal(t, "http", m.Type)
-		assert.Equal(t, "https://example.com", m.URL)
-		assert.Equal(t, "GET", m.Method)
+		// HTTP monitor.
+		assert.Equal(t, "web-example-com", monitors[0].Name)
+		assert.Equal(t, "http", monitors[0].Type)
+		assert.Equal(t, "https://example.com", monitors[0].URL)
+		assert.Equal(t, "GET", monitors[0].Method)
+
+		// DNS monitor.
+		assert.Equal(t, "web-example-com", monitors[1].Name)
+		assert.Equal(t, "dns", monitors[1].Type)
+		assert.Equal(t, "example.com", monitors[1].Domain)
 	})
 
 	t.Run("App With Monitoring Disabled", func(t *testing.T) {
@@ -825,11 +830,20 @@ func TestGenerateMonitors(t *testing.T) {
 
 		tf := setupTfVars(t, input)
 		monitors := tf.generateMonitors(env.Production)
-		require.Len(t, monitors, 3)
+		require.Len(t, monitors, 6) // 3 domains × 2 types (HTTP + DNS)
 
 		assert.Equal(t, "web-example-com", monitors[0].Name)
-		assert.Equal(t, "web-www-example-com", monitors[1].Name)
-		assert.Equal(t, "api-api-example-com", monitors[2].Name)
+		assert.Equal(t, "http", monitors[0].Type)
+		assert.Equal(t, "web-example-com", monitors[1].Name)
+		assert.Equal(t, "dns", monitors[1].Type)
+		assert.Equal(t, "web-www-example-com", monitors[2].Name)
+		assert.Equal(t, "http", monitors[2].Type)
+		assert.Equal(t, "web-www-example-com", monitors[3].Name)
+		assert.Equal(t, "dns", monitors[3].Type)
+		assert.Equal(t, "api-api-example-com", monitors[4].Name)
+		assert.Equal(t, "http", monitors[4].Type)
+		assert.Equal(t, "api-api-example-com", monitors[5].Name)
+		assert.Equal(t, "dns", monitors[5].Type)
 	})
 
 	t.Run("Mixed Apps And Resources", func(t *testing.T) {
@@ -857,10 +871,15 @@ func TestGenerateMonitors(t *testing.T) {
 
 		tf := setupTfVars(t, input)
 		monitors := tf.generateMonitors(env.Production)
-		require.Len(t, monitors, 1) // Only app monitors, resource monitors disabled
+		require.Len(t, monitors, 2) // HTTP + DNS (resource monitoring not implemented)
 
+		// HTTP monitor.
 		assert.Equal(t, "web-example-com", monitors[0].Name)
 		assert.Equal(t, "http", monitors[0].Type)
+
+		// DNS monitor.
+		assert.Equal(t, "web-example-com", monitors[1].Name)
+		assert.Equal(t, "dns", monitors[1].Type)
 	})
 }
 

@@ -25,9 +25,9 @@ func TestParseTFEnvironment(t *testing.T) {
 		t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
 		t.Setenv("SLACK_USER_TOKEN", "xoxp-test-token")
 		t.Setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/test")
-		t.Setenv("UPTIME_KUMA_URL", "https://uptime.test.dev")
-		t.Setenv("UPTIME_KUMA_USERNAME", "test-admin")
-		t.Setenv("UPTIME_KUMA_PASSWORD", "test-password")
+		t.Setenv("PEEKAPING_ENDPOINT", "https://uptime.test.dev")
+		t.Setenv("PEEKAPING_EMAIL", "test@example.com")
+		t.Setenv("PEEKAPING_PASSWORD", "test-password")
 
 		cfg, err := ParseTFEnvironment()
 		assert.NoError(t, err)
@@ -44,9 +44,9 @@ func TestParseTFEnvironment(t *testing.T) {
 		assert.Equal(t, "xoxb-test-token", cfg.SlackBotToken)
 		assert.Equal(t, "xoxp-test-token", cfg.SlackUserToken)
 		assert.Equal(t, "https://hooks.slack.com/services/test", cfg.SlackWebhookURL)
-		assert.Equal(t, "https://uptime.test.dev", cfg.UptimeKumaURL)
-		assert.Equal(t, "test-admin", cfg.UptimeKumaUsername)
-		assert.Equal(t, "test-password", cfg.UptimeKumaPassword)
+		assert.Equal(t, "https://uptime.test.dev", cfg.PeekapingEndpoint)
+		assert.Equal(t, "test@example.com", cfg.PeekapingEmail)
+		assert.Equal(t, "test-password", cfg.PeekapingPassword)
 	})
 
 	t.Run("Failure", func(t *testing.T) {

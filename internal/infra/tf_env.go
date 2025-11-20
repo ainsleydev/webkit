@@ -22,9 +22,9 @@ type TFEnvironment struct {
 	SlackBotToken               string `env:"SLACK_BOT_TOKEN,required"`
 	SlackUserToken              string `env:"SLACK_USER_TOKEN,required"`
 	SlackWebhookURL             string `env:"SLACK_WEBHOOK_URL"`
-	UptimeKumaURL               string `env:"UPTIME_KUMA_URL,required"`
-	UptimeKumaUsername          string `env:"UPTIME_KUMA_USERNAME,required"`
-	UptimeKumaPassword          string `env:"UPTIME_KUMA_PASSWORD,required"`
+	PeekapingEndpoint           string `env:"PEEKAPING_ENDPOINT,required"`
+	PeekapingEmail              string `env:"PEEKAPING_EMAIL,required"`
+	PeekapingPassword           string `env:"PEEKAPING_PASSWORD,required"`
 }
 
 // ParseTFEnvironment reads and validates Terraform-related
@@ -52,8 +52,8 @@ func (t *TFEnvironment) varStrings() []string {
 		"github_token_classic=" + t.GithubTokenClassic,
 		"slack_bot_token=" + t.SlackBotToken,
 		"slack_user_token=" + t.SlackUserToken,
-		"uptime_kuma_url=" + t.UptimeKumaURL,
-		"uptime_kuma_username=" + t.UptimeKumaUsername,
-		"uptime_kuma_password=" + t.UptimeKumaPassword,
+		"peekaping_endpoint=" + t.PeekapingEndpoint,
+		"peekaping_email=" + t.PeekapingEmail,
+		"peekaping_password=" + t.PeekapingPassword,
 	}
 }

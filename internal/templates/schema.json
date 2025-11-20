@@ -14,35 +14,8 @@
 					"description": "Build configuration for Docker containerisation"
 				},
 				"commands": {
-					"description": "Custom commands for linting, testing, formatting, and building",
-					"type": "object",
-					"additionalProperties": {
-						"oneOf": [
-							{
-								"type": "boolean"
-							},
-							{
-								"type": "string"
-							},
-							{
-								"type": "object",
-								"properties": {
-									"command": {
-										"description": "The shell command to execute (e.g., 'pnpm build')",
-										"type": "string"
-									},
-									"skip_ci": {
-										"description": "Whether to skip running this command in CI/CD pipelines",
-										"type": "boolean"
-									},
-									"timeout": {
-										"description": "Maximum execution time for the command (e.g., '5m', '1h')",
-										"type": "string"
-									}
-								}
-							}
-						]
-					}
+					"$ref": "#/definitions/TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]",
+					"description": "Custom commands for linting, testing, formatting, and building"
 				},
 				"description": {
 					"description": "Brief description of the app's purpose and functionality",
@@ -65,6 +38,10 @@
 				"infra": {
 					"$ref": "#/definitions/AppdefInfra",
 					"description": "Infrastructure and deployment configuration"
+				},
+				"monitoring": {
+					"$ref": "#/definitions/AppdefMonitoring",
+					"description": "Uptime monitoring configuration for this app"
 				},
 				"name": {
 					"description": "Unique identifier for the app (lowercase, hyphenated)",
@@ -102,6 +79,23 @@
 						"null",
 						"boolean"
 					]
+				}
+			},
+			"type": "object"
+		},
+		"AppdefBrand": {
+			"properties": {
+				"logoUrl": {
+					"description": "URL to the project's logo image",
+					"type": "string"
+				},
+				"primaryColor": {
+					"description": "Primary brand colour in hex format (e.g., #3B82F6)",
+					"type": "string"
+				},
+				"secondaryColor": {
+					"description": "Secondary brand colour in hex format (e.g., #10B981)",
+					"type": "string"
 				}
 			},
 			"type": "object"
@@ -223,17 +217,21 @@
 			},
 			"type": "object"
 		},
-		"AppdefNotifications": {
+		"AppdefMonitoring": {
 			"properties": {
-				"webhook_url": {
-					"description": "Webhook URL for sending notifications (e.g., Slack webhook)",
-					"type": "string"
+				"enabled": {
+					"description": "Whether to enable uptime monitoring for this app or resource (defaults to true)",
+					"type": "boolean"
 				}
 			},
 			"type": "object"
 		},
 		"AppdefProject": {
 			"properties": {
+				"brand": {
+					"$ref": "#/definitions/AppdefBrand",
+					"description": "Branding configuration for the project including colours and logo"
+				},
 				"description": {
 					"description": "Brief description of the project's purpose and functionality",
 					"type": "string"
@@ -276,6 +274,10 @@
 				"description": {
 					"description": "Brief description of the resource's purpose and functionality",
 					"type": "string"
+				},
+				"monitoring": {
+					"$ref": "#/definitions/AppdefMonitoring",
+					"description": "Uptime monitoring configuration for this resource"
 				},
 				"name": {
 					"description": "Unique identifier for the resource (used in environment variable references)",
@@ -341,6 +343,37 @@
 				}
 			},
 			"type": "object"
+		},
+		"TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]": {
+			"additionalProperties": {
+				"properties": {
+					"command": {
+						"description": "The shell command to execute (e.g., 'pnpm build')",
+						"type": "string"
+					},
+					"skip_ci": {
+						"description": "Whether to skip running this command in CI/CD pipelines",
+						"type": "boolean"
+					},
+					"timeout": {
+						"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"oneOf": [
+					{
+						"type": "boolean"
+					},
+					{
+						"type": "string"
+					},
+					{
+						"$ref": "#"
+					}
+				]
+			},
+			"type": "object"
 		}
 	},
 	"properties": {
@@ -358,10 +391,6 @@
 				"array",
 				"null"
 			]
-		},
-		"notifications": {
-			"$ref": "#/definitions/AppdefNotifications",
-			"description": "Alert and notification settings for the project"
 		},
 		"project": {
 			"$ref": "#/definitions/AppdefProject",
