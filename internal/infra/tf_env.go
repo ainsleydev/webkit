@@ -23,8 +23,7 @@ type TFEnvironment struct {
 	SlackUserToken              string `env:"SLACK_USER_TOKEN,required"`
 	SlackWebhookURL             string `env:"SLACK_WEBHOOK_URL"`
 	PeekapingEndpoint           string `env:"PEEKAPING_ENDPOINT"`
-	PeekapingEmail              string `env:"PEEKAPING_EMAIL"`
-	PeekapingPassword           string `env:"PEEKAPING_PASSWORD"`
+	PeekapingAPIKey             string `env:"PEEKAPING_API_KEY"`
 }
 
 // ParseTFEnvironment reads and validates Terraform-related
@@ -59,11 +58,8 @@ func (t *TFEnvironment) varStrings() []string {
 	if t.PeekapingEndpoint != "" {
 		vars = append(vars, "peekaping_endpoint="+t.PeekapingEndpoint)
 	}
-	if t.PeekapingEmail != "" {
-		vars = append(vars, "peekaping_email="+t.PeekapingEmail)
-	}
-	if t.PeekapingPassword != "" {
-		vars = append(vars, "peekaping_password="+t.PeekapingPassword)
+	if t.PeekapingAPIKey != "" {
+		vars = append(vars, "peekaping_api_key="+t.PeekapingAPIKey)
 	}
 
 	return vars

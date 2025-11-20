@@ -1,6 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/ainsleydev/webkit/main/schema.json",
-	"webkit_version": "v0.4.9",
+	"webkit_version": "v0.6.0",
 	"project": {
 		"name": "my-website",
 		"title": "My Website",
@@ -8,9 +8,9 @@
 		"repo": {
 			"owner": "ainsleydev",
 			"name": ""
-		}
+		},
+		"brand": {}
 	},
-	"notifications": {},
 	"shared": {
 		"env": {
 			"dev": {
@@ -39,6 +39,9 @@
 			},
 			"backup": {
 				"enabled": true
+			},
+			"monitoring": {
+				"enabled": true
 			}
 		},
 		{
@@ -51,6 +54,9 @@
 				"region": "ams3"
 			},
 			"backup": {
+				"enabled": true
+			},
+			"monitoring": {
 				"enabled": true
 			}
 		}
@@ -87,6 +93,9 @@
 					"DATABASE_URL": {"source": "resource", "value": "db.connection_url"},
 					"PAYLOAD_SECRET": {"source": "sops", "value": "PAYLOAD_SECRET"}
 				}
+			},
+			"monitoring": {
+				"enabled": true
 			},
 			"usesNPM": null,
 			"domains": [
@@ -130,6 +139,9 @@
 					"PUBLIC_API_URL": {"source": "value", "value": "https://api.my-website.com"}
 				}
 			},
+			"monitoring": {
+				"enabled": true
+			},
 			"usesNPM": null,
 			"commands": {
 				"build": {"command": "pnpm build"},
@@ -154,6 +166,9 @@
 				"config": null
 			},
 			"env": {},
+			"monitoring": {
+				"enabled": true
+			},
 			"usesNPM": null,
 			"tools": {
 				"golangci-lint": {"type": "go", "name": "github.com/golangci/golangci-lint/cmd/golangci-lint", "version": "latest"},
