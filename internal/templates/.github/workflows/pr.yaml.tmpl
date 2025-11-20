@@ -253,9 +253,9 @@ jobs:
           GITHUB_TOKEN_CLASSIC: {{ ghSecret "ORG_GITHUB_TOKEN_CLASSIC" }}
           SLACK_BOT_TOKEN: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
           SLACK_USER_TOKEN: {{ ghSecret "ORG_SLACK_USER_TOKEN" }}
-          UPTIME_KUMA_URL: {{ ghSecret "ORG_UPTIME_KUMA_URL" }}
-          UPTIME_KUMA_USERNAME: {{ ghSecret "ORG_UPTIME_KUMA_USERNAME" }}
-          UPTIME_KUMA_PASSWORD: {{ ghSecret "ORG_UPTIME_KUMA_PASSWORD" }}
+          PEEKAPING_ENDPOINT: {{ ghSecret "ORG_PEEKAPING_ENDPOINT" }}
+          PEEKAPING_EMAIL: {{ ghSecret "ORG_PEEKAPING_EMAIL" }}
+          PEEKAPING_PASSWORD: {{ ghSecret "ORG_PEEKAPING_PASSWORD" }}
         run: |
           echo "🔍 Running terraform plan for production environment..."
 
