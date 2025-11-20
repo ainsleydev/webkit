@@ -42,35 +42,38 @@ func (m MonitorType) String() string {
 	return string(m)
 }
 
-// GenerateMonitors creates HTTP and DNS monitors for all domains in the app.
+// GenerateMonitors creates HTTP and DNS monitors for all apps in the definition.
 // It generates two monitors per domain (HTTP + DNS) for primary and alias domains,
-// excluding unmanaged domains. Monitoring must be explicitly enabled in the app configuration.
-func (a *App) GenerateMonitors() []Monitor {
-	if !a.Monitoring.Enabled {
-		return nil
-	}
-
+// excluding unmanaged domains. Monitoring must be explicitly enabled in each app's configuration.
+// Monitor names include both the project title and app title for clarity on the dashboard.
+func (d *Definition) GenerateMonitors() []Monitor {
 	monitors := make([]Monitor, 0)
 
-	for _, domain := range a.Domains {
-		if domain.Type == DomainTypeUnmanaged {
+	for _, app := range d.Apps {
+		if !app.Monitoring.Enabled {
 			continue
 		}
 
-		// HTTP monitor - checks the availability of the web application.
-		monitors = append(monitors, Monitor{
-			Name:   fmt.Sprintf("%s - %s", a.Title, domain.Name),
-			Type:   MonitorTypeHTTP,
-			URL:    fmt.Sprintf("https://%s", domain.Name),
-			Method: "GET",
-		})
+		for _, domain := range app.Domains {
+			if domain.Type == DomainTypeUnmanaged {
+				continue
+			}
 
-		// DNS monitor - checks domain name resolution.
-		monitors = append(monitors, Monitor{
-			Name:   fmt.Sprintf("%s DNS - %s", a.Title, domain.Name),
-			Type:   MonitorTypeDNS,
-			Domain: domain.Name,
-		})
+			// HTTP monitor - checks the availability of the web application.
+			monitors = append(monitors, Monitor{
+				Name:   fmt.Sprintf("%s, %s - %s", d.Project.Title, app.Title, domain.Name),
+				Type:   MonitorTypeHTTP,
+				URL:    fmt.Sprintf("https://%s", domain.Name),
+				Method: "GET",
+			})
+
+			// DNS monitor - checks domain name resolution.
+			monitors = append(monitors, Monitor{
+				Name:   fmt.Sprintf("%s, %s DNS - %s", d.Project.Title, app.Title, domain.Name),
+				Type:   MonitorTypeDNS,
+				Domain: domain.Name,
+			})
+		}
 	}
 
 	return monitors
