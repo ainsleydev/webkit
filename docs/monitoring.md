@@ -1,20 +1,22 @@
-# Monitoring with Uptime Kuma
+# Monitoring with Peekaping
 
-WebKit automatically configures Uptime Kuma monitoring for applications.
+WebKit automatically configures Peekaping monitoring for applications.
 
 ## Overview
 
 Monitoring is **enabled by default** (opt-out) for all apps with Terraform management. WebKit currently supports:
 
 1. **HTTP monitors** - Monitor application uptime via HTTP/HTTPS requests
-
-**Note:** Resource monitoring (databases, backup heartbeats) has been temporarily disabled to simplify the initial implementation. It can be re-enabled in the future when needed.
+2. **DNS monitors** - Monitor domain resolution
+3. **Push monitors** - Heartbeat monitoring for backup jobs and scheduled tasks
+4. **Status pages** - Public status pages showing service health
+5. **Slack notifications** - Automatic alerts via Slack webhooks
 
 ## Configuration
 
 ### Enabling/Disabling Monitoring
 
-Monitoring is enabled by default. To disable for a specific app or resource:
+Monitoring is enabled by default. To disable for a specific app:
 
 ```json
 {
@@ -29,22 +31,27 @@ Monitoring is enabled by default. To disable for a specific app or resource:
 }
 ```
 
-### Uptime Kuma Configuration
+### Peekaping Configuration
 
 Add the following to your `.env.production.enc` file (encrypted with SOPS):
 
 ```bash
-TF_VAR_uptime_kuma_username=admin
-TF_VAR_uptime_kuma_password=<your-password>
+PEEKAPING_ENDPOINT=https://peekaping.example.com
+PEEKAPING_EMAIL=admin@example.com
+PEEKAPING_PASSWORD=<your-password>
 ```
 
-The Uptime Kuma URL is configured in `platform/terraform/base/variables.tf`:
+These credentials are used by the Terraform provider to authenticate with your Peekaping instance.
 
-```hcl
-variable "uptime_kuma_url" {
-  default = "https://uptime.ainsley.dev"
-}
+### Slack Notifications (Optional)
+
+To enable Slack notifications, configure a webhook URL:
+
+```bash
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ```
+
+All monitors will automatically send alerts to this Slack channel when services go down.
 
 ## What Gets Monitored
 
@@ -52,8 +59,10 @@ variable "uptime_kuma_url" {
 
 - **All domains** (primary + aliases) are monitored via HTTP/HTTPS
 - Check interval: Every 60 seconds
-- Retry interval: 60 seconds
+- Timeout: 30 seconds
 - Max retries: 3
+- Retry interval: 60 seconds
+- Resend interval: 10 minutes (how often to resend alerts)
 
 Example monitor created for app with multiple domains:
 
@@ -71,7 +80,7 @@ Example monitor created for app with multiple domains:
 }
 ```
 
-This creates two monitors:
+This creates two HTTP monitors:
 - `{project-name}-web-example-com`
 - `{project-name}-web-www-example-com`
 
@@ -80,23 +89,84 @@ This creates two monitors:
 ### HTTP Monitor Configuration
 
 ```
-Name:           {project-name}-{app-name}-{domain}
-Type:           http
-URL:            https://{domain}
-Method:         GET
-Interval:       60s
-Retry Interval: 60s
-Max Retries:    3
-TLS Validation: Enabled
-Upside Down:    false
-Ignore TLS:     false
+Name:               {project-name}-{app-name}-{domain}
+Type:               http
+URL:                https://{domain}
+Method:             GET
+Encoding:           json
+Accepted Status:    2XX
+Auth Method:        none
+Interval:           60s
+Timeout:            30s
+Retry Interval:     60s
+Max Retries:        3
+Resend Interval:    10m
 ```
 
-## Notifications
+### DNS Monitor Configuration
 
-Notifications are configured manually in the Uptime Kuma UI. The `ehealth-co-id/uptimekuma` provider does not currently support automatic notification configuration via Terraform.
+```
+Name:               {project-name}-{app-name}-{domain}-dns
+Type:               dns
+Hostname:           {domain}
+Resolver:           1.1.1.1 (Cloudflare)
+DNS Type:           A
+Interval:           300s (5 minutes)
+Timeout:            30s
+Retry Interval:     60s
+Max Retries:        3
+Resend Interval:    10m
+```
 
-**Note:** Notification IDs cannot be linked to monitors through Terraform with the current provider version.
+### Push Monitor Configuration (Heartbeats)
+
+```
+Name:               {project-name}-{resource-name}-backup
+Type:               push
+Max Retries:        2
+Retry Interval:     60s
+Resend Interval:    10m
+```
+
+Push monitors are used for backup job monitoring. The backup job pings the monitor URL on success, and if no ping is received within the expected interval, an alert is sent.
+
+## Tags and Organization
+
+Each monitor is automatically tagged with:
+
+- **Project Tag**: Your project title with brand color
+- **Environment Tag**: `Production`, `Staging`, etc.
+- **WebKit Tag**: Green tag indicating WebKit-managed infrastructure
+
+Tags help organize and filter monitors in the Peekaping UI.
+
+## Status Pages
+
+WebKit automatically creates a public status page for your project at:
+
+```
+https://peekaping.example.com/status/{project-name}
+```
+
+The status page shows:
+- Real-time health of all monitored services
+- Historical uptime data
+- Incident information
+- Custom branding (logo and colors from `app.json`)
+
+Configure status page branding in your `app.json`:
+
+```json
+{
+  "project": {
+    "title": "My Project",
+    "brand": {
+      "logo_url": "https://example.com/logo.png",
+      "primary_color": "#3B82F6"
+    }
+  }
+}
+```
 
 ## Implementation Details
 
@@ -111,12 +181,22 @@ Notifications are configured manually in the Uptime Kuma UI. The `ehealth-co-id/
 
 3. **Terraform Layer** (`internal/infra/tf_vars.go`):
    - Transforms appdef.Monitor to tfMonitor
-   - Generates monitor list for Terraform variables (only HTTP monitors currently)
+   - Generates monitor list for Terraform variables
 
 4. **Infrastructure Layer** (`platform/terraform/modules/monitoring`):
-   - Creates Uptime Kuma monitors via ehealth-co-id/uptimekuma provider
-   - Only HTTP monitors currently implemented
+   - Creates Peekaping monitors via tafaust/peekaping provider
+   - Creates tags, notifications, and status pages
    - Outputs monitor IDs and details
+
+### Provider
+
+WebKit uses the [tafaust/peekaping](https://registry.terraform.io/providers/tafaust/peekaping) Terraform provider, which supports:
+
+- HTTP, DNS, and Push monitors
+- Slack notifications
+- Public status pages
+- Tags for organization
+- Full API support for Peekaping instances
 
 ### Monitor Generation Flow
 
@@ -133,9 +213,9 @@ tfMonitor transformation (name, type, url, method)
   ↓
 Terraform variables (webkit.auto.tfvars.json)
   ↓
-monitoring module (applies interval, retries, etc.)
+monitoring module (applies interval, retries, notifications, tags)
   ↓
-Uptime Kuma HTTP monitors created
+Peekaping monitors, status page created
 ```
 
 ## Troubleshooting
@@ -149,47 +229,69 @@ Check that monitoring is enabled (default) and apps have domains:
 cat .webkit/terraform/base/webkit.auto.tfvars.json | jq '.monitors'
 ```
 
-Monitors are only created for apps with domains. Resources (databases, etc.) are not currently monitored.
+Monitors are only created for apps with domains. Resource monitors (databases with push heartbeats) are planned for future releases.
 
-### Uptime Kuma authentication fails
+### Peekaping authentication fails
 
 Verify credentials in `.env.production.enc`:
 
 ```bash
 # Decrypt and check
-sops -d .env.production.enc | grep UPTIME_KUMA
+sops -d .env.production.enc | grep PEEKAPING
 ```
+
+Ensure the credentials match your Peekaping instance admin account.
 
 ### Terraform provider errors
 
-The Uptime Kuma provider requires the Web API adapter. Verify:
+The Peekaping provider requires:
 
-1. Uptime Kuma Web API is running at configured URL
-2. Credentials are correct
-3. Provider version is compatible
+1. Peekaping instance is running and accessible at the configured endpoint
+2. Credentials are correct (email + password)
+3. Provider version is compatible (`~> 0.1.1`)
+
+Check Terraform logs for detailed error messages:
+
+```bash
+./webkit infra plan
+```
+
+### Slack notifications not working
+
+Verify webhook URL:
+
+```bash
+# Test the webhook manually
+curl -X POST -H 'Content-type: application/json' \
+  --data '{"text":"Test from WebKit"}' \
+  YOUR_SLACK_WEBHOOK_URL
+```
+
+If the manual test works but monitors aren't sending alerts, check the notification configuration in Peekaping UI.
 
 ## Future Enhancements
 
-1. **Re-enable resource monitoring**:
+1. **Resource monitoring**:
    - Postgres database connection health checks
-   - Backup heartbeat monitoring (push monitors)
+   - Backup heartbeat monitoring (push monitors) for automated backups
    - Other database types (MySQL, MongoDB, Redis)
 
-2. **Enhance provider support**:
-   - Fork or contribute to ehealth-co-id/uptimekuma provider to add:
-     - `notification_id_list` support
-     - `accepted_status_codes` support
-     - Better database monitor support
-
-3. **Expose more configuration options** in `app.json`:
-   - Custom check intervals
-   - Expected status codes
+2. **Enhanced configuration** in `app.json`:
+   - Custom check intervals per app
+   - Expected status codes per endpoint
    - Custom health check paths
+   - Authentication for health checks
 
-4. **Automated notification management**:
-   - Create Slack notifications via Terraform
-   - Auto-link monitors to notification channels
+3. **Multi-region monitoring**:
+   - Check endpoints from multiple geographic locations
+   - Regional status pages
 
-5. **Status pages**:
-   - Auto-create public status pages
-   - Group monitors by project
+4. **Advanced alerting**:
+   - Multiple notification channels (email, PagerDuty, etc.)
+   - Alert escalation policies
+   - Maintenance windows
+
+5. **Performance metrics**:
+   - Response time tracking
+   - SLA monitoring and reporting
+   - Historical performance graphs
