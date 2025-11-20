@@ -42,3 +42,9 @@ variable "brand_logo_url" {
   type        = string
   default     = null
 }
+
+variable "status_page_domain" {
+  description = "Custom domain for status page (e.g., status.example.com)"
+  type        = string
+  default     = null
+}
