@@ -190,7 +190,7 @@ resource "peekaping_status_page" "this" {
   published   = true
   theme       = "auto"
   icon        = var.brand_logo_url
-  domain      = var.status_page_domain
+  domains     = var.status_page_domain != null ? [var.status_page_domain] : []
   monitor_ids = concat(
     [for m in peekaping_monitor.http : m.id],
     [for m in peekaping_monitor.dns : m.id],
