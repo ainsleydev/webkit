@@ -205,7 +205,7 @@ jobs:
   terraform-plan-production:
     runs-on: ubuntu-latest
     needs: [setup-webkit, detect-changes]
-    if: ${{ needs.detect-changes.outputs.shared-changed }} == 'true' && github.actor != 'dependabot[bot]'
+    if: needs.detect-changes.outputs.shared-changed == 'true' && github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -254,6 +254,8 @@ jobs:
           GITHUB_TOKEN_CLASSIC: ${{ secrets.ORG_GITHUB_TOKEN_CLASSIC }}
           SLACK_BOT_TOKEN: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
           SLACK_USER_TOKEN: ${{ secrets.ORG_SLACK_USER_TOKEN }}
+          PEEKAPING_ENDPOINT: ${{ secrets.ORG_PEEKAPING_ENDPOINT }}
+          PEEKAPING_API_KEY: ${{ secrets.ORG_PEEKAPING_API_KEY }}
         run: |
           echo "🔍 Running terraform plan for production environment..."
 
@@ -387,10 +389,53 @@ jobs:
           echo "Validation failed. Please fix the errors in app.json"
           exit 1
 
+  claude-code-review:
+    # Only run when PR is first opened, not on subsequent commits
+    # Skip automated bot PRs (dependabot, ainsley-dev-bot, github-actions)
+    if: github.event.action == 'opened' && github.actor != 'dependabot[bot]' && github.actor != 'ainsley-dev-bot[bot]' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.ORG_CLAUDE_CODE_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Please review this pull request and provide feedback on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Performance considerations
+            - Security concerns
+            - Test coverage
+
+            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
+
+            IMPORTANT: Do not use emojis in your review comments. Keep the feedback professional and text-only.
+
+            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+
   app-cms:
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.cms-changed }} == 'true' || ${{ needs.detect-changes.outputs.shared-changed }} == 'true'
+    if: needs.detect-changes.outputs.cms-changed == 'true' || needs.detect-changes.outputs.shared-changed == 'true'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -427,7 +472,7 @@ jobs:
   app-web:
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.web-changed }} == 'true' || ${{ needs.detect-changes.outputs.shared-changed }} == 'true'
+    if: needs.detect-changes.outputs.web-changed == 'true' || needs.detect-changes.outputs.shared-changed == 'true'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -464,7 +509,7 @@ jobs:
   app-api:
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.api-changed }} == 'true' || ${{ needs.detect-changes.outputs.shared-changed }} == 'true'
+    if: needs.detect-changes.outputs.api-changed == 'true' || needs.detect-changes.outputs.shared-changed == 'true'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -477,9 +522,9 @@ jobs:
           go-version: '1.25'
       - name: Install Build Tools
         run: |
-          go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
           go install github.com/a-h/templ/cmd/templ@latest
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
       - name: Build
         working-directory: api
@@ -499,7 +544,7 @@ jobs:
   migration-check-cms:
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.cms-changed }} == 'true' || ${{ needs.detect-changes.outputs.shared-changed }} == 'true'
+    if: needs.detect-changes.outputs.cms-changed == 'true' || needs.detect-changes.outputs.shared-changed == 'true'
     env:
       DO_ACCESS_TOKEN: ${{ secrets.REPO_DO_ACCESS_TOKEN || secrets.ORG_DO_ACCESS_TOKEN }}
     steps:

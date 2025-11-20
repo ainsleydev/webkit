@@ -254,8 +254,7 @@ jobs:
           SLACK_BOT_TOKEN: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
           SLACK_USER_TOKEN: {{ ghSecret "ORG_SLACK_USER_TOKEN" }}
           PEEKAPING_ENDPOINT: {{ ghSecret "ORG_PEEKAPING_ENDPOINT" }}
-          PEEKAPING_EMAIL: {{ ghSecret "ORG_PEEKAPING_EMAIL" }}
-          PEEKAPING_PASSWORD: {{ ghSecret "ORG_PEEKAPING_PASSWORD" }}
+          PEEKAPING_API_KEY: {{ ghSecret "ORG_PEEKAPING_API_KEY" }}
         run: |
           echo "🔍 Running terraform plan for production environment..."
 

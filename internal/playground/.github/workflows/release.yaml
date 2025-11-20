@@ -148,6 +148,8 @@ jobs:
       GITHUB_TOKEN_CLASSIC: ${{ secrets.ORG_GITHUB_TOKEN_CLASSIC }}
       SLACK_BOT_TOKEN: ${{ secrets.ORG_SLACK_BOT_TOKEN }}
       SLACK_USER_TOKEN: ${{ secrets.ORG_SLACK_USER_TOKEN }}
+      PEEKAPING_ENDPOINT: ${{ secrets.ORG_PEEKAPING_ENDPOINT }}
+      PEEKAPING_API_KEY: ${{ secrets.ORG_PEEKAPING_API_KEY }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5

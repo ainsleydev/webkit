@@ -199,16 +199,9 @@ variable "peekaping_endpoint" {
   default     = ""
 }
 
-variable "peekaping_email" {
+variable "peekaping_api_key" {
   type        = string
-  description = "Peekaping account email for authentication (only required when monitoring is enabled)"
-  default     = ""
-  sensitive   = true
-}
-
-variable "peekaping_password" {
-  type        = string
-  description = "Peekaping account password for authentication (only required when monitoring is enabled)"
+  description = "Peekaping API key for authentication (only required when monitoring is enabled)"
   default     = ""
   sensitive   = true
 }

@@ -1,6 +1,6 @@
 {
-	"version": "v0.4.9",
-	"generated_at": "2025-11-16T17:58:36.237392Z",
+	"version": "v0.6.0",
+	"generated_at": "2025-11-20T13:42:31.974525Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -41,6 +41,14 @@
 			"hash": "a8fe69d1307bb151b5ac9088d4f157dfddea20b5c66a91daf497cc374c75e327",
 			"scaffolded": false,
 			"generated_at": "2025-11-12T09:39:12.702907Z"
+		},
+		".github/actions/detect-infra-changes/action.yaml": {
+			"path": ".github/actions/detect-infra-changes/action.yaml",
+			"generator": "cicd:ActionTemplates",
+			"source": "project",
+			"hash": "bcd01c935e5eb4aa4e581ebaffddb8c4f30fa50a729b8286c10c426f9583592c",
+			"scaffolded": false,
+			"generated_at": "2025-11-20T13:42:31.970034Z"
 		},
 		".github/actions/pr-comment/action.yaml": {
 			"path": ".github/actions/pr-comment/action.yaml",
@@ -94,17 +102,17 @@
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "be892d7c4edc03cb8fdd427480f6cc22281d885b98f767abe5ebe6a45d2bc5bc",
+			"hash": "3de88cc0ed8807655f60525f2f2c3df76f5bd51b1449d492c5aad6ea50fab98c",
 			"scaffolded": false,
-			"generated_at": "2025-11-16T17:58:36.233348Z"
+			"generated_at": "2025-11-20T13:42:31.968063Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "f10ce7d271cb8caaa8a18049d35aa8a2eb6446d76722fc6a74d219e5b646fad3",
+			"hash": "8095399f3678fb40b987cc3bd542f09adad52eb00e93ba44a7d41af52532213d",
 			"scaffolded": false,
-			"generated_at": "2025-11-16T17:58:36.2341Z"
+			"generated_at": "2025-11-20T13:42:31.968943Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",
@@ -150,9 +158,9 @@
 			"path": "README.md",
 			"generator": "docs:Readme",
 			"source": "project",
-			"hash": "a990075f7a3ec29d30632be9fad8bcba6ea0bb58443575dff76071ca3cacfd61",
+			"hash": "865c623399a243f6fddb1f2e1523efeb956f449b46996058bbb2b49012f0a2f7",
 			"scaffolded": false,
-			"generated_at": "2025-11-16T17:58:36.236292Z"
+			"generated_at": "2025-11-20T13:42:31.972607Z"
 		},
 		"api/.env": {
 			"path": "api/.env",

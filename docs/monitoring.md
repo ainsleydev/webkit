@@ -37,11 +37,10 @@ Add the following to your `.env.production.enc` file (encrypted with SOPS):
 
 ```bash
 PEEKAPING_ENDPOINT=https://peekaping.example.com
-PEEKAPING_EMAIL=admin@example.com
-PEEKAPING_PASSWORD=<your-password>
+PEEKAPING_API_KEY=<your-api-key>
 ```
 
-These credentials are used by the Terraform provider to authenticate with your Peekaping instance.
+The API key is used by the Terraform provider to authenticate with your Peekaping instance.
 
 ### Slack Notifications (Optional)
 
@@ -247,7 +246,7 @@ Ensure the credentials match your Peekaping instance admin account.
 The Peekaping provider requires:
 
 1. Peekaping instance is running and accessible at the configured endpoint
-2. Credentials are correct (email + password)
+2. API key is correct and has proper permissions
 3. Provider version is compatible (`~> 0.1.1`)
 
 Check Terraform logs for detailed error messages:

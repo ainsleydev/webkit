@@ -74,8 +74,7 @@ provider "slack" {
 
 provider "peekaping" {
   endpoint = var.peekaping_endpoint
-  email    = var.peekaping_email
-  password = var.peekaping_password
+  api_key  = var.peekaping_api_key
 }
 
 #
