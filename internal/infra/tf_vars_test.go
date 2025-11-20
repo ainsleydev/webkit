@@ -396,6 +396,118 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			assert.Equal(t, "staging.example.com", app.Domains[2].Zone)
 			assert.Equal(t, true, app.Domains[2].Wildcard)
 		}
+
+		t.Log("Status page domain")
+		{
+			require.NotNil(t, got.StatusPageDomain)
+			assert.Equal(t, "status.example.com", *got.StatusPageDomain)
+		}
+	})
+
+	t.Run("Status page domain - no apps", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "no-apps-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "no-apps-project",
+				},
+			},
+			Apps: []appdef.App{},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page domain should be nil when no apps")
+		{
+			assert.Nil(t, got.StatusPageDomain)
+		}
+	})
+
+	t.Run("Status page domain - app with no domains", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "no-domains-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "no-domains-project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "api",
+					Type: appdef.AppTypeGoLang,
+					Path: "apps/api",
+					Infra: appdef.Infra{
+						Type:     "vm",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+					Domains: []appdef.Domain{},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page domain should be nil when app has no domains")
+		{
+			assert.Nil(t, got.StatusPageDomain)
+		}
+	})
+
+	t.Run("Status page domain - uses first app's primary domain", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "multi-app-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "multi-app-project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "apps/web",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+					Domains: []appdef.Domain{
+						{Name: "first.com", Type: appdef.DomainTypePrimary},
+					},
+				},
+				{
+					Name: "api",
+					Type: appdef.AppTypeGoLang,
+					Path: "apps/api",
+					Infra: appdef.Infra{
+						Type:     "vm",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+					Domains: []appdef.Domain{
+						{Name: "second.com", Type: appdef.DomainTypePrimary},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page domain should use first app's primary domain")
+		{
+			require.NotNil(t, got.StatusPageDomain)
+			assert.Equal(t, "status.first.com", *got.StatusPageDomain)
+		}
 	})
 
 	t.Run("Mixed null and empty configs with arrays", func(t *testing.T) {
