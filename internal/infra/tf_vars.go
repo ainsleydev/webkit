@@ -78,9 +78,10 @@ type (
 	// Minimal fields are set from appdef; defaults are applied in Terraform.
 	tfMonitor struct {
 		Name   string `json:"name"`
-		Type   string `json:"type"` // "http", "postgres", "push"
+		Type   string `json:"type"` // "http", "dns", "postgres", "push"
 		URL    string `json:"url,omitempty"`
 		Method string `json:"method,omitempty"`
+		Domain string `json:"domain,omitempty"` // For DNS monitors
 	}
 )
 
@@ -265,5 +266,6 @@ func tfMonitorFromAppdef(m appdef.Monitor) tfMonitor {
 		Type:   string(m.Type),
 		URL:    m.URL,
 		Method: m.Method,
+		Domain: m.Domain,
 	}
 }

@@ -1,8 +1,8 @@
 terraform {
   required_providers {
-    uptimekuma = {
-      source  = "kill3r-queen/uptimekuma"
-      version = "~> 0.0.12"
+    peekaping = {
+      source  = "tafaust/peekaping"
+      version = "~> 0.1.1"
     }
   }
 }

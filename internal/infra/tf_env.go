@@ -22,9 +22,9 @@ type TFEnvironment struct {
 	SlackBotToken               string `env:"SLACK_BOT_TOKEN,required"`
 	SlackUserToken              string `env:"SLACK_USER_TOKEN,required"`
 	SlackWebhookURL             string `env:"SLACK_WEBHOOK_URL"`
-	UptimeKumaURL               string `env:"UPTIME_KUMA_URL,required"`
-	UptimeKumaUsername          string `env:"UPTIME_KUMA_USERNAME,required"`
-	UptimeKumaPassword          string `env:"UPTIME_KUMA_PASSWORD,required"`
+	PeekapingEndpoint           string `env:"PEEKAPING_ENDPOINT"`
+	PeekapingEmail              string `env:"PEEKAPING_EMAIL"`
+	PeekapingPassword           string `env:"PEEKAPING_PASSWORD"`
 }
 
 // ParseTFEnvironment reads and validates Terraform-related
@@ -40,7 +40,7 @@ func ParseTFEnvironment() (TFEnvironment, error) {
 // varStrings maps the environment to Terraform variable strings
 // to pass to the execer.
 func (t *TFEnvironment) varStrings() []string {
-	return []string{
+	vars := []string{
 		"do_token=" + t.DigitalOceanAPIKey,
 		"do_spaces_access_id=" + t.DigitalOceanSpacesAccessKey,
 		"do_spaces_secret_key=" + t.DigitalOceanSpacesSecretKey,
@@ -52,8 +52,19 @@ func (t *TFEnvironment) varStrings() []string {
 		"github_token_classic=" + t.GithubTokenClassic,
 		"slack_bot_token=" + t.SlackBotToken,
 		"slack_user_token=" + t.SlackUserToken,
-		"uptime_kuma_url=" + t.UptimeKumaURL,
-		"uptime_kuma_username=" + t.UptimeKumaUsername,
-		"uptime_kuma_password=" + t.UptimeKumaPassword,
 	}
+
+	// Only include Peekaping credentials if they are configured.
+	// This prevents provider initialization when monitoring is not in use.
+	if t.PeekapingEndpoint != "" {
+		vars = append(vars, "peekaping_endpoint="+t.PeekapingEndpoint)
+	}
+	if t.PeekapingEmail != "" {
+		vars = append(vars, "peekaping_email="+t.PeekapingEmail)
+	}
+	if t.PeekapingPassword != "" {
+		vars = append(vars, "peekaping_password="+t.PeekapingPassword)
+	}
+
+	return vars
 }

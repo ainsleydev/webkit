@@ -15,6 +15,7 @@ func TestMonitorType_String(t *testing.T) {
 		want  string
 	}{
 		"HTTP":     {input: MonitorTypeHTTP, want: "http"},
+		"DNS":      {input: MonitorTypeDNS, want: "dns"},
 		"Postgres": {input: MonitorTypePostgres, want: "postgres"},
 		"Push":     {input: MonitorTypePush, want: "push"},
 	}
@@ -35,7 +36,8 @@ func TestApp_GenerateMonitors(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name: "web",
+			Name:  "web",
+			Title: "Web",
 			Domains: []Domain{
 				{Name: "example.com", Type: DomainTypePrimary},
 			},
@@ -51,6 +53,7 @@ func TestApp_GenerateMonitors(t *testing.T) {
 
 		app := &App{
 			Name:       "web",
+			Title:      "Web",
 			Domains:    []Domain{},
 			Monitoring: Monitoring{Enabled: true},
 		}
@@ -63,7 +66,8 @@ func TestApp_GenerateMonitors(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name: "web",
+			Name:  "web",
+			Title: "Web",
 			Domains: []Domain{
 				{Name: "example.com", Type: DomainTypePrimary},
 			},
@@ -71,20 +75,26 @@ func TestApp_GenerateMonitors(t *testing.T) {
 		}
 
 		monitors := app.GenerateMonitors()
-		require.Len(t, monitors, 1)
+		require.Len(t, monitors, 2) // HTTP + DNS
 
-		m := monitors[0]
-		assert.Equal(t, "web-example-com", m.Name)
-		assert.Equal(t, MonitorTypeHTTP, m.Type)
-		assert.Equal(t, "https://example.com", m.URL)
-		assert.Equal(t, "GET", m.Method)
+		// HTTP monitor.
+		assert.Equal(t, "Web - example.com", monitors[0].Name)
+		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
+		assert.Equal(t, "https://example.com", monitors[0].URL)
+		assert.Equal(t, "GET", monitors[0].Method)
+
+		// DNS monitor.
+		assert.Equal(t, "Web DNS - example.com", monitors[1].Name)
+		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
+		assert.Equal(t, "example.com", monitors[1].Domain)
 	})
 
 	t.Run("Multiple Domains Primary And Alias", func(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name: "api",
+			Name:  "api",
+			Title: "API",
 			Domains: []Domain{
 				{Name: "api.example.com", Type: DomainTypePrimary},
 				{Name: "www.api.example.com", Type: DomainTypeAlias},
@@ -94,20 +104,35 @@ func TestApp_GenerateMonitors(t *testing.T) {
 		}
 
 		monitors := app.GenerateMonitors()
-		require.Len(t, monitors, 2)
+		require.Len(t, monitors, 4) // 2 domains × 2 types (HTTP + DNS)
 
-		assert.Equal(t, "api-api-example-com", monitors[0].Name)
+		// First domain - HTTP.
+		assert.Equal(t, "API - api.example.com", monitors[0].Name)
+		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
 		assert.Equal(t, "https://api.example.com", monitors[0].URL)
 
-		assert.Equal(t, "api-www-api-example-com", monitors[1].Name)
-		assert.Equal(t, "https://www.api.example.com", monitors[1].URL)
+		// First domain - DNS.
+		assert.Equal(t, "API DNS - api.example.com", monitors[1].Name)
+		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
+		assert.Equal(t, "api.example.com", monitors[1].Domain)
+
+		// Second domain - HTTP.
+		assert.Equal(t, "API - www.api.example.com", monitors[2].Name)
+		assert.Equal(t, MonitorTypeHTTP, monitors[2].Type)
+		assert.Equal(t, "https://www.api.example.com", monitors[2].URL)
+
+		// Second domain - DNS.
+		assert.Equal(t, "API DNS - www.api.example.com", monitors[3].Name)
+		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
+		assert.Equal(t, "www.api.example.com", monitors[3].Domain)
 	})
 
 	t.Run("Unmanaged Domains Skipped", func(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name: "web",
+			Name:  "web",
+			Title: "Web",
 			Domains: []Domain{
 				{Name: "example.com", Type: DomainTypePrimary},
 				{Name: "unmanaged.com", Type: DomainTypeUnmanaged},
@@ -118,33 +143,18 @@ func TestApp_GenerateMonitors(t *testing.T) {
 		}
 
 		monitors := app.GenerateMonitors()
-		require.Len(t, monitors, 2) // Only primary and alias.
+		require.Len(t, monitors, 4) // 2 managed domains × 2 types (HTTP + DNS)
 
-		assert.Equal(t, "web-example-com", monitors[0].Name)
-		assert.Equal(t, "web-www-example-com", monitors[1].Name)
+		// First managed domain monitors.
+		assert.Equal(t, "Web - example.com", monitors[0].Name)
+		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
+		assert.Equal(t, "Web DNS - example.com", monitors[1].Name)
+		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
+
+		// Second managed domain monitors.
+		assert.Equal(t, "Web - www.example.com", monitors[2].Name)
+		assert.Equal(t, MonitorTypeHTTP, monitors[2].Type)
+		assert.Equal(t, "Web DNS - www.example.com", monitors[3].Name)
+		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
 	})
-}
-
-func TestSanitiseMonitorName(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		domain string
-		want   string
-	}{
-		"Simple Domain":       {domain: "example.com", want: "example-com"},
-		"Subdomain":           {domain: "api.example.com", want: "api-example-com"},
-		"Deep Subdomain":      {domain: "v1.api.example.com", want: "v1-api-example-com"},
-		"Multiple Subdomains": {domain: "auth.api.v2.example.com", want: "auth-api-v2-example-com"},
-		"No Dots":             {domain: "localhost", want: "localhost"},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got := sanitiseMonitorName(test.domain)
-			assert.Equal(t, test.want, got)
-		})
-	}
 }

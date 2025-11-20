@@ -34,9 +34,9 @@ terraform {
       source  = "hashicorp/time"
       version = "~> 0.9"
     }
-    uptimekuma = {
-      source  = "kill3r-queen/uptimekuma"
-      version = "~> 0.0.12"
+    peekaping = {
+      source  = "tafaust/peekaping"
+      version = "~> 0.1.1"
     }
   }
 }
@@ -72,11 +72,10 @@ provider "slack" {
   token = var.slack_bot_token
 }
 
-provider "uptimekuma" {
-  base_url       = var.uptime_kuma_url
-  username       = var.uptime_kuma_username
-  password       = var.uptime_kuma_password
-  insecure_https = false
+provider "peekaping" {
+  endpoint = var.peekaping_endpoint
+  email    = var.peekaping_email
+  password = var.peekaping_password
 }
 
 #
@@ -240,12 +239,13 @@ module "monitoring" {
   count  = length(var.monitors) > 0 ? 1 : 0
   source = "../modules/monitoring"
 
-  providers = {
-    uptimekuma = uptimekuma
-  }
-
-  project_name = var.project_name
-  monitors     = var.monitors
+  project_name         = var.project_name
+  project_title        = var.project_title
+  environment          = var.environment
+  monitors             = var.monitors
+  slack_webhook_url    = var.slack_webhook_url
+  brand_primary_color  = var.brand_primary_color
+  brand_logo_url       = var.brand_logo_url
 
   # Monitoring depends on apps and resources being created.
   depends_on = [module.apps, module.resources]
