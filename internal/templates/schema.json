@@ -1,11 +1,5 @@
 {
-	"title": "WebKit App Definition",
-	"description": "Schema for webkit app.json configuration files",
-	"required": [
-		"webkit_version",
-		"project",
-		"apps"
-	],
+	"$schema": "http://json-schema.org/draft-07/schema#",
 	"definitions": {
 		"AppdefApp": {
 			"properties": {
@@ -14,8 +8,36 @@
 					"description": "Build configuration for Docker containerisation"
 				},
 				"commands": {
-					"$ref": "#/definitions/TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]",
-					"description": "Custom commands for linting, testing, formatting, and building"
+					"additionalProperties": {
+						"oneOf": [
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "string"
+							},
+							{
+								"$ref": "#"
+							}
+						],
+						"properties": {
+							"command": {
+								"description": "The shell command to execute (e.g., 'pnpm build')",
+								"type": "string"
+							},
+							"skip_ci": {
+								"description": "Whether to skip running this command in CI/CD pipelines",
+								"type": "boolean"
+							},
+							"timeout": {
+								"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+								"type": "string"
+							}
+						},
+						"type": "object"
+					},
+					"description": "Custom commands for linting, testing, formatting, and building",
+					"type": "object"
 				},
 				"description": {
 					"description": "Brief description of the app's purpose and functionality",
@@ -63,10 +85,10 @@
 					"type": "string"
 				},
 				"tools": {
-					"description": "Build tools required for CI/CD workflows",
 					"additionalProperties": {
 						"$ref": "#/definitions/AppdefTool"
 					},
+					"description": "Build tools required for CI/CD workflows",
 					"type": "object"
 				},
 				"type": {
@@ -142,9 +164,6 @@
 			"type": "object"
 		},
 		"AppdefEnvValue": {
-			"required": [
-				"source"
-			],
 			"properties": {
 				"source": {
 					"description": "Source type for the variable value (value, resource, sops)",
@@ -154,6 +173,9 @@
 					"description": "The value or reference for this variable (format depends on source type)"
 				}
 			},
+			"required": [
+				"source"
+			],
 			"type": "object"
 		},
 		"AppdefEnvVar": {
@@ -199,8 +221,8 @@
 		"AppdefInfra": {
 			"properties": {
 				"config": {
-					"description": "Provider-specific infrastructure configuration options",
 					"additionalProperties": {},
+					"description": "Provider-specific infrastructure configuration options",
 					"type": [
 						"object",
 						"null"
@@ -252,20 +274,14 @@
 			"type": "object"
 		},
 		"AppdefResource": {
-			"required": [
-				"name",
-				"title",
-				"type",
-				"provider"
-			],
 			"properties": {
 				"backup": {
 					"$ref": "#/definitions/AppdefResourceBackupConfig",
 					"description": "Backup configuration for the resource"
 				},
 				"config": {
-					"description": "Provider-specific resource configuration (e.g., size, region, version)",
 					"additionalProperties": {},
+					"description": "Provider-specific resource configuration (e.g., size, region, version)",
 					"type": [
 						"object",
 						"null"
@@ -303,6 +319,12 @@
 					"type": "string"
 				}
 			},
+			"required": [
+				"name",
+				"title",
+				"type",
+				"provider"
+			],
 			"type": "object"
 		},
 		"AppdefResourceBackupConfig": {
@@ -343,39 +365,9 @@
 				}
 			},
 			"type": "object"
-		},
-		"TypesOrderedMap[GithubComAinsleydevWebkitInternalAppdefCommandGithubComAinsleydevWebkitInternalAppdefCommandSpec]": {
-			"additionalProperties": {
-				"properties": {
-					"command": {
-						"description": "The shell command to execute (e.g., 'pnpm build')",
-						"type": "string"
-					},
-					"skip_ci": {
-						"description": "Whether to skip running this command in CI/CD pipelines",
-						"type": "boolean"
-					},
-					"timeout": {
-						"description": "Maximum execution time for the command (e.g., '5m', '1h')",
-						"type": "string"
-					}
-				},
-				"type": "object",
-				"oneOf": [
-					{
-						"type": "boolean"
-					},
-					{
-						"type": "string"
-					},
-					{
-						"$ref": "#"
-					}
-				]
-			},
-			"type": "object"
 		}
 	},
+	"description": "Schema for webkit app.json configuration files",
 	"properties": {
 		"$schema": {
 			"description": "JSON Schema reference for IDE validation and autocomplete",
@@ -415,6 +407,11 @@
 			"type": "string"
 		}
 	},
-	"type": "object",
-	"$schema": "http://json-schema.org/draft-07/schema#"
+	"required": [
+		"webkit_version",
+		"project",
+		"apps"
+	],
+	"title": "WebKit App Definition",
+	"type": "object"
 }

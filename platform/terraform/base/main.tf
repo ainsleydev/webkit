@@ -239,10 +239,6 @@ module "monitoring" {
   count  = length(var.monitors) > 0 ? 1 : 0
   source = "../modules/monitoring"
 
-  providers = {
-    peekaping = peekaping
-  }
-
   project_name         = var.project_name
   project_title        = var.project_title
   environment          = var.environment

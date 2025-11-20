@@ -2,7 +2,6 @@ package appdef
 
 import (
 	"fmt"
-	"strings"
 )
 
 type (
@@ -58,11 +57,9 @@ func (a *App) GenerateMonitors() []Monitor {
 			continue
 		}
 
-		sanitisedName := sanitiseMonitorName(domain.Name)
-
 		// HTTP monitor - checks the availability of the web application.
 		monitors = append(monitors, Monitor{
-			Name:   fmt.Sprintf("%s-%s", a.Name, sanitisedName),
+			Name:   fmt.Sprintf("%s - %s", a.Title, domain.Name),
 			Type:   MonitorTypeHTTP,
 			URL:    fmt.Sprintf("https://%s", domain.Name),
 			Method: "GET",
@@ -70,18 +67,11 @@ func (a *App) GenerateMonitors() []Monitor {
 
 		// DNS monitor - checks domain name resolution.
 		monitors = append(monitors, Monitor{
-			Name:   fmt.Sprintf("%s-%s", a.Name, sanitisedName),
+			Name:   fmt.Sprintf("%s DNS - %s", a.Title, domain.Name),
 			Type:   MonitorTypeDNS,
 			Domain: domain.Name,
 		})
 	}
 
 	return monitors
-}
-
-// sanitiseMonitorName converts a domain name to a valid monitor name component.
-//
-// For example: "api.example.com" -> "api-example-com"
-func sanitiseMonitorName(domain string) string {
-	return strings.ReplaceAll(domain, ".", "-")
 }

@@ -27,13 +27,13 @@ locals {
 
   # All tag IDs for monitors.
   tag_ids = [
-    module.tag_project.id,
-    module.tag_environment.id,
-    module.tag_webkit.id
+    peekaping_tag.project.id,
+    peekaping_tag.environment.id,
+    peekaping_tag.webkit.id
   ]
 
   # Notification IDs.
-  notification_ids = local.slack_enabled ? [module.notification_slack[0].id] : []
+  notification_ids = local.slack_enabled ? [peekaping_notification.slack[0].id] : []
 }
 
 #
@@ -42,38 +42,22 @@ locals {
 # Tags are used to organise and categorise monitors.
 # Each project gets: project name tag, environment tag, and webkit tag.
 #
+# Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/tag
+#
 
-module "tag_project" {
-  source = "../../providers/peekaping/tag"
-
-  providers = {
-    peekaping = peekaping
-  }
-
+resource "peekaping_tag" "project" {
   name        = var.project_title
   color       = local.tag_color
   description = "Monitor for ${var.project_title}"
 }
 
-module "tag_environment" {
-  source = "../../providers/peekaping/tag"
-
-  providers = {
-    peekaping = peekaping
-  }
-
+resource "peekaping_tag" "environment" {
   name        = title(var.environment)
   color       = local.tag_color
   description = "${title(var.environment)} environment"
 }
 
-module "tag_webkit" {
-  source = "../../providers/peekaping/tag"
-
-  providers = {
-    peekaping = peekaping
-  }
-
+resource "peekaping_tag" "webkit" {
   name        = "WebKit"
   color       = "#10B981" # Green for webkit
   description = "Managed by WebKit infrastructure"
@@ -85,18 +69,17 @@ module "tag_webkit" {
 # Creates a Slack notification channel for monitor alerts.
 # Only created if slack_webhook_url is provided.
 #
+# Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/notification
+#
 
-module "notification_slack" {
-  count  = local.slack_enabled ? 1 : 0
-  source = "../../providers/peekaping/notification"
+resource "peekaping_notification" "slack" {
+  count = local.slack_enabled ? 1 : 0
 
-  providers = {
-    peekaping = peekaping
-  }
-
-  name        = "${var.project_title} Slack Alerts"
-  type        = "slack"
-  webhook_url = var.slack_webhook_url
+  name = "${var.project_title} Slack Alerts"
+  type = "slack"
+  config = jsonencode({
+    webhook_url = var.slack_webhook_url
+  })
 }
 
 #
@@ -105,16 +88,13 @@ module "notification_slack" {
 # HTTP monitors check the availability of web applications via HTTP/HTTPS requests.
 # They are created for each domain (primary + aliases) of apps with monitoring enabled.
 #
+# Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/monitor
+#
 
-module "monitor_http" {
+resource "peekaping_monitor" "http" {
   for_each = { for m in local.http_monitors : m.name => m }
-  source   = "../../providers/peekaping/monitor"
 
-  providers = {
-    peekaping = peekaping
-  }
-
-  name = "${var.project_name}-${each.value.name}"
+  name = each.value.name
   type = "http"
   config = jsonencode({
     url                  = each.value.url
@@ -140,16 +120,13 @@ module "monitor_http" {
 # DNS monitors check domain name resolution.
 # They are created for each domain to ensure DNS is correctly configured.
 #
+# Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/monitor
+#
 
-module "monitor_dns" {
+resource "peekaping_monitor" "dns" {
   for_each = { for m in local.dns_monitors : m.name => m }
-  source   = "../../providers/peekaping/monitor"
 
-  providers = {
-    peekaping = peekaping
-  }
-
-  name = "${var.project_name}-dns-${each.value.name}"
+  name = each.value.name
   type = "dns"
   config = jsonencode({
     hostname = each.value.domain
@@ -173,16 +150,13 @@ module "monitor_dns" {
 # Push monitors expect periodic heartbeat signals from external systems.
 # They are used for backup job monitoring - the job pings the monitor on success.
 #
+# Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/monitor
+#
 
-module "monitor_push" {
+resource "peekaping_monitor" "push" {
   for_each = { for m in local.push_monitors : m.name => m }
-  source   = "../../providers/peekaping/monitor"
 
-  providers = {
-    peekaping = peekaping
-  }
-
-  name = "${var.project_name}-${each.value.name}"
+  name = each.value.name
   type = "push"
   config = jsonencode({
     # Push monitors don't require URL configuration
@@ -202,14 +176,11 @@ module "monitor_push" {
 # Creates a public status page showing the health of all monitors.
 # The status page is automatically populated with all monitors via tag filtering.
 #
+# Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/status_page
+#
 
-module "status_page" {
-  count  = length(var.monitors) > 0 ? 1 : 0
-  source = "../../providers/peekaping/status_page"
-
-  providers = {
-    peekaping = peekaping
-  }
+resource "peekaping_status_page" "this" {
+  count = length(var.monitors) > 0 ? 1 : 0
 
   title       = "${var.project_title} Status"
   description = "Public status page for ${var.project_title} services"
