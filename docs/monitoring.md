@@ -139,6 +139,8 @@ Each monitor is automatically tagged with:
 
 Tags help organize and filter monitors in the Peekaping UI.
 
+**Note**: The shared "WebKit" and environment tags (Production, Staging, Development, Test) must be created once in Peekaping before deploying any webkit repos.
+
 ## Status Pages
 
 WebKit automatically creates a public status page for your project at:
