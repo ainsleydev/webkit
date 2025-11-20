@@ -129,9 +129,10 @@ resource "peekaping_monitor" "dns" {
   name = each.value.name
   type = "dns"
   config = jsonencode({
-    hostname = each.value.domain
-    resolver = "1.1.1.1" # Cloudflare DNS
-    dns_type = "A"       # A record lookup
+    host            = each.value.domain
+    resolver_server = "1.1.1.1" # Cloudflare DNS
+    port            = 53
+    resolve_type    = "A" # A record lookup
   })
 
   interval         = 300 # 5 minutes (less frequent than HTTP)
