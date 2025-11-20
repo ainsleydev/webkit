@@ -244,11 +244,9 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
 	monitors := make([]tfMonitor, 0)
 
-	// Generate monitors from apps.
-	for _, app := range t.appDef.Apps {
-		for _, monitor := range app.GenerateMonitors() {
-			monitors = append(monitors, tfMonitorFromAppdef(monitor))
-		}
+	// Generate monitors from all apps in the definition.
+	for _, monitor := range t.appDef.GenerateMonitors() {
+		monitors = append(monitors, tfMonitorFromAppdef(monitor))
 	}
 
 	// TODO: Re-enable resource monitors when needed.
