@@ -48,7 +48,7 @@ output "tag_ids" {
 
 output "status_page_url" {
   description = "Status page URL if created"
-  value       = length(peekaping_status_page.this) > 0 ? peekaping_status_page.this[0].url : null
+  value       = length(peekaping_status_page.this) > 0 ? "https://${peekaping_status_page.this[0].slug}" : null
 }
 
 output "slack_notification_id" {
