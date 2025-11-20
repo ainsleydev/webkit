@@ -60,9 +60,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
 	t.Setenv("SLACK_USER_TOKEN", "xoxp-test-token")
 	t.Setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/test")
-	t.Setenv("PEEKAPING_ENDPOINT", "https://uptime.test.dev")
-	t.Setenv("PEEKAPING_EMAIL", "test@example.com")
-	t.Setenv("PEEKAPING_PASSWORD", "test-password")
+	// Peekaping credentials intentionally not set - monitoring module has count=0 in tests
 }
 
 func teardownEnv(t *testing.T) {
@@ -81,9 +79,6 @@ func teardownEnv(t *testing.T) {
 		"GITHUB_TOKEN_CLASSIC",
 		"SLACK_BOT_TOKEN",
 		"SLACK_USER_TOKEN",
-		"UPTIME_KUMA_URL",
-		"UPTIME_KUMA_USERNAME",
-		"UPTIME_KUMA_PASSWORD",
 	}
 
 	for _, key := range envVars {

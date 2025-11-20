@@ -195,8 +195,8 @@ variable "slack_bot_token" {
 
 variable "peekaping_endpoint" {
   type        = string
-  description = "Peekaping API endpoint URL"
-  default     = "https://uptime.ainsley.dev"
+  description = "Peekaping API endpoint URL (only required when monitoring is enabled)"
+  default     = ""
 }
 
 variable "peekaping_email" {
