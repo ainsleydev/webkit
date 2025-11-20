@@ -34,6 +34,7 @@ type (
 		DigitalOceanSSHKeys []string       `json:"digitalocean_ssh_keys"`
 		HetznerSSHKeys      []string       `json:"hetzner_ssh_keys"`
 		SlackWebhookURL     string         `json:"slack_webhook_url"`
+		StatusPageDomain    *string        `json:"status_page_domain,omitempty"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -164,6 +165,15 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 
 	// Generate monitors from apps and resources.
 	vars.Monitors = t.generateMonitors(env)
+
+	// Generate status page domain from the first app's primary domain.
+	// This creates a subdomain like status.example.com for the public status page.
+	if len(t.appDef.Apps) > 0 {
+		if primaryDomain := t.appDef.Apps[0].PrimaryDomain(); primaryDomain != "" {
+			statusDomain := "status." + primaryDomain
+			vars.StatusPageDomain = &statusDomain
+		}
+	}
 
 	return vars, nil
 }

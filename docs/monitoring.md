@@ -143,17 +143,23 @@ Tags help organize and filter monitors in the Peekaping UI.
 
 ## Status Pages
 
-WebKit automatically creates a public status page for your project at:
+WebKit automatically creates a public status page for your project. The status page is accessible via:
 
-```
-https://peekaping.example.com/status/{project-name}
-```
+1. **Default URL**: `https://peekaping.example.com/status/{project-name}`
+2. **Custom Domain**: `status.{your-primary-domain}` (automatically configured)
 
-The status page shows:
-- Real-time health of all monitored services
+For example, if your primary app domain is `example.com`, the status page will be configured for `status.example.com`.
+
+### What the Status Page Shows
+
+- Real-time health of **all** HTTP, DNS, and push monitors
 - Historical uptime data
 - Incident information
 - Custom branding (logo and colors from `app.json`)
+
+All monitors are automatically attached to the status page - no manual configuration needed.
+
+### Status Page Branding
 
 Configure status page branding in your `app.json`:
 

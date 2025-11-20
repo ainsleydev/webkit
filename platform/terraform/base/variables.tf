@@ -218,3 +218,9 @@ variable "slack_webhook_url" {
   sensitive   = false
   default     = ""
 }
+
+variable "status_page_domain" {
+  type        = string
+  description = "Custom domain for public status page (e.g., status.example.com)"
+  default     = null
+}

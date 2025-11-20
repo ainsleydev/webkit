@@ -245,6 +245,7 @@ module "monitoring" {
   slack_webhook_url    = var.slack_webhook_url
   brand_primary_color  = var.brand_primary_color
   brand_logo_url       = var.brand_logo_url
+  status_page_domain   = var.status_page_domain
 
   # Monitoring depends on apps and resources being created.
   depends_on = [module.apps, module.resources]

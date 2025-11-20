@@ -184,7 +184,8 @@ resource "peekaping_monitor" "push" {
 # Status Page
 #
 # Creates a public status page showing the health of all monitors.
-# The status page is automatically populated with all monitors via tag filtering.
+# All HTTP, DNS, and push monitors are explicitly attached to the status page.
+# A custom domain (e.g., status.example.com) can be configured for public access.
 #
 # Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/status_page
 #
@@ -198,4 +199,10 @@ resource "peekaping_status_page" "this" {
   published   = true
   theme       = "auto"
   icon        = var.brand_logo_url
+  domains     = var.status_page_domain != null ? [var.status_page_domain] : []
+  monitor_ids = concat(
+    [for m in peekaping_monitor.http : m.id],
+    [for m in peekaping_monitor.dns : m.id],
+    [for m in peekaping_monitor.push : m.id]
+  )
 }
