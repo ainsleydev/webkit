@@ -142,3 +142,17 @@ func (mr *MockManagerMockRecorder) Plan(ctx, arg1, refreshOnly any) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Plan", reflect.TypeOf((*MockManager)(nil).Plan), ctx, arg1, refreshOnly)
 }
+
+// WorkDir mocks base method.
+func (m *MockManager) WorkDir() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WorkDir")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// WorkDir indicates an expected call of WorkDir.
+func (mr *MockManagerMockRecorder) WorkDir() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WorkDir", reflect.TypeOf((*MockManager)(nil).WorkDir))
+}

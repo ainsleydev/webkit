@@ -497,6 +497,11 @@ func (t *Terraform) Cleanup() {
 	}
 }
 
+// WorkDir returns the terraform working directory (base directory).
+func (t *Terraform) WorkDir() string {
+	return filepath.Join(t.tmpDir, "base")
+}
+
 func (t *Terraform) hasInitialised() error {
 	if t.tf == nil {
 		return errors.New("terraform not initialized: call Init() first")
