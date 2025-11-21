@@ -349,7 +349,8 @@ resource "github_actions_variable" "monitor_ping_urls" {
   variable_name = each.key
   # Look up the actual ping URL from the monitoring module outputs using the monitor name.
   # The ping URL is computed after the monitor is created, but the for_each keys are known at plan time.
-  value = module.monitoring[0].push_monitors[each.value].ping_url
+  # Use try() to handle null values during planning (before monitors are created).
+  value = try(module.monitoring[0].push_monitors[each.value].ping_url, "")
 
   depends_on = [module.monitoring]
 }

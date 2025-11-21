@@ -50,7 +50,10 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		}
 
 		monitors := def.GenerateMonitors()
-		assert.Empty(t, monitors)
+		// Codebase backup monitor is always generated.
+		require.Len(t, monitors, 1)
+		assert.Equal(t, "My Project - Codebase Backup", monitors[0].Name)
+		assert.Equal(t, MonitorTypePush, monitors[0].Type)
 	})
 
 	t.Run("No Domains", func(t *testing.T) {
@@ -69,7 +72,10 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		}
 
 		monitors := def.GenerateMonitors()
-		assert.Empty(t, monitors)
+		// Codebase backup monitor is always generated.
+		require.Len(t, monitors, 1)
+		assert.Equal(t, "My Project - Codebase Backup", monitors[0].Name)
+		assert.Equal(t, MonitorTypePush, monitors[0].Type)
 	})
 
 	t.Run("Single Primary Domain", func(t *testing.T) {
@@ -90,7 +96,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		}
 
 		monitors := def.GenerateMonitors()
-		require.Len(t, monitors, 2) // HTTP + DNS
+		require.Len(t, monitors, 3) // HTTP + DNS + Codebase Backup
 
 		// HTTP monitor.
 		assert.Equal(t, "My Project, Web - example.com", monitors[0].Name)
@@ -102,6 +108,10 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, "My Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
 		assert.Equal(t, "example.com", monitors[1].Domain)
+
+		// Codebase backup monitor.
+		assert.Equal(t, "My Project - Codebase Backup", monitors[2].Name)
+		assert.Equal(t, MonitorTypePush, monitors[2].Type)
 	})
 
 	t.Run("Multiple Domains Primary And Alias", func(t *testing.T) {
@@ -124,7 +134,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		}
 
 		monitors := def.GenerateMonitors()
-		require.Len(t, monitors, 4) // 2 domains × 2 types (HTTP + DNS)
+		require.Len(t, monitors, 5) // 2 domains × 2 types (HTTP + DNS) + Codebase Backup
 
 		// First domain - HTTP.
 		assert.Equal(t, "My Project, API - api.example.com", monitors[0].Name)
@@ -145,6 +155,10 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, "My Project, API DNS - www.api.example.com", monitors[3].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
 		assert.Equal(t, "www.api.example.com", monitors[3].Domain)
+
+		// Codebase backup monitor.
+		assert.Equal(t, "My Project - Codebase Backup", monitors[4].Name)
+		assert.Equal(t, MonitorTypePush, monitors[4].Type)
 	})
 
 	t.Run("Unmanaged Domains Skipped", func(t *testing.T) {
@@ -168,7 +182,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		}
 
 		monitors := def.GenerateMonitors()
-		require.Len(t, monitors, 4) // 2 managed domains × 2 types (HTTP + DNS)
+		require.Len(t, monitors, 5) // 2 managed domains × 2 types (HTTP + DNS) + Codebase Backup
 
 		// First managed domain monitors.
 		assert.Equal(t, "My Project, Web - example.com", monitors[0].Name)
@@ -181,6 +195,10 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, MonitorTypeHTTP, monitors[2].Type)
 		assert.Equal(t, "My Project, Web DNS - www.example.com", monitors[3].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
+
+		// Codebase backup monitor.
+		assert.Equal(t, "My Project - Codebase Backup", monitors[4].Name)
+		assert.Equal(t, MonitorTypePush, monitors[4].Type)
 	})
 
 	t.Run("Multiple Apps", func(t *testing.T) {
@@ -209,7 +227,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		}
 
 		monitors := def.GenerateMonitors()
-		require.Len(t, monitors, 4) // 2 apps × 2 types (HTTP + DNS)
+		require.Len(t, monitors, 5) // 2 apps × 2 types (HTTP + DNS) + Codebase Backup
 
 		// First app - HTTP.
 		assert.Equal(t, "My Project, Web - example.com", monitors[0].Name)
@@ -226,5 +244,9 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		// Second app - DNS.
 		assert.Equal(t, "My Project, API DNS - api.example.com", monitors[3].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
+
+		// Codebase backup monitor.
+		assert.Equal(t, "My Project - Codebase Backup", monitors[4].Name)
+		assert.Equal(t, MonitorTypePush, monitors[4].Type)
 	})
 }

@@ -42,11 +42,37 @@ func (m MonitorType) String() string {
 	return string(m)
 }
 
-// GenerateMonitors creates HTTP and DNS monitors for all apps in the definition.
+// GenerateMonitors creates all monitors for the definition.
+// This includes:
+// - HTTP and DNS monitors for app domains
+// - Backup monitors for resources
+// - Codebase backup monitor (always generated)
+// - Maintenance monitors for VM apps
+func (d *Definition) GenerateMonitors() []Monitor {
+	monitors := make([]Monitor, 0)
+
+	// Generate HTTP and DNS monitors for all apps.
+	monitors = append(monitors, d.generateHTTPDNSMonitors()...)
+
+	// Generate backup monitors for all resources.
+	monitors = append(monitors, d.generateResourceBackupMonitors()...)
+
+	// Generate codebase backup monitor (always generated).
+	monitors = append(monitors, Monitor{
+		Name: fmt.Sprintf("%s - Codebase Backup", d.Project.Title),
+		Type: MonitorTypePush,
+	})
+
+	// Generate maintenance monitors for all apps.
+	monitors = append(monitors, d.generateMaintenanceMonitors()...)
+
+	return monitors
+}
+
+// generateHTTPDNSMonitors creates HTTP and DNS monitors for all apps in the definition.
 // It generates two monitors per domain (HTTP + DNS) for primary and alias domains,
 // excluding unmanaged domains. Monitoring must be explicitly enabled in each app's configuration.
-// Monitor names include both the project title and app title for clarity on the dashboard.
-func (d *Definition) GenerateMonitors() []Monitor {
+func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 	monitors := make([]Monitor, 0)
 
 	for _, app := range d.Apps {
@@ -74,6 +100,44 @@ func (d *Definition) GenerateMonitors() []Monitor {
 				Domain: domain.Name,
 			})
 		}
+	}
+
+	return monitors
+}
+
+// generateResourceBackupMonitors creates push monitors for resource backup workflows.
+func (d *Definition) generateResourceBackupMonitors() []Monitor {
+	monitors := make([]Monitor, 0)
+
+	for _, resource := range d.Resources {
+		// Only generate backup monitor if both backup and monitoring are enabled.
+		if !resource.Backup.Enabled || !resource.Monitoring.Enabled {
+			continue
+		}
+
+		monitors = append(monitors, Monitor{
+			Name: fmt.Sprintf("%s - %s Backup", d.Project.Title, resource.Title),
+			Type: MonitorTypePush,
+		})
+	}
+
+	return monitors
+}
+
+// generateMaintenanceMonitors creates push monitors for VM app maintenance workflows.
+func (d *Definition) generateMaintenanceMonitors() []Monitor {
+	monitors := make([]Monitor, 0)
+
+	for _, app := range d.Apps {
+		// Only generate maintenance monitor for VM apps with monitoring enabled.
+		if !app.Monitoring.Enabled || app.Infra.Type != "vm" {
+			continue
+		}
+
+		monitors = append(monitors, Monitor{
+			Name: fmt.Sprintf("%s - %s Maintenance", d.Project.Title, app.Title),
+			Type: MonitorTypePush,
+		})
 	}
 
 	return monitors
