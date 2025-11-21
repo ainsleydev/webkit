@@ -111,11 +111,11 @@
 					"description": "URL to the project's logo image",
 					"type": "string"
 				},
-				"primaryColor": {
+				"primaryColour": {
 					"description": "Primary brand colour in hex format (e.g., #3B82F6)",
 					"type": "string"
 				},
-				"secondaryColor": {
+				"secondaryColour": {
 					"description": "Secondary brand colour in hex format (e.g., #10B981)",
 					"type": "string"
 				}

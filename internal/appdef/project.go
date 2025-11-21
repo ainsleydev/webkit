@@ -22,8 +22,8 @@ type (
 	// This information is used for monitor tags, status pages, and other
 	// visual representations of the project.
 	Brand struct {
-		PrimaryColor   string `json:"primaryColor,omitempty" validate:"omitempty,hexcolor" description:"Primary brand colour in hex format (e.g., #3B82F6)"`
-		SecondaryColor string `json:"secondaryColor,omitempty" validate:"omitempty,hexcolor" description:"Secondary brand colour in hex format (e.g., #10B981)"`
-		LogoURL        string `json:"logoUrl,omitempty" validate:"omitempty,url" description:"URL to the project's logo image"`
+		PrimaryColour   string `json:"primaryColour,omitempty" validate:"omitempty,hexcolor" description:"Primary brand colour in hex format (e.g., #3B82F6)"`
+		SecondaryColour string `json:"secondaryColour,omitempty" validate:"omitempty,hexcolor" description:"Secondary brand colour in hex format (e.g., #10B981)"`
+		LogoURL         string `json:"logoUrl,omitempty" validate:"omitempty,url" description:"URL to the project's logo image"`
 	}
 )
