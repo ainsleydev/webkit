@@ -396,12 +396,6 @@ func TestTFVarsFromDefinition(t *testing.T) {
 			assert.Equal(t, "staging.example.com", app.Domains[2].Zone)
 			assert.Equal(t, true, app.Domains[2].Wildcard)
 		}
-
-		t.Log("Status page domain")
-		{
-			require.NotNil(t, got.StatusPageDomain)
-			assert.Equal(t, "status.example.com", *got.StatusPageDomain)
-		}
 	})
 
 	t.Run("Status page domain - no apps", func(t *testing.T) {
@@ -460,13 +454,55 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 
-	t.Run("Status page domain - uses first app's primary domain", func(t *testing.T) {
+	t.Run("Status page domain - explicit configuration", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{
-				Name: "multi-app-project",
+				Name:             "explicit-domain-project",
+				StatusPageDomain: "status.custom.com",
 				Repo: appdef.GitHubRepo{
 					Owner: "owner",
-					Name:  "multi-app-project",
+					Name:  "explicit-domain-project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "apps/cms",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+					Domains: []appdef.Domain{
+						{Name: "cms.player2clubs.com", Type: appdef.DomainTypePrimary},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page domain should use explicit configuration")
+		{
+			require.NotNil(t, got.StatusPageDomain)
+			assert.Equal(t, "status.custom.com", *got.StatusPageDomain)
+		}
+	})
+
+	t.Run("Brand icon URL passthrough", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name:  "brand-icon-project",
+				Title: "Brand Icon Project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "brand-icon-project",
+				},
+				Brand: appdef.Brand{
+					IconURL: "https://example.com/favicon.ico",
 				},
 			},
 			Apps: []appdef.App{
@@ -479,22 +515,6 @@ func TestTFVarsFromDefinition(t *testing.T) {
 						Provider: appdef.ResourceProviderDigitalOcean,
 						Config:   map[string]any{},
 					},
-					Domains: []appdef.Domain{
-						{Name: "first.com", Type: appdef.DomainTypePrimary},
-					},
-				},
-				{
-					Name: "api",
-					Type: appdef.AppTypeGoLang,
-					Path: "apps/api",
-					Infra: appdef.Infra{
-						Type:     "vm",
-						Provider: appdef.ResourceProviderDigitalOcean,
-						Config:   map[string]any{},
-					},
-					Domains: []appdef.Domain{
-						{Name: "second.com", Type: appdef.DomainTypePrimary},
-					},
 				},
 			},
 		}
@@ -503,10 +523,10 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
-		t.Log("Status page domain should use first app's primary domain")
+		t.Log("Brand icon URL should be populated")
 		{
-			require.NotNil(t, got.StatusPageDomain)
-			assert.Equal(t, "status.first.com", *got.StatusPageDomain)
+			require.NotNil(t, got.BrandIconURL)
+			assert.Equal(t, "https://example.com/favicon.ico", *got.BrandIconURL)
 		}
 	})
 

@@ -35,6 +35,7 @@ type (
 		HetznerSSHKeys      []string       `json:"hetzner_ssh_keys"`
 		SlackWebhookURL     string         `json:"slack_webhook_url"`
 		StatusPageDomain    *string        `json:"status_page_domain,omitempty"`
+		BrandIconURL        *string        `json:"brand_icon_url,omitempty"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -110,6 +111,11 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		},
 	}
 
+	// Populate brand icon URL if configured.
+	if t.appDef.Project.Brand.IconURL != "" {
+		vars.BrandIconURL = &t.appDef.Project.Brand.IconURL
+	}
+
 	for _, res := range t.appDef.Resources {
 		vars.Resources = append(vars.Resources, tfResource{
 			Name:             res.Name,
@@ -166,13 +172,10 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 	// Generate monitors from apps and resources.
 	vars.Monitors = t.generateMonitors(env)
 
-	// Generate status page domain from the first app's primary domain.
-	// This creates a subdomain like status.example.com for the public status page.
-	if len(t.appDef.Apps) > 0 {
-		if primaryDomain := t.appDef.Apps[0].PrimaryDomain(); primaryDomain != "" {
-			statusDomain := "status." + primaryDomain
-			vars.StatusPageDomain = &statusDomain
-		}
+	// Set status page domain if explicitly configured.
+	// If not set, Terraform will not configure a custom domain for the status page.
+	if t.appDef.Project.StatusPageDomain != "" {
+		vars.StatusPageDomain = &t.appDef.Project.StatusPageDomain
 	}
 
 	return vars, nil

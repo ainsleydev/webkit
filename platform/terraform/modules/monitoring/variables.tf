@@ -43,6 +43,12 @@ variable "brand_logo_url" {
   default     = null
 }
 
+variable "brand_icon_url" {
+  description = "Icon URL for status page favicon (optional)"
+  type        = string
+  default     = null
+}
+
 variable "status_page_domain" {
   description = "Custom domain for status page (e.g., status.example.com)"
   type        = string

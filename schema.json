@@ -107,6 +107,10 @@
 		},
 		"AppdefBrand": {
 			"properties": {
+				"iconUrl": {
+					"description": "URL to the project's icon/favicon image (used for status pages)",
+					"type": "string"
+				},
 				"logoUrl": {
 					"description": "URL to the project's logo image",
 					"type": "string"
@@ -265,6 +269,10 @@
 				"repo": {
 					"$ref": "#/definitions/AppdefGitHubRepo",
 					"description": "GitHub repository information for the project"
+				},
+				"statusPageDomain": {
+					"description": "Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain.",
+					"type": "string"
 				},
 				"title": {
 					"description": "Human-readable project name displayed in documentation and UIs",
