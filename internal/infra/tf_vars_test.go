@@ -978,6 +978,7 @@ func TestGenerateMonitors(t *testing.T) {
 			Resources: []appdef.Resource{
 				{
 					Name:       "db",
+					Title:      "Database",
 					Type:       appdef.ResourceTypePostgres,
 					Monitoring: appdef.Monitoring{Enabled: true},
 					Backup:     appdef.ResourceBackupConfig{Enabled: true},
@@ -987,7 +988,7 @@ func TestGenerateMonitors(t *testing.T) {
 
 		tf := setupTfVars(t, input)
 		monitors := tf.generateMonitors(env.Production)
-		require.Len(t, monitors, 2) // HTTP + DNS (resource monitoring not implemented)
+		require.Len(t, monitors, 3) // HTTP + DNS + Backup
 
 		// HTTP monitor.
 		assert.Equal(t, "Test Project, Web - example.com", monitors[0].Name)
@@ -996,6 +997,10 @@ func TestGenerateMonitors(t *testing.T) {
 		// DNS monitor.
 		assert.Equal(t, "Test Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, "dns", monitors[1].Type)
+
+		// Backup monitor.
+		assert.Equal(t, "Test Project - Database Backup", monitors[2].Name)
+		assert.Equal(t, "push", monitors[2].Type)
 	})
 }
 
