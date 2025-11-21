@@ -139,18 +139,55 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
-            Please review this pull request and provide feedback on:
-            - Code quality and best practices
-            - Potential bugs or issues
-            - Performance considerations
+            Review this pull request using the following structure:
+
+            ## Review summary
+
+            - **Overall score**: X/10 (use scoring rubric below)
+            - **Critical issues**: X
+            - **Warnings**: X
+            - **Suggestions**: X
+            - **Recommendation**: [✅ Approve | ⚠️ Approve with comments | ❌ Request changes]
+
+            [1-2 sentence summary of overall quality and key concerns]
+
+            ## Critical issues 🔴
+
+            [Security vulnerabilities, data loss risks, breaking changes - maximum 3, or state "None"]
+
+            ## Warnings 🟡
+
+            [Bugs, performance issues, missing tests, code smells - maximum 5, or state "None"]
+
+            ## Suggestions 🟢
+
+            [Style improvements, refactoring opportunities, best practices - maximum 3, or state "None"]
+
+            ---
+
+            **Scoring guide** (1-10):
+            - 9-10: Production ready, excellent quality
+            - 7-8: Minor improvements needed, safe to merge
+            - 5-6: Notable issues but functional
+            - 3-4: Significant problems requiring fixes
+            - 1-2: Critical issues, do not merge
+
+            **Review focus**:
+            - Follow AGENTS.md conventions (British English, sentence case headings, no unnecessary emojis outside severity indicators)
+            - Code quality and adherence to project style
+            - Potential bugs or logic errors
             - Security concerns
-            - Test coverage
+            - Test coverage (Go: parallel tests, table-driven; JS: vitest patterns)
+            - Performance considerations
 
-            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
+            **Guidelines**:
+            - Only report actionable issues
+            - Skip trivial issues that linters catch
+            - For large PRs (>500 lines), focus on critical/high-impact issues only
+            - Use `<details>` sections for lengthy explanations
+            - Keep feedback concise and professional
 
-            IMPORTANT: Do not use emojis in your review comments. Keep the feedback professional and text-only.
-
-            # Comment Update Strategy
+            # Comment update strategy
             1. First, check if you've already posted a review comment on this PR by looking for comments containing the marker: "<!-- claude-code-review -->"
             2. If a previous comment exists, UPDATE it using gh api --method PATCH to update the existing comment
             3. If no previous comment exists, CREATE a new one using gh pr comment
