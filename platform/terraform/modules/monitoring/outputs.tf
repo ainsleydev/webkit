@@ -51,7 +51,7 @@ output "status_page_url" {
   value       = length(peekaping_status_page.this) > 0 ? "https://${peekaping_status_page.this[0].slug}" : null
 }
 
-output "slack_notification_id" {
-  description = "Slack notification ID if created"
-  value       = length(peekaping_notification.slack) > 0 ? peekaping_notification.slack[0].id : null
-}
+# output "slack_notification_id" {
+#   description = "Slack notification ID if created"
+#   value       = length(peekaping_notification.slack) > 0 ? peekaping_notification.slack[0].id : null
+# }

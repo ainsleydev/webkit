@@ -39,7 +39,10 @@ locals {
   ]
 
   # Notification IDs.
-  notification_ids = local.slack_enabled ? [peekaping_notification.slack[0].id] : []
+  #notification_ids = local.slack_enabled ? [peekaping_notification.slack[0].id] : []
+
+  # Currently - Slack - #alerts
+  notification_ids = ["7e4f8d2e-5720-4b07-9ce4-3f639b5e4647"]
 }
 
 #
@@ -83,15 +86,15 @@ resource "peekaping_tag" "project" {
 # Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/notification
 #
 
-resource "peekaping_notification" "slack" {
-  count = local.slack_enabled ? 1 : 0
-
-  name = "${var.project_title} Slack Alerts"
-  type = "slack"
-  config = jsonencode({
-    webhook_url = var.slack_webhook_url
-  })
-}
+# resource "peekaping_notification" "slack" {
+#   count = local.slack_enabled ? 1 : 0
+#
+#   name = "${var.project_title} Slack Alerts"
+#   type = "slack"
+#   config = jsonencode({
+#     webhook_url = var.slack_webhook_url
+#   })
+# }
 
 #
 # HTTP Monitors
