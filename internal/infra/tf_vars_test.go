@@ -1037,21 +1037,3 @@ func TestGenerateMonitors(t *testing.T) {
 		assert.Equal(t, "push", monitors[3].Type)
 	})
 }
-
-func TestTfMonitorFromAppdef(t *testing.T) {
-	t.Parallel()
-
-	input := appdef.Monitor{
-		Name:   "test-monitor",
-		Type:   appdef.MonitorTypeHTTP,
-		URL:    "https://example.com",
-		Method: "GET",
-	}
-
-	got := tfMonitorFromAppdef(input)
-
-	assert.Equal(t, "test-monitor", got.Name)
-	assert.Equal(t, "http", got.Type)
-	assert.Equal(t, "https://example.com", got.URL)
-	assert.Equal(t, "GET", got.Method)
-}
