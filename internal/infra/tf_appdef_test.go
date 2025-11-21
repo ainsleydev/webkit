@@ -48,7 +48,7 @@ func TestTerraform_Resources(t *testing.T) {
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
 
-		got, err := tf.Plan(t.Context(), env.Production)
+		got, err := tf.Plan(t.Context(), env.Production, false)
 		require.NoError(t, err)
 		require.NotNil(t, got)
 		require.True(t, got.HasChanges, "Plan should have changes")
@@ -191,7 +191,7 @@ func TestTerraform_Resources(t *testing.T) {
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
 
-		got, err := tf.Plan(t.Context(), env.Production)
+		got, err := tf.Plan(t.Context(), env.Production, false)
 		require.NoError(t, err)
 		require.NotNil(t, got)
 		assert.True(t, got.HasChanges, "Plan should have changes")
@@ -338,7 +338,7 @@ func TestTerraform_Apps(t *testing.T) {
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
 
-		got, err := tf.Plan(t.Context(), env.Production)
+		got, err := tf.Plan(t.Context(), env.Production, false)
 		require.NoError(t, err)
 		require.NotNil(t, got)
 		assert.True(t, got.HasChanges, "Plan should have changes")
@@ -405,7 +405,7 @@ func TestTerraform_Apps(t *testing.T) {
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
 
-		got, err := tf.Plan(t.Context(), env.Production)
+		got, err := tf.Plan(t.Context(), env.Production, false)
 		require.NoError(t, err)
 		require.NotNil(t, got)
 		assert.True(t, got.HasChanges, "Plan should have changes")
@@ -581,7 +581,7 @@ func TestTerraform_DefaultB2Bucket(t *testing.T) {
 	err := tf.Init(t.Context())
 	require.NoError(t, err)
 
-	got, err := tf.Plan(t.Context(), env.Production)
+	got, err := tf.Plan(t.Context(), env.Production, false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
 

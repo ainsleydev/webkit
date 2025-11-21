@@ -19,12 +19,17 @@ var PlanCmd = &cli.Command{
 			Aliases: []string{"s"},
 			Usage:   "Suppress informational output (only show Terraform output)",
 		},
+		&cli.BoolFlag{
+			Name:  "refresh-only",
+			Usage: "Show what changes would be made to state by refreshing (without planning infrastructure changes)",
+		},
 	},
 	Action: cmdtools.Wrap(Plan),
 }
 
 func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
+	refreshOnly := input.Command.Bool("refresh-only")
 
 	printer.Info("Generating executive plan from app definition")
 	spinner := input.Spinner()
@@ -62,7 +67,7 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	printer.Print("Making Plan...")
 	spinner.Start()
 
-	plan, err := tf.Plan(ctx, env.Production)
+	plan, err := tf.Plan(ctx, env.Production, refreshOnly)
 	if err != nil {
 		return err
 	}

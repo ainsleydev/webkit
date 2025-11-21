@@ -167,22 +167,27 @@ type PlanOutput struct {
 
 // Plan generates a Terraform execution plan showing what actions Terraform
 // will take to reach the desired state defined in the definition.
+// If refreshOnly is true, it uses 'terraform plan -refresh-only' to show
+// what state changes would occur from refreshing.
 //
 // Must be called after Init().
-func (t *Terraform) Plan(ctx context.Context, env env.Environment) (PlanOutput, error) {
+func (t *Terraform) Plan(ctx context.Context, env env.Environment, refreshOnly bool) (PlanOutput, error) {
 	if err := t.prepareVars(ctx, env); err != nil {
 		return PlanOutput{}, err
 	}
 
 	planFilePath := filepath.Join(t.tmpDir, "base", "plan.tfplan")
 
-	var vars []tfexec.PlanOption
-	vars = append(vars, tfexec.Out(planFilePath))
+	var opts []tfexec.PlanOption
+	if refreshOnly {
+		opts = append(opts, tfexec.RefreshOnly(true))
+	}
+	opts = append(opts, tfexec.Out(planFilePath))
 	for _, v := range t.env.varStrings() {
-		vars = append(vars, tfexec.Var(v))
+		opts = append(opts, tfexec.Var(v))
 	}
 
-	changes, err := t.tf.Plan(ctx, vars...)
+	changes, err := t.tf.Plan(ctx, opts...)
 	if err != nil {
 		return PlanOutput{}, fmt.Errorf("terraform plan failed: %w", err)
 	}
@@ -214,10 +219,11 @@ type ApplyOutput struct {
 }
 
 // Apply executes terraform apply to provision infrastructure based on
-// the app definition provided.
+// the app definition provided. If refreshOnly is true, it uses
+// 'terraform apply -refresh-only' to sync state without making changes.
 //
 // Must be called after Init().
-func (t *Terraform) Apply(ctx context.Context, env env.Environment) (ApplyOutput, error) {
+func (t *Terraform) Apply(ctx context.Context, env env.Environment, refreshOnly bool) (ApplyOutput, error) {
 	if err := t.prepareVars(ctx, env); err != nil {
 		return ApplyOutput{}, err
 	}
@@ -226,15 +232,22 @@ func (t *Terraform) Apply(ctx context.Context, env env.Environment) (ApplyOutput
 	t.tf.SetStdout(&outputBuf)
 	t.tf.SetStderr(&outputBuf)
 
-	var vars []tfexec.ApplyOption
+	var opts []tfexec.ApplyOption
+	if refreshOnly {
+		opts = append(opts, tfexec.RefreshOnly(true))
+	}
 	for _, v := range t.env.varStrings() {
-		vars = append(vars, tfexec.Var(v))
+		opts = append(opts, tfexec.Var(v))
 	}
 
-	if err := t.tf.Apply(ctx, vars...); err != nil {
+	if err := t.tf.Apply(ctx, opts...); err != nil {
+		errMsg := "terraform apply failed"
+		if refreshOnly {
+			errMsg = "terraform apply -refresh-only failed"
+		}
 		return ApplyOutput{
 			Output: outputBuf.String(),
-		}, fmt.Errorf("terraform apply failed: %w", err)
+		}, fmt.Errorf("%s: %w", errMsg, err)
 	}
 
 	return ApplyOutput{
