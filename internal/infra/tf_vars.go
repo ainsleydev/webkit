@@ -172,21 +172,10 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 	// Generate monitors from apps and resources.
 	vars.Monitors = t.generateMonitors(env)
 
-	// Set status page domain.
-	// Priority:
-	// 1. Use explicit statusPageDomain from project config if set
-	// 2. Otherwise, derive from first app's primary domain (extract root domain to avoid subdomains)
+	// Set status page domain if explicitly configured.
+	// If not set, Terraform will not configure a custom domain for the status page.
 	if t.appDef.Project.StatusPageDomain != "" {
-		// User explicitly configured the status page domain.
 		vars.StatusPageDomain = &t.appDef.Project.StatusPageDomain
-	} else if len(t.appDef.Apps) > 0 {
-		// Fallback: derive from first app's primary domain.
-		// Extracts the root domain first to avoid subdomains like status.cms.example.com.
-		if primaryDomain := t.appDef.Apps[0].PrimaryDomain(); primaryDomain != "" {
-			rootDomain := extractRootDomain(primaryDomain)
-			statusDomain := "status." + rootDomain
-			vars.StatusPageDomain = &statusDomain
-		}
 	}
 
 	return vars, nil
@@ -300,73 +289,4 @@ func tfMonitorFromAppdef(m appdef.Monitor) tfMonitor {
 		Method: m.Method,
 		Domain: m.Domain,
 	}
-}
-
-// extractRootDomain extracts the root domain from a given domain string.
-// It removes common subdomain prefixes (www, api, cms, etc.) to get the base domain.
-//
-// Examples:
-//   - "cms.player2clubs.com" → "player2clubs.com"
-//   - "www.example.com" → "example.com"
-//   - "api.staging.example.com" → "staging.example.com"
-//   - "example.com" → "example.com"
-func extractRootDomain(domain string) string {
-	if domain == "" {
-		return ""
-	}
-
-	// Split domain into parts.
-	parts := splitDomain(domain)
-	if len(parts) <= 2 {
-		// Already a root domain (e.g., "example.com").
-		return domain
-	}
-
-	// If the first part looks like a common subdomain prefix, remove it.
-	// Otherwise return the last two parts (root domain).
-	commonSubdomains := map[string]bool{
-		"www": true, "api": true, "cms": true, "app": true,
-		"admin": true, "blog": true, "shop": true, "mail": true,
-	}
-
-	firstPart := parts[0]
-	if commonSubdomains[firstPart] {
-		// Remove the common subdomain and return the rest.
-		return joinDomain(parts[1:])
-	}
-
-	// For other subdomains, return last two parts as root domain.
-	return joinDomain(parts[len(parts)-2:])
-}
-
-// splitDomain splits a domain into its component parts.
-func splitDomain(domain string) []string {
-	parts := []string{}
-	current := ""
-	for i := 0; i < len(domain); i++ {
-		if domain[i] == '.' {
-			if current != "" {
-				parts = append(parts, current)
-				current = ""
-			}
-		} else {
-			current += string(domain[i])
-		}
-	}
-	if current != "" {
-		parts = append(parts, current)
-	}
-	return parts
-}
-
-// joinDomain joins domain parts with dots.
-func joinDomain(parts []string) string {
-	result := ""
-	for i, part := range parts {
-		if i > 0 {
-			result += "."
-		}
-		result += part
-	}
-	return result
 }
