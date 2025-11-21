@@ -184,6 +184,7 @@ resource "peekaping_monitor" "push" {
   # - Backup monitors: 25 hours (90000s) - daily backups with 1 hour buffer
   # - Maintenance monitors: 8 days (691200s) - weekly maintenance with 1 day buffer
   interval = strcontains(each.value.name, "Backup") ? 90000 : strcontains(each.value.name, "Maintenance") ? 691200 : 90000
+  timeout  = 30 # Required by API, though not meaningful for push monitors
 
   max_retries      = 2
   retry_interval   = 60
