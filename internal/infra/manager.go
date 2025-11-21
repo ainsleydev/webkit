@@ -15,6 +15,7 @@ type (
 		Plan(ctx context.Context, env env.Environment) (PlanOutput, error)
 		Apply(ctx context.Context, env env.Environment) (ApplyOutput, error)
 		Destroy(ctx context.Context, env env.Environment) (DestroyOutput, error)
+		Refresh(ctx context.Context, env env.Environment) (RefreshOutput, error)
 		Output(ctx context.Context, env env.Environment) (OutputResult, error)
 		Import(ctx context.Context, input ImportInput) (ImportOutput, error)
 		Cleanup()

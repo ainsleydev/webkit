@@ -142,3 +142,18 @@ func (mr *MockManagerMockRecorder) Plan(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Plan", reflect.TypeOf((*MockManager)(nil).Plan), ctx, arg1)
 }
+
+// Refresh mocks base method.
+func (m *MockManager) Refresh(ctx context.Context, arg1 env.Environment) (infra.RefreshOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Refresh", ctx, arg1)
+	ret0, _ := ret[0].(infra.RefreshOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Refresh indicates an expected call of Refresh.
+func (mr *MockManagerMockRecorder) Refresh(ctx, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Refresh", reflect.TypeOf((*MockManager)(nil).Refresh), ctx, arg1)
+}

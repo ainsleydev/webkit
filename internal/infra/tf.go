@@ -278,6 +278,48 @@ func (t *Terraform) Destroy(ctx context.Context, env env.Environment) (DestroyOu
 	}, nil
 }
 
+// RefreshOutput is the result of calling Refresh.
+type RefreshOutput struct {
+	// Human-readable output (the output that's usually
+	// in the terminal when running terraform apply -refresh-only).
+	Output string
+}
+
+// Refresh syncs the Terraform state with the actual infrastructure state
+// without making any changes. This uses 'terraform apply -refresh-only'
+// which is the modern replacement for the deprecated 'terraform refresh' command.
+//
+// This is useful when the state file is out of sync with reality, such as
+// when resources were modified outside of Terraform or when provider bugs
+// cause state inconsistencies.
+//
+// Must be called after Init().
+func (t *Terraform) Refresh(ctx context.Context, env env.Environment) (RefreshOutput, error) {
+	if err := t.prepareVars(ctx, env); err != nil {
+		return RefreshOutput{}, err
+	}
+
+	var outputBuf strings.Builder
+	t.tf.SetStdout(&outputBuf)
+	t.tf.SetStderr(&outputBuf)
+
+	var opts []tfexec.ApplyOption
+	opts = append(opts, tfexec.RefreshOnly(true))
+	for _, v := range t.env.varStrings() {
+		opts = append(opts, tfexec.Var(v))
+	}
+
+	if err := t.tf.Apply(ctx, opts...); err != nil {
+		return RefreshOutput{
+			Output: outputBuf.String(),
+		}, fmt.Errorf("terraform apply -refresh-only failed: %w", err)
+	}
+
+	return RefreshOutput{
+		Output: outputBuf.String(),
+	}, nil
+}
+
 // OutputResult is the result of calling Output.
 // It contains a structured map of all Terraform outputs.
 // See platform/terraform/base/outputs.tf for spercifics.
