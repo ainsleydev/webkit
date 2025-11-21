@@ -270,9 +270,9 @@
 					"$ref": "#/definitions/AppdefGitHubRepo",
 					"description": "GitHub repository information for the project"
 				},
-				"statusPageDomain": {
-					"description": "Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain.",
-					"type": "string"
+				"statusPage": {
+					"$ref": "#/definitions/AppdefStatusPage",
+					"description": "Configuration for the project's status page"
 				},
 				"title": {
 					"description": "Human-readable project name displayed in documentation and UIs",
@@ -349,6 +349,15 @@
 				"env": {
 					"$ref": "#/definitions/AppdefEnvironment",
 					"description": "Environment variables shared across all apps"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefStatusPage": {
+			"properties": {
+				"domain": {
+					"description": "Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain.",
+					"type": "string"
 				}
 			},
 			"type": "object"
