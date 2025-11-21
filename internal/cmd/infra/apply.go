@@ -32,11 +32,7 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 	refreshOnly := input.Command.Bool("refresh-only")
 
-	if refreshOnly {
-		printer.Info("Syncing Terraform state with actual infrastructure (refresh-only mode)")
-	} else {
-		printer.Info("Generating executive plan from app definition")
-	}
+	printer.Info("Generating executive plan from app definition")
 	spinner := input.Spinner()
 
 	// Filter definition to only include Terraform-managed items.
@@ -69,20 +65,13 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	if refreshOnly {
-		printer.Println("Refreshing State...")
-	} else {
-		printer.Println("Applying Changes...")
-	}
+	printer.Println("Applying Changes...")
 	spinner.Start()
 
 	result, err := tf.Apply(ctx, env.Production, refreshOnly)
 	if err != nil {
 		// Write error output directly to stdout (not through printer)
 		fmt.Print(result.Output) //nolint:forbidigo
-		if refreshOnly {
-			return errors.New("executing terraform apply -refresh-only")
-		}
 		return errors.New("executing terraform apply")
 	}
 
@@ -90,11 +79,7 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Write output directly to stdout (not through printer)
 	fmt.Print(result.Output) //nolint:forbidigo
-	if refreshOnly {
-		printer.Success("Refresh succeeded, state is now in sync with actual infrastructure")
-	} else {
-		printer.Success("Apply succeeded, see console output")
-	}
+	printer.Success("Apply succeeded, see console output")
 
 	return nil
 }

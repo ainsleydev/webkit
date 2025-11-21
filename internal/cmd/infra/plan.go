@@ -31,11 +31,7 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
 	refreshOnly := input.Command.Bool("refresh-only")
 
-	if refreshOnly {
-		printer.Info("Showing changes to state from refreshing (refresh-only mode)")
-	} else {
-		printer.Info("Generating executive plan from app definition")
-	}
+	printer.Info("Generating executive plan from app definition")
 	spinner := input.Spinner()
 
 	// Filter definition to only include Terraform-managed items.
@@ -80,11 +76,7 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Write plan output directly to stdout (not through printer)
 	fmt.Print(plan.Output) //nolint:forbidigo
-	if refreshOnly {
-		printer.Success("Refresh-only plan generated, see console output")
-	} else {
-		printer.Success("Plan generated, see console output")
-	}
+	printer.Success("Plan generated, see console output")
 
 	return nil
 }
