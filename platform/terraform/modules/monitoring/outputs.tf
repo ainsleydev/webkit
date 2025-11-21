@@ -25,7 +25,7 @@ output "push_monitors" {
       id         = monitor.id
       name       = monitor.name
       push_token = monitor.push_token
-      ping_url   = "${var.peekaping_endpoint}/api/push/${monitor.push_token}"
+      ping_url   = monitor.push_token != null ? "${var.peekaping_endpoint}/api/push/${monitor.push_token}" : null
     }
   }
 }
