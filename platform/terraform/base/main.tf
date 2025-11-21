@@ -328,23 +328,27 @@ resource "github_actions_secret" "resource_outputs" {
 # Example: PROD_DB_BACKUP_PING_URL, PROD_WEB_MAINTENANCE_PING_URL
 #
 locals {
-  # Extract push monitor ping URLs from monitoring module outputs.
-  # Creates a map with simplified keys for backup and maintenance monitors.
-  monitor_variables = length(module.monitoring) > 0 ? {
-    for name, monitor in module.monitoring[0].push_monitors :
+  # Create push monitor variable names from var.monitors (known at plan time).
+  # This allows Terraform to determine the for_each keys before the monitors are created.
+  # The actual ping URLs will be looked up from module outputs in the resource body.
+  push_monitor_keys = length(var.monitors) > 0 ? {
+    for m in var.monitors :
     # Convert monitor name to variable-friendly format:
-    # "Project - Database Backup" → "DB_BACKUP_PING_URL"
-    # "Project - Web Maintenance" → "WEB_MAINTENANCE_PING_URL"
-    upper("${local.environment_short}_${replace(replace(regex("- (.*)", name)[0], " - ", "_"), " ", "_")}_PING_URL") => monitor.ping_url
+    # "Project - Database Backup" → "PROD_DB_BACKUP_PING_URL"
+    # "Project - Web Maintenance" → "PROD_WEB_MAINTENANCE_PING_URL"
+    upper("${local.environment_short}_${replace(replace(regex("- (.*)", m.name)[0], " - ", "_"), " ", "_")}_PING_URL") => m.name
+    if m.type == "push"
   } : {}
 }
 
 resource "github_actions_variable" "monitor_ping_urls" {
-  for_each = local.monitor_variables
+  for_each = local.push_monitor_keys
 
   repository    = var.github_config.repo
   variable_name = each.key
-  value         = each.value
+  # Look up the actual ping URL from the monitoring module outputs using the monitor name.
+  # The ping URL is computed after the monitor is created, but the for_each keys are known at plan time.
+  value = module.monitoring[0].push_monitors[each.value].ping_url
 
   depends_on = [module.monitoring]
 }
