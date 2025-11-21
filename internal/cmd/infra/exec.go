@@ -47,11 +47,13 @@ func Exec(ctx context.Context, input cmdtools.CommandInput) error {
 
 	spinner.Start()
 
-	// Execute terraform command in the working directory.
-	tfCmd := exec.CommandContext(ctx, "terraform", args...)
-	tfCmd.Dir = tf.WorkDir()
+	// Execute terraform command with -chdir to access configs in temp dir
+	// while keeping user's CWD for file path resolution.
+	chdir := "-chdir=" + tf.WorkDir()
+	tfCmd := exec.CommandContext(ctx, "terraform", append([]string{chdir}, args...)...)
 	tfCmd.Stdout = os.Stdout
 	tfCmd.Stderr = os.Stderr
+	tfCmd.Stdin = os.Stdin
 	tfCmd.Env = os.Environ()
 
 	spinner.Stop()
