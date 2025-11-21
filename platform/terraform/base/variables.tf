@@ -125,6 +125,12 @@ variable "brand_logo_url" {
   default     = null
 }
 
+variable "brand_icon_url" {
+  type        = string
+  description = "Icon URL for status page (favicon)"
+  default     = null
+}
+
 variable "apps" {
   type = list(object({
     name              = string

@@ -42,7 +42,7 @@ output "all_monitor_ids" {
 output "tag_ids" {
   description = "Tag IDs for reference"
   value = {
-    project     = peekaping_tag.project.id
+    project = peekaping_tag.project.id
     # environment = data.peekaping_tag.environment.id
     # webkit      = data.peekaping_tag.webkit.id
   }

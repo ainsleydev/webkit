@@ -107,6 +107,10 @@
 		},
 		"AppdefBrand": {
 			"properties": {
+				"iconUrl": {
+					"description": "URL to the project's icon/favicon image (used for status pages)",
+					"type": "string"
+				},
 				"logoUrl": {
 					"description": "URL to the project's logo image",
 					"type": "string"

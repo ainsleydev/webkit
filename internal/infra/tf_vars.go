@@ -35,6 +35,7 @@ type (
 		HetznerSSHKeys      []string       `json:"hetzner_ssh_keys"`
 		SlackWebhookURL     string         `json:"slack_webhook_url"`
 		StatusPageDomain    *string        `json:"status_page_domain,omitempty"`
+		BrandIconURL        *string        `json:"brand_icon_url,omitempty"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -110,6 +111,11 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		},
 	}
 
+	// Populate brand icon URL if configured.
+	if t.appDef.Project.Brand.IconURL != "" {
+		vars.BrandIconURL = &t.appDef.Project.Brand.IconURL
+	}
+
 	for _, res := range t.appDef.Resources {
 		vars.Resources = append(vars.Resources, tfResource{
 			Name:             res.Name,
@@ -168,9 +174,11 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 
 	// Generate status page domain from the first app's primary domain.
 	// This creates a subdomain like status.example.com for the public status page.
+	// Extracts the root domain first to avoid subdomains like status.cms.example.com.
 	if len(t.appDef.Apps) > 0 {
 		if primaryDomain := t.appDef.Apps[0].PrimaryDomain(); primaryDomain != "" {
-			statusDomain := "status." + primaryDomain
+			rootDomain := extractRootDomain(primaryDomain)
+			statusDomain := "status." + rootDomain
 			vars.StatusPageDomain = &statusDomain
 		}
 	}
@@ -286,4 +294,73 @@ func tfMonitorFromAppdef(m appdef.Monitor) tfMonitor {
 		Method: m.Method,
 		Domain: m.Domain,
 	}
+}
+
+// extractRootDomain extracts the root domain from a given domain string.
+// It removes common subdomain prefixes (www, api, cms, etc.) to get the base domain.
+//
+// Examples:
+//   - "cms.player2clubs.com" → "player2clubs.com"
+//   - "www.example.com" → "example.com"
+//   - "api.staging.example.com" → "staging.example.com"
+//   - "example.com" → "example.com"
+func extractRootDomain(domain string) string {
+	if domain == "" {
+		return ""
+	}
+
+	// Split domain into parts.
+	parts := splitDomain(domain)
+	if len(parts) <= 2 {
+		// Already a root domain (e.g., "example.com").
+		return domain
+	}
+
+	// If the first part looks like a common subdomain prefix, remove it.
+	// Otherwise return the last two parts (root domain).
+	commonSubdomains := map[string]bool{
+		"www": true, "api": true, "cms": true, "app": true,
+		"admin": true, "blog": true, "shop": true, "mail": true,
+	}
+
+	firstPart := parts[0]
+	if commonSubdomains[firstPart] {
+		// Remove the common subdomain and return the rest.
+		return joinDomain(parts[1:])
+	}
+
+	// For other subdomains, return last two parts as root domain.
+	return joinDomain(parts[len(parts)-2:])
+}
+
+// splitDomain splits a domain into its component parts.
+func splitDomain(domain string) []string {
+	parts := []string{}
+	current := ""
+	for i := 0; i < len(domain); i++ {
+		if domain[i] == '.' {
+			if current != "" {
+				parts = append(parts, current)
+				current = ""
+			}
+		} else {
+			current += string(domain[i])
+		}
+	}
+	if current != "" {
+		parts = append(parts, current)
+	}
+	return parts
+}
+
+// joinDomain joins domain parts with dots.
+func joinDomain(parts []string) string {
+	result := ""
+	for i, part := range parts {
+		if i > 0 {
+			result += "."
+		}
+		result += part
+	}
+	return result
 }

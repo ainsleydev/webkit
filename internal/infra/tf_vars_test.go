@@ -510,6 +510,43 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 
+	t.Run("Status page domain - extracts root from subdomain", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "cms-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "cms-project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "apps/cms",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+					Domains: []appdef.Domain{
+						{Name: "cms.player2clubs.com", Type: appdef.DomainTypePrimary},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page domain should extract root domain from subdomain")
+		{
+			require.NotNil(t, got.StatusPageDomain)
+			assert.Equal(t, "status.player2clubs.com", *got.StatusPageDomain)
+		}
+	})
+
 	t.Run("Mixed null and empty configs with arrays", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{
@@ -1020,4 +1057,31 @@ func TestTfMonitorFromAppdef(t *testing.T) {
 	assert.Equal(t, "http", got.Type)
 	assert.Equal(t, "https://example.com", got.URL)
 	assert.Equal(t, "GET", got.Method)
+}
+
+func TestExtractRootDomain(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input string
+		want  string
+	}{
+		"Root domain unchanged":     {input: "example.com", want: "example.com"},
+		"WWW subdomain removed":     {input: "www.example.com", want: "example.com"},
+		"CMS subdomain removed":     {input: "cms.player2clubs.com", want: "player2clubs.com"},
+		"API subdomain removed":     {input: "api.example.com", want: "example.com"},
+		"Admin subdomain removed":   {input: "admin.example.com", want: "example.com"},
+		"Non-common subdomain kept": {input: "staging.example.com", want: "example.com"},
+		"Multi-level subdomain":     {input: "api.staging.example.com", want: "staging.example.com"},
+		"Empty string":              {input: "", want: ""},
+		"Single part":               {input: "localhost", want: "localhost"},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := extractRootDomain(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
 }

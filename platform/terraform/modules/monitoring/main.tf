@@ -33,6 +33,9 @@ locals {
   tag_ids = [
     peekaping_tag.project.id,
 
+    # "dd1151bc-1d7a-42d1-8166-f87b7b180798", # Production
+    # "ac5b2626-3425-4496-a318-ede51ce7baa8", # WebKit
+
     # See: https://github.com/tafaust/terraform-provider-peekaping/pull/12
     # data.peekaping_tag.environment.id,
     # data.peekaping_tag.webkit.id
@@ -208,7 +211,7 @@ resource "peekaping_status_page" "this" {
   slug        = lower(replace(var.project_name, "_", "-"))
   published   = true
   theme       = "auto"
-  icon        = var.brand_logo_url
+  icon        = var.brand_icon_url
   domains     = var.status_page_domain != null ? [var.status_page_domain] : []
   monitor_ids = concat(
     [for m in peekaping_monitor.http : m.id],

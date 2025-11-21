@@ -25,5 +25,6 @@ type (
 		PrimaryColour   string `json:"primaryColour,omitempty" validate:"omitempty,hexcolor" description:"Primary brand colour in hex format (e.g., #3B82F6)"`
 		SecondaryColour string `json:"secondaryColour,omitempty" validate:"omitempty,hexcolor" description:"Secondary brand colour in hex format (e.g., #10B981)"`
 		LogoURL         string `json:"logoUrl,omitempty" validate:"omitempty,url" description:"URL to the project's logo image"`
+		IconURL         string `json:"iconUrl,omitempty" validate:"omitempty,url" description:"URL to the project's icon/favicon image (used for status pages)"`
 	}
 )
