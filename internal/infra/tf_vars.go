@@ -249,31 +249,13 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 	return nil
 }
 
-// generateMonitors creates monitor configurations from apps and resources.
+// generateMonitors creates monitor configurations from the app definition.
 // It transforms appdef.Monitor structs into tfMonitor for Terraform consumption.
 func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
-	monitors := make([]tfMonitor, 0)
+	monitors := make([]tfMonitor, 0, len(t.appDef.GenerateMonitors()))
 
-	// Generate monitors from all apps in the definition.
 	for _, monitor := range t.appDef.GenerateMonitors() {
 		monitors = append(monitors, tfMonitorFromAppdef(monitor))
-	}
-
-	// Generate backup monitors from all resources.
-	for _, resource := range t.appDef.Resources {
-		if monitor := resource.GenerateBackupMonitor(t.appDef.Project.Title); monitor != nil {
-			monitors = append(monitors, tfMonitorFromAppdef(*monitor))
-		}
-	}
-
-	// Generate codebase backup monitor.
-	monitors = append(monitors, tfMonitorFromAppdef(t.appDef.GenerateCodebaseBackupMonitor()))
-
-	// Generate maintenance monitors from all apps.
-	for _, app := range t.appDef.Apps {
-		if monitor := app.GenerateMaintenanceMonitor(t.appDef.Project.Title); monitor != nil {
-			monitors = append(monitors, tfMonitorFromAppdef(*monitor))
-		}
 	}
 
 	return monitors

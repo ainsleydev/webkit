@@ -42,11 +42,41 @@ func (m MonitorType) String() string {
 	return string(m)
 }
 
-// GenerateMonitors creates HTTP and DNS monitors for all apps in the definition.
+// GenerateMonitors creates all monitors for the definition.
+// This includes:
+// - HTTP and DNS monitors for app domains
+// - Backup monitors for resources
+// - Codebase backup monitor (always generated)
+// - Maintenance monitors for VM apps
+func (d *Definition) GenerateMonitors() []Monitor {
+	monitors := make([]Monitor, 0)
+
+	// Generate HTTP and DNS monitors for all apps.
+	monitors = append(monitors, d.generateHTTPDNSMonitors()...)
+
+	// Generate backup monitors for all resources.
+	monitors = append(monitors, d.generateResourceBackupMonitors()...)
+
+	// Generate codebase backup monitor (always generated).
+	monitors = append(monitors, Monitor{
+		Name: fmt.Sprintf("%s - Codebase Backup", d.Project.Title),
+		Type: MonitorTypePush,
+	})
+
+	// Generate maintenance monitors for all apps.
+	for _, app := range d.Apps {
+		if monitor := app.GenerateMaintenanceMonitor(d.Project.Title); monitor != nil {
+			monitors = append(monitors, *monitor)
+		}
+	}
+
+	return monitors
+}
+
+// generateHTTPDNSMonitors creates HTTP and DNS monitors for all apps in the definition.
 // It generates two monitors per domain (HTTP + DNS) for primary and alias domains,
 // excluding unmanaged domains. Monitoring must be explicitly enabled in each app's configuration.
-// Monitor names include both the project title and app title for clarity on the dashboard.
-func (d *Definition) GenerateMonitors() []Monitor {
+func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 	monitors := make([]Monitor, 0)
 
 	for _, app := range d.Apps {
@@ -79,13 +109,15 @@ func (d *Definition) GenerateMonitors() []Monitor {
 	return monitors
 }
 
-// GenerateCodebaseBackupMonitor creates a push monitor for the codebase backup workflow.
-// The codebase backup workflow always runs (regardless of resources configuration),
-// so this monitor is always generated to track its health.
-// The monitor name follows the format: "{ProjectTitle} - Codebase Backup".
-func (d *Definition) GenerateCodebaseBackupMonitor() Monitor {
-	return Monitor{
-		Name: fmt.Sprintf("%s - Codebase Backup", d.Project.Title),
-		Type: MonitorTypePush,
+// generateResourceBackupMonitors creates push monitors for resource backup workflows.
+func (d *Definition) generateResourceBackupMonitors() []Monitor {
+	monitors := make([]Monitor, 0)
+
+	for _, resource := range d.Resources {
+		if monitor := resource.GenerateBackupMonitor(d.Project.Title); monitor != nil {
+			monitors = append(monitors, *monitor)
+		}
 	}
+
+	return monitors
 }
