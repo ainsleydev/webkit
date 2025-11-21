@@ -228,3 +228,19 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
 	})
 }
+
+func TestDefinition_GenerateCodebaseBackupMonitor(t *testing.T) {
+	t.Parallel()
+
+	def := &Definition{
+		Project: Project{Title: "My Project"},
+	}
+
+	monitor := def.GenerateCodebaseBackupMonitor()
+
+	assert.Equal(t, "My Project - Codebase Backup", monitor.Name)
+	assert.Equal(t, MonitorTypePush, monitor.Type)
+	assert.Empty(t, monitor.URL, "Push monitors should have empty URL")
+	assert.Empty(t, monitor.Method, "Push monitors should have empty method")
+	assert.Empty(t, monitor.Domain, "Push monitors should have empty domain")
+}

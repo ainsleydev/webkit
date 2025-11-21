@@ -78,3 +78,14 @@ func (d *Definition) GenerateMonitors() []Monitor {
 
 	return monitors
 }
+
+// GenerateCodebaseBackupMonitor creates a push monitor for the codebase backup workflow.
+// The codebase backup workflow always runs (regardless of resources configuration),
+// so this monitor is always generated to track its health.
+// The monitor name follows the format: "{ProjectTitle} - Codebase Backup".
+func (d *Definition) GenerateCodebaseBackupMonitor() Monitor {
+	return Monitor{
+		Name: fmt.Sprintf("%s - Codebase Backup", d.Project.Title),
+		Type: MonitorTypePush,
+	}
+}

@@ -267,12 +267,7 @@ func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
 	}
 
 	// Generate codebase backup monitor.
-	// The codebase backup workflow always runs, so we always create a heartbeat monitor for it.
-	codebaseBackupMonitor := appdef.Monitor{
-		Name: t.appDef.Project.Title + " - Codebase Backup",
-		Type: appdef.MonitorTypePush,
-	}
-	monitors = append(monitors, tfMonitorFromAppdef(codebaseBackupMonitor))
+	monitors = append(monitors, tfMonitorFromAppdef(t.appDef.GenerateCodebaseBackupMonitor()))
 
 	// Generate maintenance monitors from all apps.
 	for _, app := range t.appDef.Apps {
