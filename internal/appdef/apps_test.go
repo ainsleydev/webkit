@@ -761,3 +761,65 @@ func TestApp_InstallCommands(t *testing.T) {
 		assert.Contains(t, got, "custom install command")
 	})
 }
+
+func TestApp_GenerateMaintenanceMonitor(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		app          App
+		projectTitle string
+		want         *Monitor
+	}{
+		"VM with monitoring enabled": {
+			app: App{
+				Name:       "web",
+				Title:      "Web Server",
+				Infra:      Infra{Type: "vm"},
+				Monitoring: Monitoring{Enabled: true},
+			},
+			projectTitle: "Test Project",
+			want: &Monitor{
+				Name: "Test Project - Web Server Maintenance",
+				Type: MonitorTypePush,
+			},
+		},
+		"Container type not eligible": {
+			app: App{
+				Name:       "api",
+				Title:      "API",
+				Infra:      Infra{Type: "container"},
+				Monitoring: Monitoring{Enabled: true},
+			},
+			projectTitle: "Test Project",
+			want:         nil,
+		},
+		"Monitoring disabled": {
+			app: App{
+				Name:       "web",
+				Title:      "Web Server",
+				Infra:      Infra{Type: "vm"},
+				Monitoring: Monitoring{Enabled: false},
+			},
+			projectTitle: "Test Project",
+			want:         nil,
+		},
+		"App type with monitoring disabled": {
+			app: App{
+				Name:       "web",
+				Title:      "Web Server",
+				Infra:      Infra{Type: "app"},
+				Monitoring: Monitoring{Enabled: true},
+			},
+			projectTitle: "Test Project",
+			want:         nil,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.app.GenerateMaintenanceMonitor(test.projectTitle)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}

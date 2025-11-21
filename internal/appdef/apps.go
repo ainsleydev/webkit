@@ -292,3 +292,18 @@ func (a *App) defaultPort() int {
 		return 3000
 	}
 }
+
+// GenerateMaintenanceMonitor creates a push monitor for an app's server maintenance workflow.
+// It only generates a monitor if the app is deployed on a VM (infra type "vm") and monitoring is enabled.
+// The monitor name follows the format: "{ProjectTitle} - {AppTitle} Maintenance".
+// This creates a heartbeat monitor that can be pinged by CI/CD maintenance workflows.
+func (a *App) GenerateMaintenanceMonitor(projectTitle string) *Monitor {
+	if !a.Monitoring.Enabled || a.Infra.Type != "vm" {
+		return nil
+	}
+
+	return &Monitor{
+		Name: fmt.Sprintf("%s - %s Maintenance", projectTitle, a.Title),
+		Type: MonitorTypePush,
+	}
+}

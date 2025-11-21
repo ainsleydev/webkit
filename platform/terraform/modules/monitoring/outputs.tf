@@ -19,11 +19,13 @@ output "dns_monitors" {
 }
 
 output "push_monitors" {
-  description = "Push monitor details"
+  description = "Push monitor details including ping URLs"
   value = {
     for name, monitor in peekaping_monitor.push : name => {
-      id   = monitor.id
-      name = monitor.name
+      id         = monitor.id
+      name       = monitor.name
+      push_token = monitor.push_token
+      ping_url   = "${var.peekaping_endpoint}/api/push/${monitor.push_token}"
     }
   }
 }

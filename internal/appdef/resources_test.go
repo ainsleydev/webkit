@@ -145,3 +145,65 @@ func TestResource_IsTerraformManaged(t *testing.T) {
 		})
 	}
 }
+
+func TestResource_GenerateBackupMonitor(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		resource     Resource
+		projectTitle string
+		want         *Monitor
+	}{
+		"Backup and monitoring enabled": {
+			resource: Resource{
+				Name:       "db",
+				Title:      "Database",
+				Backup:     ResourceBackupConfig{Enabled: true},
+				Monitoring: Monitoring{Enabled: true},
+			},
+			projectTitle: "Test Project",
+			want: &Monitor{
+				Name: "Test Project - Database Backup",
+				Type: MonitorTypePush,
+			},
+		},
+		"Backup disabled": {
+			resource: Resource{
+				Name:       "db",
+				Title:      "Database",
+				Backup:     ResourceBackupConfig{Enabled: false},
+				Monitoring: Monitoring{Enabled: true},
+			},
+			projectTitle: "Test Project",
+			want:         nil,
+		},
+		"Monitoring disabled": {
+			resource: Resource{
+				Name:       "db",
+				Title:      "Database",
+				Backup:     ResourceBackupConfig{Enabled: true},
+				Monitoring: Monitoring{Enabled: false},
+			},
+			projectTitle: "Test Project",
+			want:         nil,
+		},
+		"Both disabled": {
+			resource: Resource{
+				Name:       "db",
+				Title:      "Database",
+				Backup:     ResourceBackupConfig{Enabled: false},
+				Monitoring: Monitoring{Enabled: false},
+			},
+			projectTitle: "Test Project",
+			want:         nil,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.resource.GenerateBackupMonitor(test.projectTitle)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
