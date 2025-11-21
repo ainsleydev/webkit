@@ -270,6 +270,10 @@
 					"$ref": "#/definitions/AppdefGitHubRepo",
 					"description": "GitHub repository information for the project"
 				},
+				"statusPageDomain": {
+					"description": "Custom domain for the status page (e.g., status.example.com). If not set, automatically derived from the first app's domain.",
+					"type": "string"
+				},
 				"title": {
 					"description": "Human-readable project name displayed in documentation and UIs",
 					"type": "string"

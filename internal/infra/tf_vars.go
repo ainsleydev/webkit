@@ -172,10 +172,16 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 	// Generate monitors from apps and resources.
 	vars.Monitors = t.generateMonitors(env)
 
-	// Generate status page domain from the first app's primary domain.
-	// This creates a subdomain like status.example.com for the public status page.
-	// Extracts the root domain first to avoid subdomains like status.cms.example.com.
-	if len(t.appDef.Apps) > 0 {
+	// Set status page domain.
+	// Priority:
+	// 1. Use explicit statusPageDomain from project config if set
+	// 2. Otherwise, derive from first app's primary domain (extract root domain to avoid subdomains)
+	if t.appDef.Project.StatusPageDomain != "" {
+		// User explicitly configured the status page domain.
+		vars.StatusPageDomain = &t.appDef.Project.StatusPageDomain
+	} else if len(t.appDef.Apps) > 0 {
+		// Fallback: derive from first app's primary domain.
+		// Extracts the root domain first to avoid subdomains like status.cms.example.com.
 		if primaryDomain := t.appDef.Apps[0].PrimaryDomain(); primaryDomain != "" {
 			rootDomain := extractRootDomain(primaryDomain)
 			statusDomain := "status." + rootDomain

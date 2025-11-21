@@ -5,11 +5,12 @@ type (
 	// names and descriptions. This information is used throughout webkit
 	// for identification, documentation generation, and CI/CD configuration.
 	Project struct {
-		Name        string     `json:"name" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the project (lowercase, hyphenated)"`
-		Title       string     `json:"title" validate:"required" description:"Human-readable project name displayed in documentation and UIs"`
-		Description string     `json:"description" validate:"required,max=200" description:"Brief description of the project's purpose and functionality"`
-		Repo        GitHubRepo `json:"repo" validate:"required" description:"GitHub repository information for the project"`
-		Brand       Brand      `json:"brand,omitempty" description:"Branding configuration for the project including colours and logo"`
+		Name             string     `json:"name" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the project (lowercase, hyphenated)"`
+		Title            string     `json:"title" validate:"required" description:"Human-readable project name displayed in documentation and UIs"`
+		Description      string     `json:"description" validate:"required,max=200" description:"Brief description of the project's purpose and functionality"`
+		Repo             GitHubRepo `json:"repo" validate:"required" description:"GitHub repository information for the project"`
+		Brand            Brand      `json:"brand,omitempty" description:"Branding configuration for the project including colours and logo"`
+		StatusPageDomain string     `json:"statusPageDomain,omitempty" validate:"omitempty,fqdn" description:"Custom domain for the status page (e.g., status.example.com). If not set, automatically derived from the first app's domain."`
 	}
 	// GitHubRepo defines the metadata for GitHub repositories.
 	// This information is used for CI/CD integration, secrets management,

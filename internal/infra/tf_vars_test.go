@@ -547,6 +547,44 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 
+	t.Run("Status page domain - explicit configuration takes priority", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name:             "explicit-domain-project",
+				StatusPageDomain: "status.custom.com",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "explicit-domain-project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "apps/cms",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+					Domains: []appdef.Domain{
+						{Name: "cms.player2clubs.com", Type: appdef.DomainTypePrimary},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page domain should use explicit configuration")
+		{
+			require.NotNil(t, got.StatusPageDomain)
+			assert.Equal(t, "status.custom.com", *got.StatusPageDomain)
+		}
+	})
+
 	t.Run("Mixed null and empty configs with arrays", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{
