@@ -492,6 +492,44 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 
+	t.Run("Brand icon URL passthrough", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name:  "brand-icon-project",
+				Title: "Brand Icon Project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "brand-icon-project",
+				},
+				Brand: appdef.Brand{
+					IconURL: "https://example.com/favicon.ico",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "apps/web",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Brand icon URL should be populated")
+		{
+			require.NotNil(t, got.BrandIconURL)
+			assert.Equal(t, "https://example.com/favicon.ico", *got.BrandIconURL)
+		}
+	})
+
 	t.Run("Mixed null and empty configs with arrays", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{

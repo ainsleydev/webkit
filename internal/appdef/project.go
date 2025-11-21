@@ -10,7 +10,7 @@ type (
 		Description      string     `json:"description" validate:"required,max=200" description:"Brief description of the project's purpose and functionality"`
 		Repo             GitHubRepo `json:"repo" validate:"required" description:"GitHub repository information for the project"`
 		Brand            Brand      `json:"brand,omitempty" description:"Branding configuration for the project including colours and logo"`
-		StatusPageDomain string     `json:"statusPageDomain,omitempty" validate:"omitempty,fqdn" description:"Custom domain for the status page (e.g., status.example.com). If not set, automatically derived from the first app's domain."`
+		StatusPageDomain string     `json:"statusPageDomain,omitempty" validate:"omitempty,fqdn" description:"Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain."`
 	}
 	// GitHubRepo defines the metadata for GitHub repositories.
 	// This information is used for CI/CD integration, secrets management,

@@ -271,7 +271,7 @@
 					"description": "GitHub repository information for the project"
 				},
 				"statusPageDomain": {
-					"description": "Custom domain for the status page (e.g., status.example.com). If not set, automatically derived from the first app's domain.",
+					"description": "Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain.",
 					"type": "string"
 				},
 				"title": {
