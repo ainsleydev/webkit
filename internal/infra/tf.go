@@ -167,7 +167,8 @@ type PlanOutput struct {
 
 // Plan generates a Terraform execution plan showing what actions Terraform
 // will take to reach the desired state defined in the definition.
-// If refreshOnly is true, it uses Apply with -refresh-only to show state changes.
+// If refreshOnly is true, it uses 'terraform plan -refresh-only' to show
+// what state changes would occur from refreshing.
 //
 // Must be called after Init().
 func (t *Terraform) Plan(ctx context.Context, env env.Environment, refreshOnly bool) (PlanOutput, error) {
@@ -175,22 +176,12 @@ func (t *Terraform) Plan(ctx context.Context, env env.Environment, refreshOnly b
 		return PlanOutput{}, err
 	}
 
-	// For refresh-only mode, we use Apply since there's no Plan equivalent
-	if refreshOnly {
-		applyOutput, err := t.Apply(ctx, env, true)
-		if err != nil {
-			return PlanOutput{}, err
-		}
-		return PlanOutput{
-			HasChanges: false, // Refresh doesn't plan infrastructure changes
-			Output:     applyOutput.Output,
-			Plan:       nil,
-		}, nil
-	}
-
 	planFilePath := filepath.Join(t.tmpDir, "base", "plan.tfplan")
 
 	var opts []tfexec.PlanOption
+	if refreshOnly {
+		opts = append(opts, tfexec.RefreshOnly(true))
+	}
 	opts = append(opts, tfexec.Out(planFilePath))
 	for _, v := range t.env.varStrings() {
 		opts = append(opts, tfexec.Var(v))
