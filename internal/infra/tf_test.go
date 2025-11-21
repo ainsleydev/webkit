@@ -687,6 +687,35 @@ func TestTerraform_Cleanup(t *testing.T) {
 	})
 }
 
+func TestTerraform_WorkDir(t *testing.T) {
+	if !executil.Exists("terraform") {
+		t.Skip("terraform not found in PATH")
+	}
+
+	t.Run("Returns Correct Path", func(t *testing.T) {
+		tf, teardown := setup(t, &appdef.Definition{})
+		defer teardown()
+
+		err := tf.Init(t.Context())
+		require.NoError(t, err)
+
+		expected := filepath.Join(tf.tmpDir, "base")
+		got := tf.WorkDir()
+
+		assert.Equal(t, expected, got)
+		assert.DirExists(t, got)
+	})
+
+	t.Run("Returns Empty Before Init", func(t *testing.T) {
+		tf := &Terraform{
+			path: "/usr/bin/terraform",
+		}
+
+		got := tf.WorkDir()
+		assert.Equal(t, "base", got)
+	})
+}
+
 func TestTerraform_DetermineImageTag(t *testing.T) {
 	t.Run("Uses GITHUB_SHA when set", func(t *testing.T) {
 		appDef := &appdef.Definition{

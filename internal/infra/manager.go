@@ -18,5 +18,6 @@ type (
 		Output(ctx context.Context, env env.Environment) (OutputResult, error)
 		Import(ctx context.Context, input ImportInput) (ImportOutput, error)
 		Cleanup()
+		WorkDir() string
 	}
 )
