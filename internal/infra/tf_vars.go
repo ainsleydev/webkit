@@ -253,16 +253,16 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 // It transforms appdef.Monitor structs into tfMonitor for Terraform consumption.
 func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
 	appdefMonitors := t.appDef.GenerateMonitors()
-	monitors := make([]tfMonitor, 0, len(appdefMonitors))
+	monitors := make([]tfMonitor, len(appdefMonitors))
 
-	for _, m := range appdefMonitors {
-		monitors = append(monitors, tfMonitor{
+	for i, m := range appdefMonitors {
+		monitors[i] = tfMonitor{
 			Name:   m.Name,
 			Type:   string(m.Type),
 			URL:    m.URL,
 			Method: m.Method,
 			Domain: m.Domain,
-		})
+		}
 	}
 
 	return monitors
