@@ -32,8 +32,10 @@ locals {
   # All tag IDs for monitors.
   tag_ids = [
     peekaping_tag.project.id,
-    data.peekaping_tag.environment.id,
-    data.peekaping_tag.webkit.id
+
+    # See: https://github.com/tafaust/terraform-provider-peekaping/pull/12
+    # data.peekaping_tag.environment.id,
+    # data.peekaping_tag.webkit.id
   ]
 
   # Notification IDs.
@@ -49,13 +51,13 @@ locals {
 # Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/data-sources/tag
 #
 
-data "peekaping_tag" "webkit" {
-  name = "WebKit"
-}
-
-data "peekaping_tag" "environment" {
-  name = title(var.environment)
-}
+# data "peekaping_tag" "webkit" {
+#   name = "WebKit"
+# }
+#
+# data "peekaping_tag" "environment" {
+#   name = title(var.environment)
+# }
 
 #
 # Project Tag (Resource)
