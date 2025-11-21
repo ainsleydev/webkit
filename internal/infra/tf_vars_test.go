@@ -874,14 +874,17 @@ func TestTerraform_TFVarsFromDefinition_ImageTag(t *testing.T) {
 func TestGenerateMonitors(t *testing.T) {
 	t.Run("No Apps Or Resources", func(t *testing.T) {
 		input := &appdef.Definition{
-			Project:   appdef.Project{Name: "empty"},
+			Project:   appdef.Project{Name: "empty", Title: "Empty Project"},
 			Apps:      []appdef.App{},
 			Resources: []appdef.Resource{},
 		}
 
 		tf := setupTfVars(t, input)
 		monitors := tf.generateMonitors(env.Production)
-		assert.Empty(t, monitors)
+		// Codebase backup monitor is always generated.
+		require.Len(t, monitors, 1)
+		assert.Equal(t, "Empty Project - Codebase Backup", monitors[0].Name)
+		assert.Equal(t, "push", monitors[0].Type)
 	})
 
 	t.Run("Single App With Monitoring Enabled", func(t *testing.T) {
@@ -904,7 +907,7 @@ func TestGenerateMonitors(t *testing.T) {
 
 		tf := setupTfVars(t, input)
 		monitors := tf.generateMonitors(env.Production)
-		require.Len(t, monitors, 2) // HTTP + DNS
+		require.Len(t, monitors, 3) // HTTP + DNS + Codebase Backup
 
 		// HTTP monitor.
 		assert.Equal(t, "Test Project, Web - example.com", monitors[0].Name)
@@ -916,11 +919,15 @@ func TestGenerateMonitors(t *testing.T) {
 		assert.Equal(t, "Test Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, "dns", monitors[1].Type)
 		assert.Equal(t, "example.com", monitors[1].Domain)
+
+		// Codebase backup monitor.
+		assert.Equal(t, "Test Project - Codebase Backup", monitors[2].Name)
+		assert.Equal(t, "push", monitors[2].Type)
 	})
 
 	t.Run("App With Monitoring Disabled", func(t *testing.T) {
 		input := &appdef.Definition{
-			Project: appdef.Project{Name: "test"},
+			Project: appdef.Project{Name: "test", Title: "Test Project"},
 			Apps: []appdef.App{
 				{
 					Name: "web",
@@ -934,7 +941,10 @@ func TestGenerateMonitors(t *testing.T) {
 
 		tf := setupTfVars(t, input)
 		monitors := tf.generateMonitors(env.Production)
-		assert.Empty(t, monitors)
+		// Even with app monitoring disabled, codebase backup monitor is still generated.
+		require.Len(t, monitors, 1)
+		assert.Equal(t, "Test Project - Codebase Backup", monitors[0].Name)
+		assert.Equal(t, "push", monitors[0].Type)
 	})
 
 	t.Run("Multiple Apps Multiple Domains", func(t *testing.T) {
@@ -965,7 +975,7 @@ func TestGenerateMonitors(t *testing.T) {
 
 		tf := setupTfVars(t, input)
 		monitors := tf.generateMonitors(env.Production)
-		require.Len(t, monitors, 6) // 3 domains × 2 types (HTTP + DNS)
+		require.Len(t, monitors, 7) // 3 domains × 2 types (HTTP + DNS) + Codebase Backup
 
 		assert.Equal(t, "Test Project, Web - example.com", monitors[0].Name)
 		assert.Equal(t, "http", monitors[0].Type)
@@ -979,6 +989,26 @@ func TestGenerateMonitors(t *testing.T) {
 		assert.Equal(t, "http", monitors[4].Type)
 		assert.Equal(t, "Test Project, API DNS - api.example.com", monitors[5].Name)
 		assert.Equal(t, "dns", monitors[5].Type)
+		assert.Equal(t, "Test Project - Codebase Backup", monitors[6].Name)
+		assert.Equal(t, "push", monitors[6].Type)
+	})
+
+	t.Run("Codebase Backup Monitor Always Generated", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project:   appdef.Project{Name: "test", Title: "Test Project"},
+			Apps:      []appdef.App{},
+			Resources: []appdef.Resource{},
+		}
+
+		tf := setupTfVars(t, input)
+		monitors := tf.generateMonitors(env.Production)
+
+		// Codebase backup monitor is always generated, regardless of apps or resources.
+		require.Len(t, monitors, 1)
+		assert.Equal(t, "Test Project - Codebase Backup", monitors[0].Name)
+		assert.Equal(t, "push", monitors[0].Type)
+		assert.Empty(t, monitors[0].URL, "Push monitors should have empty URL")
+		assert.Empty(t, monitors[0].Method, "Push monitors should have empty method")
 	})
 
 	t.Run("Mixed Apps And Resources", func(t *testing.T) {
@@ -1008,7 +1038,7 @@ func TestGenerateMonitors(t *testing.T) {
 
 		tf := setupTfVars(t, input)
 		monitors := tf.generateMonitors(env.Production)
-		require.Len(t, monitors, 3) // HTTP + DNS + Backup
+		require.Len(t, monitors, 4) // HTTP + DNS + Database Backup + Codebase Backup
 
 		// HTTP monitor.
 		assert.Equal(t, "Test Project, Web - example.com", monitors[0].Name)
@@ -1018,26 +1048,12 @@ func TestGenerateMonitors(t *testing.T) {
 		assert.Equal(t, "Test Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, "dns", monitors[1].Type)
 
-		// Backup monitor.
+		// Database backup monitor.
 		assert.Equal(t, "Test Project - Database Backup", monitors[2].Name)
 		assert.Equal(t, "push", monitors[2].Type)
+
+		// Codebase backup monitor.
+		assert.Equal(t, "Test Project - Codebase Backup", monitors[3].Name)
+		assert.Equal(t, "push", monitors[3].Type)
 	})
-}
-
-func TestTfMonitorFromAppdef(t *testing.T) {
-	t.Parallel()
-
-	input := appdef.Monitor{
-		Name:   "test-monitor",
-		Type:   appdef.MonitorTypeHTTP,
-		URL:    "https://example.com",
-		Method: "GET",
-	}
-
-	got := tfMonitorFromAppdef(input)
-
-	assert.Equal(t, "test-monitor", got.Name)
-	assert.Equal(t, "http", got.Type)
-	assert.Equal(t, "https://example.com", got.URL)
-	assert.Equal(t, "GET", got.Method)
 }

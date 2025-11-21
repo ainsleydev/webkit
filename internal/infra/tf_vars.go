@@ -252,41 +252,21 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 	return nil
 }
 
-// generateMonitors creates monitor configurations from apps and resources.
+// generateMonitors creates monitor configurations from the app definition.
 // It transforms appdef.Monitor structs into tfMonitor for Terraform consumption.
 func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
-	monitors := make([]tfMonitor, 0)
+	appdefMonitors := t.appDef.GenerateMonitors()
+	monitors := make([]tfMonitor, len(appdefMonitors))
 
-	// Generate monitors from all apps in the definition.
-	for _, monitor := range t.appDef.GenerateMonitors() {
-		monitors = append(monitors, tfMonitorFromAppdef(monitor))
-	}
-
-	// Generate backup monitors from all resources.
-	for _, resource := range t.appDef.Resources {
-		if monitor := resource.GenerateBackupMonitor(t.appDef.Project.Title); monitor != nil {
-			monitors = append(monitors, tfMonitorFromAppdef(*monitor))
-		}
-	}
-
-	// Generate maintenance monitors from all apps.
-	for _, app := range t.appDef.Apps {
-		if monitor := app.GenerateMaintenanceMonitor(t.appDef.Project.Title); monitor != nil {
-			monitors = append(monitors, tfMonitorFromAppdef(*monitor))
+	for i, m := range appdefMonitors {
+		monitors[i] = tfMonitor{
+			Name:   m.Name,
+			Type:   string(m.Type),
+			URL:    m.URL,
+			Method: m.Method,
+			Domain: m.Domain,
 		}
 	}
 
 	return monitors
-}
-
-// tfMonitorFromAppdef converts an appdef.Monitor to tfMonitor for Terraform.
-// All defaults are applied by Terraform based on monitor type.
-func tfMonitorFromAppdef(m appdef.Monitor) tfMonitor {
-	return tfMonitor{
-		Name:   m.Name,
-		Type:   string(m.Type),
-		URL:    m.URL,
-		Method: m.Method,
-		Domain: m.Domain,
-	}
 }
