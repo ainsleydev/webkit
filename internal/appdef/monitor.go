@@ -64,11 +64,7 @@ func (d *Definition) GenerateMonitors() []Monitor {
 	})
 
 	// Generate maintenance monitors for all apps.
-	for _, app := range d.Apps {
-		if monitor := app.GenerateMaintenanceMonitor(d.Project.Title); monitor != nil {
-			monitors = append(monitors, *monitor)
-		}
-	}
+	monitors = append(monitors, d.generateMaintenanceMonitors()...)
 
 	return monitors
 }
@@ -114,9 +110,34 @@ func (d *Definition) generateResourceBackupMonitors() []Monitor {
 	monitors := make([]Monitor, 0)
 
 	for _, resource := range d.Resources {
-		if monitor := resource.GenerateBackupMonitor(d.Project.Title); monitor != nil {
-			monitors = append(monitors, *monitor)
+		// Only generate backup monitor if both backup and monitoring are enabled.
+		if !resource.Backup.Enabled || !resource.Monitoring.Enabled {
+			continue
 		}
+
+		monitors = append(monitors, Monitor{
+			Name: fmt.Sprintf("%s - %s Backup", d.Project.Title, resource.Title),
+			Type: MonitorTypePush,
+		})
+	}
+
+	return monitors
+}
+
+// generateMaintenanceMonitors creates push monitors for VM app maintenance workflows.
+func (d *Definition) generateMaintenanceMonitors() []Monitor {
+	monitors := make([]Monitor, 0)
+
+	for _, app := range d.Apps {
+		// Only generate maintenance monitor for VM apps with monitoring enabled.
+		if !app.Monitoring.Enabled || app.Infra.Type != "vm" {
+			continue
+		}
+
+		monitors = append(monitors, Monitor{
+			Name: fmt.Sprintf("%s - %s Maintenance", d.Project.Title, app.Title),
+			Type: MonitorTypePush,
+		})
 	}
 
 	return monitors
