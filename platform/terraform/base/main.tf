@@ -315,7 +315,7 @@ resource "github_actions_secret" "resource_outputs" {
     each.value["source_type"] == "app" ? tostring(module.apps[each.value["app_name"]][each.value["output_name"]]) :
     "NOT_SET"
   )
-  depends_on = [module.resources, module.apps]
+  depends_on = [module.resources, module.apps, module.monitoring]
 }
 
 #
@@ -349,10 +349,11 @@ resource "github_actions_variable" "monitor_ping_urls" {
   variable_name = each.key
   # Look up the actual ping URL from the monitoring module outputs using the monitor name.
   # The ping URL is computed after the monitor is created, but the for_each keys are known at plan time.
-  # Use try() to handle null values during planning (before monitors are created).
-  value = try(module.monitoring[0].push_monitors[each.value].ping_url, "")
+  # Use coalesce() with a placeholder since github_actions_variable requires a non-empty value,
+  # and the ping_url is null during initial plan (before push_token is computed).
+  value = coalesce(try(module.monitoring[0].push_monitors[each.value].ping_url, null), "PENDING_MONITOR_CREATION")
 
-  depends_on = [module.monitoring]
+  depends_on = [module.resources, module.apps, module.monitoring]
 }
 
 #
