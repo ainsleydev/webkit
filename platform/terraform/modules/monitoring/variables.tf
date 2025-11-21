@@ -48,3 +48,8 @@ variable "status_page_domain" {
   type        = string
   default     = null
 }
+
+variable "peekaping_endpoint" {
+  description = "Peekaping instance endpoint URL (without trailing slash)"
+  type        = string
+}

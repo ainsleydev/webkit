@@ -84,6 +84,13 @@ jobs:
           # Delete backups older than 30 days
           rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
 
+      - name: Ping Peekaping Heartbeat Monitor
+        if: success()
+        uses: ./.github/actions/peekaping-ping
+        with:
+          monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" (env "Short" | upper) (.Name | snakecase | upper)) }}
+          description: '{{ .Title }} backup'
+
       - name: Remove Runner IP from Database
         if: always()
         uses: ./.github/actions/db-remove-ip
@@ -142,6 +149,13 @@ jobs:
       - name: Verify Backup
         run: |
           echo "Backup completed successfully!"
+
+      - name: Ping Peekaping Heartbeat Monitor
+        if: success()
+        uses: ./.github/actions/peekaping-ping
+        with:
+          monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" (env "Short" | upper) (.Name | snakecase | upper)) }}
+          description: '{{ .Title }} backup'
 {{- else if eq .Type "sqlite" }}
   backup-resource-{{ .Name }}:
     runs-on: ubuntu-latest
@@ -203,6 +217,13 @@ jobs:
         run: |
           # Delete backups older than 30 days
           rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
+
+      - name: Ping Peekaping Heartbeat Monitor
+        if: success()
+        uses: ./.github/actions/peekaping-ping
+        with:
+          monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" (env "Short" | upper) (.Name | snakecase | upper)) }}
+          description: '{{ .Title }} backup'
 
       - name: Notify Slack of Backup Failure
         if: failure()
@@ -272,6 +293,13 @@ jobs:
       - name: Verify Backup
         run: |
           echo "Codebase backup completed successfully!"
+
+      - name: Ping Peekaping Heartbeat Monitor
+        if: success()
+        uses: ./.github/actions/peekaping-ping
+        with:
+          monitor-url: {{ ghVar (printf "%s_CODEBASE_BACKUP_PING_URL" (env "Short" | upper)) }}
+          description: 'Codebase backup'
 
       - name: Notify Slack of Backup Failure
         if: failure()

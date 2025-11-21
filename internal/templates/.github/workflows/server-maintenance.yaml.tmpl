@@ -50,6 +50,13 @@ jobs:
             -e admin_email={{ default "hello@ainsley.dev" (index .Infra.Config "admin_email") }}
             -v
 
+      - name: Ping Peekaping Heartbeat Monitor
+        if: success()
+        uses: ./.github/actions/peekaping-ping
+        with:
+          monitor-url: {{ ghVar (printf "%s_%s_MAINTENANCE_PING_URL" (env "Short" | upper) (.Name | snakecase | upper)) }}
+          description: '{{ .Title }} maintenance'
+
       - name: Notify Slack of Maintenance Failure
         if: failure()
         uses: ./.github/actions/slack-notify
