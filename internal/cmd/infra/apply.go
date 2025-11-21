@@ -20,14 +20,23 @@ var ApplyCmd = &cli.Command{
 			Aliases: []string{"s"},
 			Usage:   "Suppress informational output (only show Terraform output)",
 		},
+		&cli.BoolFlag{
+			Name:  "refresh-only",
+			Usage: "Sync Terraform state with actual infrastructure without making changes (uses 'terraform apply -refresh-only')",
+		},
 	},
 	Action: cmdtools.Wrap(Apply),
 }
 
 func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 	printer := input.Printer()
+	refreshOnly := input.Command.Bool("refresh-only")
 
-	printer.Info("Generating executive plan from app definition")
+	if refreshOnly {
+		printer.Info("Syncing Terraform state with actual infrastructure (refresh-only mode)")
+	} else {
+		printer.Info("Generating executive plan from app definition")
+	}
 	spinner := input.Spinner()
 
 	// Filter definition to only include Terraform-managed items.
@@ -58,6 +67,26 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 	defer cleanup()
 	if err != nil {
 		return err
+	}
+
+	if refreshOnly {
+		printer.Println("Refreshing State...")
+		spinner.Start()
+
+		result, err := tf.Refresh(ctx, env.Production)
+		if err != nil {
+			// Write error output directly to stdout (not through printer)
+			fmt.Print(result.Output) //nolint:forbidigo
+			return errors.New("executing terraform apply -refresh-only")
+		}
+
+		spinner.Stop()
+
+		// Write refresh output directly to stdout (not through printer)
+		fmt.Print(result.Output) //nolint:forbidigo
+		printer.Success("Refresh succeeded, state is now in sync with actual infrastructure")
+
+		return nil
 	}
 
 	printer.Println("Applying Changes...")

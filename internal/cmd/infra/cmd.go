@@ -24,7 +24,6 @@ var Command = &cli.Command{
 		PlanCmd,
 		ApplyCmd,
 		DestroyCmd,
-		RefreshCmd,
 		OutputCmd,
 		ImportCmd,
 	},
