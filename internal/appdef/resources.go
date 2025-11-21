@@ -193,3 +193,18 @@ func (r ResourceType) Documentation() []ResourceOutput {
 	}
 	return []ResourceOutput{}
 }
+
+// GenerateBackupMonitor creates a push monitor for a resource's backup workflow.
+// It only generates a monitor if both backup and monitoring are enabled for the resource.
+// The monitor name follows the format: "{ProjectTitle} - {ResourceTitle} Backup".
+// This creates a heartbeat monitor that can be pinged by CI/CD backup workflows.
+func (r *Resource) GenerateBackupMonitor(projectTitle string) *Monitor {
+	if !r.Backup.Enabled || !r.Monitoring.Enabled {
+		return nil
+	}
+
+	return &Monitor{
+		Name: fmt.Sprintf("%s - %s Backup", projectTitle, r.Title),
+		Type: MonitorTypePush,
+	}
+}

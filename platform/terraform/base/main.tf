@@ -215,13 +215,13 @@ module "apps" {
     repo  = var.github_config.repo
     token = var.github_token_classic
   }
-  do_ssh_key_ids     = local.do_ssh_key_ids
+  do_ssh_key_ids      = local.do_ssh_key_ids
   hetzner_ssh_key_ids = local.hetzner_ssh_key_ids
-  domains            = try(each.value.domains, [])
-  env_vars           = try(each.value.env_vars, [])
-  tags               = local.common_tags
-  slack_webhook_url  = var.slack_webhook_url
-  slack_channel_name = slack_conversation.project_channel.name
+  domains             = try(each.value.domains, [])
+  env_vars            = try(each.value.env_vars, [])
+  tags                = local.common_tags
+  slack_webhook_url   = var.slack_webhook_url
+  slack_channel_name  = slack_conversation.project_channel.name
 
   # Apps may depend on resources being created first.
   resource_outputs = module.resources
@@ -238,14 +238,15 @@ module "monitoring" {
   count  = length(var.monitors) > 0 ? 1 : 0
   source = "../modules/monitoring"
 
-  project_name         = var.project_name
-  project_title        = var.project_title
-  environment          = var.environment
-  monitors             = var.monitors
-  slack_webhook_url    = var.slack_webhook_url
-  brand_primary_color  = var.brand_primary_color
-  brand_logo_url       = var.brand_logo_url
-  status_page_domain   = var.status_page_domain
+  project_name        = var.project_name
+  project_title       = var.project_title
+  environment         = var.environment
+  monitors            = var.monitors
+  slack_webhook_url   = var.slack_webhook_url
+  brand_primary_color = var.brand_primary_color
+  brand_logo_url      = var.brand_logo_url
+  status_page_domain  = var.status_page_domain
+  peekaping_endpoint  = var.peekaping_endpoint
 
   # Monitoring depends on apps and resources being created.
   depends_on = [module.apps, module.resources]
@@ -314,6 +315,38 @@ resource "github_actions_secret" "resource_outputs" {
     "NOT_SET"
   )
   depends_on = [module.resources, module.apps]
+}
+
+#
+# Monitor Ping URL GitHub Variables
+#
+# These variables are created for push monitors to enable heartbeat pings from CI/CD workflows.
+# Monitor ping URLs are not sensitive data, so they are stored as repository variables
+# rather than secrets for easier debugging and visibility.
+#
+# Variable naming convention: {ENV}_{MONITOR_TYPE}_{MONITOR_KEY}_PING_URL
+# Example: PROD_DB_BACKUP_PING_URL, PROD_WEB_MAINTENANCE_PING_URL
+#
+locals {
+  # Extract push monitor ping URLs from monitoring module outputs.
+  # Creates a map with simplified keys for backup and maintenance monitors.
+  monitor_variables = length(module.monitoring) > 0 ? {
+    for name, monitor in module.monitoring[0].push_monitors :
+    # Convert monitor name to variable-friendly format:
+    # "Project - Database Backup" → "DB_BACKUP_PING_URL"
+    # "Project - Web Maintenance" → "WEB_MAINTENANCE_PING_URL"
+    upper("${local.environment_short}_${replace(replace(regex("- (.*)", name)[0], " - ", "_"), " ", "_")}_PING_URL") => monitor.ping_url
+  } : {}
+}
+
+resource "github_actions_variable" "monitor_ping_urls" {
+  for_each = local.monitor_variables
+
+  repository    = var.github_config.repo
+  variable_name = each.key
+  value         = each.value
+
+  depends_on = [module.monitoring]
 }
 
 #

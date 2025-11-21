@@ -259,9 +259,19 @@ func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
 		monitors = append(monitors, tfMonitorFromAppdef(monitor))
 	}
 
-	// TODO: Re-enable resource monitors when needed.
-	// Resource monitoring (database, backup heartbeats) has been temporarily disabled
-	// to simplify the initial monitoring implementation with tafaust/peekaping provider.
+	// Generate backup monitors from all resources.
+	for _, resource := range t.appDef.Resources {
+		if monitor := resource.GenerateBackupMonitor(t.appDef.Project.Title); monitor != nil {
+			monitors = append(monitors, tfMonitorFromAppdef(*monitor))
+		}
+	}
+
+	// Generate maintenance monitors from all apps.
+	for _, app := range t.appDef.Apps {
+		if monitor := app.GenerateMaintenanceMonitor(t.appDef.Project.Title); monitor != nil {
+			monitors = append(monitors, tfMonitorFromAppdef(*monitor))
+		}
+	}
 
 	return monitors
 }

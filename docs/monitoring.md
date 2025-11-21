@@ -119,15 +119,41 @@ Resend Interval:    10m
 
 ### Push Monitor Configuration (Heartbeats)
 
+Push monitors are used for backup and maintenance job monitoring. Jobs ping the monitor URL on success, and if no ping is received within the expected interval, an alert is sent.
+
+**Backup Monitors**:
+
 ```
-Name:               {project-name}-{resource-name}-backup
+Name:               {Project Title} - {Resource Title} Backup
 Type:               push
+Interval:           25 hours (90000s)
 Max Retries:        2
 Retry Interval:     60s
 Resend Interval:    10m
 ```
 
-Push monitors are used for backup job monitoring. The backup job pings the monitor URL on success, and if no ping is received within the expected interval, an alert is sent.
+Created for each resource with `backup.enabled = true` and `monitoring.enabled = true`. The backup workflow pings this monitor after successful completion. The 25-hour interval allows for daily backups with a 1-hour buffer.
+
+**Maintenance Monitors**:
+
+```
+Name:               {Project Title} - {App Title} Maintenance
+Type:               push
+Interval:           8 days (691200s)
+Max Retries:        2
+Retry Interval:     60s
+Resend Interval:    10m
+```
+
+Created for each VM app with `monitoring.enabled = true`. The server-maintenance workflow pings this monitor after successful completion. The 8-day interval allows for weekly maintenance with a 1-day buffer.
+
+**Ping URLs**:
+
+Monitor ping URLs are automatically exported as GitHub repository variables:
+- Backup monitors: `{ENV}_{RESOURCE_NAME}_BACKUP_PING_URL` (e.g., `PROD_DB_BACKUP_PING_URL`)
+- Maintenance monitors: `{ENV}_{APP_NAME}_MAINTENANCE_PING_URL` (e.g., `PROD_WEB_MAINTENANCE_PING_URL`)
+
+CI/CD workflows use the `.github/actions/peekaping-ping` composite action to send heartbeat pings.
 
 ## Tags and Organization
 
@@ -280,12 +306,12 @@ If the manual test works but monitors aren't sending alerts, check the notificat
 
 1. **Resource monitoring**:
    - Postgres database connection health checks
-   - Backup heartbeat monitoring (push monitors) for automated backups
    - Other database types (MySQL, MongoDB, Redis)
 
 2. **Enhanced configuration** in `app.json`:
    - Custom check intervals per app
    - Expected status codes per endpoint
+   - Custom heartbeat intervals for backup and maintenance monitors
    - Custom health check paths
    - Authentication for health checks
 

@@ -1,0 +1,47 @@
+name: 'Peekaping Heartbeat Ping'
+description: 'Send a heartbeat ping to a Peekaping push monitor'
+
+inputs:
+  monitor-url:
+    description: 'Peekaping push monitor ping URL'
+    required: true
+  description:
+    description: 'Description of what is being monitored (for logging)'
+    required: false
+    default: 'heartbeat'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Ping Peekaping Monitor
+      shell: bash
+      env:
+        MONITOR_URL: ${{ inputs.monitor-url }}
+        DESCRIPTION: ${{ inputs.description }}
+      run: |
+        # Fail on errors, undefined vars, and fail if any part of a pipe fails
+        set -euo pipefail
+
+        echo "Sending heartbeat ping for: ${DESCRIPTION}"
+
+        # Send POST request to Peekaping push monitor
+        RESPONSE=$(curl -X POST "${MONITOR_URL}" \
+          --max-time 10 \
+          --retry 2 \
+          --retry-delay 5 \
+          -w "\n%{http_code}" \
+          -s)
+
+        # Extract HTTP status code and response body
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        RESPONSE_BODY=$(echo "$RESPONSE" | head -n-1)
+
+        # Check if the request was successful (2xx status code)
+        if [[ "$HTTP_CODE" =~ ^2[0-9]{2}$ ]]; then
+          echo "✓ Heartbeat ping sent successfully (HTTP ${HTTP_CODE})"
+          exit 0
+        else
+          echo "✗ Failed to send heartbeat ping (HTTP ${HTTP_CODE})"
+          echo "Response: ${RESPONSE_BODY}"
+          exit 1
+        fi
