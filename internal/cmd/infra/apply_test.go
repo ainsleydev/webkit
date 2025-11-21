@@ -33,7 +33,7 @@ func TestApply(t *testing.T) {
 	t.Run("Apply Error", func(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Apply(gomock.Any(), env.Production).
+			Apply(gomock.Any(), env.Production, gomock.Any()).
 			Return(infra.ApplyOutput{
 				Output: "Error: Failed to provision resource\nTerraform failed",
 			}, errors.New("terraform apply failed"))
@@ -53,7 +53,7 @@ func TestApply(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Apply(gomock.Any(), env.Production).
+			Apply(gomock.Any(), env.Production, gomock.Any()).
 			Return(infra.ApplyOutput{
 				Output: "Apply complete! Resources: 2 added, 0 changed, 0 destroyed.",
 			}, nil)
@@ -73,7 +73,7 @@ func TestApply(t *testing.T) {
 	t.Run("No Changes To Apply", func(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Apply(gomock.Any(), env.Production).
+			Apply(gomock.Any(), env.Production, gomock.Any()).
 			Return(infra.ApplyOutput{
 				Output: "Apply complete! Resources: 0 added, 0 changed, 0 destroyed.",
 			}, nil)
@@ -105,7 +105,7 @@ func TestApply(t *testing.T) {
 
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Apply(gomock.Any(), env.Production).
+			Apply(gomock.Any(), env.Production, gomock.Any()).
 			Return(infra.ApplyOutput{
 				Output: "Apply complete! Resources: 1 added, 0 changed, 0 destroyed.",
 			}, nil)
@@ -141,7 +141,7 @@ func TestApply(t *testing.T) {
 
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Apply(gomock.Any(), env.Production).
+			Apply(gomock.Any(), env.Production, gomock.Any()).
 			Return(infra.ApplyOutput{
 				Output: "Apply complete! Resources: 2 added, 0 changed, 0 destroyed.",
 			}, nil)

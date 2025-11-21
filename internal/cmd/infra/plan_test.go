@@ -33,7 +33,7 @@ func TestPlan(t *testing.T) {
 	t.Run("Plan Error", func(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Plan(gomock.Any(), env.Production).
+			Plan(gomock.Any(), env.Production, gomock.Any()).
 			Return(infra.PlanOutput{}, errors.New("plan error"))
 		mock.EXPECT().
 			Cleanup().
@@ -50,7 +50,7 @@ func TestPlan(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Plan(gomock.Any(), env.Production).
+			Plan(gomock.Any(), env.Production, gomock.Any()).
 			Return(infra.PlanOutput{
 				HasChanges: true,
 				Output:     "plan output for test",
@@ -84,7 +84,7 @@ func TestPlan(t *testing.T) {
 
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Plan(gomock.Any(), env.Production).
+			Plan(gomock.Any(), env.Production, gomock.Any()).
 			Return(infra.PlanOutput{
 				HasChanges: true,
 				Output:     "plan output",
@@ -122,7 +122,7 @@ func TestPlan(t *testing.T) {
 
 		mock := mockinfra.NewMockManager(gomock.NewController(t))
 		mock.EXPECT().
-			Plan(gomock.Any(), env.Production).
+			Plan(gomock.Any(), env.Production, gomock.Any()).
 			Return(infra.PlanOutput{
 				HasChanges: true,
 				Output:     "plan output",
