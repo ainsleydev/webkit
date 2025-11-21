@@ -43,18 +43,18 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 }
 
 // Apply mocks base method.
-func (m *MockManager) Apply(ctx context.Context, arg1 env.Environment) (infra.ApplyOutput, error) {
+func (m *MockManager) Apply(ctx context.Context, arg1 env.Environment, refreshOnly bool) (infra.ApplyOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Apply", ctx, arg1)
+	ret := m.ctrl.Call(m, "Apply", ctx, arg1, refreshOnly)
 	ret0, _ := ret[0].(infra.ApplyOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Apply indicates an expected call of Apply.
-func (mr *MockManagerMockRecorder) Apply(ctx, arg1 any) *gomock.Call {
+func (mr *MockManagerMockRecorder) Apply(ctx, arg1, refreshOnly any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockManager)(nil).Apply), ctx, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockManager)(nil).Apply), ctx, arg1, refreshOnly)
 }
 
 // Cleanup mocks base method.
@@ -129,31 +129,16 @@ func (mr *MockManagerMockRecorder) Output(ctx, arg1 any) *gomock.Call {
 }
 
 // Plan mocks base method.
-func (m *MockManager) Plan(ctx context.Context, arg1 env.Environment) (infra.PlanOutput, error) {
+func (m *MockManager) Plan(ctx context.Context, arg1 env.Environment, refreshOnly bool) (infra.PlanOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Plan", ctx, arg1)
+	ret := m.ctrl.Call(m, "Plan", ctx, arg1, refreshOnly)
 	ret0, _ := ret[0].(infra.PlanOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Plan indicates an expected call of Plan.
-func (mr *MockManagerMockRecorder) Plan(ctx, arg1 any) *gomock.Call {
+func (mr *MockManagerMockRecorder) Plan(ctx, arg1, refreshOnly any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Plan", reflect.TypeOf((*MockManager)(nil).Plan), ctx, arg1)
-}
-
-// Refresh mocks base method.
-func (m *MockManager) Refresh(ctx context.Context, arg1 env.Environment) (infra.RefreshOutput, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Refresh", ctx, arg1)
-	ret0, _ := ret[0].(infra.RefreshOutput)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Refresh indicates an expected call of Refresh.
-func (mr *MockManagerMockRecorder) Refresh(ctx, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Refresh", reflect.TypeOf((*MockManager)(nil).Refresh), ctx, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Plan", reflect.TypeOf((*MockManager)(nil).Plan), ctx, arg1, refreshOnly)
 }

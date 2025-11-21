@@ -68,30 +68,10 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	if refreshOnly {
-		printer.Println("Refreshing State...")
-		spinner.Start()
-
-		result, err := tf.Refresh(ctx, env.Production)
-		if err != nil {
-			// Write error output directly to stdout (not through printer)
-			fmt.Print(result.Output) //nolint:forbidigo
-			return fmt.Errorf("executing terraform apply -refresh-only: %w", err)
-		}
-
-		spinner.Stop()
-
-		// Write refresh output directly to stdout (not through printer)
-		fmt.Print(result.Output) //nolint:forbidigo
-		printer.Success("Refresh-only plan generated, see console output")
-
-		return nil
-	}
-
 	printer.Print("Making Plan...")
 	spinner.Start()
 
-	plan, err := tf.Plan(ctx, env.Production)
+	plan, err := tf.Plan(ctx, env.Production, refreshOnly)
 	if err != nil {
 		return err
 	}
@@ -100,7 +80,11 @@ func Plan(ctx context.Context, input cmdtools.CommandInput) error {
 
 	// Write plan output directly to stdout (not through printer)
 	fmt.Print(plan.Output) //nolint:forbidigo
-	printer.Success("Plan generated, see console output")
+	if refreshOnly {
+		printer.Success("Refresh-only plan generated, see console output")
+	} else {
+		printer.Success("Plan generated, see console output")
+	}
 
 	return nil
 }

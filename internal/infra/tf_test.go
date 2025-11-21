@@ -206,7 +206,7 @@ func TestTerraform_Plan(t *testing.T) {
 		tf, teardown := setup(t, appDef)
 		defer teardown()
 
-		_, err := tf.Plan(t.Context(), env.Production)
+		_, err := tf.Plan(t.Context(), env.Production, false)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "terraform not initialized")
 	})
@@ -220,7 +220,7 @@ func TestTerraform_Plan(t *testing.T) {
 
 		tf.fs = afero.NewReadOnlyFs(tf.fs)
 
-		_, err = tf.Plan(t.Context(), env.Production)
+		_, err = tf.Plan(t.Context(), env.Production, false)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "failed to write tf vars file")
 	})
@@ -240,7 +240,7 @@ func TestTerraform_Plan(t *testing.T) {
 			Plan(gomock.Any(), gomock.Any()).
 			Return(false, errors.New("plan error"))
 
-		_, err = tf.Plan(t.Context(), env.Production)
+		_, err = tf.Plan(t.Context(), env.Production, false)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "plan error")
 	})
@@ -263,7 +263,7 @@ func TestTerraform_Plan(t *testing.T) {
 			ShowPlanFileRaw(gomock.Any(), gomock.Any()).
 			Return("", errors.New("show plan file raw error"))
 
-		_, err = tf.Plan(t.Context(), env.Production)
+		_, err = tf.Plan(t.Context(), env.Production, false)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "show plan file raw error")
 	})
@@ -289,7 +289,7 @@ func TestTerraform_Plan(t *testing.T) {
 			ShowPlanFile(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("show plan file error"))
 
-		_, err = tf.Plan(t.Context(), env.Production)
+		_, err = tf.Plan(t.Context(), env.Production, false)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "show plan file error")
 	})
@@ -301,7 +301,7 @@ func TestTerraform_Plan(t *testing.T) {
 		err := tf.Init(t.Context())
 		require.NoError(t, err)
 
-		got, err := tf.Plan(t.Context(), env.Production)
+		got, err := tf.Plan(t.Context(), env.Production, false)
 		assert.NoError(t, err)
 		assert.NotNil(t, got)
 		assert.Contains(t, got.Output, "module.resources[\"db\"].module.do_postgres[0].digitalocean_database_cluster.this will be created")
@@ -318,7 +318,7 @@ func TestTerraform_Apply(t *testing.T) {
 		tf, teardown := setup(t, &appdef.Definition{})
 		defer teardown()
 
-		_, err := tf.Apply(t.Context(), env.Production)
+		_, err := tf.Apply(t.Context(), env.Production, false)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "terraform not initialized")
 	})
@@ -340,7 +340,7 @@ func TestTerraform_Apply(t *testing.T) {
 
 		tf.fs = afero.NewReadOnlyFs(tf.fs)
 
-		_, err = tf.Apply(t.Context(), env.Production)
+		_, err = tf.Apply(t.Context(), env.Production, false)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "writing tfvars file")
 	})
@@ -383,7 +383,7 @@ func TestTerraform_Apply(t *testing.T) {
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
 
-		_, err = tf.Apply(t.Context(), env.Production)
+		_, err = tf.Apply(t.Context(), env.Production, false)
 		assert.NoError(t, err)
 	})
 
@@ -404,7 +404,7 @@ func TestTerraform_Apply(t *testing.T) {
 
 		tf.tf = mock
 
-		_, err = tf.Apply(t.Context(), env.Production)
+		_, err = tf.Apply(t.Context(), env.Production, false)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "terraform apply failed")
 	})

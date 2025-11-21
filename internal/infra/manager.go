@@ -12,10 +12,9 @@ type (
 	// Manager defines the interface for managing infrastructure operations.
 	Manager interface {
 		Init(ctx context.Context) error
-		Plan(ctx context.Context, env env.Environment) (PlanOutput, error)
-		Apply(ctx context.Context, env env.Environment) (ApplyOutput, error)
+		Plan(ctx context.Context, env env.Environment, refreshOnly bool) (PlanOutput, error)
+		Apply(ctx context.Context, env env.Environment, refreshOnly bool) (ApplyOutput, error)
 		Destroy(ctx context.Context, env env.Environment) (DestroyOutput, error)
-		Refresh(ctx context.Context, env env.Environment) (RefreshOutput, error)
 		Output(ctx context.Context, env env.Environment) (OutputResult, error)
 		Import(ctx context.Context, input ImportInput) (ImportOutput, error)
 		Cleanup()

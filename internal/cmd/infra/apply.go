@@ -71,39 +71,30 @@ func Apply(ctx context.Context, input cmdtools.CommandInput) error {
 
 	if refreshOnly {
 		printer.Println("Refreshing State...")
-		spinner.Start()
-
-		result, err := tf.Refresh(ctx, env.Production)
-		if err != nil {
-			// Write error output directly to stdout (not through printer)
-			fmt.Print(result.Output) //nolint:forbidigo
-			return errors.New("executing terraform apply -refresh-only")
-		}
-
-		spinner.Stop()
-
-		// Write refresh output directly to stdout (not through printer)
-		fmt.Print(result.Output) //nolint:forbidigo
-		printer.Success("Refresh succeeded, state is now in sync with actual infrastructure")
-
-		return nil
+	} else {
+		printer.Println("Applying Changes...")
 	}
-
-	printer.Println("Applying Changes...")
 	spinner.Start()
 
-	plan, err := tf.Apply(ctx, env.Production)
+	result, err := tf.Apply(ctx, env.Production, refreshOnly)
 	if err != nil {
 		// Write error output directly to stdout (not through printer)
-		fmt.Print(plan.Output) //nolint:forbidigo
+		fmt.Print(result.Output) //nolint:forbidigo
+		if refreshOnly {
+			return errors.New("executing terraform apply -refresh-only")
+		}
 		return errors.New("executing terraform apply")
 	}
 
 	spinner.Stop()
 
-	// Write plan output directly to stdout (not through printer)
-	fmt.Print(plan.Output) //nolint:forbidigo
-	printer.Success("Apply succeeded, see console output")
+	// Write output directly to stdout (not through printer)
+	fmt.Print(result.Output) //nolint:forbidigo
+	if refreshOnly {
+		printer.Success("Refresh succeeded, state is now in sync with actual infrastructure")
+	} else {
+		printer.Success("Apply succeeded, see console output")
+	}
 
 	return nil
 }
