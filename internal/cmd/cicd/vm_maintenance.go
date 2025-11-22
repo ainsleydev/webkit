@@ -11,6 +11,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
 	"github.com/ainsleydev/webkit/internal/templates"
+	"github.com/ainsleydev/webkit/pkg/env"
 )
 
 var VMMaintenanceCmd = &cli.Command{
@@ -23,6 +24,7 @@ var VMMaintenanceCmd = &cli.Command{
 // for all apps that use Digital Ocean VMs.
 func VMMaintenanceWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
+	enviro := env.Production
 
 	if len(appDef.Apps) == 0 {
 		return nil
@@ -48,6 +50,7 @@ func VMMaintenanceWorkflow(_ context.Context, input cmdtools.CommandInput) error
 
 	data := map[string]any{
 		"Apps": appDef.Apps,
+		"Env":  enviro,
 	}
 
 	// Track all VM apps as sources for this workflow

@@ -69,6 +69,7 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 		"Data":      secretData,
 		// TODO: This may change at some point, see workflow for more details.
 		"BucketName": appDef.Project.Name,
+		"Env":        enviro,
 	}
 
 	// Track all resources as sources for this workflow.
