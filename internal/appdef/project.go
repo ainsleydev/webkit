@@ -5,12 +5,12 @@ type (
 	// names and descriptions. This information is used throughout webkit
 	// for identification, documentation generation, and CI/CD configuration.
 	Project struct {
-		Name             string     `json:"name" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the project (lowercase, hyphenated)"`
-		Title            string     `json:"title" validate:"required" description:"Human-readable project name displayed in documentation and UIs"`
-		Description      string     `json:"description" validate:"required,max=200" description:"Brief description of the project's purpose and functionality"`
-		Repo             GitHubRepo `json:"repo" validate:"required" description:"GitHub repository information for the project"`
-		Brand            Brand      `json:"brand,omitempty" description:"Branding configuration for the project including colours and logo"`
-		StatusPageDomain string     `json:"statusPageDomain,omitempty" validate:"omitempty,fqdn" description:"Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain."`
+		Name        string     `json:"name" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the project (lowercase, hyphenated)"`
+		Title       string     `json:"title" validate:"required" description:"Human-readable project name displayed in documentation and UIs"`
+		Description string     `json:"description" validate:"required,max=200" description:"Brief description of the project's purpose and functionality"`
+		Repo        GitHubRepo `json:"repo" validate:"required" description:"GitHub repository information for the project"`
+		Brand       Brand      `json:"brand,omitempty" description:"Branding configuration for the project including colours and logo"`
+		StatusPage  StatusPage `json:"statusPage,omitempty" description:"Configuration for the project's status page"`
 	}
 	// GitHubRepo defines the metadata for GitHub repositories.
 	// This information is used for CI/CD integration, secrets management,
@@ -27,5 +27,10 @@ type (
 		SecondaryColour string `json:"secondaryColour,omitempty" validate:"omitempty,hexcolor" description:"Secondary brand colour in hex format (e.g., #10B981)"`
 		LogoURL         string `json:"logoUrl,omitempty" validate:"omitempty,url" description:"URL to the project's logo image"`
 		IconURL         string `json:"iconUrl,omitempty" validate:"omitempty,url" description:"URL to the project's icon/favicon image (used for status pages)"`
+	}
+	// StatusPage defines the configuration for a project's status page.
+	// This information is used for custom domain setup and status page presentation.
+	StatusPage struct {
+		Domain string `json:"domain,omitempty" validate:"omitempty,fqdn" description:"Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain."`
 	}
 )

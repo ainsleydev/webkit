@@ -174,8 +174,8 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 
 	// Set status page domain if explicitly configured.
 	// If not set, Terraform will not configure a custom domain for the status page.
-	if t.appDef.Project.StatusPageDomain != "" {
-		vars.StatusPageDomain = &t.appDef.Project.StatusPageDomain
+	if t.appDef.Project.StatusPage.Domain != "" {
+		vars.StatusPageDomain = &t.appDef.Project.StatusPage.Domain
 	}
 
 	return vars, nil

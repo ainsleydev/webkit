@@ -457,8 +457,10 @@ func TestTFVarsFromDefinition(t *testing.T) {
 	t.Run("Status page domain - explicit configuration", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{
-				Name:             "explicit-domain-project",
-				StatusPageDomain: "status.custom.com",
+				Name: "explicit-domain-project",
+				StatusPage: appdef.StatusPage{
+					Domain: "status.custom.com",
+				},
 				Repo: appdef.GitHubRepo{
 					Owner: "owner",
 					Name:  "explicit-domain-project",

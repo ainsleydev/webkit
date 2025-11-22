@@ -347,13 +347,11 @@ resource "github_actions_variable" "monitor_ping_urls" {
 
   repository    = var.github_config.repo
   variable_name = each.key
+  depends_on = [module.resources, module.apps, module.monitoring]
   # Look up the actual ping URL from the monitoring module outputs using the monitor name.
   # The ping URL is computed after the monitor is created, but the for_each keys are known at plan time.
-  # Use coalesce() with a placeholder since github_actions_variable requires a non-empty value,
-  # and the ping_url is null during initial plan (before push_token is computed).
-  value = coalesce(try(module.monitoring[0].push_monitors[each.value].ping_url, null), "PENDING_MONITOR_CREATION")
-
-  depends_on = [module.resources, module.apps, module.monitoring]
+  # Use coalesce() with "pending" fallback since GitHub variables require a non-empty value.
+  value = coalesce(try(module.monitoring[0].push_monitors[each.value].ping_url, null), "pending")
 }
 
 #
