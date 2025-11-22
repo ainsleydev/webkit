@@ -103,13 +103,14 @@ variable "resources" {
 
 variable "monitors" {
   type = list(object({
-    name   = string
-    type   = string # "http", "dns", "push"
-    url    = optional(string)
-    method = optional(string)
-    domain = optional(string) # For DNS monitors
+    name     = string
+    type     = string # "http", "dns", "push"
+    url      = optional(string)
+    method   = optional(string)
+    domain   = optional(string) # For DNS monitors.
+    interval = number           # Interval in seconds between checks.
   }))
-  description = "List of monitors to create in Peekaping. Defaults (interval, retries, etc.) are applied based on monitor type."
+  description = "List of monitors to create in Peekaping."
   default     = []
 }
 

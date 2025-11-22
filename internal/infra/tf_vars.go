@@ -78,13 +78,13 @@ type (
 		Repo  string `json:"repo"`
 	}
 	// tfMonitor represents a monitoring configuration for Terraform.
-	// Minimal fields are set from appdef; defaults are applied in Terraform.
 	tfMonitor struct {
-		Name   string `json:"name"`
-		Type   string `json:"type"` // "http", "dns", "postgres", "push"
-		URL    string `json:"url,omitempty"`
-		Method string `json:"method,omitempty"`
-		Domain string `json:"domain,omitempty"` // For DNS monitors
+		Name     string `json:"name"`
+		Type     string `json:"type"` // "http", "dns", "postgres", "push"
+		URL      string `json:"url,omitempty"`
+		Method   string `json:"method,omitempty"`
+		Domain   string `json:"domain,omitempty"` // For DNS monitors.
+		Interval int    `json:"interval"`         // Interval in seconds between checks.
 	}
 )
 
@@ -255,11 +255,12 @@ func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
 
 	for i, m := range appDefMonitors {
 		monitors[i] = tfMonitor{
-			Name:   m.Name,
-			Type:   string(m.Type),
-			URL:    m.URL,
-			Method: m.Method,
-			Domain: m.Domain,
+			Name:     m.Name,
+			Type:     string(m.Type),
+			URL:      m.URL,
+			Method:   m.Method,
+			Domain:   m.Domain,
+			Interval: m.Interval,
 		}
 	}
 

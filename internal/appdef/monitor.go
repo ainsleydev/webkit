@@ -11,7 +11,6 @@ type (
 		Enabled bool `json:"enabled" description:"Whether to enable uptime monitoring for this app or resource (defaults to true)"`
 	}
 	// Monitor contains minimal monitoring configuration.
-	// Defaults are applied by the Terraform layer based on monitor type.
 	//
 	// Field usage by monitor type:
 	// - HTTP monitors: URL contains the full URL (including path), Method contains HTTP method
@@ -19,11 +18,12 @@ type (
 	// - Database monitors: URL contains database connection string or Terraform reference, Method is empty
 	// - Push monitors: URL and Method are empty
 	Monitor struct {
-		Name   string      // Unique monitor name.
-		Type   MonitorType // Monitor type (http, dns, postgres, push).
-		URL    string      // URL for HTTP monitors, database connection string for postgres monitors.
-		Method string      // HTTP method for HTTP monitors (e.g., "GET"), empty for other types.
-		Domain string      // Domain name for DNS monitors.
+		Name     string      // Unique monitor name.
+		Type     MonitorType // Monitor type (http, dns, postgres, push).
+		URL      string      // URL for HTTP monitors, database connection string for postgres monitors.
+		Method   string      // HTTP method for HTTP monitors (e.g., "GET"), empty for other types.
+		Domain   string      // Domain name for DNS monitors.
+		Interval int         // Interval in seconds between checks.
 	}
 	// MonitorType defines the type of monitor.
 	MonitorType string
@@ -35,6 +35,18 @@ const (
 	MonitorTypeDNS      MonitorType = "dns"
 	MonitorTypePostgres MonitorType = "postgres"
 	MonitorTypePush     MonitorType = "push"
+)
+
+// Monitor interval constants (in seconds).
+const (
+	// MonitorIntervalHTTP is 1 minute for HTTP health checks.
+	MonitorIntervalHTTP = 60
+	// MonitorIntervalDNS is 5 minutes for DNS resolution checks.
+	MonitorIntervalDNS = 300
+	// MonitorIntervalBackup is 25 hours (90000s) for daily backup heartbeats with 1 hour buffer.
+	MonitorIntervalBackup = 90000
+	// MonitorIntervalMaintenance is 8 days (691200s) for weekly maintenance with 1 day buffer.
+	MonitorIntervalMaintenance = 691200
 )
 
 // String implements fmt.Stringer on MonitorType.
@@ -59,8 +71,9 @@ func (d *Definition) GenerateMonitors() []Monitor {
 
 	// Generate codebase backup monitor (always generated).
 	monitors = append(monitors, Monitor{
-		Name: fmt.Sprintf("%s - Codebase Backup", d.Project.Title),
-		Type: MonitorTypePush,
+		Name:     fmt.Sprintf("%s - Codebase Backup", d.Project.Title),
+		Type:     MonitorTypePush,
+		Interval: MonitorIntervalBackup,
 	})
 
 	// Generate maintenance monitors for all apps.
@@ -87,17 +100,19 @@ func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 
 			// HTTP monitor - checks the availability of the web application.
 			monitors = append(monitors, Monitor{
-				Name:   fmt.Sprintf("%s, %s - %s", d.Project.Title, app.Title, domain.Name),
-				Type:   MonitorTypeHTTP,
-				URL:    fmt.Sprintf("https://%s", domain.Name),
-				Method: "GET",
+				Name:     fmt.Sprintf("%s, %s - %s", d.Project.Title, app.Title, domain.Name),
+				Type:     MonitorTypeHTTP,
+				URL:      fmt.Sprintf("https://%s", domain.Name),
+				Method:   "GET",
+				Interval: MonitorIntervalHTTP,
 			})
 
 			// DNS monitor - checks domain name resolution.
 			monitors = append(monitors, Monitor{
-				Name:   fmt.Sprintf("%s, %s DNS - %s", d.Project.Title, app.Title, domain.Name),
-				Type:   MonitorTypeDNS,
-				Domain: domain.Name,
+				Name:     fmt.Sprintf("%s, %s DNS - %s", d.Project.Title, app.Title, domain.Name),
+				Type:     MonitorTypeDNS,
+				Domain:   domain.Name,
+				Interval: MonitorIntervalDNS,
 			})
 		}
 	}
@@ -116,8 +131,9 @@ func (d *Definition) generateResourceBackupMonitors() []Monitor {
 		}
 
 		monitors = append(monitors, Monitor{
-			Name: fmt.Sprintf("%s - %s Backup", d.Project.Title, resource.Title),
-			Type: MonitorTypePush,
+			Name:     fmt.Sprintf("%s - %s Backup", d.Project.Title, resource.Title),
+			Type:     MonitorTypePush,
+			Interval: MonitorIntervalBackup,
 		})
 	}
 
@@ -135,8 +151,9 @@ func (d *Definition) generateMaintenanceMonitors() []Monitor {
 		}
 
 		monitors = append(monitors, Monitor{
-			Name: fmt.Sprintf("%s - %s Maintenance", d.Project.Title, app.Title),
-			Type: MonitorTypePush,
+			Name:     fmt.Sprintf("%s - %s Maintenance", d.Project.Title, app.Title),
+			Type:     MonitorTypePush,
+			Interval: MonitorIntervalMaintenance,
 		})
 	}
 
