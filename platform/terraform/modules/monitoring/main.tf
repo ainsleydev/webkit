@@ -55,7 +55,7 @@ module "status_page" {
 
   title       = "${var.project_title} Status"
   description = "Public status page for ${var.project_title} services"
-  slug        = lower(replace(var.project_name, "_", "-"))
+  slug        = var.status_page_slug != null ? var.status_page_slug : lower(replace(var.project_name, "_", "-"))
   icon_url    = var.brand_icon_url
   domains     = var.status_page_domain != null ? [var.status_page_domain] : []
   monitor_ids = module.monitors.all_ids

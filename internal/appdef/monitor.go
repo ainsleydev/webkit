@@ -15,6 +15,7 @@ type (
 	// This information is used for custom domain setup and status page presentation.
 	StatusPage struct {
 		Domain string `json:"domain,omitempty" validate:"omitempty,fqdn" description:"Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain."`
+		Slug   string `json:"slug,omitempty" validate:"omitempty,lowercase,alphanumdash" description:"URL slug for the status page (e.g., my-project). If not set, defaults to a kebab-case version of the project name."`
 	}
 	// Monitor contains minimal monitoring configuration.
 	//
