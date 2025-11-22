@@ -15,15 +15,15 @@ locals {
   dns_monitors  = [for m in var.monitors : m if m.type == "dns"]
   push_monitors = [for m in var.monitors : m if m.type == "push"]
 
-  # Merge user-provided defaults with sensible defaults.
-  defaults = merge({
-    timeout          = 30
-    http_max_retries = 3
-    dns_max_retries  = 3
-    push_max_retries = 2
-    retry_interval   = 60
-    resend_interval  = 10
-  }, var.defaults)
+  # Default values with optional overrides.
+  defaults = {
+    timeout          = coalesce(var.defaults.timeout, 30)
+    http_max_retries = coalesce(var.defaults.http_max_retries, 3)
+    dns_max_retries  = coalesce(var.defaults.dns_max_retries, 3)
+    push_max_retries = coalesce(var.defaults.push_max_retries, 2)
+    retry_interval   = coalesce(var.defaults.retry_interval, 60)
+    resend_interval  = coalesce(var.defaults.resend_interval, 10)
+  }
 }
 
 #
