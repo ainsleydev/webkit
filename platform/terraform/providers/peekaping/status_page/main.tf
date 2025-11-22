@@ -14,4 +14,10 @@ resource "peekaping_status_page" "this" {
   icon        = var.icon_url
   domains     = var.domains
   monitor_ids = var.monitor_ids
+
+  # Workaround: Provider bug - doesn't return domains after apply.
+  # See: https://github.com/tafaust/terraform-provider-peekaping/issues/16
+  lifecycle {
+    ignore_changes = [domains]
+  }
 }
