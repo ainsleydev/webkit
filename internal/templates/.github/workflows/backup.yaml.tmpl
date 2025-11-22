@@ -88,7 +88,7 @@ jobs:
         if: success()
         uses: ./.github/actions/peekaping-ping
         with:
-          monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" (env "Short" | upper) (.Name | snakecase | upper)) }}
+          monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" ($.Env.Short | upper) (.Name | snakecase | upper)) }}
           description: '{{ .Title }} backup'
 
       - name: Remove Runner IP from Database
@@ -154,7 +154,7 @@ jobs:
         if: success()
         uses: ./.github/actions/peekaping-ping
         with:
-          monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" (env "Short" | upper) (.Name | snakecase | upper)) }}
+          monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" ($.Env.Short | upper) (.Name | snakecase | upper)) }}
           description: '{{ .Title }} backup'
 {{- else if eq .Type "sqlite" }}
   backup-resource-{{ .Name }}:
@@ -222,7 +222,7 @@ jobs:
         if: success()
         uses: ./.github/actions/peekaping-ping
         with:
-          monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" (env "Short" | upper) (.Name | snakecase | upper)) }}
+          monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" ($.Env.Short | upper) (.Name | snakecase | upper)) }}
           description: '{{ .Title }} backup'
 
       - name: Notify Slack of Backup Failure
@@ -298,7 +298,7 @@ jobs:
         if: success()
         uses: ./.github/actions/peekaping-ping
         with:
-          monitor-url: {{ ghVar (printf "%s_CODEBASE_BACKUP_PING_URL" (env "Short" | upper)) }}
+          monitor-url: {{ ghVar (printf "%s_CODEBASE_BACKUP_PING_URL" ($.Env.Short | upper)) }}
           description: 'Codebase backup'
 
       - name: Notify Slack of Backup Failure
