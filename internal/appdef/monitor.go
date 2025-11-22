@@ -78,7 +78,7 @@ func (d *Definition) GenerateMonitors() []Monitor {
 
 	// Generate codebase backup monitor (always generated).
 	monitors = append(monitors, Monitor{
-		Name:     fmt.Sprintf("%s - Codebase Backup", d.Project.Title),
+		Name:     "Backup - Codebase",
 		Type:     MonitorTypePush,
 		Interval: MonitorIntervalBackup,
 	})
@@ -110,7 +110,7 @@ func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 
 			// HTTP monitor - checks the availability of the web application.
 			monitors = append(monitors, Monitor{
-				Name:     fmt.Sprintf("%s, %s - %s", d.Project.Title, app.Title, domain.Name),
+				Name:     fmt.Sprintf("HTTP - %s", domain.Name),
 				Type:     MonitorTypeHTTP,
 				URL:      fmt.Sprintf("https://%s", domain.Name),
 				Method:   "GET",
@@ -119,7 +119,7 @@ func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 
 			// DNS monitor - checks domain name resolution.
 			monitors = append(monitors, Monitor{
-				Name:     fmt.Sprintf("%s, %s DNS - %s", d.Project.Title, app.Title, domain.Name),
+				Name:     fmt.Sprintf("DNS - %s", domain.Name),
 				Type:     MonitorTypeDNS,
 				Domain:   domain.Name,
 				Interval: MonitorIntervalDNS,
@@ -141,7 +141,7 @@ func (d *Definition) generateResourceBackupMonitors() []Monitor {
 		}
 
 		monitors = append(monitors, Monitor{
-			Name:     fmt.Sprintf("%s - %s Backup", d.Project.Title, resource.Title),
+			Name:     fmt.Sprintf("Backup - %s", resource.Title),
 			Type:     MonitorTypePush,
 			Interval: MonitorIntervalBackup,
 		})
@@ -161,7 +161,7 @@ func (d *Definition) generateMaintenanceMonitors() []Monitor {
 		}
 
 		monitors = append(monitors, Monitor{
-			Name:     fmt.Sprintf("%s - %s Maintenance", d.Project.Title, app.Title),
+			Name:     fmt.Sprintf("Maintenance - %s", app.Title),
 			Type:     MonitorTypePush,
 			Interval: MonitorIntervalMaintenance,
 		})
