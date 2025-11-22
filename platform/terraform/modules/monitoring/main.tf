@@ -114,6 +114,22 @@ resource "peekaping_monitor" "dns" {
 }
 
 #
+# Push Token Generation
+#
+# Generates deterministic push tokens for monitors.
+# Tokens only change when the monitor name changes.
+#
+resource "random_id" "push_token" {
+  for_each = { for m in local.push_monitors : m.name => m }
+
+  byte_length = 24 # 24 bytes = 32 characters in base64
+
+  keepers = {
+    monitor_name = each.value.name
+  }
+}
+
+#
 # Push Monitors (Heartbeats)
 #
 # Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/monitor
@@ -124,7 +140,7 @@ resource "peekaping_monitor" "push" {
   name = each.value.name
   type = "push"
   config = jsonencode({
-    pushToken = substr(base64encode(uuid()), 0, 32)
+    pushToken = random_id.push_token[each.key].b64_url
   })
 
   interval         = each.value.interval

@@ -79,6 +79,8 @@ func teardownEnv(t *testing.T) {
 		"GITHUB_TOKEN_CLASSIC",
 		"SLACK_BOT_TOKEN",
 		"SLACK_USER_TOKEN",
+		"PEEKAPING_ENDPOINT",
+		"PEEKAPING_API_KEY",
 	}
 
 	for _, key := range envVars {
