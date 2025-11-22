@@ -244,6 +244,32 @@
 			"type": "object"
 		},
 		"AppdefMonitor": {
+			"properties": {
+				"domain": {
+					"description": "Domain name for DNS monitors",
+					"type": "string"
+				},
+				"interval": {
+					"description": "Interval in seconds between checks (defaults based on monitor type if not specified)",
+					"type": "integer"
+				},
+				"method": {
+					"description": "HTTP method for HTTP monitors (e.g., GET, POST)",
+					"type": "string"
+				},
+				"name": {
+					"description": "Unique monitor name",
+					"type": "string"
+				},
+				"type": {
+					"description": "Monitor type (http, dns, postgres, push)",
+					"type": "string"
+				},
+				"url": {
+					"description": "URL for HTTP monitors or database connection string for postgres monitors",
+					"type": "string"
+				}
+			},
 			"type": "object"
 		},
 		"AppdefMonitoring": {

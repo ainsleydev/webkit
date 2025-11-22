@@ -24,12 +24,12 @@ type (
 	// - Database monitors: URL contains database connection string or Terraform reference, Method is empty
 	// - Push monitors: URL and Method are empty
 	Monitor struct {
-		Name     string      // Unique monitor name.
-		Type     MonitorType // Monitor type (http, dns, postgres, push).
-		URL      string      // URL for HTTP monitors, database connection string for postgres monitors.
-		Method   string      // HTTP method for HTTP monitors (e.g., "GET"), empty for other types.
-		Domain   string      // Domain name for DNS monitors.
-		Interval int         // Interval in seconds between checks.
+		Name     string      `json:"name" validate:"required" description:"Unique monitor name"`
+		Type     MonitorType `json:"type" validate:"required,oneof=http dns postgres push" description:"Monitor type (http, dns, postgres, push)"`
+		URL      string      `json:"url,omitempty" description:"URL for HTTP monitors or database connection string for postgres monitors"`
+		Method   string      `json:"method,omitempty" description:"HTTP method for HTTP monitors (e.g., GET, POST)"`
+		Domain   string      `json:"domain,omitempty" description:"Domain name for DNS monitors"`
+		Interval int         `json:"interval,omitempty" description:"Interval in seconds between checks (defaults based on monitor type if not specified)"`
 	}
 	// MonitorType defines the type of monitor.
 	MonitorType string
