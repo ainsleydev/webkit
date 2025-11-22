@@ -54,6 +54,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		require.Len(t, monitors, 1)
 		assert.Equal(t, "My Project - Codebase Backup", monitors[0].Name)
 		assert.Equal(t, MonitorTypePush, monitors[0].Type)
+		assert.Equal(t, MonitorIntervalBackup, monitors[0].Interval)
 	})
 
 	t.Run("No Domains", func(t *testing.T) {
@@ -76,6 +77,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		require.Len(t, monitors, 1)
 		assert.Equal(t, "My Project - Codebase Backup", monitors[0].Name)
 		assert.Equal(t, MonitorTypePush, monitors[0].Type)
+		assert.Equal(t, MonitorIntervalBackup, monitors[0].Interval)
 	})
 
 	t.Run("Single Primary Domain", func(t *testing.T) {
@@ -103,15 +105,18 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
 		assert.Equal(t, "https://example.com", monitors[0].URL)
 		assert.Equal(t, "GET", monitors[0].Method)
+		assert.Equal(t, MonitorIntervalHTTP, monitors[0].Interval)
 
 		// DNS monitor.
 		assert.Equal(t, "My Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
 		assert.Equal(t, "example.com", monitors[1].Domain)
+		assert.Equal(t, MonitorIntervalDNS, monitors[1].Interval)
 
 		// Codebase backup monitor.
 		assert.Equal(t, "My Project - Codebase Backup", monitors[2].Name)
 		assert.Equal(t, MonitorTypePush, monitors[2].Type)
+		assert.Equal(t, MonitorIntervalBackup, monitors[2].Interval)
 	})
 
 	t.Run("Multiple Domains Primary And Alias", func(t *testing.T) {
@@ -140,25 +145,30 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, "My Project, API - api.example.com", monitors[0].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
 		assert.Equal(t, "https://api.example.com", monitors[0].URL)
+		assert.Equal(t, MonitorIntervalHTTP, monitors[0].Interval)
 
 		// First domain - DNS.
 		assert.Equal(t, "My Project, API DNS - api.example.com", monitors[1].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
 		assert.Equal(t, "api.example.com", monitors[1].Domain)
+		assert.Equal(t, MonitorIntervalDNS, monitors[1].Interval)
 
 		// Second domain - HTTP.
 		assert.Equal(t, "My Project, API - www.api.example.com", monitors[2].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[2].Type)
 		assert.Equal(t, "https://www.api.example.com", monitors[2].URL)
+		assert.Equal(t, MonitorIntervalHTTP, monitors[2].Interval)
 
 		// Second domain - DNS.
 		assert.Equal(t, "My Project, API DNS - www.api.example.com", monitors[3].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
 		assert.Equal(t, "www.api.example.com", monitors[3].Domain)
+		assert.Equal(t, MonitorIntervalDNS, monitors[3].Interval)
 
 		// Codebase backup monitor.
 		assert.Equal(t, "My Project - Codebase Backup", monitors[4].Name)
 		assert.Equal(t, MonitorTypePush, monitors[4].Type)
+		assert.Equal(t, MonitorIntervalBackup, monitors[4].Interval)
 	})
 
 	t.Run("Unmanaged Domains Skipped", func(t *testing.T) {
@@ -187,18 +197,23 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		// First managed domain monitors.
 		assert.Equal(t, "My Project, Web - example.com", monitors[0].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
+		assert.Equal(t, MonitorIntervalHTTP, monitors[0].Interval)
 		assert.Equal(t, "My Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
+		assert.Equal(t, MonitorIntervalDNS, monitors[1].Interval)
 
 		// Second managed domain monitors.
 		assert.Equal(t, "My Project, Web - www.example.com", monitors[2].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[2].Type)
+		assert.Equal(t, MonitorIntervalHTTP, monitors[2].Interval)
 		assert.Equal(t, "My Project, Web DNS - www.example.com", monitors[3].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
+		assert.Equal(t, MonitorIntervalDNS, monitors[3].Interval)
 
 		// Codebase backup monitor.
 		assert.Equal(t, "My Project - Codebase Backup", monitors[4].Name)
 		assert.Equal(t, MonitorTypePush, monitors[4].Type)
+		assert.Equal(t, MonitorIntervalBackup, monitors[4].Interval)
 	})
 
 	t.Run("Multiple Apps", func(t *testing.T) {
@@ -232,21 +247,26 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		// First app - HTTP.
 		assert.Equal(t, "My Project, Web - example.com", monitors[0].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
+		assert.Equal(t, MonitorIntervalHTTP, monitors[0].Interval)
 
 		// First app - DNS.
 		assert.Equal(t, "My Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
+		assert.Equal(t, MonitorIntervalDNS, monitors[1].Interval)
 
 		// Second app - HTTP.
 		assert.Equal(t, "My Project, API - api.example.com", monitors[2].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[2].Type)
+		assert.Equal(t, MonitorIntervalHTTP, monitors[2].Interval)
 
 		// Second app - DNS.
 		assert.Equal(t, "My Project, API DNS - api.example.com", monitors[3].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
+		assert.Equal(t, MonitorIntervalDNS, monitors[3].Interval)
 
 		// Codebase backup monitor.
 		assert.Equal(t, "My Project - Codebase Backup", monitors[4].Name)
 		assert.Equal(t, MonitorTypePush, monitors[4].Type)
+		assert.Equal(t, MonitorIntervalBackup, monitors[4].Interval)
 	})
 }

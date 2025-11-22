@@ -900,6 +900,7 @@ func TestGenerateMonitors(t *testing.T) {
 		require.Len(t, monitors, 1)
 		assert.Equal(t, "Empty Project - Codebase Backup", monitors[0].Name)
 		assert.Equal(t, "push", monitors[0].Type)
+		assert.Equal(t, appdef.MonitorIntervalBackup, monitors[0].Interval)
 	})
 
 	t.Run("Single App With Monitoring Enabled", func(t *testing.T) {
@@ -929,15 +930,18 @@ func TestGenerateMonitors(t *testing.T) {
 		assert.Equal(t, "http", monitors[0].Type)
 		assert.Equal(t, "https://example.com", monitors[0].URL)
 		assert.Equal(t, "GET", monitors[0].Method)
+		assert.Equal(t, appdef.MonitorIntervalHTTP, monitors[0].Interval)
 
 		// DNS monitor.
 		assert.Equal(t, "Test Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, "dns", monitors[1].Type)
 		assert.Equal(t, "example.com", monitors[1].Domain)
+		assert.Equal(t, appdef.MonitorIntervalDNS, monitors[1].Interval)
 
 		// Codebase backup monitor.
 		assert.Equal(t, "Test Project - Codebase Backup", monitors[2].Name)
 		assert.Equal(t, "push", monitors[2].Type)
+		assert.Equal(t, appdef.MonitorIntervalBackup, monitors[2].Interval)
 	})
 
 	t.Run("App With Monitoring Disabled", func(t *testing.T) {
@@ -960,6 +964,7 @@ func TestGenerateMonitors(t *testing.T) {
 		require.Len(t, monitors, 1)
 		assert.Equal(t, "Test Project - Codebase Backup", monitors[0].Name)
 		assert.Equal(t, "push", monitors[0].Type)
+		assert.Equal(t, appdef.MonitorIntervalBackup, monitors[0].Interval)
 	})
 
 	t.Run("Multiple Apps Multiple Domains", func(t *testing.T) {
@@ -994,18 +999,25 @@ func TestGenerateMonitors(t *testing.T) {
 
 		assert.Equal(t, "Test Project, Web - example.com", monitors[0].Name)
 		assert.Equal(t, "http", monitors[0].Type)
+		assert.Equal(t, appdef.MonitorIntervalHTTP, monitors[0].Interval)
 		assert.Equal(t, "Test Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, "dns", monitors[1].Type)
+		assert.Equal(t, appdef.MonitorIntervalDNS, monitors[1].Interval)
 		assert.Equal(t, "Test Project, Web - www.example.com", monitors[2].Name)
 		assert.Equal(t, "http", monitors[2].Type)
+		assert.Equal(t, appdef.MonitorIntervalHTTP, monitors[2].Interval)
 		assert.Equal(t, "Test Project, Web DNS - www.example.com", monitors[3].Name)
 		assert.Equal(t, "dns", monitors[3].Type)
+		assert.Equal(t, appdef.MonitorIntervalDNS, monitors[3].Interval)
 		assert.Equal(t, "Test Project, API - api.example.com", monitors[4].Name)
 		assert.Equal(t, "http", monitors[4].Type)
+		assert.Equal(t, appdef.MonitorIntervalHTTP, monitors[4].Interval)
 		assert.Equal(t, "Test Project, API DNS - api.example.com", monitors[5].Name)
 		assert.Equal(t, "dns", monitors[5].Type)
+		assert.Equal(t, appdef.MonitorIntervalDNS, monitors[5].Interval)
 		assert.Equal(t, "Test Project - Codebase Backup", monitors[6].Name)
 		assert.Equal(t, "push", monitors[6].Type)
+		assert.Equal(t, appdef.MonitorIntervalBackup, monitors[6].Interval)
 	})
 
 	t.Run("Codebase Backup Monitor Always Generated", func(t *testing.T) {
@@ -1024,6 +1036,7 @@ func TestGenerateMonitors(t *testing.T) {
 		assert.Equal(t, "push", monitors[0].Type)
 		assert.Empty(t, monitors[0].URL, "Push monitors should have empty URL")
 		assert.Empty(t, monitors[0].Method, "Push monitors should have empty method")
+		assert.Equal(t, appdef.MonitorIntervalBackup, monitors[0].Interval)
 	})
 
 	t.Run("Mixed Apps And Resources", func(t *testing.T) {
@@ -1058,17 +1071,21 @@ func TestGenerateMonitors(t *testing.T) {
 		// HTTP monitor.
 		assert.Equal(t, "Test Project, Web - example.com", monitors[0].Name)
 		assert.Equal(t, "http", monitors[0].Type)
+		assert.Equal(t, appdef.MonitorIntervalHTTP, monitors[0].Interval)
 
 		// DNS monitor.
 		assert.Equal(t, "Test Project, Web DNS - example.com", monitors[1].Name)
 		assert.Equal(t, "dns", monitors[1].Type)
+		assert.Equal(t, appdef.MonitorIntervalDNS, monitors[1].Interval)
 
 		// Database backup monitor.
 		assert.Equal(t, "Test Project - Database Backup", monitors[2].Name)
 		assert.Equal(t, "push", monitors[2].Type)
+		assert.Equal(t, appdef.MonitorIntervalBackup, monitors[2].Interval)
 
 		// Codebase backup monitor.
 		assert.Equal(t, "Test Project - Codebase Backup", monitors[3].Name)
 		assert.Equal(t, "push", monitors[3].Type)
+		assert.Equal(t, appdef.MonitorIntervalBackup, monitors[3].Interval)
 	})
 }

@@ -90,7 +90,7 @@ resource "peekaping_monitor" "http" {
     authMethod           = "none"
   })
 
-  interval         = 60 # 1 minute
+  interval         = each.value.interval
   timeout          = 30 # 30 seconds
   max_retries      = 3
   retry_interval   = 60 # 1 minute
@@ -117,8 +117,8 @@ resource "peekaping_monitor" "dns" {
     resolve_type    = "A" # A record lookup
   })
 
-  interval         = 300 # 5 minutes (less frequent than HTTP)
-  timeout          = 30  # 30 seconds
+  interval         = each.value.interval
+  timeout          = 30 # 30 seconds
   max_retries      = 3
   retry_interval   = 60 # 1 minute
   resend_interval  = 10 # 10 minutes
@@ -138,13 +138,10 @@ resource "peekaping_monitor" "push" {
   name = each.value.name
   type = "push"
   config = jsonencode({
-    # Push monitors don't require URL configuration
+    # Push monitors don't require URL configuration.
   })
 
-  # Interval determines how often we expect to receive a heartbeat ping.
-  # - Backup monitors: 25 hours (90000s) - daily backups with 1 hour buffer
-  # - Maintenance monitors: 8 days (691200s) - weekly maintenance with 1 day buffer
-  interval = strcontains(each.value.name, "Backup") ? 90000 : strcontains(each.value.name, "Maintenance") ? 691200 : 90000
+  interval         = each.value.interval
   timeout          = 30 # 30 seconds (required by API)
   max_retries      = 2
   retry_interval   = 60
