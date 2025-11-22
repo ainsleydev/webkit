@@ -14,14 +14,14 @@ locals {
   push_monitors = [for m in var.monitors : m if m.type == "push"]
 
   # Tag colour: use brand primary colour if set, otherwise fallback to blue.
-  tag_color        = var.brand_primary_color != null ? var.brand_primary_color : "#3B82F6"
+  tag_color = var.brand_primary_color != null ? var.brand_primary_color : "#3B82F6"
 
   # Currently - Slack - #alerts
   notification_ids = ["7e4f8d2e-5720-4b07-9ce4-3f639b5e4647"]
 
   # Default values
   defaults = {
-    timeout         = 30
+    timeout          = 30
     http_max_retries = 3
     dns_max_retries  = 3
     push_max_retries = 2
@@ -137,8 +137,9 @@ resource "random_id" "push_token" {
 resource "peekaping_monitor" "push" {
   for_each = { for m in local.push_monitors : m.name => m }
 
-  name = each.value.name
-  type = "push"
+  name       = each.value.name
+  type       = "push"
+  push_token = random_id.push_token[each.key].b64_url
   config = jsonencode({
     pushToken = random_id.push_token[each.key].b64_url
   })
@@ -151,6 +152,12 @@ resource "peekaping_monitor" "push" {
   active           = true
   notification_ids = local.notification_ids
   tag_ids          = local.tag_ids
+
+  # Workaround: Provider bug - doesn't return push_token after apply.
+  # See: https://github.com/tafaust/terraform-provider-peekaping/issues/16
+  lifecycle {
+    ignore_changes = [push_token]
+  }
 
   depends_on = [peekaping_tag.project]
 }
