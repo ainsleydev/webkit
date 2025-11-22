@@ -5,6 +5,42 @@
 #
 
 #
+# State Migration
+#
+# These moved blocks handle the migration from inline resources to provider modules.
+# They can be removed after all consumers have run terraform apply.
+#
+moved {
+  from = peekaping_tag.project
+  to   = module.project_tag.peekaping_tag.this
+}
+
+moved {
+  from = peekaping_monitor.http
+  to   = module.monitors.peekaping_monitor.http
+}
+
+moved {
+  from = peekaping_monitor.dns
+  to   = module.monitors.peekaping_monitor.dns
+}
+
+moved {
+  from = peekaping_monitor.push
+  to   = module.monitors.peekaping_monitor.push
+}
+
+moved {
+  from = random_id.push_token
+  to   = module.monitors.random_id.push_token
+}
+
+moved {
+  from = peekaping_status_page.this
+  to   = module.status_page.peekaping_status_page.this
+}
+
+#
 # Locals
 #
 locals {
