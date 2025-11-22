@@ -1,5 +1,6 @@
 #
 # Apps Module
+#
 # Generates module calls based on apps[] in app.json
 # Maps generic infra types to provider-specific resources
 #
