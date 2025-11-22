@@ -101,8 +101,9 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		ProjectTitle:        t.appDef.Project.Title,
 		ProjectDescription:  t.appDef.Project.Description,
 		Environment:         env.String(),
-		Apps:                make([]tfApp, 0, len(t.appDef.Apps)),
-		Resources:           make([]tfResource, 0, len(t.appDef.Resources)),
+		Apps:                t.generateApps(ctx, env),
+		Resources:           t.generateResources(),
+		Monitors:            t.generateMonitors(env),
 		DigitalOceanSSHKeys: []string{"Ainsley - Mac Studio"},
 		HetznerSSHKeys:      []string{"hello@ainsley.dev"},
 		SlackWebhookURL:     t.env.SlackWebhookURL,
@@ -110,78 +111,9 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 			Owner: t.appDef.Project.Repo.Owner,
 			Repo:  t.appDef.Project.Repo.Name,
 		},
-	}
-
-	// Populate brand icon URL if configured.
-	if t.appDef.Project.Brand.IconURL != "" {
-		vars.BrandIconURL = &t.appDef.Project.Brand.IconURL
-	}
-
-	// Populate brand primary colour if configured.
-	if t.appDef.Project.Brand.PrimaryColour != "" {
-		vars.BrandPrimaryColor = &t.appDef.Project.Brand.PrimaryColour
-	}
-
-	for _, res := range t.appDef.Resources {
-		vars.Resources = append(vars.Resources, tfResource{
-			Name:             res.Name,
-			PlatformType:     res.Type.String(),
-			PlatformProvider: res.Provider.String(),
-			Config:           encodeConfigForTerraform(res.Config),
-		})
-	}
-
-	for _, app := range t.appDef.Apps {
-		tfA := tfApp{
-			Name:             app.Name,
-			PlatformType:     app.Infra.Type,
-			PlatformProvider: app.Infra.Provider.String(),
-			AppType:          app.Type.String(),
-			Config:           encodeConfigForTerraform(app.Infra.Config),
-			Path:             app.Path,
-		}
-
-		// Determine the image tag for container-based apps.
-		if app.Infra.Type == "container" {
-			tfA.ImageTag = t.determineImageTag(ctx, app.Name)
-		}
-
-		app.MergeEnvironments(t.appDef.Shared.Env).
-			Walk(func(entry appdef.EnvWalkEntry) {
-				if entry.Environment != env {
-					return
-				}
-				scope := envScopeSecret
-				if entry.Source == appdef.EnvSourceValue {
-					scope = envScopeGeneral
-				}
-				tfA.Environment = append(tfA.Environment, tfEnvVar{
-					Key:    entry.Key,
-					Value:  entry.Value,
-					Source: entry.Source.String(),
-					Scope:  scope,
-				})
-			})
-
-		for _, domain := range app.Domains {
-			tfA.Domains = append(tfA.Domains, tfDomain{
-				Name:     domain.Name,
-				Type:     domain.Type.String(),
-				Zone:     domain.Zone,
-				Wildcard: domain.Wildcard,
-			})
-		}
-
-		vars.Apps = append(vars.Apps, tfA)
-	}
-
-	// Generate monitors from apps and resources.
-	vars.Monitors = t.generateMonitors(env)
-
-	// Set status page domain if explicitly configured.
-	// If not set, Terraform will not configure a custom domain for the status page.
-	if t.appDef.Project.StatusPage.Domain != "" {
-		vars.StatusPageDomain = &t.appDef.Project.StatusPage.Domain
+		StatusPageDomain:  stringPtrOrNil(t.appDef.Project.StatusPage.Domain),
+		BrandIconURL:      stringPtrOrNil(t.appDef.Project.Brand.IconURL),
+		BrandPrimaryColor: stringPtrOrNil(t.appDef.Project.Brand.PrimaryColour),
 	}
 
 	return vars, nil
@@ -258,13 +190,72 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 	return nil
 }
 
-// generateMonitors creates monitor configurations from the app definition.
-// It transforms appdef.Monitor structs into tfMonitor for Terraform consumption.
-func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
-	appdefMonitors := t.appDef.GenerateMonitors()
-	monitors := make([]tfMonitor, len(appdefMonitors))
+func (t *Terraform) generateResources() []tfResource {
+	resources := make([]tfResource, 0, len(t.appDef.Resources))
+	for _, res := range t.appDef.Resources {
+		resources = append(resources, tfResource{
+			Name:             res.Name,
+			PlatformType:     res.Type.String(),
+			PlatformProvider: res.Provider.String(),
+			Config:           encodeConfigForTerraform(res.Config),
+		})
+	}
+	return resources
+}
 
-	for i, m := range appdefMonitors {
+func (t *Terraform) generateApps(ctx context.Context, env env.Environment) []tfApp {
+	apps := make([]tfApp, 0, len(t.appDef.Apps))
+	for _, app := range t.appDef.Apps {
+		tfA := tfApp{
+			Name:             app.Name,
+			PlatformType:     app.Infra.Type,
+			PlatformProvider: app.Infra.Provider.String(),
+			AppType:          app.Type.String(),
+			Config:           encodeConfigForTerraform(app.Infra.Config),
+			Path:             app.Path,
+		}
+
+		// Determine the image tag for container-based apps.
+		if app.Infra.Type == "container" {
+			tfA.ImageTag = t.determineImageTag(ctx, app.Name)
+		}
+
+		app.MergeEnvironments(t.appDef.Shared.Env).
+			Walk(func(entry appdef.EnvWalkEntry) {
+				if entry.Environment != env {
+					return
+				}
+				scope := envScopeSecret
+				if entry.Source == appdef.EnvSourceValue {
+					scope = envScopeGeneral
+				}
+				tfA.Environment = append(tfA.Environment, tfEnvVar{
+					Key:    entry.Key,
+					Value:  entry.Value,
+					Source: entry.Source.String(),
+					Scope:  scope,
+				})
+			})
+
+		for _, domain := range app.Domains {
+			tfA.Domains = append(tfA.Domains, tfDomain{
+				Name:     domain.Name,
+				Type:     domain.Type.String(),
+				Zone:     domain.Zone,
+				Wildcard: domain.Wildcard,
+			})
+		}
+
+		apps = append(apps, tfA)
+	}
+	return apps
+}
+
+func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
+	appDefMonitors := t.appDef.GenerateMonitors()
+	monitors := make([]tfMonitor, len(appDefMonitors))
+
+	for i, m := range appDefMonitors {
 		monitors[i] = tfMonitor{
 			Name:   m.Name,
 			Type:   string(m.Type),
@@ -275,4 +266,11 @@ func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
 	}
 
 	return monitors
+}
+
+func stringPtrOrNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }
