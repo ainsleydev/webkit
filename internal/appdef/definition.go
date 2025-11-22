@@ -112,6 +112,7 @@ func (d *Definition) FilterTerraformManaged() (*Definition, SkippedItems) {
 	filtered := &Definition{
 		WebkitVersion: d.WebkitVersion,
 		Project:       d.Project,
+		Monitoring:    d.Monitoring,
 		Shared:        d.Shared,
 		Apps:          make([]App, 0, len(d.Apps)),
 		Resources:     make([]Resource, 0, len(d.Resources)),
