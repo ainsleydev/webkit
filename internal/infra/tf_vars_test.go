@@ -458,8 +458,10 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{
 				Name: "explicit-domain-project",
-				StatusPage: appdef.StatusPage{
-					Domain: "status.custom.com",
+				Monitoring: appdef.Monitoring{
+					StatusPage: appdef.StatusPage{
+						Domain: "status.custom.com",
+					},
 				},
 				Repo: appdef.GitHubRepo{
 					Owner: "owner",

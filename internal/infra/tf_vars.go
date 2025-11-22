@@ -111,7 +111,7 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 			Owner: t.appDef.Project.Repo.Owner,
 			Repo:  t.appDef.Project.Repo.Name,
 		},
-		StatusPageDomain:  stringPtrOrNil(t.appDef.Project.StatusPage.Domain),
+		StatusPageDomain:  stringPtrOrNil(t.appDef.Project.Monitoring.StatusPage.Domain),
 		BrandIconURL:      stringPtrOrNil(t.appDef.Project.Brand.IconURL),
 		BrandPrimaryColor: stringPtrOrNil(t.appDef.Project.Brand.PrimaryColour),
 	}, nil
