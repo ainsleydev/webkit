@@ -87,13 +87,9 @@ func TestResourceApplyDefaults(t *testing.T) {
 		"Nil Config And Outputs": {
 			input: Resource{},
 			want: Resource{
-				Config: make(map[string]any),
-				Backup: ResourceBackupConfig{
-					Enabled: true,
-				},
-				Monitoring: Monitoring{
-					Enabled: true,
-				},
+				Config:     make(map[string]any),
+				Backup:     ResourceBackupConfig{Enabled: true},
+				Monitoring: true,
 			},
 		},
 		"Existing Config And Outputs": {
@@ -101,13 +97,9 @@ func TestResourceApplyDefaults(t *testing.T) {
 				Config: map[string]any{"size": "small"},
 			},
 			want: Resource{
-				Config: map[string]any{"size": "small"},
-				Backup: ResourceBackupConfig{
-					Enabled: true,
-				},
-				Monitoring: Monitoring{
-					Enabled: true,
-				},
+				Config:     map[string]any{"size": "small"},
+				Backup:     ResourceBackupConfig{Enabled: true},
+				Monitoring: true,
 			},
 		},
 	}
@@ -159,7 +151,7 @@ func TestResource_GenerateBackupMonitor(t *testing.T) {
 				Name:       "db",
 				Title:      "Database",
 				Backup:     ResourceBackupConfig{Enabled: true},
-				Monitoring: Monitoring{Enabled: true},
+				Monitoring: true,
 			},
 			projectTitle: "Test Project",
 			want: &Monitor{
@@ -172,7 +164,7 @@ func TestResource_GenerateBackupMonitor(t *testing.T) {
 				Name:       "db",
 				Title:      "Database",
 				Backup:     ResourceBackupConfig{Enabled: false},
-				Monitoring: Monitoring{Enabled: true},
+				Monitoring: true,
 			},
 			projectTitle: "Test Project",
 			want:         nil,
@@ -182,7 +174,7 @@ func TestResource_GenerateBackupMonitor(t *testing.T) {
 				Name:       "db",
 				Title:      "Database",
 				Backup:     ResourceBackupConfig{Enabled: true},
-				Monitoring: Monitoring{Enabled: false},
+				Monitoring: false,
 			},
 			projectTitle: "Test Project",
 			want:         nil,
@@ -192,7 +184,7 @@ func TestResource_GenerateBackupMonitor(t *testing.T) {
 				Name:       "db",
 				Title:      "Database",
 				Backup:     ResourceBackupConfig{Enabled: false},
-				Monitoring: Monitoring{Enabled: false},
+				Monitoring: false,
 			},
 			projectTitle: "Test Project",
 			want:         nil,

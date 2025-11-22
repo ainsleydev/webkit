@@ -44,7 +44,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: Monitoring{Enabled: false},
+					Monitoring: false,
 				},
 			},
 		}
@@ -67,7 +67,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Name:       "web",
 					Title:      "Web",
 					Domains:    []Domain{},
-					Monitoring: Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 			},
 		}
@@ -92,7 +92,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 			},
 		}
@@ -133,7 +133,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 						{Name: "www.api.example.com", Type: DomainTypeAlias},
 					},
 					Infra:      Infra{Config: nil}, // Default health check path.
-					Monitoring: Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 			},
 		}
@@ -186,7 +186,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 						{Name: "www.example.com", Type: DomainTypeAlias},
 					},
 					Infra:      Infra{},
-					Monitoring: Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 			},
 		}
@@ -228,7 +228,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 				{
 					Name:  "api",
@@ -236,7 +236,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "api.example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 			},
 		}

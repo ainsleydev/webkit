@@ -62,8 +62,8 @@
 					"description": "Infrastructure and deployment configuration"
 				},
 				"monitoring": {
-					"$ref": "#/definitions/AppdefMonitoring",
-					"description": "Uptime monitoring configuration for this app"
+					"description": "Whether to enable uptime monitoring for this app (defaults to true)",
+					"type": "boolean"
 				},
 				"name": {
 					"description": "Unique identifier for the app (lowercase, hyphenated)",
@@ -243,11 +243,47 @@
 			},
 			"type": "object"
 		},
+		"AppdefMonitor": {
+			"properties": {
+				"domain": {
+					"description": "Domain name for DNS monitors",
+					"type": "string"
+				},
+				"interval": {
+					"description": "Interval in seconds between checks (defaults based on monitor type if not specified)",
+					"type": "integer"
+				},
+				"method": {
+					"description": "HTTP method for HTTP monitors (e.g., GET, POST)",
+					"type": "string"
+				},
+				"name": {
+					"description": "Unique monitor name",
+					"type": "string"
+				},
+				"type": {
+					"description": "Monitor type (http, dns, postgres, push)",
+					"type": "string"
+				},
+				"url": {
+					"description": "URL for HTTP monitors or database connection string for postgres monitors",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
 		"AppdefMonitoring": {
 			"properties": {
-				"enabled": {
-					"description": "Whether to enable uptime monitoring for this app or resource (defaults to true)",
-					"type": "boolean"
+				"custom": {
+					"description": "Custom monitors beyond auto-generated ones",
+					"items": {
+						"$ref": "#/definitions/AppdefMonitor"
+					},
+					"type": "array"
+				},
+				"statusPage": {
+					"$ref": "#/definitions/AppdefStatusPage",
+					"description": "Public status page configuration"
 				}
 			},
 			"type": "object"
@@ -262,6 +298,10 @@
 					"description": "Brief description of the project's purpose and functionality",
 					"type": "string"
 				},
+				"monitoring": {
+					"$ref": "#/definitions/AppdefMonitoring",
+					"description": "Monitoring configuration including status page and custom monitors"
+				},
 				"name": {
 					"description": "Unique identifier for the project (lowercase, hyphenated)",
 					"type": "string"
@@ -269,10 +309,6 @@
 				"repo": {
 					"$ref": "#/definitions/AppdefGitHubRepo",
 					"description": "GitHub repository information for the project"
-				},
-				"statusPage": {
-					"$ref": "#/definitions/AppdefStatusPage",
-					"description": "Configuration for the project's status page"
 				},
 				"title": {
 					"description": "Human-readable project name displayed in documentation and UIs",
@@ -300,8 +336,8 @@
 					"type": "string"
 				},
 				"monitoring": {
-					"$ref": "#/definitions/AppdefMonitoring",
-					"description": "Uptime monitoring configuration for this resource"
+					"description": "Whether to enable uptime monitoring for this resource (defaults to true)",
+					"type": "boolean"
 				},
 				"name": {
 					"description": "Unique identifier for the resource (used in environment variable references)",

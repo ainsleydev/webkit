@@ -20,7 +20,7 @@ type (
 		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean hetzner backblaze turso" description:"Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)"`
 		Config           map[string]any       `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
 		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
-		Monitoring       Monitoring           `json:"monitoring,omitempty" description:"Uptime monitoring configuration for this resource"`
+		Monitoring       bool                 `json:"monitoring,omitempty" description:"Whether to enable uptime monitoring for this resource (defaults to true)"`
 		TerraformManaged *bool                `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`
 	}
 	// ResourceBackupConfig defines backup behaviour for a resource.
@@ -163,9 +163,7 @@ func (r *Resource) applyDefaults() {
 		Enabled: true,
 	}
 
-	r.Monitoring = Monitoring{
-		Enabled: true,
-	}
+	r.Monitoring = true
 
 	// Apply type-specific defaults
 	// TODO: These types should be nicely hardcoded.
@@ -199,7 +197,7 @@ func (r ResourceType) Documentation() []ResourceOutput {
 // The monitor name follows the format: "{ProjectTitle} - {ResourceTitle} Backup".
 // This creates a heartbeat monitor that can be pinged by CI/CD backup workflows.
 func (r *Resource) GenerateBackupMonitor(projectTitle string) *Monitor {
-	if !r.Backup.Enabled || !r.Monitoring.Enabled {
+	if !r.Backup.Enabled || !r.Monitoring {
 		return nil
 	}
 

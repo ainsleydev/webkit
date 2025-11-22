@@ -5,10 +5,16 @@ import (
 )
 
 type (
-	// Monitoring is the user-facing config in app.json.
-	// It's intentionally simple - just an enabled flag.
+	// Monitoring is the project-level monitoring configuration.
+	// It consolidates status page settings and custom monitors.
 	Monitoring struct {
-		Enabled bool `json:"enabled" description:"Whether to enable uptime monitoring for this app or resource (defaults to true)"`
+		StatusPage StatusPage `json:"statusPage,omitempty" description:"Public status page configuration"`
+		Custom     []Monitor  `json:"custom,omitempty" description:"Custom monitors beyond auto-generated ones"`
+	}
+	// StatusPage defines the configuration for a project's status page.
+	// This information is used for custom domain setup and status page presentation.
+	StatusPage struct {
+		Domain string `json:"domain,omitempty" validate:"omitempty,fqdn" description:"Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain."`
 	}
 	// Monitor contains minimal monitoring configuration.
 	//
@@ -18,12 +24,12 @@ type (
 	// - Database monitors: URL contains database connection string or Terraform reference, Method is empty
 	// - Push monitors: URL and Method are empty
 	Monitor struct {
-		Name     string      // Unique monitor name.
-		Type     MonitorType // Monitor type (http, dns, postgres, push).
-		URL      string      // URL for HTTP monitors, database connection string for postgres monitors.
-		Method   string      // HTTP method for HTTP monitors (e.g., "GET"), empty for other types.
-		Domain   string      // Domain name for DNS monitors.
-		Interval int         // Interval in seconds between checks.
+		Name     string      `json:"name" validate:"required" description:"Unique monitor name"`
+		Type     MonitorType `json:"type" validate:"required,oneof=http dns postgres push" description:"Monitor type (http, dns, postgres, push)"`
+		URL      string      `json:"url,omitempty" description:"URL for HTTP monitors or database connection string for postgres monitors"`
+		Method   string      `json:"method,omitempty" description:"HTTP method for HTTP monitors (e.g., GET, POST)"`
+		Domain   string      `json:"domain,omitempty" description:"Domain name for DNS monitors"`
+		Interval int         `json:"interval,omitempty" description:"Interval in seconds between checks (defaults based on monitor type if not specified)"`
 	}
 	// MonitorType defines the type of monitor.
 	MonitorType string
@@ -60,6 +66,7 @@ func (m MonitorType) String() string {
 // - Backup monitors for resources
 // - Codebase backup monitor (always generated)
 // - Maintenance monitors for VM apps
+// - Custom monitors from project configuration
 func (d *Definition) GenerateMonitors() []Monitor {
 	monitors := make([]Monitor, 0)
 
@@ -79,6 +86,9 @@ func (d *Definition) GenerateMonitors() []Monitor {
 	// Generate maintenance monitors for all apps.
 	monitors = append(monitors, d.generateMaintenanceMonitors()...)
 
+	// Append custom monitors from project configuration.
+	monitors = append(monitors, d.Project.Monitoring.Custom...)
+
 	return monitors
 }
 
@@ -89,7 +99,7 @@ func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 	monitors := make([]Monitor, 0)
 
 	for _, app := range d.Apps {
-		if !app.Monitoring.Enabled {
+		if !app.Monitoring {
 			continue
 		}
 
@@ -126,7 +136,7 @@ func (d *Definition) generateResourceBackupMonitors() []Monitor {
 
 	for _, resource := range d.Resources {
 		// Only generate backup monitor if both backup and monitoring are enabled.
-		if !resource.Backup.Enabled || !resource.Monitoring.Enabled {
+		if !resource.Backup.Enabled || !resource.Monitoring {
 			continue
 		}
 
@@ -146,7 +156,7 @@ func (d *Definition) generateMaintenanceMonitors() []Monitor {
 
 	for _, app := range d.Apps {
 		// Only generate maintenance monitor for VM apps with monitoring enabled.
-		if !app.Monitoring.Enabled || app.Infra.Type != "vm" {
+		if !app.Monitoring || app.Infra.Type != "vm" {
 			continue
 		}
 
