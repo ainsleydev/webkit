@@ -325,14 +325,15 @@ resource "github_actions_secret" "resource_outputs" {
 # Monitor ping URLs are not sensitive data, so they are stored as repository variables
 # rather than secrets for easier debugging and visibility.
 #
-# Variable naming convention: {ENV}_{MONITOR_TYPE}_{MONITOR_KEY}_PING_URL
-# Example: PROD_DB_BACKUP_PING_URL, PROD_WEB_MAINTENANCE_PING_URL
+# Variable naming convention: {ENV}_{IDENTIFIER}_{TYPE}_PING_URL
+# Monitor names follow format: "{Type} - {Identifier}" (e.g., "Backup - Codebase", "Maintenance - Web")
+# Example: PROD_CODEBASE_BACKUP_PING_URL, PROD_WEB_MAINTENANCE_PING_URL
 #
 resource "github_actions_variable" "monitor_ping_urls" {
   for_each = length(var.monitors) > 0 ? module.monitoring[0].push_monitors : {}
 
   repository    = var.github_config.repo
-  variable_name = upper("${local.environment_short}_${replace(replace(regex("- (.*)", each.value.name)[0], " - ", "_"), " ", "_")}_PING_URL")
+  variable_name = upper("${local.environment_short}_${replace(split(" - ", each.value.name)[1], " ", "_")}_${replace(split(" - ", each.value.name)[0], " ", "_")}_PING_URL")
   value         = each.value.ping_url
 }
 
