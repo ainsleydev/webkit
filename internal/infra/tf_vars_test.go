@@ -496,6 +496,88 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 
+	t.Run("Status page slug - not set", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "no-slug-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "no-slug-project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "apps/web",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page slug should be nil when not set")
+		{
+			assert.Nil(t, got.StatusPageSlug)
+		}
+	})
+
+	t.Run("Status page slug - explicit configuration", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "explicit-slug-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "explicit-slug-project",
+				},
+			},
+			Monitoring: appdef.Monitoring{
+				StatusPage: appdef.StatusPage{
+					Domain: "status.custom.com",
+					Slug:   "my-custom-slug",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "cms",
+					Type: appdef.AppTypePayload,
+					Path: "apps/cms",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+					Domains: []appdef.Domain{
+						{Name: "cms.example.com", Type: appdef.DomainTypePrimary},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page slug should use explicit configuration")
+		{
+			require.NotNil(t, got.StatusPageSlug)
+			assert.Equal(t, "my-custom-slug", *got.StatusPageSlug)
+		}
+
+		t.Log("Status page domain should also be set")
+		{
+			require.NotNil(t, got.StatusPageDomain)
+			assert.Equal(t, "status.custom.com", *got.StatusPageDomain)
+		}
+	})
+
 	t.Run("Branding", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{
