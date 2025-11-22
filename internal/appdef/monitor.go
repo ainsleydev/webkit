@@ -86,8 +86,8 @@ func (d *Definition) GenerateMonitors() []Monitor {
 	// Generate maintenance monitors for all apps.
 	monitors = append(monitors, d.generateMaintenanceMonitors()...)
 
-	// Append custom monitors from project configuration.
-	monitors = append(monitors, d.Project.Monitoring.Custom...)
+	// Append custom monitors from root configuration.
+	monitors = append(monitors, d.Monitoring.Custom...)
 
 	return monitors
 }

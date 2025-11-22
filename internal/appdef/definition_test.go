@@ -510,6 +510,20 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 		"Complex mixed scenario": {
 			input: Definition{
 				Project: Project{Name: "test-project"},
+				Monitoring: Monitoring{
+					StatusPage: StatusPage{
+						Domain: "status.example.com",
+					},
+					Custom: []Monitor{
+						{
+							Name:     "Custom API Monitor",
+							Type:     MonitorTypeHTTP,
+							URL:      "https://api.example.com/health",
+							Method:   "GET",
+							Interval: 60,
+						},
+					},
+				},
 				Apps: []App{
 					{Name: "frontend", TerraformManaged: &trueVal},
 					{Name: "backend", TerraformManaged: nil},
@@ -556,6 +570,7 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 			assert.ElementsMatch(t, test.wantSkippedApps, skipped.Apps)
 			assert.ElementsMatch(t, test.wantSkippedRes, skipped.Resources)
 			assert.Equal(t, test.input.Project, filtered.Project)
+			assert.Equal(t, test.input.Monitoring, filtered.Monitoring)
 			assert.Equal(t, test.input.Shared, filtered.Shared)
 			assert.Equal(t, test.input.WebkitVersion, filtered.WebkitVersion)
 		})
