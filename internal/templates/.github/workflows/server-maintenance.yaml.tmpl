@@ -27,13 +27,13 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: 'ainsleydev/webkit'
-          ref: {{ ghVar "steps.read_version.outputs.version" }}
+          ref: {{ ghExpr "steps.read_version.outputs.version" }}
           path: '.webkit-repo'
 
       - name: Copy Ansible Files
         run: |
           cp -r .webkit-repo/platform/ansible ./
-          echo "Copied ansible files from WebKit {{ ghVar "steps.read_version.outputs.version" }}"
+          echo "Copied ansible files from WebKit {{ ghExpr "steps.read_version.outputs.version" }}"
 
       - name: Run Ansible Maintenance Playbook for {{ .Title }}
         uses: dawidd6/action-ansible-playbook@v4
@@ -64,7 +64,7 @@ jobs:
           title: 'Server Maintenance Failed - {{ .Title }}'
           message: 'Weekly maintenance tasks failed for {{ .Title }}. Server updates may not have been applied.'
           status: 'failure'
-          commit_sha: {{ ghVar "github.sha" }}
+          commit_sha: {{ ghExpr "github.sha" }}
           slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
           channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
 {{- end }}

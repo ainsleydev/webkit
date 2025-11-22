@@ -67,12 +67,12 @@ func TestBackupWorkflow(t *testing.T) {
 		err = validateGithubYaml(t, file, false)
 		assert.NoError(t, err)
 
-		// Verify correct PROD prefix in Peekaping ping URLs.
+		// Verify correct PROD prefix in Peekaping ping URLs (with vars. prefix for repository variables).
 		content := string(file)
-		assert.Contains(t, content, "${{ PROD_DB_BACKUP_PING_URL }}")
-		assert.Contains(t, content, "${{ PROD_CODEBASE_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _DB_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _CODEBASE_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_DB_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_CODEBASE_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._DB_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._CODEBASE_BACKUP_PING_URL }}")
 	})
 
 	t.Run("S3", func(t *testing.T) {
@@ -108,12 +108,12 @@ func TestBackupWorkflow(t *testing.T) {
 		err = validateGithubYaml(t, file, false)
 		assert.NoError(t, err)
 
-		// Verify correct PROD prefix in Peekaping ping URLs.
+		// Verify correct PROD prefix in Peekaping ping URLs (with vars. prefix for repository variables).
 		content := string(file)
-		assert.Contains(t, content, "${{ PROD_STORE_BACKUP_PING_URL }}")
-		assert.Contains(t, content, "${{ PROD_CODEBASE_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _STORE_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _CODEBASE_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_STORE_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_CODEBASE_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._STORE_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._CODEBASE_BACKUP_PING_URL }}")
 	})
 
 	t.Run("S3 Non DigitalOcean Skipped", func(t *testing.T) {
@@ -184,14 +184,14 @@ func TestBackupWorkflow(t *testing.T) {
 		err = validateGithubYaml(t, file, false)
 		assert.NoError(t, err)
 
-		// Verify correct PROD prefix in Peekaping ping URLs for all resources.
+		// Verify correct PROD prefix in Peekaping ping URLs for all resources (with vars. prefix for repository variables).
 		content := string(file)
-		assert.Contains(t, content, "${{ PROD_DB_BACKUP_PING_URL }}")
-		assert.Contains(t, content, "${{ PROD_STORE_BACKUP_PING_URL }}")
-		assert.Contains(t, content, "${{ PROD_CODEBASE_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _DB_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _STORE_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _CODEBASE_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_DB_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_STORE_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_CODEBASE_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._DB_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._STORE_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._CODEBASE_BACKUP_PING_URL }}")
 	})
 
 	t.Run("SQLite Turso", func(t *testing.T) {
@@ -224,12 +224,12 @@ func TestBackupWorkflow(t *testing.T) {
 		err = validateGithubYaml(t, file, false)
 		assert.NoError(t, err)
 
-		// Verify correct PROD prefix in Peekaping ping URLs.
+		// Verify correct PROD prefix in Peekaping ping URLs (with vars. prefix for repository variables).
 		content := string(file)
-		assert.Contains(t, content, "${{ PROD_DB_BACKUP_PING_URL }}")
-		assert.Contains(t, content, "${{ PROD_CODEBASE_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _DB_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _CODEBASE_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_DB_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_CODEBASE_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._DB_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._CODEBASE_BACKUP_PING_URL }}")
 	})
 
 	t.Run("Multiple Resources Including SQLite", func(t *testing.T) {
@@ -272,14 +272,14 @@ func TestBackupWorkflow(t *testing.T) {
 		err = validateGithubYaml(t, file, false)
 		assert.NoError(t, err)
 
-		// Verify correct PROD prefix in Peekaping ping URLs for all resources.
+		// Verify correct PROD prefix in Peekaping ping URLs for all resources (with vars. prefix for repository variables).
 		content := string(file)
-		assert.Contains(t, content, "${{ PROD_DB_BACKUP_PING_URL }}")
-		assert.Contains(t, content, "${{ PROD_STORE_BACKUP_PING_URL }}")
-		assert.Contains(t, content, "${{ PROD_CODEBASE_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _DB_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _STORE_BACKUP_PING_URL }}")
-		assert.NotContains(t, content, "${{ _CODEBASE_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_DB_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_STORE_BACKUP_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_CODEBASE_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._DB_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._STORE_BACKUP_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._CODEBASE_BACKUP_PING_URL }}")
 	})
 
 	t.Run("FS Failure", func(t *testing.T) {

@@ -111,9 +111,9 @@ func TestVMMaintenanceWorkflow(t *testing.T) {
 		assert.Contains(t, content, "maintenance-vm-api")
 		assert.Contains(t, content, "API Server")
 
-		// Verify correct PROD prefix in Peekaping ping URLs.
-		assert.Contains(t, content, "${{ PROD_API_MAINTENANCE_PING_URL }}")
-		assert.NotContains(t, content, "${{ _API_MAINTENANCE_PING_URL }}")
+		// Verify correct PROD prefix in Peekaping ping URLs (with vars. prefix for repository variables).
+		assert.Contains(t, content, "${{ vars.PROD_API_MAINTENANCE_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._API_MAINTENANCE_PING_URL }}")
 	})
 
 	t.Run("Multiple Apps Mixed Types", func(t *testing.T) {
@@ -182,11 +182,11 @@ func TestVMMaintenanceWorkflow(t *testing.T) {
 		assert.Contains(t, content, "maintenance-vm-worker")
 		assert.NotContains(t, content, "maintenance-vm-web")
 
-		// Verify correct PROD prefix in Peekaping ping URLs for both VM apps.
-		assert.Contains(t, content, "${{ PROD_API_MAINTENANCE_PING_URL }}")
-		assert.Contains(t, content, "${{ PROD_WORKER_MAINTENANCE_PING_URL }}")
-		assert.NotContains(t, content, "${{ _API_MAINTENANCE_PING_URL }}")
-		assert.NotContains(t, content, "${{ _WORKER_MAINTENANCE_PING_URL }}")
+		// Verify correct PROD prefix in Peekaping ping URLs for both VM apps (with vars. prefix for repository variables).
+		assert.Contains(t, content, "${{ vars.PROD_API_MAINTENANCE_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_WORKER_MAINTENANCE_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._API_MAINTENANCE_PING_URL }}")
+		assert.NotContains(t, content, "${{ vars._WORKER_MAINTENANCE_PING_URL }}")
 	})
 
 	t.Run("FS Failure", func(t *testing.T) {

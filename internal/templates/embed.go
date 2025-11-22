@@ -32,6 +32,7 @@ func MustLoadTemplate(name string) *template.Template {
 
 func templateFuncs() template.FuncMap {
 	funcs := sprig.FuncMap()
+	funcs["ghExpr"] = githubExpression
 	funcs["ghVar"] = githubVariable
 	funcs["ghSecret"] = githubSecret
 	funcs["ghInput"] = githubInput
