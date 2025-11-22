@@ -96,7 +96,7 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		return tfVars{}, errors.New("definition cannot be nil")
 	}
 
-	vars := tfVars{
+	return tfVars{
 		ProjectName:         t.appDef.Project.Name,
 		ProjectTitle:        t.appDef.Project.Title,
 		ProjectDescription:  t.appDef.Project.Description,
@@ -114,9 +114,7 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		StatusPageDomain:  stringPtrOrNil(t.appDef.Project.StatusPage.Domain),
 		BrandIconURL:      stringPtrOrNil(t.appDef.Project.Brand.IconURL),
 		BrandPrimaryColor: stringPtrOrNil(t.appDef.Project.Brand.PrimaryColour),
-	}
-
-	return vars, nil
+	}, nil
 }
 
 // encodeConfigForTerraform prepares configuration maps for Terraform consumption.
