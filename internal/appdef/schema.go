@@ -102,6 +102,10 @@ func fixOrderedMapSchema(data []byte) ([]byte, error) {
 	// Remove the OrderedMap definition.
 	delete(definitions, orderedMapKey)
 
+	// Fix circular references in oneOf schemas.
+	// The CommandSpec oneOf contains "$ref": "#" which incorrectly points to root schema.
+	fixCircularOneOfRefs(schemaMap)
+
 	// Marshal the updated schema.
 	return json.Marshal(schemaMap)
 }
@@ -127,6 +131,43 @@ func replaceRefs(data any, targetRef string, replacement map[string]any) {
 		// Recursively process all array elements.
 		for _, val := range v {
 			replaceRefs(val, targetRef, replacement)
+		}
+	}
+}
+
+// fixCircularOneOfRefs finds and fixes circular "$ref": "#" references in oneOf schemas.
+// These occur when CommandSpec.JSONSchemaOneOf() creates a reference to the root schema
+// instead of inlining the object schema.
+func fixCircularOneOfRefs(data any) {
+	switch v := data.(type) {
+	case map[string]any:
+		// Check if this object has a oneOf with a circular reference.
+		if oneOf, ok := v["oneOf"].([]any); ok {
+			// Also check if there are properties defined (CommandSpec case).
+			if properties, hasProps := v["properties"].(map[string]any); hasProps {
+				// Look for "$ref": "#" in the oneOf array.
+				for i, item := range oneOf {
+					if itemMap, ok := item.(map[string]any); ok {
+						if ref, ok := itemMap["$ref"].(string); ok && ref == "#" {
+							// Replace the circular reference with an inline object schema.
+							oneOf[i] = map[string]any{
+								"type":       "object",
+								"properties": properties,
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Recursively process all map values.
+		for _, val := range v {
+			fixCircularOneOfRefs(val)
+		}
+	case []any:
+		// Recursively process all array elements.
+		for _, val := range v {
+			fixCircularOneOfRefs(val)
 		}
 	}
 }

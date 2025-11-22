@@ -40,3 +40,34 @@ func TestGenerateSchema(t *testing.T) {
 		assert.Contains(t, properties, field, "schema should define property %q", field)
 	}
 }
+
+func TestGenerateSchema_CommandsNoCircularRef(t *testing.T) {
+	t.Parallel()
+
+	schema, err := GenerateSchema()
+	require.NoError(t, err)
+
+	var schemaMap map[string]any
+	require.NoError(t, json.Unmarshal(schema, &schemaMap))
+
+	// Navigate to commands.additionalProperties.oneOf
+	definitions := schemaMap["definitions"].(map[string]any)
+	appDef := definitions["AppdefApp"].(map[string]any)
+	commands := appDef["properties"].(map[string]any)["commands"].(map[string]any)
+	additionalProps := commands["additionalProperties"].(map[string]any)
+	oneOf := additionalProps["oneOf"].([]any)
+
+	// Ensure no "$ref": "#" circular reference exists
+	for i, item := range oneOf {
+		if itemMap, ok := item.(map[string]any); ok {
+			if ref, hasRef := itemMap["$ref"].(string); hasRef {
+				assert.NotEqual(t, "#", ref, "oneOf[%d] has circular reference", i)
+			}
+		}
+	}
+
+	// Verify object option has inline properties
+	objectOption := oneOf[2].(map[string]any)
+	assert.Equal(t, "object", objectOption["type"])
+	assert.Contains(t, objectOption, "properties")
+}
