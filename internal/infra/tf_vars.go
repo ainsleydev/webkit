@@ -36,6 +36,7 @@ type (
 		SlackWebhookURL     string         `json:"slack_webhook_url"`
 		StatusPageDomain    *string        `json:"status_page_domain,omitempty"`
 		BrandIconURL        *string        `json:"brand_icon_url,omitempty"`
+		BrandPrimaryColor   *string        `json:"brand_primary_color,omitempty"`
 	}
 	// tfResource represents a resource in Terraform variable format.
 	tfResource struct {
@@ -114,6 +115,11 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 	// Populate brand icon URL if configured.
 	if t.appDef.Project.Brand.IconURL != "" {
 		vars.BrandIconURL = &t.appDef.Project.Brand.IconURL
+	}
+
+	// Populate brand primary colour if configured.
+	if t.appDef.Project.Brand.PrimaryColour != "" {
+		vars.BrandPrimaryColor = &t.appDef.Project.Brand.PrimaryColour
 	}
 
 	for _, res := range t.appDef.Resources {

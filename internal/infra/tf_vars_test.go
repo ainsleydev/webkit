@@ -532,6 +532,44 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 
+	t.Run("Brand primary colour passthrough", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name:  "brand-colour-project",
+				Title: "Brand Colour Project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "brand-colour-project",
+				},
+				Brand: appdef.Brand{
+					PrimaryColour: "#FE2401",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "apps/web",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Brand primary colour should be populated")
+		{
+			require.NotNil(t, got.BrandPrimaryColor)
+			assert.Equal(t, "#FE2401", *got.BrandPrimaryColor)
+		}
+	})
+
 	t.Run("Mixed null and empty configs with arrays", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{
