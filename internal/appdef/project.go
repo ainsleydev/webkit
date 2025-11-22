@@ -10,7 +10,6 @@ type (
 		Description string     `json:"description" validate:"required,max=200" description:"Brief description of the project's purpose and functionality"`
 		Repo        GitHubRepo `json:"repo" validate:"required" description:"GitHub repository information for the project"`
 		Brand       Brand      `json:"brand,omitempty" description:"Branding configuration for the project including colours and logo"`
-		Monitoring  Monitoring `json:"monitoring,omitempty" description:"Monitoring configuration including status page and custom monitors"`
 	}
 	// GitHubRepo defines the metadata for GitHub repositories.
 	// This information is used for CI/CD integration, secrets management,

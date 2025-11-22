@@ -298,10 +298,6 @@
 					"description": "Brief description of the project's purpose and functionality",
 					"type": "string"
 				},
-				"monitoring": {
-					"$ref": "#/definitions/AppdefMonitoring",
-					"description": "Monitoring configuration including status page and custom monitors"
-				},
 				"name": {
 					"description": "Unique identifier for the project (lowercase, hyphenated)",
 					"type": "string"
@@ -436,6 +432,10 @@
 				"array",
 				"null"
 			]
+		},
+		"monitoring": {
+			"$ref": "#/definitions/AppdefMonitoring",
+			"description": "Monitoring configuration including status page and custom monitors"
 		},
 		"project": {
 			"$ref": "#/definitions/AppdefProject",
