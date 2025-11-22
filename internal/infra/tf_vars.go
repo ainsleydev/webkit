@@ -35,6 +35,7 @@ type (
 		HetznerSSHKeys      []string       `json:"hetzner_ssh_keys"`
 		SlackWebhookURL     string         `json:"slack_webhook_url"`
 		StatusPageDomain    *string        `json:"status_page_domain,omitempty"`
+		StatusPageSlug      *string        `json:"status_page_slug,omitempty"`
 		BrandIconURL        *string        `json:"brand_icon_url,omitempty"`
 		BrandPrimaryColor   *string        `json:"brand_primary_color,omitempty"`
 	}
@@ -112,6 +113,7 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 			Repo:  t.appDef.Project.Repo.Name,
 		},
 		StatusPageDomain:  stringPtrOrNil(t.appDef.Monitoring.StatusPage.Domain),
+		StatusPageSlug:    stringPtrOrNil(t.appDef.Monitoring.StatusPage.Slug),
 		BrandIconURL:      stringPtrOrNil(t.appDef.Project.Brand.IconURL),
 		BrandPrimaryColor: stringPtrOrNil(t.appDef.Project.Brand.PrimaryColour),
 	}, nil

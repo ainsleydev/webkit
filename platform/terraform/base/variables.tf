@@ -231,3 +231,9 @@ variable "status_page_domain" {
   description = "Custom domain for public status page (e.g., status.example.com)"
   default     = null
 }
+
+variable "status_page_slug" {
+  type        = string
+  description = "Custom slug for public status page URL. If not set, defaults to kebab-case project name."
+  default     = null
+}
