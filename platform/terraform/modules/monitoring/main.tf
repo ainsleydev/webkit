@@ -1,17 +1,7 @@
 #
 # Monitoring Module
+#
 # Orchestrates Peekaping resources for monitoring apps and infrastructure.
-#
-# This module creates:
-# - Project-specific tag (unique per project)
-# - Slack notification channel for alerts
-# - HTTP monitors for app domains
-# - DNS monitors for domain resolution
-# - Public status page
-#
-# This module references:
-# - Shared "WebKit" tag (looked up via data source)
-# - Shared environment tags like "Production" (looked up via data source)
 #
 
 #
@@ -155,7 +145,6 @@ resource "peekaping_monitor" "push" {
   # - Backup monitors: 25 hours (90000s) - daily backups with 1 hour buffer
   # - Maintenance monitors: 8 days (691200s) - weekly maintenance with 1 day buffer
   interval = strcontains(each.value.name, "Backup") ? 90000 : strcontains(each.value.name, "Maintenance") ? 691200 : 90000
-
   timeout          = 30 # 30 seconds (required by API)
   max_retries      = 2
   retry_interval   = 60

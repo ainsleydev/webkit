@@ -315,7 +315,7 @@ resource "github_actions_secret" "resource_outputs" {
     each.value["source_type"] == "app" ? tostring(module.apps[each.value["app_name"]][each.value["output_name"]]) :
     "NOT_SET"
   )
-  depends_on = [module.resources, module.apps]
+  depends_on = [module.resources, module.apps, module.monitoring]
 }
 
 #
@@ -347,12 +347,11 @@ resource "github_actions_variable" "monitor_ping_urls" {
 
   repository    = var.github_config.repo
   variable_name = each.key
+  depends_on = [module.resources, module.apps, module.monitoring]
   # Look up the actual ping URL from the monitoring module outputs using the monitor name.
   # The ping URL is computed after the monitor is created, but the for_each keys are known at plan time.
   # Use coalesce() with "pending" fallback since GitHub variables require a non-empty value.
   value = coalesce(try(module.monitoring[0].push_monitors[each.value].ping_url, null), "pending")
-
-  depends_on = [module.monitoring]
 }
 
 #

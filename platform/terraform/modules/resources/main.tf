@@ -1,5 +1,6 @@
 #
 # Resource Module
+#
 # Generates module calls based on resources[] in app.json
 #
 

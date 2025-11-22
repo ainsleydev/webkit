@@ -494,17 +494,18 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 
-	t.Run("Brand icon URL passthrough", func(t *testing.T) {
+	t.Run("Branding", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{
-				Name:  "brand-icon-project",
-				Title: "Brand Icon Project",
+				Name:  "brand-project",
+				Title: "Brand Project",
 				Repo: appdef.GitHubRepo{
 					Owner: "owner",
-					Name:  "brand-icon-project",
+					Name:  "brand-project",
 				},
 				Brand: appdef.Brand{
-					IconURL: "https://example.com/favicon.ico",
+					IconURL:       "https://example.com/favicon.ico",
+					PrimaryColour: "#FF5733",
 				},
 			},
 			Apps: []appdef.App{
@@ -525,10 +526,22 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
 		assert.NoError(t, err)
 
-		t.Log("Brand icon URL should be populated")
+		t.Log("Brand fields should be populated when set")
 		{
 			require.NotNil(t, got.BrandIconURL)
 			assert.Equal(t, "https://example.com/favicon.ico", *got.BrandIconURL)
+			require.NotNil(t, got.BrandPrimaryColor)
+			assert.Equal(t, "#FF5733", *got.BrandPrimaryColor)
+		}
+
+		t.Log("Brand fields should be nil when empty")
+		{
+			input.Project.Brand = appdef.Brand{}
+			tf = setupTfVars(t, input)
+			got, err = tf.tfVarsFromDefinition(context.Background(), env.Production)
+			assert.NoError(t, err)
+			assert.Nil(t, got.BrandIconURL)
+			assert.Nil(t, got.BrandPrimaryColor)
 		}
 	})
 
