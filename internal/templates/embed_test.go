@@ -75,6 +75,7 @@ func TestTemplateFuncs(t *testing.T) {
 	t.Run("Contains custom functions", func(t *testing.T) {
 		t.Parallel()
 
+		assert.NotNil(t, funcs["ghExpr"])
 		assert.NotNil(t, funcs["ghVar"])
 		assert.NotNil(t, funcs["ghSecret"])
 		assert.NotNil(t, funcs["ghInput"])
@@ -92,8 +93,11 @@ func TestTemplateFuncs(t *testing.T) {
 	t.Run("Custom functions work correctly", func(t *testing.T) {
 		t.Parallel()
 
+		ghExprFunc := funcs["ghExpr"].(func(string) string)
+		assert.Equal(t, "${{ github.sha }}", ghExprFunc("github.sha"))
+
 		ghVarFunc := funcs["ghVar"].(func(string) string)
-		assert.Equal(t, "${{ test }}", ghVarFunc("test"))
+		assert.Equal(t, "${{ vars.MY_VAR }}", ghVarFunc("MY_VAR"))
 
 		ghSecretFunc := funcs["ghSecret"].(func(string) string)
 		assert.Equal(t, "${{ secrets.TOKEN }}", ghSecretFunc("TOKEN"))

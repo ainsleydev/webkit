@@ -6,6 +6,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGithubExpression(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input string
+		want  string
+	}{
+		"Simple expression":  {input: "github.sha", want: "${{ github.sha }}"},
+		"Runner expression":  {input: "runner.os", want: "${{ runner.os }}"},
+		"Empty string":       {input: "", want: "${{  }}"},
+		"Complex expression": {input: "github.event.pull_request.number", want: "${{ github.event.pull_request.number }}"},
+		"Step output":        {input: "steps.version.outputs.version", want: "${{ steps.version.outputs.version }}"},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := githubExpression(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestGithubVariable(t *testing.T) {
 	t.Parallel()
 
@@ -13,10 +37,10 @@ func TestGithubVariable(t *testing.T) {
 		input string
 		want  string
 	}{
-		"Simple variable":  {input: "github.sha", want: "${{ github.sha }}"},
-		"Runner variable":  {input: "runner.os", want: "${{ runner.os }}"},
-		"Empty string":     {input: "", want: "${{  }}"},
-		"Complex variable": {input: "github.event.pull_request.number", want: "${{ github.event.pull_request.number }}"},
+		"Simple variable":    {input: "MY_VAR", want: "${{ vars.MY_VAR }}"},
+		"Empty variable":     {input: "", want: "${{ vars. }}"},
+		"Complex variable":   {input: "PROD_DATABASE_URL", want: "${{ vars.PROD_DATABASE_URL }}"},
+		"Lowercase variable": {input: "my_var", want: "${{ vars.my_var }}"},
 	}
 
 	for name, test := range tt {
