@@ -918,7 +918,7 @@ func TestGenerateMonitors(t *testing.T) {
 					Infra: appdef.Infra{
 						Config: map[string]any{"health_check_path": "/health"},
 					},
-					Monitoring: appdef.Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 			},
 		}
@@ -955,7 +955,7 @@ func TestGenerateMonitors(t *testing.T) {
 					Domains: []appdef.Domain{
 						{Name: "example.com", Type: appdef.DomainTypePrimary},
 					},
-					Monitoring: appdef.Monitoring{Enabled: false},
+					Monitoring: false,
 				},
 			},
 		}
@@ -981,7 +981,7 @@ func TestGenerateMonitors(t *testing.T) {
 						{Name: "www.example.com", Type: appdef.DomainTypeAlias},
 					},
 					Infra:      appdef.Infra{},
-					Monitoring: appdef.Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 				{
 					Name:  "api",
@@ -990,7 +990,7 @@ func TestGenerateMonitors(t *testing.T) {
 						{Name: "api.example.com", Type: appdef.DomainTypePrimary},
 					},
 					Infra:      appdef.Infra{},
-					Monitoring: appdef.Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 			},
 		}
@@ -1052,7 +1052,7 @@ func TestGenerateMonitors(t *testing.T) {
 						{Name: "example.com", Type: appdef.DomainTypePrimary},
 					},
 					Infra:      appdef.Infra{},
-					Monitoring: appdef.Monitoring{Enabled: true},
+					Monitoring: true,
 				},
 			},
 			Resources: []appdef.Resource{
@@ -1060,7 +1060,7 @@ func TestGenerateMonitors(t *testing.T) {
 					Name:       "db",
 					Title:      "Database",
 					Type:       appdef.ResourceTypePostgres,
-					Monitoring: appdef.Monitoring{Enabled: true},
+					Monitoring: true,
 					Backup:     appdef.ResourceBackupConfig{Enabled: true},
 				},
 			},
