@@ -95,6 +95,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.out
           verbose: true
+          commit_parent: ${{ github.event.pull_request.base.sha }}
 
       - name: Diff
         run: git diff
