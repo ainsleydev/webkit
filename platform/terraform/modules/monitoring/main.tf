@@ -13,29 +13,28 @@ locals {
   dns_monitors  = [for m in var.monitors : m if m.type == "dns"]
   push_monitors = [for m in var.monitors : m if m.type == "push"]
 
-  # Slack notification enabled if webhook URL is provided.
-  slack_enabled = var.slack_webhook_url != ""
-
   # Tag colour: use brand primary colour if set, otherwise fallback to blue.
-  tag_color = var.brand_primary_color != null ? var.brand_primary_color : "#3B82F6"
-
-  # All tag IDs for monitors.
-  tag_ids = [
-    peekaping_tag.project.id,
-
-    # "dd1151bc-1d7a-42d1-8166-f87b7b180798", # Production
-    # "ac5b2626-3425-4496-a318-ede51ce7baa8", # WebKit
-
-    # See: https://github.com/tafaust/terraform-provider-peekaping/pull/12
-    data.peekaping_tag.environment.id,
-    data.peekaping_tag.webkit.id
-  ]
-
-  # Notification IDs.
-  #notification_ids = local.slack_enabled ? [peekaping_notification.slack[0].id] : []
+  tag_color        = var.brand_primary_color != null ? var.brand_primary_color : "#3B82F6"
 
   # Currently - Slack - #alerts
   notification_ids = ["7e4f8d2e-5720-4b07-9ce4-3f639b5e4647"]
+
+  # Default values
+  defaults = {
+    timeout         = 30
+    http_max_retries = 3
+    dns_max_retries  = 3
+    push_max_retries = 2
+    retry_interval   = 60
+    resend_interval  = 10
+  }
+
+  # Tag IDs
+  tag_ids = [
+    peekaping_tag.project.id,
+    "ac5b2626-3425-4496-a318-ede51ce7baa8",
+    "dd1151bc-1d7a-42d1-8166-f87b7b180798",
+  ]
 }
 
 #
@@ -43,14 +42,6 @@ locals {
 #
 # Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/data-sources/tag
 #
-data "peekaping_tag" "webkit" {
-  name = "WebKit"
-}
-
-data "peekaping_tag" "environment" {
-  name = "Production"
-}
-
 resource "peekaping_tag" "project" {
   name        = var.project_title
   color       = local.tag_color
@@ -62,15 +53,6 @@ resource "peekaping_tag" "project" {
 #
 # Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/notification
 #
-# resource "peekaping_notification" "slack" {
-#   count = local.slack_enabled ? 1 : 0
-#
-#   name = "${var.project_title} Slack Alerts"
-#   type = "slack"
-#   config = jsonencode({
-#     webhook_url = var.slack_webhook_url
-#   })
-# }
 
 #
 # HTTP Monitors
@@ -91,13 +73,15 @@ resource "peekaping_monitor" "http" {
   })
 
   interval         = each.value.interval
-  timeout          = 30 # 30 seconds
-  max_retries      = 3
-  retry_interval   = 60 # 1 minute
-  resend_interval  = 10 # 10 minutes
+  timeout          = local.defaults.timeout
+  max_retries      = local.defaults.http_max_retries
+  retry_interval   = local.defaults.retry_interval
+  resend_interval  = local.defaults.resend_interval
   active           = true
   notification_ids = local.notification_ids
   tag_ids          = local.tag_ids
+
+  depends_on = [peekaping_tag.project]
 }
 
 #
@@ -118,13 +102,15 @@ resource "peekaping_monitor" "dns" {
   })
 
   interval         = each.value.interval
-  timeout          = 30 # 30 seconds
-  max_retries      = 3
-  retry_interval   = 60 # 1 minute
-  resend_interval  = 10 # 10 minutes
+  timeout          = local.defaults.timeout
+  max_retries      = local.defaults.dns_max_retries
+  retry_interval   = local.defaults.retry_interval
+  resend_interval  = local.defaults.resend_interval
   active           = true
   notification_ids = local.notification_ids
   tag_ids          = local.tag_ids
+
+  depends_on = [peekaping_tag.project]
 }
 
 #
@@ -138,17 +124,19 @@ resource "peekaping_monitor" "push" {
   name = each.value.name
   type = "push"
   config = jsonencode({
-    # Push monitors don't require URL configuration.
+    pushToken = substr(base64encode(uuid()), 0, 32)
   })
 
   interval         = each.value.interval
-  timeout          = 30 # 30 seconds (required by API)
-  max_retries      = 2
-  retry_interval   = 60
-  resend_interval  = 10
+  timeout          = local.defaults.timeout
+  max_retries      = local.defaults.push_max_retries
+  retry_interval   = local.defaults.retry_interval
+  resend_interval  = local.defaults.resend_interval
   active           = true
   notification_ids = local.notification_ids
   tag_ids          = local.tag_ids
+
+  depends_on = [peekaping_tag.project]
 }
 
 #
