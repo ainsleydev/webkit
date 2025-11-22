@@ -1,59 +1,31 @@
 output "http_monitors" {
-  description = "HTTP monitor details"
-  value = {
-    for name, monitor in peekaping_monitor.http : name => {
-      id   = monitor.id
-      name = monitor.name
-    }
-  }
+  description = "HTTP monitor details."
+  value       = module.monitors.http_monitors
 }
 
 output "dns_monitors" {
-  description = "DNS monitor details"
-  value = {
-    for name, monitor in peekaping_monitor.dns : name => {
-      id   = monitor.id
-      name = monitor.name
-    }
-  }
+  description = "DNS monitor details."
+  value       = module.monitors.dns_monitors
 }
 
 output "push_monitors" {
-  description = "Push monitor details including ping URLs"
-  value = {
-    for name, monitor in peekaping_monitor.push : name => {
-      id         = monitor.id
-      name       = monitor.name
-      push_token = random_id.push_token[name].b64_url
-      ping_url   = "${var.peekaping_endpoint}/api/v1/push/${random_id.push_token[name].b64_url}?status=up&msg=OK&ping="
-    }
-  }
+  description = "Push monitor details including ping URLs."
+  value       = module.monitors.push_monitors
 }
 
 output "all_monitor_ids" {
-  description = "All monitor IDs for reference"
-  value = concat(
-    [for m in peekaping_monitor.http : m.id],
-    [for m in peekaping_monitor.dns : m.id],
-    [for m in peekaping_monitor.push : m.id]
-  )
+  description = "All monitor IDs for reference."
+  value       = module.monitors.all_ids
 }
 
 output "tag_ids" {
-  description = "Tag IDs for reference"
+  description = "Tag IDs for reference."
   value = {
-    project = peekaping_tag.project.id
-    # environment = data.peekaping_tag.environment.id
-    # webkit      = data.peekaping_tag.webkit.id
+    project = module.project_tag.id
   }
 }
 
 output "status_page_url" {
-  description = "Status page URL if created"
-  value       = length(peekaping_status_page.this) > 0 ? "https://${peekaping_status_page.this[0].slug}" : null
+  description = "Status page URL if created."
+  value       = length(module.status_page) > 0 ? module.status_page[0].url : null
 }
-
-# output "slack_notification_id" {
-#   description = "Slack notification ID if created"
-#   value       = length(peekaping_notification.slack) > 0 ? peekaping_notification.slack[0].id : null
-# }
