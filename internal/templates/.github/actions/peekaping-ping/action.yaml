@@ -25,7 +25,7 @@ runs:
         echo "Sending heartbeat ping for: ${DESCRIPTION}"
 
         # Send POST request to Peekaping push monitor
-        RESPONSE=$(curl -X POST "${MONITOR_URL}" \
+        RESPONSE=$(curl -X GET "${MONITOR_URL}" \
           --max-time 10 \
           --retry 2 \
           --retry-delay 5 \
