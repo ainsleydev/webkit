@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
 {{- range .Apps }}
-      {{ .Name }}-changed: {{ ghVar (printf "steps.filter.outputs.%s" .Name) }}
+      {{ .Name }}-changed: {{ ghExpr (printf "steps.filter.outputs.%s" .Name) }}
 {{- end }}
       shared-changed: {{ ghExpr "steps.filter.outputs.shared" }}
     steps:
