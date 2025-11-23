@@ -267,6 +267,13 @@
 					"description": "Interval in seconds between checks (defaults based on monitor type if not specified)",
 					"type": "integer"
 				},
+				"maxRedirects": {
+					"description": "Maximum redirects to follow for HTTP monitors (default 0). Set to 1 for alias domains that redirect.",
+					"type": [
+						"null",
+						"integer"
+					]
+				},
 				"method": {
 					"description": "HTTP method for HTTP monitors (e.g., GET, POST)",
 					"type": "string"
@@ -403,6 +410,14 @@
 			"properties": {
 				"domain": {
 					"description": "Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain.",
+					"type": "string"
+				},
+				"slug": {
+					"description": "URL slug for the status page (e.g., my-project). If not set, defaults to a kebab-case version of the project name.",
+					"type": "string"
+				},
+				"theme": {
+					"description": "Theme for the status page (auto, light, dark). Defaults to auto.",
 					"type": "string"
 				}
 			},

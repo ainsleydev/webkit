@@ -1,6 +1,5 @@
 #
 # Peekaping Monitors
-#
 # Creates HTTP, DNS, and Push monitors in Peekaping.
 #
 # Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/monitor
@@ -40,6 +39,7 @@ resource "peekaping_monitor" "http" {
     encoding             = "json"
     accepted_statuscodes = ["2XX"]
     authMethod           = "none"
+    max_redirects        = coalesce(each.value.max_redirects, 0)
   })
 
   interval         = each.value.interval

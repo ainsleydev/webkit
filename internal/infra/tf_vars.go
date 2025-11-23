@@ -81,12 +81,13 @@ type (
 	}
 	// tfMonitor represents a monitoring configuration for Terraform.
 	tfMonitor struct {
-		Name     string `json:"name"`
-		Type     string `json:"type"` // "http", "dns", "postgres", "push"
-		URL      string `json:"url,omitempty"`
-		Method   string `json:"method,omitempty"`
-		Domain   string `json:"domain,omitempty"` // For DNS monitors.
-		Interval int    `json:"interval"`         // Interval in seconds between checks.
+		Name         string `json:"name"`
+		Type         string `json:"type"` // "http", "dns", "postgres", "push"
+		URL          string `json:"url,omitempty"`
+		Method       string `json:"method,omitempty"`
+		Domain       string `json:"domain,omitempty"`        // For DNS monitors.
+		Interval     int    `json:"interval"`                // Interval in seconds between checks.
+		MaxRedirects *int   `json:"max_redirects,omitempty"` // For HTTP monitors, max redirects to follow.
 	}
 )
 
@@ -259,12 +260,13 @@ func (t *Terraform) generateMonitors(_ env.Environment) []tfMonitor {
 
 	for i, m := range appDefMonitors {
 		monitors[i] = tfMonitor{
-			Name:     m.Name,
-			Type:     string(m.Type),
-			URL:      m.URL,
-			Method:   m.Method,
-			Domain:   m.Domain,
-			Interval: m.Interval,
+			Name:         m.Name,
+			Type:         string(m.Type),
+			URL:          m.URL,
+			Method:       m.Method,
+			Domain:       m.Domain,
+			Interval:     m.Interval,
+			MaxRedirects: m.MaxRedirects,
 		}
 	}
 
