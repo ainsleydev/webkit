@@ -33,7 +33,7 @@ type (
 		Method       string      `json:"method,omitempty" description:"HTTP method for HTTP monitors (e.g., GET, POST)"`
 		Domain       string      `json:"domain,omitempty" description:"Domain name for DNS monitors"`
 		Interval     int         `json:"interval,omitempty" description:"Interval in seconds between checks (defaults based on monitor type if not specified)"`
-		MaxRedirects *int        `json:"maxRedirects,omitempty" description:"Maximum redirects to follow for HTTP monitors (default 0). Set to 1 for alias domains that redirect."`
+		MaxRedirects *int        `json:"maxRedirects,omitempty" description:"Maximum redirects to follow for HTTP monitors. Defaults to 3 for auto-generated monitors to handle common redirect patterns."`
 		Identifier   string      `json:"identifier,omitempty" description:"Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method."`
 	}
 	// MonitorType defines the type of monitor.
@@ -59,6 +59,11 @@ const (
 	// MonitorIntervalMaintenance is 8 days (691200s) for weekly maintenance with 1 day buffer.
 	MonitorIntervalMaintenance = 691200
 )
+
+// MonitorDefaultMaxRedirects is the default number of redirects to follow for HTTP monitors.
+// This allows common redirect patterns (HTTP→HTTPS, www→non-www, root→app path) while
+// still catching redirect loops or broken configurations.
+const MonitorDefaultMaxRedirects = 3
 
 // String implements fmt.Stringer on MonitorType.
 func (m MonitorType) String() string {
@@ -136,19 +141,17 @@ func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 			}
 
 			// HTTP monitor - checks the availability of the web application.
-			// Alias domains redirect to primary, so we allow 1 redirect.
-			httpMonitor := Monitor{
-				Name:     fmt.Sprintf("HTTP - %s", domain.Name),
-				Type:     MonitorTypeHTTP,
-				URL:      fmt.Sprintf("https://%s", domain.Name),
-				Method:   "GET",
-				Interval: MonitorIntervalHTTP,
-			}
-			if domain.Type == DomainTypeAlias {
-				maxRedirects := 1
-				httpMonitor.MaxRedirects = &maxRedirects
-			}
-			monitors = append(monitors, httpMonitor)
+			// All domains use the default max redirects to handle common patterns
+			// (HTTP→HTTPS, www→non-www, root→app path, alias→primary).
+			maxRedirects := MonitorDefaultMaxRedirects
+			monitors = append(monitors, Monitor{
+				Name:         fmt.Sprintf("HTTP - %s", domain.Name),
+				Type:         MonitorTypeHTTP,
+				URL:          fmt.Sprintf("https://%s", domain.Name),
+				Method:       "GET",
+				Interval:     MonitorIntervalHTTP,
+				MaxRedirects: &maxRedirects,
+			})
 
 			// DNS monitor - checks domain name resolution.
 			monitors = append(monitors, Monitor{
