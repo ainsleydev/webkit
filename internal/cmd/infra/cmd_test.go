@@ -14,7 +14,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	mockinfra "github.com/ainsleydev/webkit/internal/infra/mocks"
-	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 )
 

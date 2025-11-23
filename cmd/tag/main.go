@@ -11,9 +11,9 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/spf13/afero"
 
-	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
 	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 	"github.com/ainsleydev/webkit/internal/util/executil"
 )
 

@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 )
 
 // Manifest generates a blank file manifest file if it doesn't
