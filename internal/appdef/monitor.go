@@ -33,7 +33,7 @@ type (
 		Method       string      `json:"method,omitempty" description:"HTTP method for HTTP monitors (e.g., GET, POST)"`
 		Domain       string      `json:"domain,omitempty" description:"Domain name for DNS monitors"`
 		Interval     int         `json:"interval,omitempty" description:"Interval in seconds between checks (defaults based on monitor type if not specified)"`
-		MaxRedirects *int        `json:"maxRedirects,omitempty" description:"Maximum redirects to follow for HTTP monitors. Defaults to 3 for auto-generated monitors to handle common redirect patterns."`
+		MaxRedirects int         `json:"maxRedirects,omitempty" description:"Maximum redirects to follow for HTTP monitors. Defaults to 3 for auto-generated monitors to handle common redirect patterns."`
 		Identifier   string      `json:"identifier,omitempty" description:"Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method."`
 	}
 	// MonitorType defines the type of monitor.
@@ -143,14 +143,13 @@ func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 			// HTTP monitor - checks the availability of the web application.
 			// All domains use the default max redirects to handle common patterns
 			// (HTTP→HTTPS, www→non-www, root→app path, alias→primary).
-			maxRedirects := MonitorDefaultMaxRedirects
 			monitors = append(monitors, Monitor{
 				Name:         fmt.Sprintf("HTTP - %s", domain.Name),
 				Type:         MonitorTypeHTTP,
 				URL:          fmt.Sprintf("https://%s", domain.Name),
 				Method:       "GET",
 				Interval:     MonitorIntervalHTTP,
-				MaxRedirects: &maxRedirects,
+				MaxRedirects: MonitorDefaultMaxRedirects,
 			})
 
 			// DNS monitor - checks domain name resolution.
