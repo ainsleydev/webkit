@@ -69,12 +69,15 @@ resource "github_actions_secret" "resource_outputs" {
 # Stored as variables (not secrets) for easier debugging.
 #
 # Naming: {ENV}_{IDENTIFIER}_{TYPE}_PING_URL
-# Example: PROD_CODEBASE_BACKUP_PING_URL
+# Example: PROD_DB_BACKUP_PING_URL
 #
 resource "github_actions_variable" "monitor_ping_urls" {
-  for_each = length(var.monitors) > 0 ? module.monitoring[0].push_monitors : {}
+  # Only create variables for push monitors that have a variable_name computed by Go.
+  for_each = length(var.monitors) > 0 ? {
+    for k, v in module.monitoring[0].push_monitors : k => v if v.variable_name != null && v.variable_name != ""
+  } : {}
 
   repository    = var.github_config.repo
-  variable_name = upper("${local.environment_short}_${replace(split(" - ", each.value.name)[1], " ", "_")}_${replace(split(" - ", each.value.name)[0], " ", "_")}_PING_URL")
+  variable_name = each.value.variable_name
   value         = each.value.ping_url
 }

@@ -277,3 +277,70 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, MonitorIntervalBackup, monitors[4].Interval)
 	})
 }
+
+func TestMonitor_VariableName(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		monitor  Monitor
+		envShort string
+		want     string
+	}{
+		"Backup monitor with db identifier": {
+			monitor: Monitor{
+				Name:       "Backup - Database",
+				Identifier: "db",
+			},
+			envShort: "prod",
+			want:     "PROD_DB_BACKUP_PING_URL",
+		},
+		"Backup monitor with codebase identifier": {
+			monitor: Monitor{
+				Name:       "Backup - Codebase",
+				Identifier: "codebase",
+			},
+			envShort: "prod",
+			want:     "PROD_CODEBASE_BACKUP_PING_URL",
+		},
+		"Maintenance monitor": {
+			monitor: Monitor{
+				Name:       "Maintenance - Web",
+				Identifier: "web",
+			},
+			envShort: "prod",
+			want:     "PROD_WEB_MAINTENANCE_PING_URL",
+		},
+		"Staging environment": {
+			monitor: Monitor{
+				Name:       "Backup - Database",
+				Identifier: "db",
+			},
+			envShort: "stag",
+			want:     "STAG_DB_BACKUP_PING_URL",
+		},
+		"Empty identifier returns empty string": {
+			monitor: Monitor{
+				Name:       "Backup - Database",
+				Identifier: "",
+			},
+			envShort: "prod",
+			want:     "",
+		},
+		"Identifier with spaces": {
+			monitor: Monitor{
+				Name:       "Backup - User Data",
+				Identifier: "user data",
+			},
+			envShort: "prod",
+			want:     "PROD_USER_DATA_BACKUP_PING_URL",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.monitor.VariableName(test.envShort)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}

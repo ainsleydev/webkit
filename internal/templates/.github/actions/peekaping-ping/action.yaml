@@ -22,9 +22,18 @@ runs:
         # Fail on errors, undefined vars, and fail if any part of a pipe fails
         set -euo pipefail
 
+        # Validate MONITOR_URL is not empty (configuration error)
+        if [[ -z "${MONITOR_URL}" ]]; then
+          echo "✗ Error: MONITOR_URL is empty."
+          echo "  Check that the GitHub variable exists (e.g., PROD_DB_BACKUP_PING_URL)."
+          echo "  This usually means a mismatch between Terraform-generated variable names"
+          echo "  and workflow template references."
+          exit 2  # Exit code 2 = configuration/input error
+        fi
+
         echo "Sending heartbeat ping for: ${DESCRIPTION}"
 
-        # Send POST request to Peekaping push monitor
+        # Send GET request to Peekaping push monitor
         RESPONSE=$(curl -X GET "${MONITOR_URL}" \
           --max-time 10 \
           --retry 2 \

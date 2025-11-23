@@ -14,6 +14,9 @@ locals {
   dns_monitors  = [for m in var.monitors : m if m.type == "dns"]
   push_monitors = [for m in var.monitors : m if m.type == "push"]
 
+  # Map push monitors by name for identifier lookup in outputs.
+  push_monitors_map = { for m in local.push_monitors : m.name => m }
+
   # Default values with optional overrides.
   defaults = {
     timeout          = coalesce(var.defaults.timeout, 30)

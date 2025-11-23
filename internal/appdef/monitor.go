@@ -2,6 +2,7 @@ package appdef
 
 import (
 	"fmt"
+	"strings"
 )
 
 type (
@@ -33,6 +34,7 @@ type (
 		Domain       string      `json:"domain,omitempty" description:"Domain name for DNS monitors"`
 		Interval     int         `json:"interval,omitempty" description:"Interval in seconds between checks (defaults based on monitor type if not specified)"`
 		MaxRedirects *int        `json:"maxRedirects,omitempty" description:"Maximum redirects to follow for HTTP monitors (default 0). Set to 1 for alias domains that redirect."`
+		Identifier   string      `json:"identifier,omitempty" description:"Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method."`
 	}
 	// MonitorType defines the type of monitor.
 	MonitorType string
@@ -63,6 +65,27 @@ func (m MonitorType) String() string {
 	return string(m)
 }
 
+// VariableName returns the GitHub Actions variable name for this monitor's ping URL.
+// Format: {ENV}_{IDENTIFIER}_{TYPE}_PING_URL (e.g., PROD_DB_BACKUP_PING_URL).
+// Only applicable for push monitors with an Identifier set.
+func (m Monitor) VariableName(envShort string) string {
+	if m.Identifier == "" {
+		return ""
+	}
+
+	// Extract type from monitor name (e.g., "Backup" from "Backup - Database").
+	monitorType := "UNKNOWN"
+	if parts := strings.SplitN(m.Name, " - ", 2); len(parts) > 0 {
+		monitorType = strings.ToUpper(strings.ReplaceAll(parts[0], " ", "_"))
+	}
+
+	return fmt.Sprintf("%s_%s_%s_PING_URL",
+		strings.ToUpper(envShort),
+		strings.ToUpper(strings.ReplaceAll(m.Identifier, " ", "_")),
+		monitorType,
+	)
+}
+
 // GenerateMonitors creates all monitors for the definition.
 // This includes:
 // - HTTP and DNS monitors for app domains
@@ -81,9 +104,10 @@ func (d *Definition) GenerateMonitors() []Monitor {
 
 	// Generate codebase backup monitor (always generated).
 	monitors = append(monitors, Monitor{
-		Name:     "Backup - Codebase",
-		Type:     MonitorTypePush,
-		Interval: MonitorIntervalBackup,
+		Name:       "Backup - Codebase",
+		Type:       MonitorTypePush,
+		Interval:   MonitorIntervalBackup,
+		Identifier: "codebase",
 	})
 
 	// Generate maintenance monitors for all apps.
@@ -150,9 +174,10 @@ func (d *Definition) generateResourceBackupMonitors() []Monitor {
 		}
 
 		monitors = append(monitors, Monitor{
-			Name:     fmt.Sprintf("Backup - %s", resource.Title),
-			Type:     MonitorTypePush,
-			Interval: MonitorIntervalBackup,
+			Name:       fmt.Sprintf("Backup - %s", resource.Title),
+			Type:       MonitorTypePush,
+			Interval:   MonitorIntervalBackup,
+			Identifier: resource.Name,
 		})
 	}
 
@@ -170,9 +195,10 @@ func (d *Definition) generateMaintenanceMonitors() []Monitor {
 		}
 
 		monitors = append(monitors, Monitor{
-			Name:     fmt.Sprintf("Maintenance - %s", app.Title),
-			Type:     MonitorTypePush,
-			Interval: MonitorIntervalMaintenance,
+			Name:       fmt.Sprintf("Maintenance - %s", app.Title),
+			Type:       MonitorTypePush,
+			Interval:   MonitorIntervalMaintenance,
+			Identifier: app.Name,
 		})
 	}
 
