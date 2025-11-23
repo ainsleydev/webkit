@@ -245,3 +245,9 @@ variable "status_page_theme" {
   description = "Theme for public status page (auto, light, dark). Defaults to auto."
   default     = null
 }
+
+variable "project_root" {
+  type        = string
+  description = "Absolute path to project root for writing local output files."
+  default     = ""
+}

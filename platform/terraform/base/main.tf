@@ -40,6 +40,10 @@ terraform {
       source  = "tafaust/peekaping"
       version = "~> 0.2.1"
     }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
   }
 }
 
@@ -214,4 +218,30 @@ module "monitoring" {
   peekaping_endpoint  = var.peekaping_endpoint
 
   depends_on = [module.apps, module.resources]
+}
+
+#
+# Local Outputs File
+# Writes monitoring and Slack data to .webkit/outputs.json for README badges.
+# Only created when monitoring is enabled and project_root is provided.
+#
+resource "local_file" "webkit_outputs" {
+  count    = length(var.monitors) > 0 && var.project_root != "" ? 1 : 0
+  filename = "${var.project_root}/.webkit/outputs.json"
+
+  content = jsonencode({
+    monitoring = {
+      peekaping_endpoint = var.peekaping_endpoint
+      http_monitors      = module.monitoring[0].http_monitors
+      dns_monitors       = module.monitoring[0].dns_monitors
+      push_monitors      = module.monitoring[0].push_monitors
+      status_page_url    = module.monitoring[0].status_page_url
+    }
+    slack = {
+      channel_name = slack_conversation.project_channel.name
+      channel_id   = slack_conversation.project_channel.id
+    }
+  })
+
+  depends_on = [module.monitoring]
 }

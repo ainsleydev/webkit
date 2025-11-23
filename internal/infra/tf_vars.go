@@ -27,6 +27,7 @@ type (
 		ProjectName         string         `json:"project_name"`
 		ProjectTitle        string         `json:"project_title"`
 		ProjectDescription  string         `json:"project_description"`
+		ProjectRoot         string         `json:"project_root"`
 		Environment         string         `json:"environment"`
 		GithubConfig        tfGithubConfig `json:"github_config"`
 		Apps                []tfApp        `json:"apps"`
@@ -101,10 +102,17 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		return tfVars{}, errors.New("definition cannot be nil")
 	}
 
+	// Get the current working directory for writing local output files.
+	cwd, err := os.Getwd()
+	if err != nil {
+		return tfVars{}, errors.Wrap(err, "getting current working directory")
+	}
+
 	return tfVars{
 		ProjectName:         t.appDef.Project.Name,
 		ProjectTitle:        t.appDef.Project.Title,
 		ProjectDescription:  t.appDef.Project.Description,
+		ProjectRoot:         cwd,
 		Environment:         env.String(),
 		Apps:                t.generateApps(ctx, env),
 		Resources:           t.generateResources(),
