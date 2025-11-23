@@ -382,17 +382,17 @@ func TestTFVarsFromDefinition(t *testing.T) {
 
 			require.Len(t, app.Domains, 3)
 			assert.Equal(t, "example.com", app.Domains[0].Name)
-			assert.Equal(t, appdef.DomainTypePrimary.String(), app.Domains[0].Type)
+			assert.Equal(t, "PRIMARY", app.Domains[0].Type)
 			assert.Equal(t, "example.com", app.Domains[0].Zone)
 			assert.Equal(t, false, app.Domains[0].Wildcard)
 
 			assert.Equal(t, "www.example.com", app.Domains[1].Name)
-			assert.Equal(t, appdef.DomainTypeAlias.String(), app.Domains[1].Type)
+			assert.Equal(t, "ALIAS", app.Domains[1].Type)
 			assert.Equal(t, "example.com", app.Domains[1].Zone)
 			assert.Equal(t, false, app.Domains[1].Wildcard)
 
 			assert.Equal(t, "*.staging.example.com", app.Domains[2].Name)
-			assert.Equal(t, appdef.DomainTypePrimary.String(), app.Domains[2].Type)
+			assert.Equal(t, "PRIMARY", app.Domains[2].Type)
 			assert.Equal(t, "staging.example.com", app.Domains[2].Zone)
 			assert.Equal(t, true, app.Domains[2].Wildcard)
 		}

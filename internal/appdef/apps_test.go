@@ -48,6 +48,29 @@ func TestDomainType_String(t *testing.T) {
 	assert.IsType(t, "", got)
 }
 
+func TestDomainType_Normalise(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input DomainType
+		want  DomainType
+	}{
+		"Uppercase PRIMARY": {input: "PRIMARY", want: DomainTypePrimary},
+		"Uppercase ALIAS":   {input: "ALIAS", want: DomainTypeAlias},
+		"Mixed case":        {input: "Primary", want: DomainTypePrimary},
+		"Already lowercase": {input: DomainTypePrimary, want: DomainTypePrimary},
+		"Empty string":      {input: "", want: ""},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.input.Normalise()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestApp_ShouldUseNPM(t *testing.T) {
 	t.Parallel()
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -243,7 +244,7 @@ func (t *Terraform) generateApps(ctx context.Context, env env.Environment) []tfA
 		for _, domain := range app.Domains {
 			tfA.Domains = append(tfA.Domains, tfDomain{
 				Name:     domain.Name,
-				Type:     domain.Type.String(),
+				Type:     strings.ToUpper(domain.Type.String()),
 				Zone:     domain.Zone,
 				Wildcard: domain.Wildcard,
 			})
