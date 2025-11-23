@@ -263,6 +263,10 @@
 					"description": "Domain name for DNS monitors",
 					"type": "string"
 				},
+				"identifier": {
+					"description": "Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method.",
+					"type": "string"
+				},
 				"interval": {
 					"description": "Interval in seconds between checks (defaults based on monitor type if not specified)",
 					"type": "integer"
