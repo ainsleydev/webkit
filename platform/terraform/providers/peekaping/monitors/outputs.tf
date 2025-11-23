@@ -1,5 +1,5 @@
 output "monitors" {
-  description = "All monitors as a flat array with type field."
+  description = "All monitors as a flat array with type field. Push monitors include extra fields for CI/CD."
   value = concat(
     [for name, monitor in peekaping_monitor.http : {
       id   = monitor.id
@@ -12,24 +12,14 @@ output "monitors" {
       type = "dns"
     }],
     [for name, monitor in peekaping_monitor.push : {
-      id   = monitor.id
-      name = monitor.name
-      type = "push"
-    }]
-  )
-}
-
-output "push_monitors" {
-  description = "Push monitor details including ping URLs for GitHub variables."
-  value = {
-    for name, monitor in peekaping_monitor.push : name => {
       id            = monitor.id
       name          = monitor.name
+      type          = "push"
       variable_name = local.push_monitors_map[name].variable_name
       push_token    = random_id.push_token[name].b64_url
       ping_url      = "${var.peekaping_endpoint}/api/v1/push/${random_id.push_token[name].b64_url}?status=up&msg=OK&ping="
-    }
-  }
+    }]
+  )
 }
 
 output "all_ids" {

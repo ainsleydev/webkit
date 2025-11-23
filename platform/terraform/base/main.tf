@@ -234,7 +234,11 @@ data "json-formatter_format_json" "webkit_outputs" {
 
   json = jsonencode({
     peekaping_endpoint = var.peekaping_endpoint
-    monitors           = module.monitoring[0].monitors
+    monitors = [for m in module.monitoring[0].monitors : {
+      id   = m.id
+      name = m.name
+      type = m.type
+    }]
     slack = {
       channel_name = slack_conversation.project_channel.name
       channel_id   = slack_conversation.project_channel.id
