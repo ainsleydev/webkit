@@ -3,6 +3,7 @@ package appdef
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/ainsleydev/webkit/internal/appdef/types"
 )
@@ -90,9 +91,14 @@ const (
 	DomainTypeUnmanaged DomainType = "unmanaged"
 )
 
-// String §implements fmt.Stringer on the DomainType.
+// String implements fmt.Stringer on the DomainType.
 func (d DomainType) String() string {
 	return string(d)
+}
+
+// Normalise converts the domain type to lowercase for consistent internal comparisons.
+func (d DomainType) Normalise() DomainType {
+	return DomainType(strings.ToLower(string(d)))
 }
 
 // OrderedCommands returns the app's commands in their defined order
@@ -272,6 +278,13 @@ func (a *App) applyDefaults() error {
 
 	// Default monitoring to enabled (opt-out).
 	a.Monitoring = true
+
+	// Normalise domain types to lowercase for consistent internal comparisons.
+	// DigitalOcean may return uppercase (PRIMARY, ALIAS) which needs to match
+	// our lowercase constants.
+	for i := range a.Domains {
+		a.Domains[i].Type = a.Domains[i].Type.Normalise()
+	}
 
 	return nil
 }
