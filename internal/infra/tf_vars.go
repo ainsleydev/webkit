@@ -36,6 +36,7 @@ type (
 		SlackWebhookURL     string         `json:"slack_webhook_url"`
 		StatusPageDomain    *string        `json:"status_page_domain,omitempty"`
 		StatusPageSlug      *string        `json:"status_page_slug,omitempty"`
+		StatusPageTheme     *string        `json:"status_page_theme,omitempty"`
 		BrandIconURL        *string        `json:"brand_icon_url,omitempty"`
 		BrandPrimaryColor   *string        `json:"brand_primary_color,omitempty"`
 	}
@@ -114,6 +115,7 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		},
 		StatusPageDomain:  stringPtrOrNil(t.appDef.Monitoring.StatusPage.Domain),
 		StatusPageSlug:    stringPtrOrNil(t.appDef.Monitoring.StatusPage.Slug),
+		StatusPageTheme:   stringPtrOrNil(t.appDef.Monitoring.StatusPage.Theme),
 		BrandIconURL:      stringPtrOrNil(t.appDef.Project.Brand.IconURL),
 		BrandPrimaryColor: stringPtrOrNil(t.appDef.Project.Brand.PrimaryColour),
 	}, nil

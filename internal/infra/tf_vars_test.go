@@ -578,6 +578,78 @@ func TestTFVarsFromDefinition(t *testing.T) {
 		}
 	})
 
+	t.Run("Status page theme - not set", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "no-theme-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "no-theme-project",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "apps/web",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page theme should be nil when not set")
+		{
+			assert.Nil(t, got.StatusPageTheme)
+		}
+	})
+
+	t.Run("Status page theme - explicit configuration", func(t *testing.T) {
+		input := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "dark-theme-project",
+				Repo: appdef.GitHubRepo{
+					Owner: "owner",
+					Name:  "dark-theme-project",
+				},
+			},
+			Monitoring: appdef.Monitoring{
+				StatusPage: appdef.StatusPage{
+					Theme: "dark",
+				},
+			},
+			Apps: []appdef.App{
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Path: "apps/web",
+					Infra: appdef.Infra{
+						Type:     "app",
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Config:   map[string]any{},
+					},
+				},
+			},
+		}
+
+		tf := setupTfVars(t, input)
+		got, err := tf.tfVarsFromDefinition(context.Background(), env.Production)
+		assert.NoError(t, err)
+
+		t.Log("Status page theme should use explicit configuration")
+		{
+			require.NotNil(t, got.StatusPageTheme)
+			assert.Equal(t, "dark", *got.StatusPageTheme)
+		}
+	})
+
 	t.Run("Branding", func(t *testing.T) {
 		input := &appdef.Definition{
 			Project: appdef.Project{

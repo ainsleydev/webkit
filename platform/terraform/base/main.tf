@@ -248,6 +248,7 @@ module "monitoring" {
   brand_icon_url      = var.brand_icon_url
   status_page_domain  = var.status_page_domain
   status_page_slug    = var.status_page_slug
+  status_page_theme   = var.status_page_theme
   peekaping_endpoint  = var.peekaping_endpoint
 
   # Monitoring depends on apps and resources being created.

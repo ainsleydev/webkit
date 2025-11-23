@@ -62,6 +62,12 @@ variable "status_page_slug" {
   default     = null
 }
 
+variable "status_page_theme" {
+  description = "Theme for status page (auto, light, dark). Defaults to auto."
+  type        = string
+  default     = null
+}
+
 variable "peekaping_endpoint" {
   description = "Peekaping instance endpoint URL (without trailing slash)"
   type        = string
