@@ -1,11 +1,11 @@
 #
 # Apps Module
-#
-# Generates module calls based on apps[] in app.json
-# Maps generic infra types to provider-specific resources
+# Maps generic infra types to provider-specific resources.
 #
 
+#
 # DigitalOcean Droplet (VM)
+#
 module "do_droplet" {
   count  = var.platform_provider == "digitalocean" && var.platform_type == "vm" ? 1 : 0
   source = "../../providers/digital_ocean/droplet"
@@ -18,7 +18,9 @@ module "do_droplet" {
   server_user    = var.server_user
 }
 
+#
 # Hetzner Server (VM)
+#
 module "hetzner_server" {
   count  = var.platform_provider == "hetzner" && var.platform_type == "vm" ? 1 : 0
   source = "../../providers/hetzner/server"
@@ -31,7 +33,9 @@ module "hetzner_server" {
   server_user = var.server_user
 }
 
+#
 # DigitalOcean App Platform (Container)
+#
 module "do_app" {
   count  = var.platform_provider == "digitalocean" && var.platform_type == "container" ? 1 : 0
   source = "../../providers/digital_ocean/app"
@@ -77,6 +81,7 @@ module "do_app" {
   ]
 }
 
+#
 # DNS Record for VM-based apps
 # App Platform handles its own DNS, but VMs need A records
 # module "dns_record" {

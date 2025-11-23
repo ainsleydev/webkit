@@ -1,4 +1,9 @@
 #
+# Resource Outputs
+# Returns relevant outputs based on the resource type.
+#
+
+#
 # Database Outputs (Postgres & SQLite/Turso)
 #
 output "connection_url" {

@@ -1,7 +1,9 @@
-# Hetzner Volume Module
-# Creates a Hetzner Cloud volume and attaches it to a server
+#
+# Hetzner Volume
+# Creates a Hetzner Cloud volume and attaches it to a server.
+#
 # Ref: https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/volume
-
+#
 resource "hcloud_volume" "this" {
   name     = var.name
   size     = var.size

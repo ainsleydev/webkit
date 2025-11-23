@@ -1,5 +1,13 @@
+#
 # Turso Database
+# Provisions a SQLite database on Turso with authentication token.
+#
 # Ref: https://registry.terraform.io/providers/jpedroh/turso/latest/docs/resources/database
+#
+
+#
+# Database
+#
 resource "turso_database" "this" {
   organization_name = var.organisation
   name              = var.name
@@ -14,8 +22,9 @@ resource "turso_database" "this" {
   }
 }
 
-# Turso Database Token
-# Ref: https://registry.terraform.io/providers/jpedroh/turso/latest/docs/resources/database_token
+#
+# Database Token
+#
 resource "turso_database_token" "this" {
   organization_name = var.organisation
   database_name     = turso_database.this.name

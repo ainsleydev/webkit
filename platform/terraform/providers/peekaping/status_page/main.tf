@@ -1,9 +1,8 @@
 #
 # Peekaping Status Page
-#
 # Creates a public status page for displaying monitor status.
 #
-# Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/status_page
+# Ref: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/status_page
 #
 resource "peekaping_status_page" "this" {
   title       = var.title
