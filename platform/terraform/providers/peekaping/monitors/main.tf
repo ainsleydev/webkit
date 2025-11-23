@@ -112,10 +112,4 @@ resource "peekaping_monitor" "push" {
   active           = true
   notification_ids = var.notification_ids
   tag_ids          = var.tag_ids
-
-  # Workaround: Provider bug - doesn't return push_token after apply.
-  # See: https://github.com/tafaust/terraform-provider-peekaping/issues/16
-  lifecycle {
-    ignore_changes = [push_token]
-  }
 }
