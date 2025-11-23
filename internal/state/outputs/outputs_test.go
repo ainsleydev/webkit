@@ -37,15 +37,11 @@ func TestLoad(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 		outputsJSON := `{
-			"monitoring": {
-				"peekaping_endpoint": "https://peekaping.example.com",
-				"http_monitors": {
-					"HTTP - example.com": {"id": "abc123", "name": "HTTP - example.com"}
-				},
-				"dns_monitors": {},
-				"push_monitors": {},
-				"status_page_url": "https://peekaping.example.com/status/test"
-			},
+			"peekaping_endpoint": "https://peekaping.example.com",
+			"monitors": [
+				{"id": "abc123", "name": "HTTP - example.com", "type": "http"},
+				{"id": "def456", "name": "DNS - example.com", "type": "dns"}
+			],
 			"slack": {
 				"channel_name": "alerts-test",
 				"channel_id": "C123456"
@@ -59,12 +55,12 @@ func TestLoad(t *testing.T) {
 
 		got := Load(fs)
 		require.NotNil(t, got)
-		assert.Equal(t, "https://peekaping.example.com", got.Monitoring.PeekapingEndpoint)
-		assert.Equal(t, "https://peekaping.example.com/status/test", got.Monitoring.StatusPageURL)
+		assert.Equal(t, "https://peekaping.example.com", got.PeekapingEndpoint)
 		assert.Equal(t, "alerts-test", got.Slack.ChannelName)
 		assert.Equal(t, "C123456", got.Slack.ChannelID)
-		assert.Contains(t, got.Monitoring.HTTPMonitors, "HTTP - example.com")
-		monitor := got.Monitoring.HTTPMonitors["HTTP - example.com"].(map[string]any)
-		assert.Equal(t, "abc123", monitor["id"])
+		require.Len(t, got.Monitors, 2)
+		assert.Equal(t, "abc123", got.Monitors[0].ID)
+		assert.Equal(t, "HTTP - example.com", got.Monitors[0].Name)
+		assert.Equal(t, "http", got.Monitors[0].Type)
 	})
 }

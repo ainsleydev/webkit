@@ -188,15 +188,10 @@ func TestReadme(t *testing.T) {
 
 		// Create outputs.json with monitoring data
 		outputsJSON := `{
-			"monitoring": {
-				"peekaping_endpoint": "https://peekaping.example.com",
-				"status_page_url": "https://status.example.com",
-				"http_monitors": {
-					"HTTP - example.com": {"id": "mon123", "name": "HTTP - example.com"}
-				},
-				"dns_monitors": {},
-				"push_monitors": {}
-			},
+			"peekaping_endpoint": "https://peekaping.example.com",
+			"monitors": [
+				{"id": "mon123", "name": "HTTP - example.com", "type": "http"}
+			],
 			"slack": {"channel_name": "alerts", "channel_id": "C123"}
 		}`
 		err := fs.MkdirAll(".webkit", 0o755)
@@ -223,7 +218,7 @@ func TestReadme(t *testing.T) {
 
 		got, err := afero.ReadFile(fs, "README.md")
 		require.NoError(t, err)
-		assert.Contains(t, string(got), "https://status.example.com")
+		assert.Contains(t, string(got), "https://peekaping.example.com")
 		assert.Contains(t, string(got), "mon123")
 	})
 
