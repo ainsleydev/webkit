@@ -141,8 +141,6 @@ func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 			}
 
 			// HTTP monitor - checks the availability of the web application.
-			// All domains use the default max redirects to handle common patterns
-			// (HTTP→HTTPS, www→non-www, root→app path, alias→primary).
 			monitors = append(monitors, Monitor{
 				Name:         fmt.Sprintf("HTTP - %s", domain.Name),
 				Type:         MonitorTypeHTTP,
