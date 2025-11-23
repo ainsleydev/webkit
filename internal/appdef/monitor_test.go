@@ -100,13 +100,12 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		monitors := def.GenerateMonitors()
 		require.Len(t, monitors, 3) // HTTP + DNS + Codebase Backup
 
-		// HTTP monitor - all domains use default max redirects.
+		// HTTP monitor.
 		assert.Equal(t, "HTTP - example.com", monitors[0].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
 		assert.Equal(t, "https://example.com", monitors[0].URL)
 		assert.Equal(t, "GET", monitors[0].Method)
 		assert.Equal(t, MonitorIntervalHTTP, monitors[0].Interval)
-		assert.Equal(t, MonitorDefaultMaxRedirects, monitors[0].MaxRedirects)
 
 		// DNS monitor.
 		assert.Equal(t, "DNS - example.com", monitors[1].Name)
@@ -142,12 +141,11 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		monitors := def.GenerateMonitors()
 		require.Len(t, monitors, 5) // 2 domains × 2 types (HTTP + DNS) + Codebase Backup
 
-		// First domain (primary) - HTTP, uses default max redirects.
+		// First domain (primary) - HTTP.
 		assert.Equal(t, "HTTP - api.example.com", monitors[0].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
 		assert.Equal(t, "https://api.example.com", monitors[0].URL)
 		assert.Equal(t, MonitorIntervalHTTP, monitors[0].Interval)
-		assert.Equal(t, MonitorDefaultMaxRedirects, monitors[0].MaxRedirects)
 
 		// First domain - DNS.
 		assert.Equal(t, "DNS - api.example.com", monitors[1].Name)
@@ -155,12 +153,11 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, "api.example.com", monitors[1].Domain)
 		assert.Equal(t, MonitorIntervalDNS, monitors[1].Interval)
 
-		// Second domain (alias) - HTTP, uses default max redirects.
+		// Second domain (alias) - HTTP.
 		assert.Equal(t, "HTTP - www.api.example.com", monitors[2].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[2].Type)
 		assert.Equal(t, "https://www.api.example.com", monitors[2].URL)
 		assert.Equal(t, MonitorIntervalHTTP, monitors[2].Interval)
-		assert.Equal(t, MonitorDefaultMaxRedirects, monitors[2].MaxRedirects)
 
 		// Second domain - DNS.
 		assert.Equal(t, "DNS - www.api.example.com", monitors[3].Name)
@@ -197,20 +194,18 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		monitors := def.GenerateMonitors()
 		require.Len(t, monitors, 5) // 2 managed domains × 2 types (HTTP + DNS) + Codebase Backup
 
-		// First managed domain (primary) - uses default max redirects.
+		// First managed domain (primary).
 		assert.Equal(t, "HTTP - example.com", monitors[0].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
 		assert.Equal(t, MonitorIntervalHTTP, monitors[0].Interval)
-		assert.Equal(t, MonitorDefaultMaxRedirects, monitors[0].MaxRedirects)
 		assert.Equal(t, "DNS - example.com", monitors[1].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
 		assert.Equal(t, MonitorIntervalDNS, monitors[1].Interval)
 
-		// Second managed domain (alias) - uses default max redirects.
+		// Second managed domain (alias).
 		assert.Equal(t, "HTTP - www.example.com", monitors[2].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[2].Type)
 		assert.Equal(t, MonitorIntervalHTTP, monitors[2].Interval)
-		assert.Equal(t, MonitorDefaultMaxRedirects, monitors[2].MaxRedirects)
 		assert.Equal(t, "DNS - www.example.com", monitors[3].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
 		assert.Equal(t, MonitorIntervalDNS, monitors[3].Interval)
