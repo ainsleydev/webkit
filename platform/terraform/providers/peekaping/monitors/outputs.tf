@@ -24,6 +24,7 @@ output "push_monitors" {
     for name, monitor in peekaping_monitor.push : name => {
       id         = monitor.id
       name       = monitor.name
+      identifier = local.push_monitors_map[name].identifier
       push_token = random_id.push_token[name].b64_url
       ping_url   = "${var.peekaping_endpoint}/api/v1/push/${random_id.push_token[name].b64_url}?status=up&msg=OK&ping="
     }

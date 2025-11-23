@@ -8,6 +8,7 @@ variable "monitors" {
     domain        = optional(string) # For DNS monitors.
     interval      = number           # Interval in seconds between checks.
     max_redirects = optional(number) # For HTTP monitors, max redirects to follow (default 0).
+    identifier    = optional(string) # Machine-readable identifier for variable naming (e.g., "db").
   }))
   default = []
 }

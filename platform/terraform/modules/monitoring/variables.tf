@@ -16,12 +16,13 @@ variable "environment" {
 variable "monitors" {
   description = "List of monitors to create."
   type = list(object({
-    name     = string
-    type     = string # "http", "dns", "push"
-    url      = optional(string)
-    method   = optional(string)
-    domain   = optional(string) # For DNS monitors.
-    interval = number           # Interval in seconds between checks.
+    name       = string
+    type       = string # "http", "dns", "push"
+    url        = optional(string)
+    method     = optional(string)
+    domain     = optional(string) # For DNS monitors.
+    interval   = number           # Interval in seconds between checks.
+    identifier = optional(string) # Machine-readable identifier for variable naming (e.g., "db").
   }))
   default = []
 }
