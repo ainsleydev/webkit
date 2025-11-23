@@ -22,6 +22,7 @@ variable "monitors" {
     method        = optional(string)
     domain        = optional(string) # For DNS monitors.
     interval      = number           # Interval in seconds between checks.
+    max_redirects = optional(number) # For HTTP monitors, max redirects to follow (default 0).
     variable_name = optional(string) # Pre-computed GitHub variable name (e.g., PROD_DB_BACKUP_PING_URL).
   }))
   default = []
