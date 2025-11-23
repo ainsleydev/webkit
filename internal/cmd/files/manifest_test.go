@@ -10,8 +10,8 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
-	"github.com/ainsleydev/webkit/internal/state/manifest"
 	"github.com/ainsleydev/webkit/internal/mocks"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 )
 
 func TestManifest(t *testing.T) {
