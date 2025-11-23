@@ -232,6 +232,7 @@ module "monitoring" {
 data "json-formatter_format_json" "webkit_outputs" {
   count = length(var.monitors) > 0 && var.project_root != "" ? 1 : 0
 
+  indent = "\t"
   json = jsonencode({
     peekaping_endpoint = var.peekaping_endpoint
     monitors = [for m in module.monitoring[0].monitors : {
