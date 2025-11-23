@@ -17,13 +17,13 @@ variable "monitors" {
   description = "List of monitors to create."
   type = list(object({
     name          = string
-    type          = string # "http", "dns", "push"
+    type          = string
     url           = optional(string)
     method        = optional(string)
-    domain        = optional(string) # For DNS monitors.
-    interval      = number           # Interval in seconds between checks.
-    max_redirects = optional(number) # For HTTP monitors, max redirects to follow (default 0).
-    variable_name = optional(string) # Pre-computed GitHub variable name (e.g., PROD_DB_BACKUP_PING_URL).
+    domain        = optional(string)
+    interval      = number
+    max_redirects = optional(number)
+    variable_name = optional(string)
   }))
   default = []
 }

@@ -109,6 +109,7 @@ variable "monitors" {
     method        = optional(string)
     domain        = optional(string) # For DNS monitors.
     interval      = number           # Interval in seconds between checks.
+    max_redirects = optional(number)
     variable_name = optional(string) # Pre-computed GitHub variable name (e.g., PROD_DB_BACKUP_PING_URL).
   }))
   description = "List of monitors to create in Peekaping."
