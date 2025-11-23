@@ -2,8 +2,6 @@
 # Hetzner Server
 # Provisions a VM with SSH access and firewall configuration.
 #
-# Ref: https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server
-#
 
 #
 # SSH Key
@@ -20,6 +18,8 @@ resource "hcloud_ssh_key" "this" {
 
 #
 # Server
+#
+# Ref: https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server
 #
 resource "hcloud_server" "this" {
   name        = var.name
@@ -47,6 +47,8 @@ resource "hcloud_server" "this" {
 
 #
 # Firewall
+#
+# Ref: https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/firewall
 #
 resource "hcloud_firewall" "this" {
   name = "${var.name}-firewall"

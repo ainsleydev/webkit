@@ -2,8 +2,6 @@
 # DigitalOcean Postgres
 # Provisions a managed PostgreSQL cluster with user, database, and connection pool.
 #
-# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_cluster
-#
 
 locals {
   db_prefix          = lower(replace(var.name, "-", "_"))
@@ -12,6 +10,8 @@ locals {
 
 #
 # Database Cluster
+#
+# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_cluster
 #
 resource "digitalocean_database_cluster" "this" {
   name       = var.name
@@ -26,6 +26,8 @@ resource "digitalocean_database_cluster" "this" {
 #
 # Database User
 #
+# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_user
+#
 resource "digitalocean_database_user" "this" {
   cluster_id = digitalocean_database_cluster.this.id
   name       = "${local.db_prefix}_admin"
@@ -34,6 +36,8 @@ resource "digitalocean_database_user" "this" {
 #
 # Database
 #
+# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_db
+#
 resource "digitalocean_database_db" "this" {
   cluster_id = digitalocean_database_cluster.this.id
   name       = local.db_prefix
@@ -41,6 +45,8 @@ resource "digitalocean_database_db" "this" {
 
 #
 # Connection Pool
+#
+# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_connection_pool
 #
 resource "digitalocean_database_connection_pool" "this" {
   cluster_id = digitalocean_database_cluster.this.id
@@ -53,6 +59,8 @@ resource "digitalocean_database_connection_pool" "this" {
 
 #
 # Firewall
+#
+# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_firewall
 #
 resource "digitalocean_database_firewall" "this" {
   count      = local.has_firewall_rules ? 1 : 0

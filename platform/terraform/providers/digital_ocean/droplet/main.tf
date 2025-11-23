@@ -2,8 +2,6 @@
 # DigitalOcean Droplet
 # Provisions a VM with SSH access and firewall configuration.
 #
-# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet
-#
 
 #
 # SSH Key
@@ -20,6 +18,8 @@ resource "digitalocean_ssh_key" "this" {
 
 #
 # Droplet
+#
+# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet
 #
 resource "digitalocean_droplet" "this" {
   name   = var.name
@@ -47,6 +47,8 @@ resource "digitalocean_droplet" "this" {
 
 #
 # Firewall
+#
+# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/firewall
 #
 resource "digitalocean_firewall" "this" {
   name        = "${var.name}-firewall"
