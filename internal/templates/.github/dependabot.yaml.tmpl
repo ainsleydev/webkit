@@ -1,42 +1,72 @@
 version: 2
 enable-beta-ecosystems: true
 updates:
-  {{- range .Apps }}
-- package-ecosystem: "{{ if eq .Language "go" }}gomod{{ else if eq .Language "js" }}npm{{ end }}"
-  directory: "/{{ .Path }}"
-  schedule:
-    interval: "weekly"
-    day: "sunday"
-    time: "04:00"
-  open-pull-requests-limit: 30
-  ignore:
-    - dependency-name: "*"
-      update-types: ["version-update:semver-patch"]
-  groups:
-    {{- if eq .Type "payload" }}
-    payload:
-      patterns:
-        - "@payloadcms/*"
-        - "payload"
-        - "@ainsleydev/payload-helper"
-      update-types:
-        - "minor"
-        - "patch"
-    {{- end }}
-    dependencies:
-      patterns:
-        - "*"
-      {{- if eq .Type "payload" }}
-      exclude-patterns:
-        - "@payloadcms/*"
-        - "payload"
-        - "@ainsleydev/payload-helper"
-        - "next"
-        - "react"
-        - "react-dom"
-        - "graphql"
-        - "sharp"
-        - "cross-env"
-        - "dotenv"
+{{- if .ContainsJS }}
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+    open-pull-requests-limit: 30
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+    groups:
+      {{- if .HasAppType "payload" }}
+      payload:
+        patterns:
+          - "@payloadcms/*"
+          - "payload"
+          - "@ainsleydev/payload-helper"
+        update-types:
+          - "minor"
+          - "patch"
+      core:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+          - "graphql"
+          - "sharp"
+          - "cross-env"
+          - "dotenv"
+        update-types:
+          - "minor"
+          - "patch"
       {{- end }}
-  {{- end }}
+      dependencies:
+        patterns:
+          - "*"
+        {{- if .HasAppType "payload" }}
+        exclude-patterns:
+          - "@payloadcms/*"
+          - "payload"
+          - "@ainsleydev/payload-helper"
+          - "next"
+          - "react"
+          - "react-dom"
+          - "graphql"
+          - "sharp"
+          - "cross-env"
+          - "dotenv"
+        {{- end }}
+{{- end }}
+{{- range .Apps }}
+{{- if eq .Language "go" }}
+  - package-ecosystem: "gomod"
+    directory: "/{{ .Path }}"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+    open-pull-requests-limit: 30
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+{{- end }}
+{{- end }}

@@ -18,6 +18,15 @@ updates:
           - "@ainsleydev/payload-helper"
           - "^@payloadcms/.*"
           - "^payload$"
+      core:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+          - "graphql"
+          - "sharp"
+          - "cross-env"
+          - "dotenv"
       dependencies:
         patterns:
           - "*"
