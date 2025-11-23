@@ -72,14 +72,12 @@ resource "github_actions_secret" "resource_outputs" {
 # Example: PROD_CODEBASE_BACKUP_PING_URL
 #
 resource "github_actions_variable" "monitor_ping_urls" {
-  # Only create variables for push monitors that have an identifier set.
-  for_each = length(var.monitors) > 0 ? {
-    for k, v in module.monitoring[0].push_monitors : k => v if v.identifier != null
-  } : {}
+  for_each = length(var.monitors) > 0 ? module.monitoring[0].push_monitors : {}
 
   repository = var.github_config.repo
   # Use identifier from Go appdef for consistent naming with workflow templates.
   # Format: {ENV}_{IDENTIFIER}_{TYPE}_PING_URL (e.g., PROD_DB_BACKUP_PING_URL)
-  variable_name = upper("${local.environment_short}_${replace(each.value.identifier, " ", "_")}_${replace(split(" - ", each.value.name)[0], " ", "_")}_PING_URL")
+  # Falls back to parsing the monitor name for backwards compatibility with existing deployments.
+  variable_name = upper("${local.environment_short}_${replace(coalesce(each.value.identifier, split(" - ", each.value.name)[1]), " ", "_")}_${replace(split(" - ", each.value.name)[0], " ", "_")}_PING_URL")
   value         = each.value.ping_url
 }
