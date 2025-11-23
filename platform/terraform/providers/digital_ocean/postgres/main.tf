@@ -1,10 +1,18 @@
+#
+# DigitalOcean Postgres
+# Provisions a managed PostgreSQL cluster with user, database, and connection pool.
+#
+
 locals {
   db_prefix          = lower(replace(var.name, "-", "_"))
   has_firewall_rules = length(var.allowed_droplet_ips) > 0 || length(var.allowed_ips_addr) > 0
 }
 
+#
 # Database Cluster
+#
 # Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_cluster
+#
 resource "digitalocean_database_cluster" "this" {
   name       = var.name
   engine     = "pg"
@@ -15,22 +23,31 @@ resource "digitalocean_database_cluster" "this" {
   tags       = var.tags
 }
 
+#
 # Database User
+#
 # Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_user
+#
 resource "digitalocean_database_user" "this" {
   cluster_id = digitalocean_database_cluster.this.id
   name       = "${local.db_prefix}_admin"
 }
 
+#
 # Database
+#
 # Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_db
+#
 resource "digitalocean_database_db" "this" {
   cluster_id = digitalocean_database_cluster.this.id
   name       = local.db_prefix
 }
 
+#
 # Connection Pool
-# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/data-sources/database_connection_pool
+#
+# Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_connection_pool
+#
 resource "digitalocean_database_connection_pool" "this" {
   cluster_id = digitalocean_database_cluster.this.id
   name       = "${local.db_prefix}_pool"
@@ -40,8 +57,11 @@ resource "digitalocean_database_connection_pool" "this" {
   user       = digitalocean_database_user.this.name
 }
 
+#
 # Firewall
+#
 # Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_firewall
+#
 resource "digitalocean_database_firewall" "this" {
   count      = local.has_firewall_rules ? 1 : 0
   cluster_id = digitalocean_database_cluster.this.id
@@ -63,8 +83,10 @@ resource "digitalocean_database_firewall" "this" {
   }
 }
 
-# Grant privileges to the user, Payload seed scrips will fail if
-# you try to drop the database (as a seed script).
+#
+# Database Permissions
+# Grants privileges to the user (required for Payload seed scripts).
+#
 resource "null_resource" "grant_permissions" {
   depends_on = [
     digitalocean_database_user.this,

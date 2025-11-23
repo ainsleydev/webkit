@@ -1,9 +1,11 @@
 #
 # App Outputs
-# Returns relevant outputs based on the infrastructure type
+# Returns relevant outputs based on the infrastructure type.
 #
 
+#
 # VM (Droplet) Outputs
+#
 output "ip_address" {
   description = "IP address of the VM"
   value = (
@@ -40,7 +42,9 @@ output "server_user" {
   )
 }
 
+#
 # Container (App Platform) Outputs
+#
 output "app_id" {
   description = "ID of the App Platform app"
   value = (
@@ -65,7 +69,9 @@ output "app_domain" {
   )
 }
 
+#
 # DNS Outputs
+#
 # output "dns_fqdn" {
 #   description = "Fully qualified domain name"
 #   value = (
@@ -74,7 +80,9 @@ output "app_domain" {
 #   )
 # }
 
+#
 # Common Outputs
+#
 output "platform_type" {
   description = "Type of infrastructure provisioned"
   value       = var.platform_type

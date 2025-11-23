@@ -1,10 +1,11 @@
 #
 # Resource Module
-#
-# Generates module calls based on resources[] in app.json
+# Maps generic resource types to provider-specific implementations.
 #
 
+#
 # DigitalOcean Postgres
+#
 module "do_postgres" {
   count  = var.platform_provider == "digitalocean" && var.platform_type == "postgres" ? 1 : 0
   source = "../../providers/digital_ocean/postgres"
@@ -26,7 +27,9 @@ module "do_postgres" {
   )
 }
 
+#
 # DigitalOcean S3 Bucket (Spaces)
+#
 module "do_bucket" {
   count  = var.platform_provider == "digitalocean" && var.platform_type == "s3" ? 1 : 0
   source = "../../providers/digital_ocean/bucket"
@@ -36,7 +39,9 @@ module "do_bucket" {
   acl    = try(var.platform_config.acl, "public-read")
 }
 
+#
 # B2 S3 Bucket
+#
 module "b2_bucket" {
   count  = var.platform_provider == "b2" && var.platform_type == "s3" ? 1 : 0
   source = "../../providers/b2/bucket"
@@ -48,7 +53,9 @@ module "b2_bucket" {
   lifecycle_rule_file_name_prefix = try(var.platform_config.lifecycle_rule_file_name_prefix, null)
 }
 
+#
 # Turso SQLite Database
+#
 module "turso_database" {
   count  = var.platform_provider == "turso" && var.platform_type == "sqlite" ? 1 : 0
   source = "../../providers/turso/database"

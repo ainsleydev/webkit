@@ -1,9 +1,11 @@
-terraform {
-  # NOTE: Keep this version in sync with internal/infra/tf.go (TerraformVersion constant)
-  required_version = ">= 1.13.0"
+#
+# WebKit Base Infrastructure
+# Core Terraform configuration for provisioning project infrastructure.
+#
 
-  # Backend configuration - details provided via backend.hcl
-  # Remote backend configuration will be added dynamically via backend.tf
+terraform {
+  # Keep in sync with internal/infra/tf.go (TerraformVersion constant).
+  required_version = ">= 1.13.0"
 
   required_providers {
     digitalocean = {
@@ -81,14 +83,14 @@ provider "peekaping" {
 # Locals
 #
 locals {
-  # Default tags applied to all resources (normalized to lowercase)
+  # Default tags applied to all resources (normalised to lowercase).
   default_tags = [
     lower(var.project_name),
     lower(var.environment),
     "terraform",
   ]
 
-  # Combined tags: default + custom (all normalized to lowercase)
+  # Combined tags: default + custom (all normalised to lowercase).
   common_tags = concat(
     local.default_tags,
     [for tag in var.tags : lower(tag)]
@@ -105,37 +107,7 @@ locals {
 }
 
 #
-# SSH Keys
-# Lookup personal SSH keys at plan time to avoid deferred reads
-# Data sources are evaluated here (outside modules) to prevent deferred reads
-#
-
-# Determine which providers are actually being used for VMs
-locals {
-  uses_digitalocean_vms = anytrue([for a in var.apps : a.platform_provider == "digitalocean" && a.platform_type == "vm"])
-  uses_hetzner_vms      = anytrue([for a in var.apps : a.platform_provider == "hetzner" && a.platform_type == "vm"])
-}
-
-# DigitalOcean SSH Keys (only lookup if DO VMs are in use)
-data "digitalocean_ssh_key" "personal_keys" {
-  for_each = local.uses_digitalocean_vms ? toset(var.digitalocean_ssh_keys) : toset([])
-  name     = each.value
-}
-
-# Hetzner SSH Keys (only lookup if Hetzner VMs are in use)
-data "hcloud_ssh_key" "personal_keys" {
-  for_each = local.uses_hetzner_vms ? toset(var.hetzner_ssh_keys) : toset([])
-  name     = each.value
-}
-
-locals {
-  # Provider-specific SSH key ID lists
-  do_ssh_key_ids      = [for k in data.digitalocean_ssh_key.personal_keys : k.id]
-  hetzner_ssh_key_ids = [for k in data.hcloud_ssh_key.personal_keys : k.id]
-}
-
-#
-# Default B2 Bucket (always provisioned for every project)
+# Default B2 Bucket
 #
 module "default_b2_bucket" {
   source = "../providers/b2/bucket"
@@ -149,10 +121,7 @@ module "default_b2_bucket" {
 
 #
 # Slack Channel
-#
-# Create a Slack channel for CI/CD alerts and notifications.
-# The channel is archived (not deleted) on destroy to preserve message history.
-# This is created before resources/apps so the channel ID is available for alert configuration.
+# Created before resources/apps so the channel ID is available for alerts.
 #
 resource "slack_conversation" "project_channel" {
   name              = "alerts-${var.project_name}"
@@ -160,7 +129,6 @@ resource "slack_conversation" "project_channel" {
   is_private        = false
   action_on_destroy = "archive"
 
-  # Permanent members (you + bot).
   permanent_members = [
     "U035SMG9XFG" # Ainsley Clark
   ]
@@ -168,10 +136,7 @@ resource "slack_conversation" "project_channel" {
 
 #
 # Slack Channel GitHub Secret
-#
-# Create the Slack channel ID secret immediately after channel creation.
-# This ensures the channel ID is available in GitHub Actions even if resource/app
-# provisioning fails later, allowing CI/CD pipelines to send notifications.
+# Created early to ensure availability even if later provisioning fails.
 #
 resource "github_actions_secret" "slack_channel_id" {
   repository      = var.github_config.repo
@@ -223,16 +188,13 @@ module "apps" {
   slack_webhook_url   = var.slack_webhook_url
   slack_channel_name  = slack_conversation.project_channel.name
 
-  # Apps may depend on resources being created first.
   resource_outputs = module.resources
   depends_on       = [module.resources]
 }
 
 #
 # Monitoring
-#
-# Only create the monitoring module if there are monitors configured.
-# This prevents provider initialization when monitoring is not in use.
+# Only created if monitors are configured.
 #
 module "monitoring" {
   count  = length(var.monitors) > 0 ? 1 : 0
@@ -251,161 +213,5 @@ module "monitoring" {
   status_page_theme   = var.status_page_theme
   peekaping_endpoint  = var.peekaping_endpoint
 
-  # Monitoring depends on apps and resources being created.
   depends_on = [module.apps, module.resources]
-}
-
-#
-# Resource and App GitHub Secrets
-#
-# These secrets are created after resources/apps are provisioned.
-# The Slack channel secret is created separately (earlier) to ensure it's available
-# even if resource/app provisioning fails.
-#
-locals {
-  # Define which outputs each resource type has (known at plan time)
-  resource_output_map = {
-    postgres = ["id", "urn", "connection_url"]
-    s3       = ["id", "urn", "bucket_name", "bucket_url", "region", "endpoint"]
-    sqlite   = ["id", "connection_url", "auth_token", "host", "database"]
-  }
-
-  # Define which outputs each app type has (known at plan time)
-  app_output_map = {
-    vm        = ["ip_address", "ssh_private_key", "server_user"]
-    container = []
-  }
-
-  # Build secret keys from var.resources (fully known at plan time)
-  github_secrets_resources = merge([
-    for resource in var.resources : {
-      for output_name in lookup(local.resource_output_map, resource.platform_type, []) :
-      upper("TF_${local.environment_short}_${replace(resource.name, "-", "_")}_${output_name}") => tomap({
-        source_type   = "resource"
-        resource_name = resource.name
-        output_name   = output_name
-      })
-    }
-  ]...)
-
-  # Build secret keys from var.apps (fully known at plan time)
-  github_secrets_apps = merge([
-    for app in var.apps : {
-      for output_name in lookup(local.app_output_map, app.platform_type, []) :
-      upper("TF_${local.environment_short}_${replace(app.name, "-", "_")}_${output_name}") => tomap({
-        source_type = "app"
-        app_name    = app.name
-        output_name = output_name
-      })
-    }
-  ]...)
-
-  # Merge resource and app GitHub secrets (Slack channel secret created separately)
-  github_secrets = merge(
-    local.github_secrets_resources,
-    local.github_secrets_apps
-  )
-}
-
-resource "github_actions_secret" "resource_outputs" {
-  for_each = local.github_secrets
-
-  repository  = var.github_config.repo
-  secret_name = each.key
-  plaintext_value = try(
-    each.value["source_type"] == "resource" ? tostring(module.resources[each.value["resource_name"]][each.value["output_name"]]) :
-    each.value["source_type"] == "app" ? tostring(module.apps[each.value["app_name"]][each.value["output_name"]]) :
-    "NOT_SET"
-  )
-  depends_on = [module.resources, module.apps, module.monitoring]
-}
-
-#
-# Monitor Ping URL GitHub Variables
-#
-# These variables are created for push monitors to enable heartbeat pings from CI/CD workflows.
-# Monitor ping URLs are not sensitive data, so they are stored as repository variables
-# rather than secrets for easier debugging and visibility.
-#
-# Variable naming convention: {ENV}_{IDENTIFIER}_{TYPE}_PING_URL
-# Monitor names follow format: "{Type} - {Identifier}" (e.g., "Backup - Codebase", "Maintenance - Web")
-# Example: PROD_CODEBASE_BACKUP_PING_URL, PROD_WEB_MAINTENANCE_PING_URL
-#
-resource "github_actions_variable" "monitor_ping_urls" {
-  for_each = length(var.monitors) > 0 ? module.monitoring[0].push_monitors : {}
-
-  repository    = var.github_config.repo
-  variable_name = upper("${local.environment_short}_${replace(split(" - ", each.value.name)[1], " ", "_")}_${replace(split(" - ", each.value.name)[0], " ", "_")}_PING_URL")
-  value         = each.value.ping_url
-}
-
-#
-# DigitalOcean Project
-#
-# Create the project and assign all DigitalOcean resources to it.
-# Only includes resources where platform_provider is "digitalocean".
-#
-# Important: We use direct URN references (not try/compact) to maintain a static
-# list structure. This allows Terraform to properly track changes even when URN
-# values are unknown at plan time, preventing the two-apply cycle.
-#
-# Additionally, we preserve manually-added domains by querying the existing project
-# via the DigitalOcean API and merging domain URNs with Terraform-managed resources.
-
-# Query existing project to get manually-added domain URNs
-# This allows manual domain management while Terraform manages other resources
-data "external" "project_domains" {
-  program = ["bash", "${path.module}/scripts/get_project_domains.sh"]
-
-  query = {
-    project_id    = try(var.digitalocean_project_id, "")
-    project_title = var.project_title
-    do_token      = var.do_token
-  }
-}
-
-# Count total projects in the account to determine if this should be default
-data "external" "project_count" {
-  program = ["bash", "${path.module}/scripts/count_projects.sh"]
-
-  query = {
-    do_token = var.do_token
-  }
-}
-
-locals {
-  # Parse comma-separated domain URNs from external script
-  manual_domain_urns = data.external.project_domains.result.domain_urns != "" ? split(",", data.external.project_domains.result.domain_urns) : []
-
-  # Terraform-managed resources (apps, databases, buckets, etc.)
-  terraform_managed_urns = concat(
-    [for r in module.resources : r.urn if r.platform_provider == "digitalocean"],
-    [for a in module.apps : a.urn if a.platform_provider == "digitalocean"]
-  )
-
-  # Merge Terraform-managed resources with manually-added domains
-  all_project_resources = concat(
-    local.terraform_managed_urns,
-    local.manual_domain_urns
-  )
-
-  # Set as default if this is the only project in the account
-  is_only_project = tonumber(data.external.project_count.result.count) == 1
-}
-
-# Wait for DigitalOcean API propagation after app/resource creation
-resource "time_sleep" "wait_for_propagation" {
-  create_duration = "30s"
-  depends_on      = [module.resources, module.apps]
-}
-
-resource "digitalocean_project" "this" {
-  name        = var.project_title
-  description = var.project_description
-  purpose     = "Web Application"
-  environment = title(var.environment)
-  resources   = local.all_project_resources
-  is_default  = local.is_only_project
-
-  depends_on = [time_sleep.wait_for_propagation]
 }

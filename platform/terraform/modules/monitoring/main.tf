@@ -1,6 +1,5 @@
 #
 # Monitoring Module
-#
 # Orchestrates Peekaping resources for monitoring apps and infrastructure.
 #
 

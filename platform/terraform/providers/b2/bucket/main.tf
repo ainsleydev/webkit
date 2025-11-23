@@ -1,5 +1,9 @@
+#
 # B2 Bucket
+# Creates a Backblaze B2 bucket for object storage.
+#
 # Ref: https://registry.terraform.io/providers/Backblaze/b2/latest/docs/resources/bucket
+#
 resource "b2_bucket" "this" {
   bucket_name = var.bucket_name
   bucket_type = var.acl

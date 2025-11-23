@@ -1,5 +1,9 @@
-# App Platform
+#
+# DigitalOcean App Platform
+# Deploys containerised applications to DigitalOcean App Platform.
+#
 # Ref: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/app
+#
 
 locals {
   # Enable Slack notifications only when both webhook URL and channel name are provided.

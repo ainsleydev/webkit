@@ -1,9 +1,8 @@
 #
 # Peekaping Monitors
-#
 # Creates HTTP, DNS, and Push monitors in Peekaping.
 #
-# Reference: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/monitor
+# Ref: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/monitor
 #
 
 #
@@ -79,9 +78,7 @@ resource "peekaping_monitor" "dns" {
 
 #
 # Push Token Generation
-#
 # Generates deterministic push tokens for monitors.
-# Tokens only change when the monitor name changes.
 #
 resource "random_id" "push_token" {
   for_each = { for m in local.push_monitors : m.name => m }
