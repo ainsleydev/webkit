@@ -64,6 +64,7 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, "alerts-test", got.Slack.ChannelName)
 		assert.Equal(t, "C123456", got.Slack.ChannelID)
 		assert.Contains(t, got.Monitoring.HTTPMonitors, "HTTP - example.com")
-		assert.Equal(t, "abc123", got.Monitoring.HTTPMonitors["HTTP - example.com"].ID)
+		monitor := got.Monitoring.HTTPMonitors["HTTP - example.com"].(map[string]any)
+		assert.Equal(t, "abc123", monitor["id"])
 	})
 }

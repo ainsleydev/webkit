@@ -19,17 +19,14 @@ type (
 		Slack      SlackOutputs      `json:"slack"`
 	}
 	// MonitoringOutputs contains Peekaping monitor data for status badges.
+	// Note: Monitor maps use map[string]any for Go template compatibility
+	// with sprig functions (keys, index).
 	MonitoringOutputs struct {
-		PeekapingEndpoint string                   `json:"peekaping_endpoint"`
-		StatusPageURL     string                   `json:"status_page_url"`
-		HTTPMonitors      map[string]MonitorOutput `json:"http_monitors"`
-		DNSMonitors       map[string]MonitorOutput `json:"dns_monitors"`
-		PushMonitors      map[string]MonitorOutput `json:"push_monitors"`
-	}
-	// MonitorOutput represents a single monitor's details.
-	MonitorOutput struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
+		PeekapingEndpoint string         `json:"peekaping_endpoint"`
+		StatusPageURL     string         `json:"status_page_url"`
+		HTTPMonitors      map[string]any `json:"http_monitors"`
+		DNSMonitors       map[string]any `json:"dns_monitors"`
+		PushMonitors      map[string]any `json:"push_monitors"`
 	}
 	// SlackOutputs contains Slack channel information.
 	SlackOutputs struct {

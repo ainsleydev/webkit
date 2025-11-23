@@ -181,6 +181,52 @@ func TestReadme(t *testing.T) {
 		assert.Contains(t, string(got), "example.com")
 	})
 
+	t.Run("With status badge from outputs", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+
+		// Create outputs.json with monitoring data
+		outputsJSON := `{
+			"monitoring": {
+				"peekaping_endpoint": "https://peekaping.example.com",
+				"status_page_url": "https://status.example.com",
+				"http_monitors": {
+					"HTTP - example.com": {"id": "mon123", "name": "HTTP - example.com"}
+				},
+				"dns_monitors": {},
+				"push_monitors": {}
+			},
+			"slack": {"channel_name": "alerts", "channel_id": "C123"}
+		}`
+		err := fs.MkdirAll(".webkit", 0o755)
+		require.NoError(t, err)
+		err = afero.WriteFile(fs, ".webkit/outputs.json", []byte(outputsJSON), 0o644)
+		require.NoError(t, err)
+
+		appDef := &appdef.Definition{
+			WebkitVersion: "v0.1.0",
+			Project: appdef.Project{
+				Name:        "test-project",
+				Title:       "Test Project",
+				Description: "A test project.",
+				Repo: appdef.GitHubRepo{
+					Owner: "testuser",
+					Name:  "test-repo",
+				},
+			},
+		}
+		input := setup(t, fs, appDef)
+
+		err = Readme(context.Background(), input)
+		require.NoError(t, err)
+
+		got, err := afero.ReadFile(fs, "README.md")
+		require.NoError(t, err)
+		assert.Contains(t, string(got), "https://status.example.com")
+		assert.Contains(t, string(got), "mon123")
+	})
+
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 
