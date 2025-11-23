@@ -72,7 +72,10 @@ resource "github_actions_secret" "resource_outputs" {
 # Example: PROD_CODEBASE_BACKUP_PING_URL
 #
 resource "github_actions_variable" "monitor_ping_urls" {
-  for_each = length(var.monitors) > 0 ? module.monitoring[0].push_monitors : {}
+  # Only create variables for push monitors that have an identifier set.
+  for_each = length(var.monitors) > 0 ? {
+    for k, v in module.monitoring[0].push_monitors : k => v if v.identifier != null
+  } : {}
 
   repository = var.github_config.repo
   # Use identifier from Go appdef for consistent naming with workflow templates.
