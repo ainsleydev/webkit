@@ -3,6 +3,11 @@ output "monitors" {
   value       = module.monitors.monitors
 }
 
+output "push_monitors" {
+  description = "Push monitor details including ping URLs for GitHub variables."
+  value       = module.monitors.push_monitors
+}
+
 output "all_monitor_ids" {
   description = "All monitor IDs for reference."
   value       = module.monitors.all_ids
