@@ -44,7 +44,7 @@ terraform {
       source  = "hashicorp/local"
       version = "~> 2.5"
     }
-    jsonformat = {
+    json-formatter = {
       source  = "TheNicholi/json-formatter"
       version = "~> 0.1.0"
     }
@@ -229,7 +229,7 @@ module "monitoring" {
 # Writes monitoring and Slack data to .webkit/outputs.json for README badges.
 # Only created when monitoring is enabled and project_root is provided.
 #
-data "jsonformat_formatted" "webkit_outputs" {
+data "json-formatter_format_json" "webkit_outputs" {
   count = length(var.monitors) > 0 && var.project_root != "" ? 1 : 0
 
   json = jsonencode({
@@ -245,7 +245,7 @@ data "jsonformat_formatted" "webkit_outputs" {
 resource "local_file" "webkit_outputs" {
   count    = length(var.monitors) > 0 && var.project_root != "" ? 1 : 0
   filename = "${var.project_root}/.webkit/outputs.json"
-  content  = data.jsonformat_formatted.webkit_outputs[0].formatted
+  content  = data.json-formatter_format_json.webkit_outputs[0].result
 
   depends_on = [module.monitoring]
 }
