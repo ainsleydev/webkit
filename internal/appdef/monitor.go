@@ -72,11 +72,13 @@ func (m Monitor) VariableName(envShort string) string {
 	if m.Identifier == "" {
 		return ""
 	}
+
 	// Extract type from monitor name (e.g., "Backup" from "Backup - Database").
 	monitorType := "UNKNOWN"
 	if parts := strings.SplitN(m.Name, " - ", 2); len(parts) > 0 {
 		monitorType = strings.ToUpper(strings.ReplaceAll(parts[0], " ", "_"))
 	}
+
 	return fmt.Sprintf("%s_%s_%s_PING_URL",
 		strings.ToUpper(envShort),
 		strings.ToUpper(strings.ReplaceAll(m.Identifier, " ", "_")),

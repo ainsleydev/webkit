@@ -1238,10 +1238,12 @@ func TestGenerateMonitors(t *testing.T) {
 		assert.Equal(t, "Backup - Database", monitors[2].Name)
 		assert.Equal(t, "push", monitors[2].Type)
 		assert.Equal(t, appdef.MonitorIntervalBackup, monitors[2].Interval)
+		assert.Equal(t, "PROD_DB_BACKUP_PING_URL", monitors[2].VariableName, "VariableName should use resource Name, not Title")
 
 		// Codebase backup monitor.
 		assert.Equal(t, "Backup - Codebase", monitors[3].Name)
 		assert.Equal(t, "push", monitors[3].Type)
 		assert.Equal(t, appdef.MonitorIntervalBackup, monitors[3].Interval)
+		assert.Equal(t, "PROD_CODEBASE_BACKUP_PING_URL", monitors[3].VariableName)
 	})
 }
