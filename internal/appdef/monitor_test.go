@@ -5,6 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 func TestMonitorType_String(t *testing.T) {
@@ -276,7 +278,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		def := &Definition{
 			Project: Project{Title: "My Project"},
 			Monitoring: Monitoring{
-				Enabled: boolPtr(false),
+				Enabled: ptr.BoolPtr(false),
 			},
 			Apps: []App{
 				{
@@ -293,7 +295,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Name:  "db",
 					Title: "Database",
 					Backup: Backup{
-						Enabled: boolPtr(true),
+						Enabled: ptr.BoolPtr(true),
 					},
 					Monitoring: true,
 				},
@@ -310,7 +312,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		def := &Definition{
 			Project: Project{Title: "My Project"},
 			Monitoring: Monitoring{
-				Enabled: boolPtr(false),
+				Enabled: ptr.BoolPtr(false),
 				Custom: []Monitor{
 					{
 						Name:     "Custom HTTP Monitor",
@@ -343,7 +345,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		def := &Definition{
 			Project: Project{Title: "My Project"},
 			Monitoring: Monitoring{
-				Enabled: boolPtr(true),
+				Enabled: ptr.BoolPtr(true),
 			},
 			Apps: []App{
 				{
@@ -471,11 +473,11 @@ func TestMonitoring_IsEnabled(t *testing.T) {
 			want:       true,
 		},
 		"Explicit true": {
-			monitoring: Monitoring{Enabled: boolPtr(true)},
+			monitoring: Monitoring{Enabled: ptr.BoolPtr(true)},
 			want:       true,
 		},
 		"Explicit false": {
-			monitoring: Monitoring{Enabled: boolPtr(false)},
+			monitoring: Monitoring{Enabled: ptr.BoolPtr(false)},
 			want:       false,
 		},
 	}
@@ -501,11 +503,11 @@ func TestMonitoring_ApplyDefaults(t *testing.T) {
 			want:       true,
 		},
 		"Explicit true unchanged": {
-			monitoring: Monitoring{Enabled: boolPtr(true)},
+			monitoring: Monitoring{Enabled: ptr.BoolPtr(true)},
 			want:       true,
 		},
 		"Explicit false unchanged": {
-			monitoring: Monitoring{Enabled: boolPtr(false)},
+			monitoring: Monitoring{Enabled: ptr.BoolPtr(false)},
 			want:       false,
 		},
 	}
@@ -518,9 +520,4 @@ func TestMonitoring_ApplyDefaults(t *testing.T) {
 			assert.Equal(t, test.want, *test.monitoring.Enabled)
 		})
 	}
-}
-
-// boolPtr is a helper function to create a pointer to a boolean value.
-func boolPtr(b bool) *bool {
-	return &b
 }
