@@ -190,7 +190,8 @@ func TestReadme(t *testing.T) {
 		outputsJSON := `{
 			"peekaping_endpoint": "https://peekaping.example.com",
 			"monitors": [
-				{"id": "mon123", "name": "HTTP - example.com", "type": "http"}
+				{"id": "mon123", "name": "HTTP - example.com", "type": "http"},
+				{"id": "mon456", "name": "DNS - example.com", "type": "dns"}
 			],
 			"slack": {"channel_name": "alerts", "channel_id": "C123"}
 		}`
@@ -218,8 +219,15 @@ func TestReadme(t *testing.T) {
 
 		got, err := afero.ReadFile(fs, "README.md")
 		require.NoError(t, err)
-		assert.Contains(t, string(got), "https://peekaping.example.com")
+
+		// Verify Status section
+		assert.Contains(t, string(got), "## Status")
+		assert.Contains(t, string(got), "status page")
+		assert.Contains(t, string(got), "uptime.ainsley.dev") // default status page URL
+		assert.Contains(t, string(got), "HTTP - example.com")
+		assert.Contains(t, string(got), "DNS - example.com")
 		assert.Contains(t, string(got), "mon123")
+		assert.Contains(t, string(got), "mon456")
 	})
 
 	t.Run("FS Failure", func(t *testing.T) {
