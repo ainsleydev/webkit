@@ -8,7 +8,10 @@ import (
 type (
 	// Monitoring is the project-level monitoring configuration.
 	// It consolidates status page settings and custom monitors.
+	//
+	// Monitoring is enabled by default (opt-out pattern).
 	Monitoring struct {
+		Enabled    *bool      `json:"enabled,omitempty" description:"Enable or disable all monitoring globally (defaults to true)"`
 		StatusPage StatusPage `json:"statusPage,omitempty" description:"Public status page configuration"`
 		Custom     []Monitor  `json:"custom,omitempty" description:"Custom monitors beyond auto-generated ones"`
 	}
@@ -62,6 +65,24 @@ const (
 // String implements fmt.Stringer on MonitorType.
 func (m MonitorType) String() string {
 	return string(m)
+}
+
+// IsEnabled returns whether monitoring is globally enabled.
+// Defaults to true when the field is nil or explicitly set to true.
+func (m *Monitoring) IsEnabled() bool {
+	if m.Enabled == nil {
+		return true
+	}
+	return *m.Enabled
+}
+
+// applyDefaults sets default values for monitoring configuration.
+func (m *Monitoring) applyDefaults() {
+	// Default monitoring to enabled (opt-out).
+	if m.Enabled == nil {
+		enabled := true
+		m.Enabled = &enabled
+	}
 }
 
 // VariableName returns the GitHub Actions variable name for this monitor's ping URL.
@@ -171,6 +192,11 @@ func (m Monitor) ValidateConfig() error {
 // - Maintenance monitors for VM apps
 // - Custom monitors from project configuration
 func (d *Definition) GenerateMonitors() []Monitor {
+	// Return empty slice if monitoring is globally disabled.
+	if !d.Monitoring.IsEnabled() {
+		return []Monitor{}
+	}
+
 	monitors := make([]Monitor, 0)
 
 	// Generate HTTP and DNS monitors for all apps.
