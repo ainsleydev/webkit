@@ -39,6 +39,19 @@ Built with [WebKit {{ .Definition.WebkitVersion }}](https://github.com/ainsleyde
 
 This repository contains **{{ len .Definition.Apps }} application{{ if ne (len .Definition.Apps) 1 }}s{{ end }}**{{ if .Definition.Resources }} and **{{ len .Definition.Resources }} resource{{ if ne (len .Definition.Resources) 1 }}s{{ end }}**{{ end }}.
 
+{{- if .MonitorBadges }}
+
+## Status
+
+Uptime monitors for the application. Visit the [status page]({{ .StatusPageURL }}) for more details.
+
+| Monitor | Status |
+|---------|--------|
+{{- range .MonitorBadges }}
+| {{ .Name }} | [![Status]({{ .BadgeURL }})]({{ $.StatusPageURL }}) |
+{{- end }}
+{{- end }}
+
 ## Apps
 
 {{- range .Definition.Apps }}
@@ -172,18 +185,6 @@ Deployment is managed by WebKit using:
 **Hosting Providers:**
 {{- range $provider, $items := .ProviderGroups }}
 - **{{ $provider }}:** {{ $items }}
-{{- end }}
-{{- end }}
-{{- if .MonitorBadges }}
-
-## Status
-
-Uptime monitors for the application. Visit the [status page]({{ .StatusPageURL }}) for more details.
-
-| Monitor | Status |
-|---------|--------|
-{{- range .MonitorBadges }}
-| {{ .Name }} | [![Status]({{ .BadgeURL }})]({{ $.StatusPageURL }}) |
 {{- end }}
 {{- end }}
 
