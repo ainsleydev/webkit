@@ -5,6 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 func TestMonitorType_String(t *testing.T) {
@@ -269,6 +271,127 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, MonitorTypePush, monitors[4].Type)
 		assert.Equal(t, MonitorIntervalBackup, monitors[4].Interval)
 	})
+
+	t.Run("Globally disabled", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Project: Project{Title: "My Project"},
+			Monitoring: Monitoring{
+				Enabled: ptr.BoolPtr(false),
+			},
+			Apps: []App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Domains: []Domain{
+						{Name: "example.com", Type: DomainTypePrimary},
+					},
+					Monitoring: true,
+				},
+			},
+			Resources: []Resource{
+				{
+					Name:  "db",
+					Title: "Database",
+					Backup: ResourceBackupConfig{
+						Enabled: true,
+					},
+					Monitoring: true,
+				},
+			},
+		}
+
+		monitors := def.GenerateMonitors()
+		assert.Empty(t, monitors, "Expected no monitors when globally disabled")
+	})
+
+	t.Run("Globally disabled with custom monitors", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Project: Project{Title: "My Project"},
+			Monitoring: Monitoring{
+				Enabled: ptr.BoolPtr(false),
+				Custom: []Monitor{
+					{
+						Name:     "Custom HTTP Monitor",
+						Type:     MonitorTypeHTTP,
+						URL:      "https://example.com/health",
+						Method:   "GET",
+						Interval: 60,
+					},
+				},
+			},
+			Apps: []App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Domains: []Domain{
+						{Name: "example.com", Type: DomainTypePrimary},
+					},
+					Monitoring: true,
+				},
+			},
+		}
+
+		monitors := def.GenerateMonitors()
+		assert.Empty(t, monitors, "Expected no monitors when globally disabled, even with custom monitors defined")
+	})
+
+	t.Run("Globally enabled", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Project: Project{Title: "My Project"},
+			Monitoring: Monitoring{
+				Enabled: ptr.BoolPtr(true),
+			},
+			Apps: []App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Domains: []Domain{
+						{Name: "example.com", Type: DomainTypePrimary},
+					},
+					Monitoring: true,
+				},
+			},
+		}
+
+		monitors := def.GenerateMonitors()
+		// Should have HTTP + DNS + Codebase Backup monitors.
+		require.Len(t, monitors, 3)
+		assert.Equal(t, "HTTP - example.com", monitors[0].Name)
+		assert.Equal(t, "DNS - example.com", monitors[1].Name)
+		assert.Equal(t, "Backup - Codebase", monitors[2].Name)
+	})
+
+	t.Run("Default enabled when nil", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Project:    Project{Title: "My Project"},
+			Monitoring: Monitoring{Enabled: nil},
+			Apps: []App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Domains: []Domain{
+						{Name: "example.com", Type: DomainTypePrimary},
+					},
+					Monitoring: true,
+				},
+			},
+		}
+
+		monitors := def.GenerateMonitors()
+		// Should have HTTP + DNS + Codebase Backup monitors.
+		require.Len(t, monitors, 3)
+		assert.Equal(t, "HTTP - example.com", monitors[0].Name)
+		assert.Equal(t, "DNS - example.com", monitors[1].Name)
+		assert.Equal(t, "Backup - Codebase", monitors[2].Name)
+	})
 }
 
 func TestMonitor_VariableName(t *testing.T) {
@@ -334,6 +457,67 @@ func TestMonitor_VariableName(t *testing.T) {
 			t.Parallel()
 			got := test.monitor.VariableName(test.envShort)
 			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestMonitoring_IsEnabled(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		monitoring Monitoring
+		want       bool
+	}{
+		"Nil defaults to true": {
+			monitoring: Monitoring{Enabled: nil},
+			want:       true,
+		},
+		"Explicit true": {
+			monitoring: Monitoring{Enabled: ptr.BoolPtr(true)},
+			want:       true,
+		},
+		"Explicit false": {
+			monitoring: Monitoring{Enabled: ptr.BoolPtr(false)},
+			want:       false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.monitoring.IsEnabled()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestMonitoring_ApplyDefaults(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		monitoring Monitoring
+		want       bool
+	}{
+		"Nil becomes true": {
+			monitoring: Monitoring{Enabled: nil},
+			want:       true,
+		},
+		"Explicit true unchanged": {
+			monitoring: Monitoring{Enabled: ptr.BoolPtr(true)},
+			want:       true,
+		},
+		"Explicit false unchanged": {
+			monitoring: Monitoring{Enabled: ptr.BoolPtr(false)},
+			want:       false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			test.monitoring.applyDefaults()
+			require.NotNil(t, test.monitoring.Enabled)
+			assert.Equal(t, test.want, *test.monitoring.Enabled)
 		})
 	}
 }

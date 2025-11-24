@@ -101,6 +101,8 @@ func (d *Definition) ApplyDefaults() error {
 		d.Resources[i].applyDefaults()
 	}
 
+	d.Monitoring.applyDefaults()
+
 	return nil
 }
 
