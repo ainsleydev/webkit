@@ -269,6 +269,127 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		assert.Equal(t, MonitorTypePush, monitors[4].Type)
 		assert.Equal(t, MonitorIntervalBackup, monitors[4].Interval)
 	})
+
+	t.Run("Globally disabled", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Project: Project{Title: "My Project"},
+			Monitoring: Monitoring{
+				Enabled: boolPtr(false),
+			},
+			Apps: []App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Domains: []Domain{
+						{Name: "example.com", Type: DomainTypePrimary},
+					},
+					Monitoring: true,
+				},
+			},
+			Resources: []Resource{
+				{
+					Name:  "db",
+					Title: "Database",
+					Backup: Backup{
+						Enabled: boolPtr(true),
+					},
+					Monitoring: true,
+				},
+			},
+		}
+
+		monitors := def.GenerateMonitors()
+		assert.Empty(t, monitors, "Expected no monitors when globally disabled")
+	})
+
+	t.Run("Globally disabled with custom monitors", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Project: Project{Title: "My Project"},
+			Monitoring: Monitoring{
+				Enabled: boolPtr(false),
+				Custom: []Monitor{
+					{
+						Name:     "Custom HTTP Monitor",
+						Type:     MonitorTypeHTTP,
+						URL:      "https://example.com/health",
+						Method:   "GET",
+						Interval: 60,
+					},
+				},
+			},
+			Apps: []App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Domains: []Domain{
+						{Name: "example.com", Type: DomainTypePrimary},
+					},
+					Monitoring: true,
+				},
+			},
+		}
+
+		monitors := def.GenerateMonitors()
+		assert.Empty(t, monitors, "Expected no monitors when globally disabled, even with custom monitors defined")
+	})
+
+	t.Run("Globally enabled", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Project: Project{Title: "My Project"},
+			Monitoring: Monitoring{
+				Enabled: boolPtr(true),
+			},
+			Apps: []App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Domains: []Domain{
+						{Name: "example.com", Type: DomainTypePrimary},
+					},
+					Monitoring: true,
+				},
+			},
+		}
+
+		monitors := def.GenerateMonitors()
+		// Should have HTTP + DNS + Codebase Backup monitors.
+		require.Len(t, monitors, 3)
+		assert.Equal(t, "HTTP - example.com", monitors[0].Name)
+		assert.Equal(t, "DNS - example.com", monitors[1].Name)
+		assert.Equal(t, "Backup - Codebase", monitors[2].Name)
+	})
+
+	t.Run("Default enabled when nil", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Project:    Project{Title: "My Project"},
+			Monitoring: Monitoring{Enabled: nil},
+			Apps: []App{
+				{
+					Name:  "web",
+					Title: "Web",
+					Domains: []Domain{
+						{Name: "example.com", Type: DomainTypePrimary},
+					},
+					Monitoring: true,
+				},
+			},
+		}
+
+		monitors := def.GenerateMonitors()
+		// Should have HTTP + DNS + Codebase Backup monitors.
+		require.Len(t, monitors, 3)
+		assert.Equal(t, "HTTP - example.com", monitors[0].Name)
+		assert.Equal(t, "DNS - example.com", monitors[1].Name)
+		assert.Equal(t, "Backup - Codebase", monitors[2].Name)
+	})
 }
 
 func TestMonitor_VariableName(t *testing.T) {
@@ -368,7 +489,7 @@ func TestMonitoring_IsEnabled(t *testing.T) {
 	}
 }
 
-func TestMonitoring_applyDefaults(t *testing.T) {
+func TestMonitoring_ApplyDefaults(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
@@ -397,135 +518,6 @@ func TestMonitoring_applyDefaults(t *testing.T) {
 			assert.Equal(t, test.want, *test.monitoring.Enabled)
 		})
 	}
-}
-
-func TestDefinition_GenerateMonitors_GloballyDisabled(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Empty slice when globally disabled", func(t *testing.T) {
-		t.Parallel()
-
-		def := &Definition{
-			Project: Project{Title: "My Project"},
-			Monitoring: Monitoring{
-				Enabled: boolPtr(false),
-			},
-			Apps: []App{
-				{
-					Name:  "web",
-					Title: "Web",
-					Domains: []Domain{
-						{Name: "example.com", Type: DomainTypePrimary},
-					},
-					Monitoring: true,
-				},
-			},
-			Resources: []Resource{
-				{
-					Name:  "db",
-					Title: "Database",
-					Backup: Backup{
-						Enabled: boolPtr(true),
-					},
-					Monitoring: true,
-				},
-			},
-		}
-
-		monitors := def.GenerateMonitors()
-		assert.Empty(t, monitors, "Expected no monitors when globally disabled")
-	})
-
-	t.Run("Empty slice with custom monitors when globally disabled", func(t *testing.T) {
-		t.Parallel()
-
-		def := &Definition{
-			Project: Project{Title: "My Project"},
-			Monitoring: Monitoring{
-				Enabled: boolPtr(false),
-				Custom: []Monitor{
-					{
-						Name:     "Custom HTTP Monitor",
-						Type:     MonitorTypeHTTP,
-						URL:      "https://example.com/health",
-						Method:   "GET",
-						Interval: 60,
-					},
-				},
-			},
-			Apps: []App{
-				{
-					Name:  "web",
-					Title: "Web",
-					Domains: []Domain{
-						{Name: "example.com", Type: DomainTypePrimary},
-					},
-					Monitoring: true,
-				},
-			},
-		}
-
-		monitors := def.GenerateMonitors()
-		assert.Empty(t, monitors, "Expected no monitors when globally disabled, even with custom monitors defined")
-	})
-}
-
-func TestDefinition_GenerateMonitors_GloballyEnabled(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Generates monitors when globally enabled", func(t *testing.T) {
-		t.Parallel()
-
-		def := &Definition{
-			Project: Project{Title: "My Project"},
-			Monitoring: Monitoring{
-				Enabled: boolPtr(true),
-			},
-			Apps: []App{
-				{
-					Name:  "web",
-					Title: "Web",
-					Domains: []Domain{
-						{Name: "example.com", Type: DomainTypePrimary},
-					},
-					Monitoring: true,
-				},
-			},
-		}
-
-		monitors := def.GenerateMonitors()
-		// Should have HTTP + DNS + Codebase Backup monitors.
-		require.Len(t, monitors, 3)
-		assert.Equal(t, "HTTP - example.com", monitors[0].Name)
-		assert.Equal(t, "DNS - example.com", monitors[1].Name)
-		assert.Equal(t, "Backup - Codebase", monitors[2].Name)
-	})
-
-	t.Run("Generates monitors when enabled is nil (default)", func(t *testing.T) {
-		t.Parallel()
-
-		def := &Definition{
-			Project:    Project{Title: "My Project"},
-			Monitoring: Monitoring{Enabled: nil},
-			Apps: []App{
-				{
-					Name:  "web",
-					Title: "Web",
-					Domains: []Domain{
-						{Name: "example.com", Type: DomainTypePrimary},
-					},
-					Monitoring: true,
-				},
-			},
-		}
-
-		monitors := def.GenerateMonitors()
-		// Should have HTTP + DNS + Codebase Backup monitors.
-		require.Len(t, monitors, 3)
-		assert.Equal(t, "HTTP - example.com", monitors[0].Name)
-		assert.Equal(t, "DNS - example.com", monitors[1].Name)
-		assert.Equal(t, "Backup - Codebase", monitors[2].Name)
-	})
 }
 
 // boolPtr is a helper function to create a pointer to a boolean value.
