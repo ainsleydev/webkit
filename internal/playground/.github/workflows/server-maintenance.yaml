@@ -49,6 +49,13 @@ jobs:
             -e admin_email=hello@ainsley.dev
             -v
 
+      - name: Ping Peekaping Heartbeat Monitor
+        if: success()
+        uses: ./.github/actions/peekaping-ping
+        with:
+          monitor-url: ${{ vars.PROD_CMS_MAINTENANCE_PING_URL }}
+          description: 'CMS maintenance'
+
       - name: Notify Slack of Maintenance Failure
         if: failure()
         uses: ./.github/actions/slack-notify

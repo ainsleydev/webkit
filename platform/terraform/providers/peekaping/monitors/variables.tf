@@ -1,14 +1,17 @@
 variable "monitors" {
   description = "List of monitors to create."
   type = list(object({
-    name          = string
-    type          = string           # "http", "dns", "push"
-    url           = optional(string) # For HTTP monitors.
-    method        = optional(string) # For HTTP monitors.
-    domain        = optional(string) # For DNS monitors.
-    interval      = number           # Interval in seconds between checks.
-    max_redirects = optional(number) # For HTTP monitors, max redirects to follow (default 3).
-    variable_name = optional(string) # Pre-computed GitHub variable name (e.g., PROD_DB_BACKUP_PING_URL).
+    name           = string
+    type           = string           # "http", "http-keyword", "dns", "push"
+    url            = optional(string) # For HTTP/HTTP-keyword monitors.
+    method         = optional(string) # For HTTP/HTTP-keyword monitors.
+    keyword        = optional(string) # For HTTP-keyword monitors.
+    invert_keyword = optional(bool)   # For HTTP-keyword monitors (default false).
+    domain         = optional(string) # For DNS monitors.
+    resolver_type  = optional(string) # For DNS monitors (A, AAAA, etc.).
+    interval       = number           # Interval in seconds between checks.
+    max_redirects  = optional(number) # For HTTP/HTTP-keyword monitors (default 3).
+    variable_name  = optional(string) # Pre-computed GitHub variable name (e.g., PROD_DB_BACKUP_PING_URL).
   }))
   default = []
 }

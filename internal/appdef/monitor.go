@@ -21,19 +21,18 @@ type (
 	}
 	// Monitor contains minimal monitoring configuration.
 	//
-	// Field usage by monitor type:
-	// - HTTP monitors: URL contains the full URL (including path), Method contains HTTP method
-	// - DNS monitors: Domain contains the domain name to check
-	// - Database monitors: URL contains database connection string or Terraform reference, Method is empty
-	// - Push monitors: URL and Method are empty
+	// Config field usage by monitor type:
+	// - HTTP monitors: {url, method, max_redirects}
+	// - HTTP-Keyword monitors: {url, method, keyword, invert_keyword, max_redirects}
+	// - DNS monitors: {domain, resolver_type}
+	// - Postgres monitors: {connection_string}
+	// - Push monitors: No config required
 	Monitor struct {
-		Name       string      `json:"name" validate:"required" description:"Unique monitor name"`
-		Type       MonitorType `json:"type" validate:"required,oneof=http dns postgres push" description:"Monitor type (http, dns, postgres, push)"`
-		URL        string      `json:"url,omitempty" description:"URL for HTTP monitors or database connection string for postgres monitors"`
-		Method     string      `json:"method,omitempty" description:"HTTP method for HTTP monitors (e.g., GET, POST)"`
-		Domain     string      `json:"domain,omitempty" description:"Domain name for DNS monitors"`
-		Interval   int         `json:"interval,omitempty" description:"Interval in seconds between checks (defaults based on monitor type if not specified)"`
-		Identifier string      `json:"identifier,omitempty" description:"Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method."`
+		Name       string         `json:"name" validate:"required" description:"Unique monitor name"`
+		Type       MonitorType    `json:"type" validate:"required,oneof=http http-keyword dns postgres push" description:"Monitor type (http, http-keyword, dns, postgres, push)"`
+		Interval   int            `json:"interval,omitempty" description:"Interval in seconds between checks (defaults based on monitor type if not specified)"`
+		Identifier string         `json:"identifier,omitempty" description:"Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method."`
+		Config     map[string]any `json:"config,omitempty" description:"Type-specific monitor configuration (e.g., url, method, keyword, domain)"`
 	}
 	// MonitorType defines the type of monitor.
 	MonitorType string
@@ -41,10 +40,11 @@ type (
 
 // MonitorType constants.
 const (
-	MonitorTypeHTTP     MonitorType = "http"
-	MonitorTypeDNS      MonitorType = "dns"
-	MonitorTypePostgres MonitorType = "postgres"
-	MonitorTypePush     MonitorType = "push"
+	MonitorTypeHTTP        MonitorType = "http"
+	MonitorTypeHTTPKeyword MonitorType = "http-keyword"
+	MonitorTypeDNS         MonitorType = "dns"
+	MonitorTypePostgres    MonitorType = "postgres"
+	MonitorTypePush        MonitorType = "push"
 )
 
 // Monitor interval constants (in seconds).
@@ -83,6 +83,84 @@ func (m Monitor) VariableName(envShort string) string {
 		strings.ToUpper(strings.ReplaceAll(m.Identifier, " ", "_")),
 		monitorType,
 	)
+}
+
+// GetConfigString safely retrieves a string value from the monitor config.
+// Returns the value and true if found, empty string and false otherwise.
+func (m Monitor) GetConfigString(key string) (string, bool) {
+	if m.Config == nil {
+		return "", false
+	}
+	val, ok := m.Config[key].(string)
+	return val, ok
+}
+
+// GetConfigInt safely retrieves an int value from the monitor config.
+// Returns the value and true if found, 0 and false otherwise.
+func (m Monitor) GetConfigInt(key string) (int, bool) {
+	if m.Config == nil {
+		return 0, false
+	}
+	val, ok := m.Config[key].(int)
+	return val, ok
+}
+
+// GetConfigBool safely retrieves a bool value from the monitor config.
+// Returns the value and true if found, false and false otherwise.
+func (m Monitor) GetConfigBool(key string) (bool, bool) {
+	if m.Config == nil {
+		return false, false
+	}
+	val, ok := m.Config[key].(bool)
+	return val, ok
+}
+
+// ValidateConfig ensures the monitor has the required config fields for its type.
+func (m Monitor) ValidateConfig() error {
+	// Push monitors don't require config.
+	if m.Type == MonitorTypePush {
+		return nil
+	}
+
+	if m.Config == nil {
+		return fmt.Errorf("%s monitor requires config", m.Type)
+	}
+
+	switch m.Type {
+	case MonitorTypeHTTP:
+		if _, ok := m.GetConfigString("url"); !ok {
+			return fmt.Errorf("http monitor requires 'url' in config")
+		}
+		if _, ok := m.GetConfigString("method"); !ok {
+			return fmt.Errorf("http monitor requires 'method' in config")
+		}
+
+	case MonitorTypeHTTPKeyword:
+		if _, ok := m.GetConfigString("url"); !ok {
+			return fmt.Errorf("http-keyword monitor requires 'url' in config")
+		}
+		if _, ok := m.GetConfigString("method"); !ok {
+			return fmt.Errorf("http-keyword monitor requires 'method' in config")
+		}
+		if _, ok := m.GetConfigString("keyword"); !ok {
+			return fmt.Errorf("http-keyword monitor requires 'keyword' in config")
+		}
+
+	case MonitorTypeDNS:
+		if _, ok := m.GetConfigString("domain"); !ok {
+			return fmt.Errorf("dns monitor requires 'domain' in config")
+		}
+
+	case MonitorTypePostgres:
+		if _, ok := m.GetConfigString("connection_string"); !ok {
+			return fmt.Errorf("postgres monitor requires 'connection_string' in config")
+		}
+
+	default:
+		return fmt.Errorf("unknown monitor type: %s", m.Type)
+	}
+
+	return nil
 }
 
 // GenerateMonitors creates all monitors for the definition.
@@ -138,17 +216,22 @@ func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 			monitors = append(monitors, Monitor{
 				Name:     fmt.Sprintf("HTTP - %s", domain.Name),
 				Type:     MonitorTypeHTTP,
-				URL:      fmt.Sprintf("https://%s", domain.Name),
-				Method:   "GET",
 				Interval: MonitorIntervalHTTP,
+				Config: map[string]any{
+					"url":           fmt.Sprintf("https://%s", domain.Name),
+					"method":        "GET",
+					"max_redirects": 3,
+				},
 			})
 
 			// DNS monitor - checks domain name resolution.
 			monitors = append(monitors, Monitor{
 				Name:     fmt.Sprintf("DNS - %s", domain.Name),
 				Type:     MonitorTypeDNS,
-				Domain:   domain.Name,
 				Interval: MonitorIntervalDNS,
+				Config: map[string]any{
+					"domain": domain.Name,
+				},
 			})
 		}
 	}

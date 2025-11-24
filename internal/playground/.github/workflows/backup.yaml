@@ -83,6 +83,13 @@ jobs:
           # Delete backups older than 30 days
           rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
 
+      - name: Ping Peekaping Heartbeat Monitor
+        if: success()
+        uses: ./.github/actions/peekaping-ping
+        with:
+          monitor-url: ${{ vars.PROD_DB_BACKUP_PING_URL }}
+          description: 'Database backup'
+
       - name: Remove Runner IP from Database
         if: always()
         uses: ./.github/actions/db-remove-ip
@@ -141,6 +148,13 @@ jobs:
         run: |
           echo "Backup completed successfully!"
 
+      - name: Ping Peekaping Heartbeat Monitor
+        if: success()
+        uses: ./.github/actions/peekaping-ping
+        with:
+          monitor-url: ${{ vars.PROD_STORE_BACKUP_PING_URL }}
+          description: 'Storage backup'
+
   backup-codebase:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -196,6 +210,13 @@ jobs:
       - name: Verify Backup
         run: |
           echo "Codebase backup completed successfully!"
+
+      - name: Ping Peekaping Heartbeat Monitor
+        if: success()
+        uses: ./.github/actions/peekaping-ping
+        with:
+          monitor-url: ${{ vars.PROD_CODEBASE_BACKUP_PING_URL }}
+          description: 'Codebase backup'
 
       - name: Notify Slack of Backup Failure
         if: failure()

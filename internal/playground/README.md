@@ -14,7 +14,7 @@
 
 <div align="center">
 
-![WebKit](https://img.shields.io/badge/webkit-v0.6.0-blue)
+![WebKit](https://img.shields.io/badge/webkit-v0.7.4-blue)
 [![Backup](https://github.com/ainsleydev//actions/workflows/backup.yaml/badge.svg)](https://github.com/ainsleydev//actions/workflows/backup.yaml)
 [![PR](https://github.com/ainsleydev//actions/workflows/pr.yaml/badge.svg)](https://github.com/ainsleydev//actions/workflows/pr.yaml)
 [![Release](https://github.com/ainsleydev//actions/workflows/release.yaml/badge.svg)](https://github.com/ainsleydev//actions/workflows/release.yaml)
@@ -29,7 +29,7 @@
 
 My website is a bespoke sales platform for developers and designers.
 
-Built with [WebKit v0.6.0](https://github.com/ainsleydev/webkit).
+Built with [WebKit v0.7.4](https://github.com/ainsleydev/webkit).
 
 This repository contains **3 applications** and **2 resources**.
 
@@ -101,9 +101,9 @@ GoLang API
 | test | `go test ./...` | Yes |
 
 **Tools:**
+- `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
 - `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`
 - `go install github.com/a-h/templ/cmd/templ@latest`
-- `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
 
 ## Resources
 

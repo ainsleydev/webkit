@@ -83,13 +83,17 @@ type (
 	}
 	// tfMonitor represents a monitoring configuration for Terraform.
 	tfMonitor struct {
-		Name         string `json:"name"`
-		Type         string `json:"type"` // "http", "dns", "postgres", "push"
-		URL          string `json:"url,omitempty"`
-		Method       string `json:"method,omitempty"`
-		Domain       string `json:"domain,omitempty"`        // For DNS monitors.
-		Interval     int    `json:"interval"`                // Interval in seconds between checks.
-		VariableName string `json:"variable_name,omitempty"` // Pre-computed GitHub variable name (e.g., PROD_DB_BACKUP_PING_URL).
+		Name          string `json:"name"`
+		Type          string `json:"type"` // "http", "http-keyword", "dns", "postgres", "push"
+		URL           string `json:"url,omitempty"`
+		Method        string `json:"method,omitempty"`
+		Domain        string `json:"domain,omitempty"`         // For DNS monitors.
+		ResolverType  string `json:"resolver_type,omitempty"`  // For DNS monitors (A, AAAA, etc.).
+		Keyword       string `json:"keyword,omitempty"`        // For HTTP-keyword monitors.
+		InvertKeyword bool   `json:"invert_keyword,omitempty"` // For HTTP-keyword monitors.
+		MaxRedirects  int    `json:"max_redirects,omitempty"`  // For HTTP/HTTP-keyword monitors.
+		Interval      int    `json:"interval"`                 // Interval in seconds between checks.
+		VariableName  string `json:"variable_name,omitempty"`  // Pre-computed GitHub variable name (e.g., PROD_DB_BACKUP_PING_URL).
 	}
 )
 
@@ -268,15 +272,49 @@ func (t *Terraform) generateMonitors(e env.Environment) []tfMonitor {
 	monitors := make([]tfMonitor, len(appDefMonitors))
 
 	for i, m := range appDefMonitors {
-		monitors[i] = tfMonitor{
+		tfM := tfMonitor{
 			Name:         m.Name,
 			Type:         string(m.Type),
-			URL:          m.URL,
-			Method:       m.Method,
-			Domain:       m.Domain,
 			Interval:     m.Interval,
 			VariableName: m.VariableName(e.Short()),
 		}
+
+		// Extract config fields based on monitor type.
+		if m.Config != nil {
+			// HTTP and HTTP-Keyword fields.
+			if url, ok := m.Config["url"].(string); ok {
+				tfM.URL = url
+			}
+			if method, ok := m.Config["method"].(string); ok {
+				tfM.Method = method
+			}
+			if maxRedirects, ok := m.Config["max_redirects"].(int); ok {
+				tfM.MaxRedirects = maxRedirects
+			}
+
+			// HTTP-Keyword specific fields.
+			if keyword, ok := m.Config["keyword"].(string); ok {
+				tfM.Keyword = keyword
+			}
+			if invertKeyword, ok := m.Config["invert_keyword"].(bool); ok {
+				tfM.InvertKeyword = invertKeyword
+			}
+
+			// DNS fields.
+			if domain, ok := m.Config["domain"].(string); ok {
+				tfM.Domain = domain
+			}
+			if resolverType, ok := m.Config["resolver_type"].(string); ok {
+				tfM.ResolverType = resolverType
+			}
+
+			// Postgres fields (uses url for connection_string).
+			if connectionString, ok := m.Config["connection_string"].(string); ok {
+				tfM.URL = connectionString
+			}
+		}
+
+		monitors[i] = tfM
 	}
 
 	return monitors
