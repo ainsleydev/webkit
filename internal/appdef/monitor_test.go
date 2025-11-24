@@ -294,8 +294,8 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 				{
 					Name:  "db",
 					Title: "Database",
-					Backup: Backup{
-						Enabled: ptr.BoolPtr(true),
+					Backup: ResourceBackupConfig{
+						Enabled: true,
 					},
 					Monitoring: true,
 				},
