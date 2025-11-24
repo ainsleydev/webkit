@@ -8,6 +8,8 @@ import (
 type (
 	// Monitoring is the project-level monitoring configuration.
 	// It consolidates status page settings and custom monitors.
+	//
+	// Monitoring is enabled by default (opt-out pattern).
 	Monitoring struct {
 		Enabled    *bool      `json:"enabled,omitempty" description:"Enable or disable all monitoring globally (defaults to true)"`
 		StatusPage StatusPage `json:"statusPage,omitempty" description:"Public status page configuration"`
