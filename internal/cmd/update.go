@@ -12,7 +12,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/cmd/files"
 	"github.com/ainsleydev/webkit/internal/cmd/secrets"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 )
 
 var updateCmd = &cli.Command{

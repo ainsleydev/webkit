@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 	"github.com/ainsleydev/webkit/pkg/env"
 )
 

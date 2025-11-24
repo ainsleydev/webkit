@@ -12,9 +12,9 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 )
 
 func TestDecrypt(t *testing.T) {

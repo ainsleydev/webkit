@@ -16,9 +16,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/printer"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 )
 
 func setup(t *testing.T) *FileGenerator {

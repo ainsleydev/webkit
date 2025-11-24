@@ -13,7 +13,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 )
 
 var driftCmd = &cli.Command{

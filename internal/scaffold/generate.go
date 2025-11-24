@@ -14,8 +14,8 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/ainsleydev/webkit/internal/fsext"
-	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/printer"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 	"github.com/ainsleydev/webkit/pkg/enforce"
 )
 

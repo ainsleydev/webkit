@@ -74,7 +74,8 @@ resource "github_actions_secret" "resource_outputs" {
 resource "github_actions_variable" "monitor_ping_urls" {
   # Only create variables for push monitors that have a variable_name computed by Go.
   for_each = length(var.monitors) > 0 ? {
-    for k, v in module.monitoring[0].push_monitors : k => v if v.variable_name != null && v.variable_name != ""
+    for m in module.monitoring[0].monitors : m.name => m
+    if m.type == "push" && try(m.variable_name, "") != ""
   } : {}
 
   repository    = var.github_config.repo

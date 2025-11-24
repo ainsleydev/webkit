@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 )
 
 // PnpmWorkspace scaffolds the pnpm-workspace.yaml file with

@@ -3,7 +3,7 @@ package scaffold
 import (
 	"fmt"
 
-	"github.com/ainsleydev/webkit/internal/manifest"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 )
 
 // Option is a function that configures write options

@@ -12,20 +12,23 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
+	"github.com/ainsleydev/webkit/internal/state/outputs"
 	"github.com/ainsleydev/webkit/internal/templates"
 )
 
 const (
-	webkitSymbolURL = "https://github.com/ainsleydev/webkit/blob/main/resources/symbol.png?raw=true"
-	resourcesDir    = "resources"
+	webkitSymbolURL        = "https://github.com/ainsleydev/webkit/blob/main/resources/symbol.png?raw=true"
+	resourcesDir           = "resources"
+	defaultPeekapingDomain = "uptime.ainsley.dev"
 )
 
 // Readme creates the README.md file at the project root by combining
 // the base template with project data from app.json.
 func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
+	webkitOutputs := outputs.Load(input.FS)
 
 	data := map[string]any{
 		"Definition":     appDef,
@@ -34,6 +37,9 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 		"DomainLinks":    formatDomainLinks(appDef),
 		"ProviderGroups": groupByProvider(appDef),
 		"CurrentYear":    time.Now().Year(),
+		"Outputs":        webkitOutputs,
+		"StatusPageURL":  getStatusPageURL(appDef),
+		"MonitorBadges":  formatMonitorBadges(webkitOutputs),
 	}
 
 	err := input.Generator().Template(
@@ -105,4 +111,52 @@ func groupByProvider(def *appdef.Definition) map[string]string {
 	}
 
 	return result
+}
+
+// getStatusPageURL returns the status page URL based on appdef config.
+// Priority: StatusPage.Domain > StatusPage.Slug > default peekaping domain.
+func getStatusPageURL(def *appdef.Definition) string {
+	if def.Monitoring.StatusPage.Domain != "" {
+		// Peekaping doesn't support https for CNAME's yet, might be good
+		// to open an issue on their repo.
+		return fmt.Sprintf("http://%s", def.Monitoring.StatusPage.Domain)
+	}
+
+	if def.Monitoring.StatusPage.Slug != "" {
+		return fmt.Sprintf("https://%s/status/%s", defaultPeekapingDomain, def.Monitoring.StatusPage.Slug)
+	}
+
+	return fmt.Sprintf("https://%s", defaultPeekapingDomain)
+}
+
+// monitorBadge represents a single monitor's badge data for the README.
+type monitorBadge struct {
+	Name     string
+	BadgeURL string
+	Type     string
+}
+
+// formatMonitorBadges creates badge data for all monitors from outputs.
+func formatMonitorBadges(webkitOutputs *outputs.WebkitOutputs) []monitorBadge {
+	if webkitOutputs == nil || len(webkitOutputs.Monitors) == 0 {
+		return nil
+	}
+
+	endpoint := webkitOutputs.PeekapingEndpoint
+	if endpoint == "" {
+		endpoint = fmt.Sprintf("https://%s", defaultPeekapingDomain)
+	}
+
+	labels := "style=flat&upLabel=up&downLabel=down&pendingLabel=pending&maintenanceLabel=maintenance&pausedLabel=paused"
+
+	badges := make([]monitorBadge, 0, len(webkitOutputs.Monitors))
+	for _, m := range webkitOutputs.Monitors {
+		badges = append(badges, monitorBadge{
+			Name:     m.Name,
+			BadgeURL: fmt.Sprintf("%s/api/v1/badge/%s/status?%s", endpoint, m.ID, labels),
+			Type:     m.Type,
+		})
+	}
+
+	return badges
 }

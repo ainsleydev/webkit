@@ -10,9 +10,9 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
-	"github.com/ainsleydev/webkit/internal/manifest"
 	"github.com/ainsleydev/webkit/internal/pkgjson"
 	"github.com/ainsleydev/webkit/internal/scaffold"
+	"github.com/ainsleydev/webkit/internal/state/manifest"
 )
 
 // PackageJSON scaffolds a root JSON file to act as a
