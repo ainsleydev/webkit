@@ -88,7 +88,6 @@ type (
 		Method       string `json:"method,omitempty"`
 		Domain       string `json:"domain,omitempty"`        // For DNS monitors.
 		Interval     int    `json:"interval"`                // Interval in seconds between checks.
-		MaxRedirects *int   `json:"max_redirects,omitempty"` // For HTTP monitors, max redirects to follow.
 		VariableName string `json:"variable_name,omitempty"` // Pre-computed GitHub variable name (e.g., PROD_DB_BACKUP_PING_URL).
 	}
 )
@@ -268,7 +267,6 @@ func (t *Terraform) generateMonitors(e env.Environment) []tfMonitor {
 			Method:       m.Method,
 			Domain:       m.Domain,
 			Interval:     m.Interval,
-			MaxRedirects: m.MaxRedirects,
 			VariableName: m.VariableName(e.Short()),
 		}
 	}

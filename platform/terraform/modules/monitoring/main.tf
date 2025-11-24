@@ -18,6 +18,11 @@ locals {
     "ac5b2626-3425-4496-a318-ede51ce7baa8",
     "dd1151bc-1d7a-42d1-8166-f87b7b180798",
   ]
+
+  # Set default max_redirects for HTTP monitors.
+  monitors = [for m in var.monitors : merge(m, {
+    max_redirects = m.type == "http" ? coalesce(m.max_redirects, 3) : null
+  })]
 }
 
 #
@@ -37,7 +42,7 @@ module "project_tag" {
 module "monitors" {
   source = "../../providers/peekaping/monitors"
 
-  monitors           = var.monitors
+  monitors           = local.monitors
   peekaping_endpoint = var.peekaping_endpoint
   notification_ids   = local.notification_ids
   tag_ids            = concat([module.project_tag.id], local.static_tag_ids)
