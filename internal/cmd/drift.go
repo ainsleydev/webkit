@@ -33,6 +33,7 @@ var driftCmd = &cli.Command{
 var userManagedPaths = []string{
 	"docs/AGENTS.md",
 	"docs/AGENTS.md.tmpl",
+	"docs/README.md",
 }
 
 // drift detects if tracked files have been manually modified or deleted.
