@@ -417,6 +417,33 @@ In addition to automatically generated monitors for domains, you can define cust
 - `postgres` - PostgreSQL connection monitoring
 - `push` - Heartbeat/webhook monitoring
 
+### Default Intervals
+
+The `interval` field is **optional** for custom monitors. If not specified, sensible defaults are automatically applied based on the monitor type:
+
+| Monitor Type | Default Interval | Description |
+|--------------|------------------|-------------|
+| `http` | 60 seconds | Standard HTTP health checks |
+| `http-keyword` | 60 seconds | HTTP content validation |
+| `postgres` | 60 seconds | Database connection checks |
+| `dns` | 300 seconds (5 minutes) | DNS resolution checks |
+| `push` | 90000 seconds (25 hours) | Heartbeat monitoring for daily jobs |
+
+**Example with default interval:**
+```json
+{
+  "name": "API Health Check",
+  "type": "http",
+  "config": {
+    "url": "https://api.example.com/health",
+    "method": "GET"
+  }
+}
+```
+This monitor will automatically use a 60-second interval.
+
+**Note**: All intervals must be at least 20 seconds (Peekaping provider requirement). The default intervals are chosen to match the behavior of automatically-generated monitors and provide appropriate check frequencies for each monitor type.
+
 ## Future Enhancements
 
 1. **Resource monitoring**:

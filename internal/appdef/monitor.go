@@ -88,7 +88,7 @@ func (m *Monitoring) applyDefaults() {
 // VariableName returns the GitHub Actions variable name for this monitor's ping URL.
 // Format: {ENV}_{IDENTIFIER}_{TYPE}_PING_URL (e.g., PROD_DB_BACKUP_PING_URL).
 // Only applicable for push monitors with an Identifier set.
-func (m Monitor) VariableName(envShort string) string {
+func (m *Monitor) VariableName(envShort string) string {
 	if m.Identifier == "" {
 		return ""
 	}
@@ -108,7 +108,7 @@ func (m Monitor) VariableName(envShort string) string {
 
 // GetConfigString safely retrieves a string value from the monitor config.
 // Returns the value and true if found, empty string and false otherwise.
-func (m Monitor) GetConfigString(key string) (string, bool) {
+func (m *Monitor) GetConfigString(key string) (string, bool) {
 	if m.Config == nil {
 		return "", false
 	}
@@ -118,7 +118,7 @@ func (m Monitor) GetConfigString(key string) (string, bool) {
 
 // GetConfigInt safely retrieves an int value from the monitor config.
 // Returns the value and true if found, 0 and false otherwise.
-func (m Monitor) GetConfigInt(key string) (int, bool) {
+func (m *Monitor) GetConfigInt(key string) (int, bool) {
 	if m.Config == nil {
 		return 0, false
 	}
@@ -128,7 +128,7 @@ func (m Monitor) GetConfigInt(key string) (int, bool) {
 
 // GetConfigBool safely retrieves a bool value from the monitor config.
 // Returns the value and true if found, false and false otherwise.
-func (m Monitor) GetConfigBool(key string) (bool, bool) {
+func (m *Monitor) GetConfigBool(key string) (bool, bool) {
 	if m.Config == nil {
 		return false, false
 	}
@@ -137,7 +137,7 @@ func (m Monitor) GetConfigBool(key string) (bool, bool) {
 }
 
 // ValidateConfig ensures the monitor has the required config fields for its type.
-func (m Monitor) ValidateConfig() error {
+func (m *Monitor) ValidateConfig() error {
 	// Push monitors don't require config.
 	if m.Type == MonitorTypePush {
 		return nil
@@ -184,6 +184,25 @@ func (m Monitor) ValidateConfig() error {
 	return nil
 }
 
+// applyDefaults sets default values for the monitor.
+// If interval is not set (0), applies sensible defaults based on monitor type.
+func (m *Monitor) applyDefaults() {
+	// Only apply default if interval is not explicitly set (0).
+	if m.Interval != 0 {
+		return
+	}
+
+	// Apply type-specific default intervals.
+	switch m.Type {
+	case MonitorTypeHTTP, MonitorTypeHTTPKeyword, MonitorTypePostgres:
+		m.Interval = MonitorIntervalHTTP // 60 seconds
+	case MonitorTypeDNS:
+		m.Interval = MonitorIntervalDNS // 300 seconds (5 minutes)
+	case MonitorTypePush:
+		m.Interval = MonitorIntervalBackup // 90000 seconds (25 hours)
+	}
+}
+
 // GenerateMonitors creates all monitors for the definition.
 // This includes:
 // - HTTP and DNS monitors for app domains
@@ -217,7 +236,11 @@ func (d *Definition) GenerateMonitors() []Monitor {
 	monitors = append(monitors, d.generateMaintenanceMonitors()...)
 
 	// Append custom monitors from root configuration.
-	monitors = append(monitors, d.Monitoring.Custom...)
+	// Apply defaults to custom monitors before adding them.
+	for i := range d.Monitoring.Custom {
+		d.Monitoring.Custom[i].applyDefaults()
+		monitors = append(monitors, d.Monitoring.Custom[i])
+	}
 
 	return monitors
 }

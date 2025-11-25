@@ -531,6 +531,88 @@ func TestMonitoring_ApplyDefaults(t *testing.T) {
 	}
 }
 
+func TestMonitor_ApplyDefaults(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		monitor Monitor
+		want    int
+	}{
+		"HTTP monitor without interval gets default": {
+			monitor: Monitor{
+				Name:     "Test HTTP",
+				Type:     MonitorTypeHTTP,
+				Interval: 0,
+			},
+			want: MonitorIntervalHTTP,
+		},
+		"HTTP keyword monitor without interval gets default": {
+			monitor: Monitor{
+				Name:     "Test Keyword",
+				Type:     MonitorTypeHTTPKeyword,
+				Interval: 0,
+			},
+			want: MonitorIntervalHTTP,
+		},
+		"DNS monitor without interval gets default": {
+			monitor: Monitor{
+				Name:     "Test DNS",
+				Type:     MonitorTypeDNS,
+				Interval: 0,
+			},
+			want: MonitorIntervalDNS,
+		},
+		"Postgres monitor without interval gets default": {
+			monitor: Monitor{
+				Name:     "Test Postgres",
+				Type:     MonitorTypePostgres,
+				Interval: 0,
+			},
+			want: MonitorIntervalHTTP,
+		},
+		"Push monitor without interval gets default": {
+			monitor: Monitor{
+				Name:     "Test Push",
+				Type:     MonitorTypePush,
+				Interval: 0,
+			},
+			want: MonitorIntervalBackup,
+		},
+		"HTTP monitor with explicit interval unchanged": {
+			monitor: Monitor{
+				Name:     "Test HTTP",
+				Type:     MonitorTypeHTTP,
+				Interval: 120,
+			},
+			want: 120,
+		},
+		"DNS monitor with explicit interval unchanged": {
+			monitor: Monitor{
+				Name:     "Test DNS",
+				Type:     MonitorTypeDNS,
+				Interval: 600,
+			},
+			want: 600,
+		},
+		"Push monitor with explicit interval unchanged": {
+			monitor: Monitor{
+				Name:     "Test Push",
+				Type:     MonitorTypePush,
+				Interval: 3600,
+			},
+			want: 3600,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			test.monitor.applyDefaults()
+			assert.Equal(t, test.want, test.monitor.Interval)
+		})
+	}
+}
+
 func TestMonitor_ValidateConfig(t *testing.T) {
 	t.Parallel()
 
