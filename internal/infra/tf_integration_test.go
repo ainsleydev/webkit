@@ -3,6 +3,7 @@
 package infra
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -860,6 +861,11 @@ func TestTerraform_Defaults(t *testing.T) {
 		t.Log("Slack Channel Configuration")
 		{
 			var slackChannel map[string]any
+
+			indent, err2 := json.MarshalIndent(got.Plan.ResourceChanges, "", "\t")
+			require.NoError(t, err2)
+			t.Log(string(indent))
+
 			for _, rc := range got.Plan.ResourceChanges {
 				if rc.Type == "slack_conversation" && rc.Name == "this" {
 					slackChannel = rc.Change.After.(map[string]any)
