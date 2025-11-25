@@ -633,7 +633,7 @@ func TestFormatDriftAsMarkdown(t *testing.T) {
 	})
 }
 
-func TestCopyUserFiles(t *testing.T) {
+func TestCopyGenerationDependencies(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Copies AGENTS.md when it exists", func(t *testing.T) {
@@ -646,7 +646,7 @@ func TestCopyUserFiles(t *testing.T) {
 		err := afero.WriteFile(srcFS, "docs/AGENTS.md", []byte(customContent), 0o644)
 		require.NoError(t, err)
 
-		err = copyUserFiles(srcFS, dstFS)
+		err = copyGenerationDependencies(srcFS, dstFS)
 		require.NoError(t, err)
 
 		exists, err := afero.Exists(dstFS, "docs/AGENTS.md")
@@ -668,7 +668,7 @@ func TestCopyUserFiles(t *testing.T) {
 		err := afero.WriteFile(srcFS, "docs/AGENTS.md.tmpl", []byte(templateContent), 0o644)
 		require.NoError(t, err)
 
-		err = copyUserFiles(srcFS, dstFS)
+		err = copyGenerationDependencies(srcFS, dstFS)
 		require.NoError(t, err)
 
 		exists, err := afero.Exists(dstFS, "docs/AGENTS.md.tmpl")
@@ -686,7 +686,7 @@ func TestCopyUserFiles(t *testing.T) {
 		srcFS := afero.NewMemMapFs()
 		dstFS := afero.NewMemMapFs()
 
-		err := copyUserFiles(srcFS, dstFS)
+		err := copyGenerationDependencies(srcFS, dstFS)
 		assert.NoError(t, err)
 	})
 
@@ -701,7 +701,7 @@ func TestCopyUserFiles(t *testing.T) {
 		err = afero.WriteFile(srcFS, "docs/AGENTS.md.tmpl", []byte("template content"), 0o644)
 		require.NoError(t, err)
 
-		err = copyUserFiles(srcFS, dstFS)
+		err = copyGenerationDependencies(srcFS, dstFS)
 		require.NoError(t, err)
 
 		exists1, err := afero.Exists(dstFS, "docs/AGENTS.md")
@@ -722,7 +722,7 @@ func TestCopyUserFiles(t *testing.T) {
 		err := afero.WriteFile(srcFS, "docs/README.md", []byte(customContent), 0o644)
 		require.NoError(t, err)
 
-		err = copyUserFiles(srcFS, dstFS)
+		err = copyGenerationDependencies(srcFS, dstFS)
 		require.NoError(t, err)
 
 		exists, err := afero.Exists(dstFS, "docs/README.md")
@@ -746,7 +746,7 @@ func TestCopyUserFiles(t *testing.T) {
 		err = afero.WriteFile(srcFS, ".webkit/outputs.json", []byte(outputsContent), 0o644)
 		require.NoError(t, err)
 
-		err = copyUserFiles(srcFS, dstFS)
+		err = copyGenerationDependencies(srcFS, dstFS)
 		require.NoError(t, err)
 
 		exists, err := afero.Exists(dstFS, ".webkit/outputs.json")
