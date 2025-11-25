@@ -97,7 +97,7 @@ admin: {
 ### Reusable Fields
 
 For fields that occur more than once within the codebase, they should be abstract within `src/fields`. Every field that
-is configurable should accept overrides so the caller can override particular parts of the fieldd.
+is configurable should accept overrides so the caller can override particular parts of the field.
 
 #### FAQs Example
 
@@ -213,7 +213,7 @@ Use `admin.width` to control field widths in rows:
 
 
 Use hooks for data transformation and business logic. Hooks should be placed in a separate file under `hooks/{file}.ts`
-within the collection folder and have a test along side it.
+within the collection folder and have a test alongside it.
 
 **Example**:
 

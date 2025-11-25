@@ -10,9 +10,10 @@
 #
 locals {
   # Filter monitors by type.
-  http_monitors = [for m in var.monitors : m if m.type == "http"]
-  dns_monitors  = [for m in var.monitors : m if m.type == "dns"]
-  push_monitors = [for m in var.monitors : m if m.type == "push"]
+  http_monitors         = [for m in var.monitors : m if m.type == "http"]
+  http_keyword_monitors = [for m in var.monitors : m if m.type == "http-keyword"]
+  dns_monitors          = [for m in var.monitors : m if m.type == "dns"]
+  push_monitors         = [for m in var.monitors : m if m.type == "push"]
 
   # Map push monitors by name for identifier lookup in outputs.
   push_monitors_map = { for m in local.push_monitors : m.name => m }
@@ -56,6 +57,35 @@ resource "peekaping_monitor" "http" {
 }
 
 #
+# HTTP Keyword Monitors
+#
+resource "peekaping_monitor" "http_keyword" {
+  for_each = { for m in local.http_keyword_monitors : m.name => m }
+
+  name = each.value.name
+  type = "http-keyword"
+  config = jsonencode({
+    url                  = each.value.url
+    method               = coalesce(each.value.method, "GET")
+    encoding             = "json"
+    accepted_statuscodes = ["2XX"]
+    authMethod           = "none"
+    max_redirects        = coalesce(each.value.max_redirects, 3)
+    keyword              = each.value.keyword
+    invert_keyword       = coalesce(each.value.invert_keyword, false)
+  })
+
+  interval         = each.value.interval
+  timeout          = local.defaults.timeout
+  max_retries      = local.defaults.http_max_retries
+  retry_interval   = local.defaults.retry_interval
+  resend_interval  = local.defaults.resend_interval
+  active           = true
+  notification_ids = var.notification_ids
+  tag_ids          = var.tag_ids
+}
+
+#
 # DNS Monitors
 #
 resource "peekaping_monitor" "dns" {
@@ -65,9 +95,9 @@ resource "peekaping_monitor" "dns" {
   type = "dns"
   config = jsonencode({
     host            = each.value.domain
-    resolver_server = "1.1.1.1" # Cloudflare DNS
+    resolver_server = "1.1.1.1"                          # Cloudflare DNS
     port            = 53
-    resolve_type    = "A" # A record lookup
+    resolve_type    = coalesce(each.value.resolver_type, "A") # A record lookup
   })
 
   interval         = each.value.interval

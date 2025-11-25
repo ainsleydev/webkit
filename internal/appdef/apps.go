@@ -42,7 +42,7 @@ type (
 	Infra struct {
 		Provider ResourceProvider `json:"provider" validate:"required" description:"Cloud infrastructure provider (digitalocean, backblaze)"`
 		Type     string           `json:"type" validate:"required" description:"Infrastructure type (vm, app, container, function)"`
-		Config   map[string]any   `json:"config" description:"Provider-specific infrastructure configuration options"`
+		Config   Config           `json:"config" description:"Provider-specific infrastructure configuration options"`
 	}
 	// Domain represents a domain name configuration for accessing an app.
 	// Domains can be primary, aliases, or unmanaged depending on your DNS setup.

@@ -1,6 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/ainsleydev/webkit/main/schema.json",
-	"webkit_version": "v0.6.1",
+	"webkit_version": "v0.7.4",
 	"project": {
 		"name": "my-website",
 		"title": "My Website",
@@ -10,6 +10,41 @@
 			"name": ""
 		},
 		"brand": {}
+	},
+	"monitoring": {
+		"statusPage": {},
+		"custom": [
+			{
+				"name": "Homepage Content Check",
+				"type": "http-keyword",
+				"interval": 300,
+				"config": {
+					"keyword": "Welcome",
+					"method": "GET",
+					"url": "https://my-website.com"
+				}
+			},
+			{
+				"name": "Error Page Detection",
+				"type": "http-keyword",
+				"interval": 120,
+				"config": {
+					"keyword": "error",
+					"method": "GET",
+					"url": "https://my-website.com/api/health"
+				}
+			},
+			{
+				"name": "External API Check",
+				"type": "http",
+				"interval": 60,
+				"config": {
+					"max_redirects": 5,
+					"method": "GET",
+					"url": "https://api.example.com/health"
+				}
+			}
+		]
 	},
 	"shared": {
 		"env": {
@@ -40,9 +75,7 @@
 			"backup": {
 				"enabled": true
 			},
-			"monitoring": {
-				"enabled": true
-			}
+			"monitoring": true
 		},
 		{
 			"name": "store",
@@ -56,9 +89,7 @@
 			"backup": {
 				"enabled": true
 			},
-			"monitoring": {
-				"enabled": true
-			}
+			"monitoring": true
 		}
 	],
 	"apps": [
@@ -94,9 +125,7 @@
 					"PAYLOAD_SECRET": {"source": "sops", "value": "PAYLOAD_SECRET"}
 				}
 			},
-			"monitoring": {
-				"enabled": true
-			},
+			"monitoring": true,
 			"usesNPM": null,
 			"domains": [
 				{
@@ -139,9 +168,7 @@
 					"PUBLIC_API_URL": {"source": "value", "value": "https://api.my-website.com"}
 				}
 			},
-			"monitoring": {
-				"enabled": true
-			},
+			"monitoring": true,
 			"usesNPM": null,
 			"commands": {
 				"build": {"command": "pnpm build"},
@@ -166,9 +193,7 @@
 				"config": null
 			},
 			"env": {},
-			"monitoring": {
-				"enabled": true
-			},
+			"monitoring": true,
 			"usesNPM": null,
 			"tools": {
 				"golangci-lint": {"type": "go", "name": "github.com/golangci/golangci-lint/cmd/golangci-lint", "version": "latest"},

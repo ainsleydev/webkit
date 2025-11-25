@@ -518,9 +518,11 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 						{
 							Name:     "Custom API Monitor",
 							Type:     MonitorTypeHTTP,
-							URL:      "https://api.example.com/health",
-							Method:   "GET",
 							Interval: 60,
+							Config: map[string]any{
+								"url":    "https://api.example.com/health",
+								"method": "GET",
+							},
 						},
 					},
 				},

@@ -17,7 +17,21 @@
 								"type": "string"
 							},
 							{
-								"$ref": "#"
+								"properties": {
+									"command": {
+										"description": "The shell command to execute (e.g., 'pnpm build')",
+										"type": "string"
+									},
+									"skip_ci": {
+										"description": "Whether to skip running this command in CI/CD pipelines",
+										"type": "boolean"
+									},
+									"timeout": {
+										"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+										"type": "string"
+									}
+								},
+								"type": "object"
 							}
 						],
 						"properties": {
@@ -62,8 +76,8 @@
 					"description": "Infrastructure and deployment configuration"
 				},
 				"monitoring": {
-					"$ref": "#/definitions/AppdefMonitoring",
-					"description": "Uptime monitoring configuration for this app"
+					"description": "Whether to enable uptime monitoring for this app (defaults to true)",
+					"type": "boolean"
 				},
 				"name": {
 					"description": "Unique identifier for the app (lowercase, hyphenated)",
@@ -107,6 +121,10 @@
 		},
 		"AppdefBrand": {
 			"properties": {
+				"iconUrl": {
+					"description": "URL to the project's icon/favicon image (used for status pages)",
+					"type": "string"
+				},
 				"logoUrl": {
 					"description": "URL to the project's logo image",
 					"type": "string"
@@ -239,11 +257,58 @@
 			},
 			"type": "object"
 		},
+		"AppdefMonitor": {
+			"properties": {
+				"domain": {
+					"description": "Domain name for DNS monitors",
+					"type": "string"
+				},
+				"identifier": {
+					"description": "Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method.",
+					"type": "string"
+				},
+				"interval": {
+					"description": "Interval in seconds between checks (defaults based on monitor type if not specified)",
+					"type": "integer"
+				},
+				"maxRedirects": {
+					"description": "Maximum redirects to follow for HTTP monitors (default 0). Set to 1 for alias domains that redirect.",
+					"type": [
+						"null",
+						"integer"
+					]
+				},
+				"method": {
+					"description": "HTTP method for HTTP monitors (e.g., GET, POST)",
+					"type": "string"
+				},
+				"name": {
+					"description": "Unique monitor name",
+					"type": "string"
+				},
+				"type": {
+					"description": "Monitor type (http, dns, postgres, push)",
+					"type": "string"
+				},
+				"url": {
+					"description": "URL for HTTP monitors or database connection string for postgres monitors",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
 		"AppdefMonitoring": {
 			"properties": {
-				"enabled": {
-					"description": "Whether to enable uptime monitoring for this app or resource (defaults to true)",
-					"type": "boolean"
+				"custom": {
+					"description": "Custom monitors beyond auto-generated ones",
+					"items": {
+						"$ref": "#/definitions/AppdefMonitor"
+					},
+					"type": "array"
+				},
+				"statusPage": {
+					"$ref": "#/definitions/AppdefStatusPage",
+					"description": "Public status page configuration"
 				}
 			},
 			"type": "object"
@@ -292,8 +357,8 @@
 					"type": "string"
 				},
 				"monitoring": {
-					"$ref": "#/definitions/AppdefMonitoring",
-					"description": "Uptime monitoring configuration for this resource"
+					"description": "Whether to enable uptime monitoring for this resource (defaults to true)",
+					"type": "boolean"
 				},
 				"name": {
 					"description": "Unique identifier for the resource (used in environment variable references)",
@@ -345,6 +410,23 @@
 			},
 			"type": "object"
 		},
+		"AppdefStatusPage": {
+			"properties": {
+				"domain": {
+					"description": "Custom domain for the status page (e.g., status.example.com). If not set, Terraform will not configure a custom domain.",
+					"type": "string"
+				},
+				"slug": {
+					"description": "URL slug for the status page (e.g., my-project). If not set, defaults to a kebab-case version of the project name.",
+					"type": "string"
+				},
+				"theme": {
+					"description": "Theme for the status page (auto, light, dark). Defaults to auto.",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
 		"AppdefTool": {
 			"properties": {
 				"install": {
@@ -383,6 +465,10 @@
 				"array",
 				"null"
 			]
+		},
+		"monitoring": {
+			"$ref": "#/definitions/AppdefMonitoring",
+			"description": "Monitoring configuration including status page and custom monitors"
 		},
 		"project": {
 			"$ref": "#/definitions/AppdefProject",

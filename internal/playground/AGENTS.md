@@ -26,11 +26,11 @@ All HTML should be using the [Markup Validation Service](https://validator.w3.or
 pushing to production. This will help avoid common mistakes such as closing tags, wrong attributes and many more.
 
 By validating HTML it ensures that web pages are consistent across multiple devices and platforms and increases the
-chance of search engines to properly pass markup.
+chance of search engines properly passing markup.
 
 ### Indentation
 
-Use tabs instead of spaces for markup. Do not mix tabs with spaces, ensure it is probably formatted.
+Use tabs instead of spaces for markup. Do not mix tabs with spaces and ensure it is properly formatted.
 
 **Avoid**
 
@@ -50,8 +50,8 @@ Use tabs instead of spaces for markup. Do not mix tabs with spaces, ensure it is
 
 ### Quotes
 
-Always use double quotes around attribute values. Emitting quotes can avoid to bad readability, despite HTML allowing
-for attributes without quotes.
+Always use double quotes around attribute values. Emitting quotes can prevent bad readability, despite HTML allowing for
+attributes without quotes.
 
 **Avoid**
 
@@ -67,9 +67,9 @@ for attributes without quotes.
 
 ### Line breaking
 
-Break long lines when it exceeds the amount of characters within the editor.
+Break long lines when it exceeds the number of characters within the editor.
 
-It is also recommended to ensure that the closing tag is one a new line. This helps to locate the closing tag and
+It is also recommended to ensure that the closing tag is on a new line. This helps to locate the closing tag and
 improves readability.
 
 **Avoid**
@@ -92,7 +92,7 @@ improves readability.
 
 ### Letter-casing
 
-All attribute names, classes, IDs should be lower case and with a hyphen between two words (kebab case).
+All attribute names, classes and IDs should be lower case and with a hyphen between two words (kebab case).
 
 **Avoid**
 
@@ -162,7 +162,7 @@ scss/
 - **Parent selector**: Use `$self: &;` for compound selectors.
 - **Nesting**: Nest related modifiers but avoid deep nesting (max 3 levels).
 
-### Breakpoint Mixin
+### Breakpoint Mixins
 
 Use breakpoint mixins for responsive design:
 
@@ -277,7 +277,7 @@ Use BEM-inspired modifiers with parent selector:
 
 - Keep interfaces small and focused (single responsibility).
 - Prefer returning concrete types unless abstraction is required for testing or swapping implementations.
-- Document interface expectations explicitly (e.g. "implementations must be thread-safe").
+- Document interface expectations explicitly (e.g. 'implementations must be thread-safe').
 
 ### Defining Types
 
@@ -314,13 +314,12 @@ type (
 
 
 
-- Document all exported types, functions, and constants with Go doc comments.
-- Ensure that the comments convey the meaning behind the code, not just the what.
+- Document all exported types, functions and constants with Go doc comments.
 - All comments must end with a full stop, including inline comments and multi-line comments.
 - Within function bodies, only keep comments that explain _why_ something is done, not _what_ is
   done. The code itself should be clear enough to show what it does.
-- Keep high-level comments that explain the flow or purpose of a section (e.g., "Try loading
-  template file first", "Fallback to static markdown file").
+- Keep high-level comments that explain the flow or purpose of a section (e.g., 'Try loading
+  template file first', 'Fallback to static markdown file').
 - Remove obvious comments that just restate the code (e.g., "Load base template" before a
   `LoadTemplate()` call).
 
@@ -361,7 +360,7 @@ Constructors must validate all required dependencies using `enforce` helpers and
 types. Only to be used in the context of when being called from a `cmd` package.
  ### New
 
-- Prefer `NewX()` constructors over global initialisation unless it's the only constructor in the package then it will
+- Prefer `NewX()` constructors over global initialisation unless, it's the only constructor in the package then it will
   be written as `New()`.
 
 ### Enforce
@@ -414,7 +413,7 @@ Use `context.Context` as the first parameter for functions that perform I/O or c
 ### Maps Over Switch
 
 Prefer using maps with function values over switch statements when dispatching based on string or integer keys. This
-approach is more maintainable, extensible, and testable.
+approach is more maintainable, extensible and testable.
 
 **Prefer**
 
@@ -464,7 +463,7 @@ func dispatch(action string, req Request) (Response, error) {
 - Always check errors, never ignore them with `_` unless absolutely necessary.
 - If ignoring an error, add a comment explaining why.
 - Return errors up the stack; don't just log and continue unless appropriate.
-- Always prioritise clarity over depth of stack trace — add context that helps debugging, not repetition
+- Always prioritise clarity over depth of stack trace — add context that helps debugging, not repetition.
 
 ### Domain Error Types
 
@@ -491,9 +490,9 @@ if balance < withdrawAmount {
 ### Using errors.Wrap
 
 Always use `errors.Wrap` from `github.com/pkg/errors` for adding context to errors. Use `fmt.Errorf`
-if there are more than one argument that's not an error.
+if there is more than one argument that's not an error.
 
-I.e. you can use `fmt.Errorf`, but only when needing to format.
+i.e. you can use `fmt.Errorf`, but only when needing to format.
 
 **Example:**
 
@@ -644,14 +643,14 @@ func TestApp_OrderedCommands(t *testing.T) {
 ### Mocking
 
 Mocks should only be introduced when a test depends on an **external interface** or system
-boundary — for example, Terraform execution, encryption providers, or file I/O wrappers.
+boundary — for example, Terraform execution, encryption providers or file I/O wrappers.
 
 - Prefer fakes or real in-memory types where possible.
 - Place generated mocks under `internal/mocks/` and prefix them with `Mock` (e.g.
   `MockInfraManager`).
 - Clean up with `defer ctrl.Finish()` and avoid over-mocking.
 - Use [`gomock`](https://pkg.go.dev/go.uber.org/mock/gomock) for creating mocks.
-- Generate mocks into the `internal/mocks/` directory using below's example.
+- Generate mocks into the `internal/mocks/` directory using the example below.
 
 **Example:**
 
@@ -668,7 +667,7 @@ go tool go.uber.org/mock/mockgen -source=gen.go -destination ../mocks/fs.go -pac
 	- Accept `t *testing.T` as an argument.
 	- Return any values required by multiple subtests (e.g., test structs, default app objects).
 	- Call `t.Helper()` at the start.
-- Use `setup(t)` in subtests to maintain readability, avoid duplication, and keep each test
+- Use `setup(t)` in subtests to maintain readability, avoid duplication and keep each test
   self-contained.
 
 ```go
@@ -851,7 +850,7 @@ Follow a conventional commit format with a type prefix and present tense gerund 
 
 - `feat:` - Adding new features or functionality.
 - `fix:` - Fixing bugs or issues.
-- `chore:` - Updating dependencies, linting, or other maintenance tasks.
+- `chore:` - Updating dependencies, linting or other maintenance tasks.
 - `style:` - Refactoring code or improving code style (no functional changes).
 - `test:` - Adding or updating tests.
 - `docs:` - Updating documentation.

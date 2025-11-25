@@ -7,10 +7,11 @@ WebKit automatically configures Peekaping monitoring for applications.
 Monitoring is **enabled by default** (opt-out) for all apps with Terraform management. WebKit currently supports:
 
 1. **HTTP monitors** - Monitor application uptime via HTTP/HTTPS requests
-2. **DNS monitors** - Monitor domain resolution
-3. **Push monitors** - Heartbeat monitoring for backup jobs and scheduled tasks
-4. **Status pages** - Public status pages showing service health
-5. **Slack notifications** - Automatic alerts via Slack webhooks
+2. **HTTP keyword monitors** - Monitor page content for specific keywords
+3. **DNS monitors** - Monitor domain resolution
+4. **Push monitors** - Heartbeat monitoring for backup jobs and scheduled tasks
+5. **Status pages** - Public status pages showing service health
+6. **Slack notifications** - Automatic alerts via Slack webhooks
 
 ## Configuration
 
@@ -101,6 +102,70 @@ Retry Interval:     60s
 Max Retries:        3
 Resend Interval:    10m
 ```
+
+### HTTP Keyword Monitor Configuration
+
+HTTP keyword monitors check for the presence or absence of specific text in HTTP responses. This is useful for content validation, error detection, and ensuring important information appears on your pages.
+
+**Configuration Fields**:
+- `url` - URL to check (required)
+- `method` - HTTP method (required, e.g., GET, POST)
+- `keyword` - Text to search for in the response (required)
+- `invert_keyword` - If true, alert when keyword IS found; if false, alert when keyword is NOT found (optional, default: false)
+- `max_redirects` - Maximum redirects to follow (optional, default: 3)
+
+**Use Cases**:
+1. **Content validation** - Ensure important text appears on pages
+2. **Error detection** - Alert when error messages appear
+3. **Security monitoring** - Detect unauthorized content
+4. **Compliance** - Verify required disclaimers are displayed
+
+**Example - Normal Mode (Alert When Missing)**:
+
+```json
+{
+  "monitoring": {
+    "custom": [
+      {
+        "name": "Homepage Has Tagline",
+        "type": "http-keyword",
+        "interval": 300,
+        "config": {
+          "url": "https://example.com",
+          "method": "GET",
+          "keyword": "craftsmanship"
+        }
+      }
+    ]
+  }
+}
+```
+
+This monitors alerts if "craftsmanship" is NOT found on the homepage.
+
+**Example - Inverted Mode (Alert When Present)**:
+
+```json
+{
+  "monitoring": {
+    "custom": [
+      {
+        "name": "Error Page Detection",
+        "type": "http-keyword",
+        "interval": 120,
+        "config": {
+          "url": "https://example.com/api/health",
+          "method": "GET",
+          "keyword": "error",
+          "invert_keyword": true
+        }
+      }
+    ]
+  }
+}
+```
+
+This monitor alerts if "error" IS found in the API health check response.
 
 ### DNS Monitor Configuration
 
@@ -302,6 +367,83 @@ curl -X POST -H 'Content-type: application/json' \
 
 If the manual test works but monitors aren't sending alerts, check the notification configuration in Peekaping UI.
 
+## Custom Monitors
+
+In addition to automatically generated monitors for domains, you can define custom monitors in your `app.json`:
+
+```json
+{
+  "monitoring": {
+    "custom": [
+      {
+        "name": "External API Check",
+        "type": "http",
+        "interval": 60,
+        "config": {
+          "url": "https://api.example.com/health",
+          "method": "GET",
+          "max_redirects": 5
+        }
+      },
+      {
+        "name": "Homepage Content Validation",
+        "type": "http-keyword",
+        "interval": 300,
+        "config": {
+          "url": "https://mysite.com",
+          "method": "GET",
+          "keyword": "Welcome",
+          "invert_keyword": false
+        }
+      },
+      {
+        "name": "Custom DNS Check",
+        "type": "dns",
+        "interval": 600,
+        "config": {
+          "domain": "mail.example.com",
+          "resolver_type": "MX"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Available Monitor Types**:
+- `http` - HTTP/HTTPS endpoint monitoring
+- `http-keyword` - HTTP content keyword monitoring
+- `dns` - DNS resolution monitoring
+- `postgres` - PostgreSQL connection monitoring
+- `push` - Heartbeat/webhook monitoring
+
+### Default Intervals
+
+The `interval` field is **optional** for custom monitors. If not specified, sensible defaults are automatically applied based on the monitor type:
+
+| Monitor Type | Default Interval | Description |
+|--------------|------------------|-------------|
+| `http` | 60 seconds | Standard HTTP health checks |
+| `http-keyword` | 60 seconds | HTTP content validation |
+| `postgres` | 60 seconds | Database connection checks |
+| `dns` | 300 seconds (5 minutes) | DNS resolution checks |
+| `push` | 90000 seconds (25 hours) | Heartbeat monitoring for daily jobs |
+
+**Example with default interval:**
+```json
+{
+  "name": "API Health Check",
+  "type": "http",
+  "config": {
+    "url": "https://api.example.com/health",
+    "method": "GET"
+  }
+}
+```
+This monitor will automatically use a 60-second interval.
+
+**Note**: All intervals must be at least 20 seconds (Peekaping provider requirement). The default intervals are chosen to match the behavior of automatically-generated monitors and provide appropriate check frequencies for each monitor type.
+
 ## Future Enhancements
 
 1. **Resource monitoring**:
@@ -314,6 +456,7 @@ If the manual test works but monitors aren't sending alerts, check the notificat
    - Custom heartbeat intervals for backup and maintenance monitors
    - Custom health check paths
    - Authentication for health checks
+   - Regular expression matching for keyword monitors
 
 3. **Multi-region monitoring**:
    - Check endpoints from multiple geographic locations

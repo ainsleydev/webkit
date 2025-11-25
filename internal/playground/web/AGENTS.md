@@ -10,7 +10,7 @@ This document provides SvelteKit-specific guidelines for AI agents.
 
 - Use **PascalCase** for component file names -> `ButtonCard.svelte` or `Modal.svelte`
 - Group related components in feature directories -> `/components/Form/` or `/components/Graphics/`
-- Use flat structure for stand alone reusable components -> `/components/Button.svelte`
+- Use flat structure for stand-alone reusable components -> `/components/Button.svelte`
 
 ### Svelte 5 Patterns
 
