@@ -316,6 +316,52 @@ func TestDrift(t *testing.T) {
 		assert.Contains(t, buf.String(), "README.md")
 		assert.Contains(t, buf.String(), "Template or configuration changed")
 	})
+
+	t.Run("No Drift - With outputs.json", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test",
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
+			},
+		}
+
+		// Create outputs.json with monitoring data (simulating Terraform output)
+		outputsJSON := `{
+			"peekaping": {
+				"endpoint": "https://uptime.example.com",
+				"project_tag": "test-project-123"
+			},
+			"monitors": [
+				{"id": "mon123", "name": "HTTP - example.com", "type": "http"}
+			],
+			"slack": {"channel_name": "alerts", "channel_id": "C123"}
+		}`
+		err := fs.MkdirAll(".webkit", 0o755)
+		require.NoError(t, err)
+		err = afero.WriteFile(fs, ".webkit/outputs.json", []byte(outputsJSON), 0o644)
+		require.NoError(t, err)
+
+		// Run update to generate README.md with status badges
+		input := setup(t, fs, appDef)
+		err = update(t.Context(), input)
+		require.NoError(t, err)
+
+		// Verify README contains status section
+		readmeContent, err := afero.ReadFile(fs, "README.md")
+		require.NoError(t, err)
+		assert.Contains(t, string(readmeContent), "Status")
+
+		// Check drift - should detect no drift because outputs.json is copied
+		input, buf := setupWithPrinter(t, fs, appDef)
+		err = drift(t.Context(), input)
+
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "No drift detected")
+		assert.Contains(t, buf.String(), "all files are up to date")
+	})
 }
 
 func TestFormatDriftOutput(t *testing.T) {
@@ -636,6 +682,30 @@ func TestCopyUserFiles(t *testing.T) {
 		copiedContent, err := afero.ReadFile(dstFS, "docs/README.md")
 		require.NoError(t, err)
 		assert.Equal(t, customContent, string(copiedContent))
+	})
+
+	t.Run("Copies outputs.json when it exists", func(t *testing.T) {
+		t.Parallel()
+
+		srcFS := afero.NewMemMapFs()
+		dstFS := afero.NewMemMapFs()
+
+		outputsContent := `{"peekaping":{"endpoint":"https://uptime.example.com"}}`
+		err := srcFS.MkdirAll(".webkit", 0o755)
+		require.NoError(t, err)
+		err = afero.WriteFile(srcFS, ".webkit/outputs.json", []byte(outputsContent), 0o644)
+		require.NoError(t, err)
+
+		err = copyUserFiles(srcFS, dstFS)
+		require.NoError(t, err)
+
+		exists, err := afero.Exists(dstFS, ".webkit/outputs.json")
+		require.NoError(t, err)
+		assert.True(t, exists)
+
+		copiedContent, err := afero.ReadFile(dstFS, ".webkit/outputs.json")
+		require.NoError(t, err)
+		assert.Equal(t, outputsContent, string(copiedContent))
 	})
 }
 
