@@ -255,3 +255,70 @@ func TestReadme(t *testing.T) {
 		assert.Error(t, got)
 	})
 }
+
+func TestGetDashboardURL(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input *outputs.WebkitOutputs
+		want  string
+	}{
+		"Nil outputs": {
+			input: nil,
+			want:  "",
+		},
+		"Empty project tag": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://peekaping.example.com",
+					ProjectTag: "",
+				},
+			},
+			want: "https://peekaping.example.com/monitors",
+		},
+		"Valid project tag": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://peekaping.example.com",
+					ProjectTag: "test-tag-123",
+				},
+			},
+			want: "https://peekaping.example.com/monitors?tags=test-tag-123",
+		},
+		"Empty endpoint with project tag": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "",
+					ProjectTag: "test-tag-456",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors?tags=test-tag-456",
+		},
+		"Empty endpoint without project tag": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "",
+					ProjectTag: "",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors",
+		},
+		"Real world example": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://uptime.ainsley.dev",
+					ProjectTag: "08ba3cee-0afb-4d51-815e-daca3f2172f2",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors?tags=08ba3cee-0afb-4d51-815e-daca3f2172f2",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := getDashboardURL(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
