@@ -3,8 +3,6 @@
 package infra
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -80,17 +78,11 @@ func TestTerraform_Resources(t *testing.T) {
 	t.Cleanup(teardown)
 
 	err := tf.Init(t.Context())
-	fmt.Println(err)
-	t.Log(err)
 	require.NoError(t, err)
 
 	got, err := tf.Plan(t.Context(), env.Production, false)
-	fmt.Println(err)
-	t.Log(err)
-	fmt.Println(got)
 	require.NoError(t, err)
 	require.NotNil(t, got)
-
 	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Digital Ocean Postgres", func(t *testing.T) {
@@ -419,19 +411,11 @@ func TestTerraform_Apps(t *testing.T) {
 	t.Cleanup(teardown)
 
 	err := tf.Init(t.Context())
-	fmt.Println(err)
-	t.Log(err)
 	require.NoError(t, err)
 
 	got, err := tf.Plan(t.Context(), env.Production, false)
-	fmt.Println(err)
-	fmt.Println(got)
-	indent, _ := json.MarshalIndent(got, "", "\t")
-	t.Log(string(indent))
-
 	require.NoError(t, err)
 	require.NotNil(t, got)
-
 	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Digital Ocean App Platform", func(t *testing.T) {
