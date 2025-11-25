@@ -3,7 +3,6 @@
 package infra
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -84,7 +83,7 @@ func TestTerraform_Resources(t *testing.T) {
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
-	//require.True(t, got.HasChanges, "Plan should have changes")
+	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Digital Ocean Postgres", func(t *testing.T) {
 		t.Parallel()
@@ -417,7 +416,7 @@ func TestTerraform_Apps(t *testing.T) {
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
-	//require.True(t, got.HasChanges, "Plan should have changes")
+	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Digital Ocean App Platform", func(t *testing.T) {
 		t.Parallel()
@@ -663,7 +662,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
-	//require.True(t, got.HasChanges, "Plan should have changes")
+	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Peekaping Project Tag", func(t *testing.T) {
 		t.Parallel()
@@ -861,13 +860,8 @@ func TestTerraform_Defaults(t *testing.T) {
 		t.Log("Slack Channel Configuration")
 		{
 			var slackChannel map[string]any
-
-			indent, err2 := json.MarshalIndent(got.Plan.ResourceChanges, "", "\t")
-			require.NoError(t, err2)
-			t.Log(string(indent))
-
 			for _, rc := range got.Plan.ResourceChanges {
-				if rc.Type == "slack_conversation" && rc.Name == "this" {
+				if rc.Type == "slack_conversation" {
 					slackChannel = rc.Change.After.(map[string]any)
 					break
 				}

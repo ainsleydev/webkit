@@ -60,6 +60,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
 	t.Setenv("SLACK_USER_TOKEN", "xoxp-test-token")
 	t.Setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/test")
+	t.Setenv("PEEKAPING_ENDPOINT", "https://uptime.test.dev")
 	t.Setenv("PEEKAPING_API_KEY", "peekaping-test-key")
 }
 
