@@ -79,13 +79,15 @@ func TestTerraform_Resources(t *testing.T) {
 	t.Cleanup(teardown)
 
 	err := tf.Init(t.Context())
+	fmt.Println(err)
+	t.Log(err)
 	require.NoError(t, err)
 
 	got, err := tf.Plan(t.Context(), env.Production, false)
+	fmt.Println(err)
+	t.Log(err)
 	require.NoError(t, err)
 	require.NotNil(t, got)
-
-	fmt.Println(err)
 
 	require.True(t, got.HasChanges, "Plan should have changes")
 
@@ -415,13 +417,16 @@ func TestTerraform_Apps(t *testing.T) {
 	t.Cleanup(teardown)
 
 	err := tf.Init(t.Context())
+	fmt.Println(err)
+	t.Log(err)
 	require.NoError(t, err)
 
 	got, err := tf.Plan(t.Context(), env.Production, false)
-	require.NoError(t, err)
-	require.NotNil(t, got)
 	fmt.Println(err)
 	t.Log(err)
+
+	require.NoError(t, err)
+	require.NotNil(t, got)
 
 	require.True(t, got.HasChanges, "Plan should have changes")
 
