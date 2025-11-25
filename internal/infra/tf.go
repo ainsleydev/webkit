@@ -176,23 +176,6 @@ func (t *Terraform) Plan(ctx context.Context, env env.Environment, refreshOnly b
 		return PlanOutput{}, err
 	}
 
-	// Capture Terraform stdout/stderr for debugging
-	var stdoutBuf, stderrBuf strings.Builder
-	t.tf.SetStdout(&stdoutBuf)
-	t.tf.SetStderr(&stderrBuf)
-	defer func() {
-		if stderrBuf.Len() > 0 {
-			slog.Warn("Terraform plan stderr output",
-				slog.String("stderr", stderrBuf.String()),
-			)
-		}
-		if stdoutBuf.Len() > 0 {
-			slog.Debug("Terraform plan stdout output",
-				slog.String("stdout", stdoutBuf.String()),
-			)
-		}
-	}()
-
 	planFilePath := filepath.Join(t.tmpDir, "base", "plan.tfplan")
 
 	var opts []tfexec.PlanOption
@@ -219,45 +202,6 @@ func (t *Terraform) Plan(ctx context.Context, env env.Environment, refreshOnly b
 	file, err := t.tf.ShowPlanFile(ctx, planFilePath)
 	if err != nil {
 		return PlanOutput{HasChanges: changes, Output: output}, fmt.Errorf("showing plan file: %w", err)
-	}
-
-	// Log plan results for debugging
-	resourceChangesCount := 0
-	if file != nil && file.ResourceChanges != nil {
-		resourceChangesCount = len(file.ResourceChanges)
-	}
-
-	slog.Info("Terraform plan completed",
-		slog.Bool("has_changes", changes),
-		slog.String("environment", env.String()),
-		slog.Int("resource_changes_count", resourceChangesCount),
-		slog.Bool("refresh_only", refreshOnly),
-	)
-
-	// If no changes detected, log the plan output for debugging
-	if !changes {
-		slog.Warn("Plan returned no changes",
-			slog.String("environment", env.String()),
-			slog.String("output_preview", func() string {
-				if len(output) > 500 {
-					return output[:500] + "..."
-				}
-				return output
-			}()),
-		)
-	}
-
-	// Log each resource change detected (at debug level)
-	if file != nil && file.ResourceChanges != nil {
-		for _, rc := range file.ResourceChanges {
-			if len(rc.Change.Actions) > 0 {
-				slog.Debug("Resource change detected",
-					slog.String("type", rc.Type),
-					slog.String("name", rc.Name),
-					slog.String("action", string(rc.Change.Actions[0])),
-				)
-			}
-		}
 	}
 
 	return PlanOutput{
@@ -583,15 +527,6 @@ func (t *Terraform) prepareVars(ctx context.Context, env env.Environment) error 
 	if err = t.writeTFVarsFile(vars); err != nil {
 		return errors.Wrap(err, "writing tfvars file")
 	}
-
-	// Log what was prepared
-	slog.Info("Prepared terraform variables",
-		slog.String("environment", env.String()),
-		slog.Int("resources_count", len(vars.Resources)),
-		slog.Int("apps_count", len(vars.Apps)),
-		slog.Int("monitors_count", len(vars.Monitors)),
-		slog.String("project_name", vars.ProjectName),
-	)
 
 	// Cache the vars and mark as prepared
 	t.varsCache[env] = vars

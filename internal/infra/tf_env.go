@@ -1,8 +1,6 @@
 package infra
 
 import (
-	"log/slog"
-
 	"github.com/caarlos0/env/v11"
 	"github.com/pkg/errors"
 )
@@ -35,21 +33,6 @@ func ParseTFEnvironment() (TFEnvironment, error) {
 	if err != nil {
 		return TFEnvironment{}, errors.Wrap(err, "parsing terraform environment")
 	}
-
-	// Log which credentials are present (not the values, just presence)
-	slog.Info("Parsed Terraform environment variables",
-		slog.Bool("has_do_token", cfg.DigitalOceanAPIKey != ""),
-		slog.Bool("has_do_spaces_creds", cfg.DigitalOceanSpacesAccessKey != "" && cfg.DigitalOceanSpacesSecretKey != ""),
-		slog.Bool("has_hetzner_token", cfg.HetznerToken != ""),
-		slog.Bool("has_b2_creds", cfg.BackBlazeBucket != "" && cfg.BackBlazeKeyID != "" && cfg.BackBlazeApplicationKey != ""),
-		slog.Bool("has_turso_token", cfg.TursoToken != ""),
-		slog.Bool("has_github_tokens", cfg.GithubToken != "" && cfg.GithubTokenClassic != ""),
-		slog.Bool("has_slack_tokens", cfg.SlackBotToken != "" && cfg.SlackUserToken != ""),
-		slog.Bool("has_slack_webhook", cfg.SlackWebhookURL != ""),
-		slog.Bool("has_peekaping_endpoint", cfg.PeekapingEndpoint != ""),
-		slog.Bool("has_peekaping_api_key", cfg.PeekapingAPIKey != ""),
-	)
-
 	return cfg, nil
 }
 
