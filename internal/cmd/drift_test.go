@@ -284,6 +284,38 @@ func TestDrift(t *testing.T) {
 		assert.Contains(t, buf.String(), "No drift detected")
 		assert.Contains(t, buf.String(), "all files are up to date")
 	})
+
+	t.Run("Drift - Modified Custom README.md Content", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test",
+				Repo: appdef.GitHubRepo{Owner: "test", Name: "test"},
+			},
+		}
+
+		customContent := "## Custom Section\n\nOriginal README content."
+		err := afero.WriteFile(fs, "docs/README.md", []byte(customContent), 0o644)
+		require.NoError(t, err)
+
+		input := setup(t, fs, appDef)
+		err = update(t.Context(), input)
+		require.NoError(t, err)
+
+		newCustomContent := "## Updated Section\n\nThis content has been updated."
+		err = afero.WriteFile(fs, "docs/README.md", []byte(newCustomContent), 0o644)
+		require.NoError(t, err)
+
+		input, buf := setupWithPrinter(t, fs, appDef)
+		err = drift(t.Context(), input)
+
+		assert.Error(t, err)
+		assert.Contains(t, buf.String(), "Outdated files detected")
+		assert.Contains(t, buf.String(), "README.md")
+		assert.Contains(t, buf.String(), "Template or configuration changed")
+	})
 }
 
 func TestFormatDriftOutput(t *testing.T) {

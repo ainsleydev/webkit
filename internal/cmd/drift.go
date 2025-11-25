@@ -30,6 +30,10 @@ var driftCmd = &cli.Command{
 	Action: cmdtools.Wrap(drift),
 }
 
+// userManagedPaths lists files that users can customise and which are referenced
+// during generation. These must be copied to in-memory FS during drift detection
+// to ensure consistent hash comparison (e.g., docs/README.md is loaded when
+// generating README.md).
 var userManagedPaths = []string{
 	"docs/AGENTS.md",
 	"docs/AGENTS.md.tmpl",
