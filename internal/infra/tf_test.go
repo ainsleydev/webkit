@@ -60,7 +60,8 @@ func setupEnv(t *testing.T) {
 	t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
 	t.Setenv("SLACK_USER_TOKEN", "xoxp-test-token")
 	t.Setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/test")
-	// Peekaping credentials intentionally not set - monitoring module has count=0 in tests
+	t.Setenv("PEEKAPING_ENDPOINT", "https://uptime.test.dev")
+	t.Setenv("PEEKAPING_API_KEY", "peekaping-test-key")
 }
 
 func teardownEnv(t *testing.T) {
@@ -79,6 +80,7 @@ func teardownEnv(t *testing.T) {
 		"GITHUB_TOKEN_CLASSIC",
 		"SLACK_BOT_TOKEN",
 		"SLACK_USER_TOKEN",
+		"SLACK_WEBHOOK_URL",
 		"PEEKAPING_ENDPOINT",
 		"PEEKAPING_API_KEY",
 	}
@@ -380,7 +382,7 @@ func TestTerraform_Apply(t *testing.T) {
 		tf.tf = mock
 
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)
@@ -399,7 +401,7 @@ func TestTerraform_Apply(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mock := tfmocks.NewMockterraformExecutor(ctrl)
 		mock.EXPECT().
-			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("authentication failed")).Times(1)
 		mock.EXPECT().SetStdout(gomock.Any()).Times(1)
 		mock.EXPECT().SetStderr(gomock.Any()).Times(1)

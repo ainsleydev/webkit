@@ -195,13 +195,13 @@ func (t *Terraform) Plan(ctx context.Context, env env.Environment, refreshOnly b
 	// Human-readable output.
 	output, err := t.tf.ShowPlanFileRaw(ctx, planFilePath)
 	if err != nil {
-		return PlanOutput{}, fmt.Errorf("showing plan file: %w", err)
+		return PlanOutput{HasChanges: changes}, fmt.Errorf("showing plan file: %w", err)
 	}
 
 	// Fully typed output.
 	file, err := t.tf.ShowPlanFile(ctx, planFilePath)
 	if err != nil {
-		return PlanOutput{}, fmt.Errorf("showing plan file: %w", err)
+		return PlanOutput{HasChanges: changes, Output: output}, fmt.Errorf("showing plan file: %w", err)
 	}
 
 	return PlanOutput{

@@ -43,7 +43,7 @@ module "do_bucket" {
 # B2 S3 Bucket
 #
 module "b2_bucket" {
-  count  = var.platform_provider == "b2" && var.platform_type == "s3" ? 1 : 0
+  count  = var.platform_provider == "backblaze" && var.platform_type == "s3" ? 1 : 0
   source = "../../providers/b2/bucket"
 
   bucket_name                     = var.name

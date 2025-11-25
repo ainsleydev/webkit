@@ -48,7 +48,8 @@ func TestParseTFEnvironment(t *testing.T) {
 	})
 
 	t.Run("Success Without Monitoring", func(t *testing.T) {
-		defer teardownEnv(t)
+		teardownEnv(t)       // Clean any CI-set env vars first
+		defer teardownEnv(t) // Clean up after test
 
 		// Set all required variables except Peekaping (which is optional)
 		t.Setenv("DO_API_KEY", "key")
