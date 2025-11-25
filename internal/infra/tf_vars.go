@@ -35,6 +35,8 @@ type (
 		Monitors            []tfMonitor    `json:"monitors"`
 		DigitalOceanSSHKeys []string       `json:"digitalocean_ssh_keys"`
 		HetznerSSHKeys      []string       `json:"hetzner_ssh_keys"`
+		SlackBotToken       string         `json:"slack_bot_token"`
+		SlackUserToken      string         `json:"slack_user_token"`
 		SlackWebhookURL     string         `json:"slack_webhook_url"`
 		StatusPageDomain    *string        `json:"status_page_domain,omitempty"`
 		StatusPageSlug      *string        `json:"status_page_slug,omitempty"`
@@ -111,6 +113,15 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		return tfVars{}, errors.Wrap(err, "getting current working directory")
 	}
 
+	// Use empty SSH keys if using local backend (test mode).
+	// In production, these would be populated from actual SSH key names.
+	doSSHKeys := []string{"Ainsley - Mac Studio"}
+	hetznerSSHKeys := []string{"hello@ainsley.dev"}
+	if t.useLocalBackend {
+		doSSHKeys = []string{}
+		hetznerSSHKeys = []string{}
+	}
+
 	return tfVars{
 		ProjectName:         t.appDef.Project.Name,
 		ProjectTitle:        t.appDef.Project.Title,
@@ -120,8 +131,10 @@ func (t *Terraform) tfVarsFromDefinition(ctx context.Context, env env.Environmen
 		Apps:                t.generateApps(ctx, env),
 		Resources:           t.generateResources(),
 		Monitors:            t.generateMonitors(env),
-		DigitalOceanSSHKeys: []string{"Ainsley - Mac Studio"},
-		HetznerSSHKeys:      []string{"hello@ainsley.dev"},
+		DigitalOceanSSHKeys: doSSHKeys,
+		HetznerSSHKeys:      hetznerSSHKeys,
+		SlackBotToken:       t.env.SlackBotToken,
+		SlackUserToken:      t.env.SlackUserToken,
 		SlackWebhookURL:     t.env.SlackWebhookURL,
 		GithubConfig: tfGithubConfig{
 			Owner: t.appDef.Project.Repo.Owner,
@@ -209,10 +222,16 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 func (t *Terraform) generateResources() []tfResource {
 	resources := make([]tfResource, 0, len(t.appDef.Resources))
 	for _, res := range t.appDef.Resources {
+		provider := res.Provider.String()
+		// Map "backblaze" to "b2" for Terraform compatibility.
+		if provider == "backblaze" {
+			provider = "b2"
+		}
+
 		resources = append(resources, tfResource{
 			Name:             res.Name,
 			PlatformType:     res.Type.String(),
-			PlatformProvider: res.Provider.String(),
+			PlatformProvider: provider,
 			Config:           encodeConfigForTerraform(res.Config),
 		})
 	}

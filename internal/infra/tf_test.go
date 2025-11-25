@@ -60,7 +60,7 @@ func setupEnv(t *testing.T) {
 	t.Setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
 	t.Setenv("SLACK_USER_TOKEN", "xoxp-test-token")
 	t.Setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/test")
-	// Peekaping credentials intentionally not set - monitoring module has count=0 in tests
+	t.Setenv("PEEKAPING_API_KEY", "peekaping-test-key")
 }
 
 func teardownEnv(t *testing.T) {
@@ -79,6 +79,7 @@ func teardownEnv(t *testing.T) {
 		"GITHUB_TOKEN_CLASSIC",
 		"SLACK_BOT_TOKEN",
 		"SLACK_USER_TOKEN",
+		"SLACK_WEBHOOK_URL",
 		"PEEKAPING_ENDPOINT",
 		"PEEKAPING_API_KEY",
 	}
