@@ -31,11 +31,11 @@ type (
 	// - Postgres monitors: {connection_string}
 	// - Push monitors: No config required
 	Monitor struct {
-		Name       string         `json:"name" validate:"required" description:"Unique monitor name"`
-		Type       MonitorType    `json:"type" validate:"required,oneof=http http-keyword dns postgres push" description:"Monitor type (http, http-keyword, dns, postgres, push)"`
-		Interval   int            `json:"interval,omitempty" description:"Interval in seconds between checks (defaults based on monitor type if not specified)"`
-		Identifier string         `json:"identifier,omitempty" description:"Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method."`
-		Config     map[string]any `json:"config,omitempty" description:"Type-specific monitor configuration (e.g., url, method, keyword, domain)"`
+		Name       string      `json:"name" validate:"required" description:"Unique monitor name"`
+		Type       MonitorType `json:"type" validate:"required,oneof=http http-keyword dns postgres push" description:"Monitor type (http, http-keyword, dns, postgres, push)"`
+		Interval   int         `json:"interval,omitempty" description:"Interval in seconds between checks (defaults based on monitor type if not specified)"`
+		Identifier string      `json:"identifier,omitempty" description:"Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method."`
+		Config     Config      `json:"config,omitempty" description:"Type-specific monitor configuration (e.g., url, method, keyword, domain)"`
 	}
 	// MonitorType defines the type of monitor.
 	MonitorType string
@@ -106,82 +106,66 @@ func (m *Monitor) VariableName(envShort string) string {
 	)
 }
 
-// GetConfigString safely retrieves a string value from the monitor config.
-// Returns the value and true if found, empty string and false otherwise.
-func (m *Monitor) GetConfigString(key string) (string, bool) {
-	if m.Config == nil {
-		return "", false
-	}
-	val, ok := m.Config[key].(string)
-	return val, ok
-}
-
-// GetConfigInt safely retrieves an int value from the monitor config.
-// Returns the value and true if found, 0 and false otherwise.
-func (m *Monitor) GetConfigInt(key string) (int, bool) {
-	if m.Config == nil {
-		return 0, false
-	}
-	val, ok := m.Config[key].(int)
-	return val, ok
-}
-
-// GetConfigBool safely retrieves a bool value from the monitor config.
-// Returns the value and true if found, false and false otherwise.
-func (m *Monitor) GetConfigBool(key string) (bool, bool) {
-	if m.Config == nil {
-		return false, false
-	}
-	val, ok := m.Config[key].(bool)
-	return val, ok
+// monitorValidators maps monitor types to their validation functions.
+var monitorValidators = map[MonitorType]func(*Monitor) error{
+	MonitorTypeHTTP: func(m *Monitor) error {
+		if m.Config == nil {
+			return fmt.Errorf("http monitor requires config")
+		}
+		if _, ok := m.Config.String("url"); !ok {
+			return fmt.Errorf("http monitor requires 'url' in config")
+		}
+		if _, ok := m.Config.String("method"); !ok {
+			return fmt.Errorf("http monitor requires 'method' in config")
+		}
+		return nil
+	},
+	MonitorTypeHTTPKeyword: func(m *Monitor) error {
+		if m.Config == nil {
+			return fmt.Errorf("http-keyword monitor requires config")
+		}
+		if _, ok := m.Config.String("url"); !ok {
+			return fmt.Errorf("http-keyword monitor requires 'url' in config")
+		}
+		if _, ok := m.Config.String("method"); !ok {
+			return fmt.Errorf("http-keyword monitor requires 'method' in config")
+		}
+		if _, ok := m.Config.String("keyword"); !ok {
+			return fmt.Errorf("http-keyword monitor requires 'keyword' in config")
+		}
+		return nil
+	},
+	MonitorTypeDNS: func(m *Monitor) error {
+		if m.Config == nil {
+			return fmt.Errorf("dns monitor requires config")
+		}
+		if _, ok := m.Config.String("domain"); !ok {
+			return fmt.Errorf("dns monitor requires 'domain' in config")
+		}
+		return nil
+	},
+	MonitorTypePostgres: func(m *Monitor) error {
+		if m.Config == nil {
+			return fmt.Errorf("postgres monitor requires config")
+		}
+		if _, ok := m.Config.String("connection_string"); !ok {
+			return fmt.Errorf("postgres monitor requires 'connection_string' in config")
+		}
+		return nil
+	},
+	MonitorTypePush: func(m *Monitor) error {
+		// Push monitors don't require config.
+		return nil
+	},
 }
 
 // ValidateConfig ensures the monitor has the required config fields for its type.
 func (m *Monitor) ValidateConfig() error {
-	// Push monitors don't require config.
-	if m.Type == MonitorTypePush {
-		return nil
-	}
-
-	if m.Config == nil {
-		return fmt.Errorf("%s monitor requires config", m.Type)
-	}
-
-	switch m.Type {
-	case MonitorTypeHTTP:
-		if _, ok := m.GetConfigString("url"); !ok {
-			return fmt.Errorf("http monitor requires 'url' in config")
-		}
-		if _, ok := m.GetConfigString("method"); !ok {
-			return fmt.Errorf("http monitor requires 'method' in config")
-		}
-
-	case MonitorTypeHTTPKeyword:
-		if _, ok := m.GetConfigString("url"); !ok {
-			return fmt.Errorf("http-keyword monitor requires 'url' in config")
-		}
-		if _, ok := m.GetConfigString("method"); !ok {
-			return fmt.Errorf("http-keyword monitor requires 'method' in config")
-		}
-		if _, ok := m.GetConfigString("keyword"); !ok {
-			return fmt.Errorf("http-keyword monitor requires 'keyword' in config")
-		}
-
-	case MonitorTypeDNS:
-		if _, ok := m.GetConfigString("domain"); !ok {
-			return fmt.Errorf("dns monitor requires 'domain' in config")
-		}
-
-	case MonitorTypePostgres:
-		if _, ok := m.GetConfigString("connection_string"); !ok {
-			return fmt.Errorf("postgres monitor requires 'connection_string' in config")
-		}
-
-	default:
+	validator, ok := monitorValidators[m.Type]
+	if !ok {
 		return fmt.Errorf("unknown monitor type: %s", m.Type)
 	}
-
-	return nil
+	return validator(m)
 }
 
 // applyDefaults sets default values for the monitor.

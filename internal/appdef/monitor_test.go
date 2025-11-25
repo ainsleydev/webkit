@@ -105,16 +105,16 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		// HTTP monitor.
 		assert.Equal(t, "HTTP - example.com", monitors[0].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
-		url, _ := monitors[0].GetConfigString("url")
+		url, _ := monitors[0].Config.String("url")
 		assert.Equal(t, "https://example.com", url)
-		method, _ := monitors[0].GetConfigString("method")
+		method, _ := monitors[0].Config.String("method")
 		assert.Equal(t, "GET", method)
 		assert.Equal(t, MonitorIntervalHTTP, monitors[0].Interval)
 
 		// DNS monitor.
 		assert.Equal(t, "DNS - example.com", monitors[1].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
-		domain, _ := monitors[1].GetConfigString("domain")
+		domain, _ := monitors[1].Config.String("domain")
 		assert.Equal(t, "example.com", domain)
 		assert.Equal(t, MonitorIntervalDNS, monitors[1].Interval)
 
@@ -149,28 +149,28 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 		// First domain (primary) - HTTP.
 		assert.Equal(t, "HTTP - api.example.com", monitors[0].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[0].Type)
-		url0, _ := monitors[0].GetConfigString("url")
+		url0, _ := monitors[0].Config.String("url")
 		assert.Equal(t, "https://api.example.com", url0)
 		assert.Equal(t, MonitorIntervalHTTP, monitors[0].Interval)
 
 		// First domain - DNS.
 		assert.Equal(t, "DNS - api.example.com", monitors[1].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[1].Type)
-		domain1, _ := monitors[1].GetConfigString("domain")
+		domain1, _ := monitors[1].Config.String("domain")
 		assert.Equal(t, "api.example.com", domain1)
 		assert.Equal(t, MonitorIntervalDNS, monitors[1].Interval)
 
 		// Second domain (alias) - HTTP.
 		assert.Equal(t, "HTTP - www.api.example.com", monitors[2].Name)
 		assert.Equal(t, MonitorTypeHTTP, monitors[2].Type)
-		url2, _ := monitors[2].GetConfigString("url")
+		url2, _ := monitors[2].Config.String("url")
 		assert.Equal(t, "https://www.api.example.com", url2)
 		assert.Equal(t, MonitorIntervalHTTP, monitors[2].Interval)
 
 		// Second domain - DNS.
 		assert.Equal(t, "DNS - www.api.example.com", monitors[3].Name)
 		assert.Equal(t, MonitorTypeDNS, monitors[3].Type)
-		domain3, _ := monitors[3].GetConfigString("domain")
+		domain3, _ := monitors[3].Config.String("domain")
 		assert.Equal(t, "www.api.example.com", domain3)
 		assert.Equal(t, MonitorIntervalDNS, monitors[3].Interval)
 
@@ -815,7 +815,7 @@ func TestMonitor_GetConfigString(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got, ok := test.monitor.GetConfigString(test.key)
+			got, ok := test.monitor.Config.String(test.key)
 			assert.Equal(t, test.want, got)
 			assert.Equal(t, test.wantOk, ok)
 		})
@@ -864,7 +864,7 @@ func TestMonitor_GetConfigInt(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got, ok := test.monitor.GetConfigInt(test.key)
+			got, ok := test.monitor.Config.Int(test.key)
 			assert.Equal(t, test.want, got)
 			assert.Equal(t, test.wantOk, ok)
 		})
@@ -923,7 +923,7 @@ func TestMonitor_GetConfigBool(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got, ok := test.monitor.GetConfigBool(test.key)
+			got, ok := test.monitor.Config.Bool(test.key)
 			assert.Equal(t, test.want, got)
 			assert.Equal(t, test.wantOk, ok)
 		})

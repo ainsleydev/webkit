@@ -18,7 +18,7 @@ type (
 		Type             ResourceType         `json:"type" required:"true" validate:"required,oneof=postgres s3 sqlite" description:"Type of resource to provision (postgres, s3, sqlite)"`
 		Description      string               `json:"description,omitempty" validate:"omitempty,max=200" description:"Brief description of the resource's purpose and functionality"`
 		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean hetzner backblaze turso" description:"Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)"`
-		Config           map[string]any       `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
+		Config           Config               `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
 		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
 		Monitoring       bool                 `json:"monitoring,omitempty" description:"Whether to enable uptime monitoring for this resource (defaults to true)"`
 		TerraformManaged *bool                `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`
