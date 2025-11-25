@@ -257,6 +257,44 @@ func TestReadme(t *testing.T) {
 	})
 }
 
+func TestGetPeekapingEndpoint(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input *outputs.WebkitOutputs
+		want  string
+	}{
+		"Nil outputs": {
+			input: nil,
+			want:  "https://uptime.ainsley.dev",
+		},
+		"Empty endpoint": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint: "",
+				},
+			},
+			want: "https://uptime.ainsley.dev",
+		},
+		"Custom endpoint": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint: "https://peekaping.example.com",
+				},
+			},
+			want: "https://peekaping.example.com",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := getPeekapingEndpoint(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestGetDashboardURL(t *testing.T) {
 	t.Parallel()
 
@@ -312,6 +350,24 @@ func TestGetDashboardURL(t *testing.T) {
 				},
 			},
 			want: "https://uptime.ainsley.dev/monitors?tags=08ba3cee-0afb-4d51-815e-daca3f2172f2",
+		},
+		"Project tag with spaces": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://uptime.ainsley.dev",
+					ProjectTag: "tag with spaces",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors?tags=tag+with+spaces",
+		},
+		"Project tag with special characters": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://uptime.ainsley.dev",
+					ProjectTag: "tag&special=chars",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors?tags=tag%26special%3Dchars",
 		},
 	}
 
