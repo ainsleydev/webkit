@@ -19,12 +19,12 @@ variable "platform_type" {
 }
 
 variable "platform_provider" {
-  description = "Platform provider (digitalocean, aws, b2, turso, etc.)"
+  description = "Platform provider (digitalocean, aws, backblaze, turso, etc.)"
   type        = string
 
   validation {
-    condition     = contains(["digitalocean", "b2", "turso"], var.platform_provider)
-    error_message = "Provider must be one of: digitalocean, b2, turso"
+    condition     = contains(["digitalocean", "backblaze", "turso"], var.platform_provider)
+    error_message = "Provider must be one of: digitalocean, backblaze, turso"
   }
 }
 
