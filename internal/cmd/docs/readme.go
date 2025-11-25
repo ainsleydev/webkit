@@ -32,16 +32,16 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	webkitOutputs := outputs.Load(input.FS)
 
 	data := map[string]any{
-		"Definition":      appDef,
-		"Content":         mustLoadCustomContent(input.FS, "README.md"),
-		"LogoURL":         detectLogoURL(input.FS),
-		"DomainLinks":     formatDomainLinks(appDef),
-		"ProviderGroups":  groupByProvider(appDef),
-		"CurrentYear":     time.Now().Year(),
-		"Outputs":         webkitOutputs,
-		"StatusPageURL":   getStatusPageURL(appDef),
-		"DashboardURL":    getDashboardURL(webkitOutputs),
-		"MonitorBadges":   formatMonitorBadges(webkitOutputs),
+		"Definition":     appDef,
+		"Content":        mustLoadCustomContent(input.FS, "README.md"),
+		"LogoURL":        detectLogoURL(input.FS),
+		"DomainLinks":    formatDomainLinks(appDef),
+		"ProviderGroups": groupByProvider(appDef),
+		"CurrentYear":    time.Now().Year(),
+		"Outputs":        webkitOutputs,
+		"StatusPageURL":  getStatusPageURL(appDef),
+		"DashboardURL":   getDashboardURL(webkitOutputs),
+		"MonitorBadges":  formatMonitorBadges(webkitOutputs),
 	}
 
 	err := input.Generator().Template(
