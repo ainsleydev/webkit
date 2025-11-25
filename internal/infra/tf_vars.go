@@ -222,16 +222,10 @@ func (t *Terraform) writeTFVarsFile(vars tfVars) error {
 func (t *Terraform) generateResources() []tfResource {
 	resources := make([]tfResource, 0, len(t.appDef.Resources))
 	for _, res := range t.appDef.Resources {
-		provider := res.Provider.String()
-		// Map "backblaze" to "b2" for Terraform compatibility.
-		if provider == "backblaze" {
-			provider = "b2"
-		}
-
 		resources = append(resources, tfResource{
 			Name:             res.Name,
 			PlatformType:     res.Type.String(),
-			PlatformProvider: provider,
+			PlatformProvider: res.Provider.String(),
 			Config:           encodeConfigForTerraform(res.Config),
 		})
 	}

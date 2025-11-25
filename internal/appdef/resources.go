@@ -52,7 +52,7 @@ type ResourceProvider string
 const (
 	ResourceProviderDigitalOcean ResourceProvider = "digitalocean"
 	ResourceProviderHetzner      ResourceProvider = "hetzner"
-	ResourceProviderBackBlaze    ResourceProvider = "backblaze"
+	ResourceProviderBackBlaze    ResourceProvider = "b2"
 	ResourceProviderTurso        ResourceProvider = "turso"
 )
 
