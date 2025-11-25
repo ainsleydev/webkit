@@ -1,6 +1,7 @@
 package appdef
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -110,46 +111,46 @@ func (m *Monitor) VariableName(envShort string) string {
 var monitorValidators = map[MonitorType]func(*Monitor) error{
 	MonitorTypeHTTP: func(m *Monitor) error {
 		if m.Config == nil {
-			return fmt.Errorf("http monitor requires config")
+			return errors.New("http monitor requires config")
 		}
 		if _, ok := m.Config.String("url"); !ok {
-			return fmt.Errorf("http monitor requires 'url' in config")
+			return errors.New("http monitor requires 'url' in config")
 		}
 		if _, ok := m.Config.String("method"); !ok {
-			return fmt.Errorf("http monitor requires 'method' in config")
+			return errors.New("http monitor requires 'method' in config")
 		}
 		return nil
 	},
 	MonitorTypeHTTPKeyword: func(m *Monitor) error {
 		if m.Config == nil {
-			return fmt.Errorf("http-keyword monitor requires config")
+			return errors.New("http-keyword monitor requires config")
 		}
 		if _, ok := m.Config.String("url"); !ok {
-			return fmt.Errorf("http-keyword monitor requires 'url' in config")
+			return errors.New("http-keyword monitor requires 'url' in config")
 		}
 		if _, ok := m.Config.String("method"); !ok {
-			return fmt.Errorf("http-keyword monitor requires 'method' in config")
+			return errors.New("http-keyword monitor requires 'method' in config")
 		}
 		if _, ok := m.Config.String("keyword"); !ok {
-			return fmt.Errorf("http-keyword monitor requires 'keyword' in config")
+			return errors.New("http-keyword monitor requires 'keyword' in config")
 		}
 		return nil
 	},
 	MonitorTypeDNS: func(m *Monitor) error {
 		if m.Config == nil {
-			return fmt.Errorf("dns monitor requires config")
+			return errors.New("dns monitor requires config")
 		}
 		if _, ok := m.Config.String("domain"); !ok {
-			return fmt.Errorf("dns monitor requires 'domain' in config")
+			return errors.New("dns monitor requires 'domain' in config")
 		}
 		return nil
 	},
 	MonitorTypePostgres: func(m *Monitor) error {
 		if m.Config == nil {
-			return fmt.Errorf("postgres monitor requires config")
+			return errors.New("postgres monitor requires config")
 		}
 		if _, ok := m.Config.String("connection_string"); !ok {
-			return fmt.Errorf("postgres monitor requires 'connection_string' in config")
+			return errors.New("postgres monitor requires 'connection_string' in config")
 		}
 		return nil
 	},

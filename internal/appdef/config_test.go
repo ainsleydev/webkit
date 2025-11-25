@@ -9,7 +9,7 @@ import (
 func TestConfig_String(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]struct {
+	tt := map[string]struct {
 		config Config
 		key    string
 		want   string
@@ -53,12 +53,12 @@ func TestConfig_String(t *testing.T) {
 		},
 	}
 
-	for name, tt := range tests {
+	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got, ok := tt.config.String(tt.key)
-			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.wantOk, ok)
+			got, ok := test.config.String(test.key)
+			assert.Equal(t, test.want, got)
+			assert.Equal(t, test.wantOk, ok)
 		})
 	}
 }
@@ -66,7 +66,7 @@ func TestConfig_String(t *testing.T) {
 func TestConfig_Int(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]struct {
+	tt := map[string]struct {
 		config Config
 		key    string
 		want   int
@@ -116,12 +116,12 @@ func TestConfig_Int(t *testing.T) {
 		},
 	}
 
-	for name, tt := range tests {
+	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got, ok := tt.config.Int(tt.key)
-			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.wantOk, ok)
+			got, ok := test.config.Int(test.key)
+			assert.Equal(t, test.want, got)
+			assert.Equal(t, test.wantOk, ok)
 		})
 	}
 }
@@ -129,7 +129,7 @@ func TestConfig_Int(t *testing.T) {
 func TestConfig_Bool(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]struct {
+	tt := map[string]struct {
 		config Config
 		key    string
 		want   bool
@@ -173,12 +173,12 @@ func TestConfig_Bool(t *testing.T) {
 		},
 	}
 
-	for name, tt := range tests {
+	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got, ok := tt.config.Bool(tt.key)
-			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.wantOk, ok)
+			got, ok := test.config.Bool(test.key)
+			assert.Equal(t, test.want, got)
+			assert.Equal(t, test.wantOk, ok)
 		})
 	}
 }
