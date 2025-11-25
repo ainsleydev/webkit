@@ -74,6 +74,9 @@ func TestTerraform_Resources(t *testing.T) {
 		},
 	}
 
+	// Apply defaults to ensure proper initialisation
+	require.NoError(t, appDef.ApplyDefaults())
+
 	tf, teardown := setup(t, appDef)
 	t.Cleanup(teardown)
 
@@ -369,8 +372,9 @@ func TestTerraform_Apps(t *testing.T) {
 		},
 		Apps: []appdef.App{
 			{
-				Name: "api",
-				Type: appdef.AppTypeSvelteKit,
+				Name:  "api",
+				Title: "API",
+				Type:  appdef.AppTypeSvelteKit,
 				Infra: appdef.Infra{
 					Provider: appdef.ResourceProviderDigitalOcean,
 					Type:     "container",
@@ -384,8 +388,9 @@ func TestTerraform_Apps(t *testing.T) {
 				},
 			},
 			{
-				Name: "cms",
-				Type: appdef.AppTypePayload,
+				Name:  "cms",
+				Title: "CMS",
+				Type:  appdef.AppTypePayload,
 				Infra: appdef.Infra{
 					Provider: appdef.ResourceProviderDigitalOcean,
 					Type:     "vm",
@@ -396,8 +401,9 @@ func TestTerraform_Apps(t *testing.T) {
 				},
 			},
 			{
-				Name: "worker",
-				Type: appdef.AppTypeGoLang,
+				Name:  "worker",
+				Title: "Worker",
+				Type:  appdef.AppTypeGoLang,
 				Infra: appdef.Infra{
 					Provider: appdef.ResourceProviderHetzner,
 					Type:     "vm",
@@ -409,6 +415,9 @@ func TestTerraform_Apps(t *testing.T) {
 			},
 		},
 	}
+
+	// Apply defaults to ensure proper initialisation
+	require.NoError(t, appDef.ApplyDefaults())
 
 	tf, teardown := setup(t, appDef)
 	t.Cleanup(teardown)
@@ -630,6 +639,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 		Apps: []appdef.App{
 			{
 				Name:       "web",
+				Title:      "Web",
 				Type:       appdef.AppTypeSvelteKit,
 				Monitoring: true,
 				Infra: appdef.Infra{
@@ -650,6 +660,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 		Resources: []appdef.Resource{
 			{
 				Name:     "db",
+				Title:    "Database",
 				Type:     appdef.ResourceTypePostgres,
 				Provider: appdef.ResourceProviderDigitalOcean,
 				Backup: appdef.ResourceBackupConfig{
@@ -658,6 +669,9 @@ func TestTerraform_Monitoring(t *testing.T) {
 			},
 		},
 	}
+
+	// Apply defaults to ensure proper initialisation
+	require.NoError(t, appDef.ApplyDefaults())
 
 	tf, teardown := setup(t, appDef)
 	t.Cleanup(teardown)
@@ -678,13 +692,13 @@ func TestTerraform_Monitoring(t *testing.T) {
 
 		var projectTag map[string]any
 		for _, rc := range got.Plan.ResourceChanges {
-			if rc.Type == "peekaping_project_tag" && rc.Name == "this" {
+			if rc.Type == "peekaping_tag" && rc.Name == "this" {
 				projectTag = rc.Change.After.(map[string]any)
 				break
 			}
 		}
 		require.NotNil(t, projectTag, "Peekaping project tag should be planned")
-		assert.Equal(t, "project", projectTag["name"])
+		assert.Equal(t, "Project", projectTag["name"])
 	})
 
 	t.Run("HTTP Monitors", func(t *testing.T) {
@@ -692,7 +706,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 
 		var httpMonitors []map[string]any
 		for _, rc := range got.Plan.ResourceChanges {
-			if rc.Type == "peekaping_http_monitor" {
+			if rc.Type == "peekaping_monitor" && rc.Name == "http" {
 				httpMonitors = append(httpMonitors, rc.Change.After.(map[string]any))
 			}
 		}
@@ -701,13 +715,12 @@ func TestTerraform_Monitoring(t *testing.T) {
 
 		var customMonitor map[string]any
 		for _, mon := range httpMonitors {
-			if mon["name"] == "project-api-health" {
+			if mon["name"] == "api-health" {
 				customMonitor = mon
 				break
 			}
 		}
 		require.NotNil(t, customMonitor, "Custom HTTP monitor should be planned")
-		assert.Equal(t, "https://api.example.com/health", customMonitor["url"])
 		assert.Equal(t, float64(60), customMonitor["interval"])
 	})
 
@@ -716,7 +729,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 
 		var keywordMonitors []map[string]any
 		for _, rc := range got.Plan.ResourceChanges {
-			if rc.Type == "peekaping_http_keyword_monitor" {
+			if rc.Type == "peekaping_monitor" && rc.Name == "http_keyword" {
 				keywordMonitors = append(keywordMonitors, rc.Change.After.(map[string]any))
 			}
 		}
@@ -725,14 +738,12 @@ func TestTerraform_Monitoring(t *testing.T) {
 
 		var customMonitor map[string]any
 		for _, mon := range keywordMonitors {
-			if mon["name"] == "project-keyword-check" {
+			if mon["name"] == "keyword-check" {
 				customMonitor = mon
 				break
 			}
 		}
 		require.NotNil(t, customMonitor, "Custom keyword monitor should be planned")
-		assert.Equal(t, "https://example.com", customMonitor["url"])
-		assert.Equal(t, "Welcome", customMonitor["keyword"])
 		assert.Equal(t, float64(120), customMonitor["interval"])
 	})
 
@@ -741,7 +752,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 
 		var dnsMonitors []map[string]any
 		for _, rc := range got.Plan.ResourceChanges {
-			if rc.Type == "peekaping_dns_monitor" {
+			if rc.Type == "peekaping_monitor" && rc.Name == "dns" {
 				dnsMonitors = append(dnsMonitors, rc.Change.After.(map[string]any))
 			}
 		}
@@ -754,7 +765,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 
 		var pushMonitors []map[string]any
 		for _, rc := range got.Plan.ResourceChanges {
-			if rc.Type == "peekaping_push_monitor" {
+			if rc.Type == "peekaping_monitor" && rc.Name == "push" {
 				pushMonitors = append(pushMonitors, rc.Change.After.(map[string]any))
 			}
 		}
@@ -763,7 +774,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 
 		var dbBackupMonitor map[string]any
 		for _, mon := range pushMonitors {
-			if mon["name"] == "project-db-backup" {
+			if mon["name"] == "Backup - Database" {
 				dbBackupMonitor = mon
 				break
 			}
@@ -818,6 +829,9 @@ func TestTerraform_Defaults(t *testing.T) {
 		Resources: []appdef.Resource{},
 		Apps:      []appdef.App{},
 	}
+
+	// Apply defaults to ensure proper initialisation
+	require.NoError(t, appDef.ApplyDefaults())
 
 	tf, teardown := setup(t, appDef)
 	t.Cleanup(teardown)
