@@ -3,6 +3,7 @@
 package infra
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -83,6 +84,9 @@ func TestTerraform_Resources(t *testing.T) {
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
+
+	fmt.Println(err)
+
 	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Digital Ocean Postgres", func(t *testing.T) {
@@ -416,6 +420,9 @@ func TestTerraform_Apps(t *testing.T) {
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
+	fmt.Println(err)
+	t.Log(err)
+
 	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Digital Ocean App Platform", func(t *testing.T) {
