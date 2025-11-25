@@ -870,6 +870,7 @@ func TestDefinition_ValidateEnvReferences(t *testing.T) {
 		})
 	}
 }
+
 func TestDefinition_ValidateMonitors(t *testing.T) {
 	t.Parallel()
 
