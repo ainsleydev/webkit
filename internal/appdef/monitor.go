@@ -53,6 +53,8 @@ const (
 
 // Monitor interval constants (in seconds).
 const (
+	// MonitorIntervalMin is the minimum interval required by Peekaping provider.
+	MonitorIntervalMin = 20
 	// MonitorIntervalHTTP is 1 minute for HTTP health checks.
 	MonitorIntervalHTTP = 60
 	// MonitorIntervalDNS is 5 minutes for DNS resolution checks.
@@ -61,6 +63,12 @@ const (
 	MonitorIntervalBackup = 90000
 	// MonitorIntervalMaintenance is 8 days (691200s) for weekly maintenance with 1 day buffer.
 	MonitorIntervalMaintenance = 691200
+)
+
+// Monitor config constants.
+const (
+	// MonitorMaxRedirectsDefault is the default maximum redirects for HTTP monitors.
+	MonitorMaxRedirectsDefault = 3
 )
 
 // String implements fmt.Stringer on MonitorType.
@@ -162,6 +170,11 @@ var monitorValidators = map[MonitorType]func(*Monitor) error{
 
 // ValidateConfig ensures the monitor has the required config fields for its type.
 func (m *Monitor) ValidateConfig() error {
+	// Validate interval if explicitly set.
+	if m.Interval != 0 && m.Interval < MonitorIntervalMin {
+		return fmt.Errorf("monitor interval must be at least %d seconds (got %d)", MonitorIntervalMin, m.Interval)
+	}
+
 	validator, ok := monitorValidators[m.Type]
 	if !ok {
 		return fmt.Errorf("unknown monitor type: %s", m.Type)
@@ -171,20 +184,27 @@ func (m *Monitor) ValidateConfig() error {
 
 // applyDefaults sets default values for the monitor.
 // If interval is not set (0), applies sensible defaults based on monitor type.
+// Also sets max_redirects for HTTP/HTTP-keyword monitors if not provided.
 func (m *Monitor) applyDefaults() {
-	// Only apply default if interval is not explicitly set (0).
-	if m.Interval != 0 {
-		return
+	// Apply default interval if not explicitly set (0).
+	if m.Interval == 0 {
+		switch m.Type {
+		case MonitorTypeHTTP, MonitorTypeHTTPKeyword, MonitorTypePostgres:
+			m.Interval = MonitorIntervalHTTP // 60 seconds
+		case MonitorTypeDNS:
+			m.Interval = MonitorIntervalDNS // 300 seconds (5 minutes)
+		case MonitorTypePush:
+			m.Interval = MonitorIntervalBackup // 90000 seconds (25 hours)
+		}
 	}
 
-	// Apply type-specific default intervals.
-	switch m.Type {
-	case MonitorTypeHTTP, MonitorTypeHTTPKeyword, MonitorTypePostgres:
-		m.Interval = MonitorIntervalHTTP // 60 seconds
-	case MonitorTypeDNS:
-		m.Interval = MonitorIntervalDNS // 300 seconds (5 minutes)
-	case MonitorTypePush:
-		m.Interval = MonitorIntervalBackup // 90000 seconds (25 hours)
+	// Apply max_redirects default for HTTP and HTTP-keyword monitors.
+	if m.Type == MonitorTypeHTTP || m.Type == MonitorTypeHTTPKeyword {
+		if m.Config != nil {
+			if _, ok := m.Config.Int("max_redirects"); !ok {
+				m.Config["max_redirects"] = MonitorMaxRedirectsDefault
+			}
+		}
 	}
 }
 

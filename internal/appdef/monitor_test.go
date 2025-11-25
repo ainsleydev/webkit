@@ -535,24 +535,36 @@ func TestMonitor_ApplyDefaults(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		monitor Monitor
-		want    int
+		monitor         Monitor
+		wantInterval    int
+		wantMaxRedirect *int
 	}{
 		"HTTP monitor without interval gets default": {
 			monitor: Monitor{
 				Name:     "Test HTTP",
 				Type:     MonitorTypeHTTP,
 				Interval: 0,
+				Config: Config{
+					"url":    "https://example.com",
+					"method": "GET",
+				},
 			},
-			want: MonitorIntervalHTTP,
+			wantInterval:    MonitorIntervalHTTP,
+			wantMaxRedirect: ptr.IntPtr(MonitorMaxRedirectsDefault),
 		},
 		"HTTP keyword monitor without interval gets default": {
 			monitor: Monitor{
 				Name:     "Test Keyword",
 				Type:     MonitorTypeHTTPKeyword,
 				Interval: 0,
+				Config: Config{
+					"url":     "https://example.com",
+					"method":  "GET",
+					"keyword": "success",
+				},
 			},
-			want: MonitorIntervalHTTP,
+			wantInterval:    MonitorIntervalHTTP,
+			wantMaxRedirect: ptr.IntPtr(MonitorMaxRedirectsDefault),
 		},
 		"DNS monitor without interval gets default": {
 			monitor: Monitor{
@@ -560,7 +572,8 @@ func TestMonitor_ApplyDefaults(t *testing.T) {
 				Type:     MonitorTypeDNS,
 				Interval: 0,
 			},
-			want: MonitorIntervalDNS,
+			wantInterval:    MonitorIntervalDNS,
+			wantMaxRedirect: nil,
 		},
 		"Postgres monitor without interval gets default": {
 			monitor: Monitor{
@@ -568,7 +581,8 @@ func TestMonitor_ApplyDefaults(t *testing.T) {
 				Type:     MonitorTypePostgres,
 				Interval: 0,
 			},
-			want: MonitorIntervalHTTP,
+			wantInterval:    MonitorIntervalHTTP,
+			wantMaxRedirect: nil,
 		},
 		"Push monitor without interval gets default": {
 			monitor: Monitor{
@@ -576,15 +590,21 @@ func TestMonitor_ApplyDefaults(t *testing.T) {
 				Type:     MonitorTypePush,
 				Interval: 0,
 			},
-			want: MonitorIntervalBackup,
+			wantInterval:    MonitorIntervalBackup,
+			wantMaxRedirect: nil,
 		},
 		"HTTP monitor with explicit interval unchanged": {
 			monitor: Monitor{
 				Name:     "Test HTTP",
 				Type:     MonitorTypeHTTP,
 				Interval: 120,
+				Config: Config{
+					"url":    "https://example.com",
+					"method": "GET",
+				},
 			},
-			want: 120,
+			wantInterval:    120,
+			wantMaxRedirect: ptr.IntPtr(MonitorMaxRedirectsDefault),
 		},
 		"DNS monitor with explicit interval unchanged": {
 			monitor: Monitor{
@@ -592,7 +612,8 @@ func TestMonitor_ApplyDefaults(t *testing.T) {
 				Type:     MonitorTypeDNS,
 				Interval: 600,
 			},
-			want: 600,
+			wantInterval:    600,
+			wantMaxRedirect: nil,
 		},
 		"Push monitor with explicit interval unchanged": {
 			monitor: Monitor{
@@ -600,7 +621,47 @@ func TestMonitor_ApplyDefaults(t *testing.T) {
 				Type:     MonitorTypePush,
 				Interval: 3600,
 			},
-			want: 3600,
+			wantInterval:    3600,
+			wantMaxRedirect: nil,
+		},
+		"HTTP monitor with explicit max_redirects unchanged": {
+			monitor: Monitor{
+				Name:     "Test HTTP",
+				Type:     MonitorTypeHTTP,
+				Interval: 0,
+				Config: Config{
+					"url":           "https://example.com",
+					"method":        "GET",
+					"max_redirects": 5,
+				},
+			},
+			wantInterval:    MonitorIntervalHTTP,
+			wantMaxRedirect: ptr.IntPtr(5),
+		},
+		"HTTP keyword monitor with explicit max_redirects unchanged": {
+			monitor: Monitor{
+				Name:     "Test Keyword",
+				Type:     MonitorTypeHTTPKeyword,
+				Interval: 0,
+				Config: Config{
+					"url":           "https://example.com",
+					"method":        "GET",
+					"keyword":       "success",
+					"max_redirects": 10,
+				},
+			},
+			wantInterval:    MonitorIntervalHTTP,
+			wantMaxRedirect: ptr.IntPtr(10),
+		},
+		"HTTP monitor with nil config does not set max_redirects": {
+			monitor: Monitor{
+				Name:     "Test HTTP",
+				Type:     MonitorTypeHTTP,
+				Interval: 0,
+				Config:   nil,
+			},
+			wantInterval:    MonitorIntervalHTTP,
+			wantMaxRedirect: nil,
 		},
 	}
 
@@ -608,7 +669,16 @@ func TestMonitor_ApplyDefaults(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			test.monitor.applyDefaults()
-			assert.Equal(t, test.want, test.monitor.Interval)
+			assert.Equal(t, test.wantInterval, test.monitor.Interval)
+
+			if test.wantMaxRedirect != nil {
+				maxRedirects, ok := test.monitor.Config.Int("max_redirects")
+				require.True(t, ok, "Expected max_redirects to be set")
+				assert.Equal(t, *test.wantMaxRedirect, maxRedirects)
+			} else if test.monitor.Config != nil {
+				_, ok := test.monitor.Config.Int("max_redirects")
+				assert.False(t, ok, "Expected max_redirects to not be set")
+			}
 		})
 	}
 }

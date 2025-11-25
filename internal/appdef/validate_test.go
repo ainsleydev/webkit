@@ -1067,3 +1067,119 @@ func TestDefinition_ValidateMonitors(t *testing.T) {
 		})
 	}
 }
+
+func TestDefinition_ValidateMonitors_IntervalValidation(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input    *Definition
+		wantErrs []string
+	}{
+		"Valid Interval Above Minimum": {
+			input: &Definition{
+				Monitoring: Monitoring{
+					Custom: []Monitor{
+						{
+							Name:     "Test HTTP",
+							Type:     MonitorTypeHTTP,
+							Interval: 60,
+							Config: Config{
+								"url":    "https://example.com",
+								"method": "GET",
+							},
+						},
+					},
+				},
+			},
+			wantErrs: []string{},
+		},
+		"Valid Interval At Minimum": {
+			input: &Definition{
+				Monitoring: Monitoring{
+					Custom: []Monitor{
+						{
+							Name:     "Test HTTP",
+							Type:     MonitorTypeHTTP,
+							Interval: 20,
+							Config: Config{
+								"url":    "https://example.com",
+								"method": "GET",
+							},
+						},
+					},
+				},
+			},
+			wantErrs: []string{},
+		},
+		"Invalid Interval Below Minimum": {
+			input: &Definition{
+				Monitoring: Monitoring{
+					Custom: []Monitor{
+						{
+							Name:     "Test HTTP",
+							Type:     MonitorTypeHTTP,
+							Interval: 10,
+							Config: Config{
+								"url":    "https://example.com",
+								"method": "GET",
+							},
+						},
+					},
+				},
+			},
+			wantErrs: []string{
+				`custom monitor[0] "Test HTTP": monitor interval must be at least 20 seconds (got 10)`,
+			},
+		},
+		"Invalid Interval Zero After Defaults Not Applied": {
+			input: &Definition{
+				Monitoring: Monitoring{
+					Custom: []Monitor{
+						{
+							Name:     "Test HTTP",
+							Type:     MonitorTypeHTTP,
+							Interval: 5,
+							Config: Config{
+								"url":    "https://example.com",
+								"method": "GET",
+							},
+						},
+					},
+				},
+			},
+			wantErrs: []string{
+				`custom monitor[0] "Test HTTP": monitor interval must be at least 20 seconds (got 5)`,
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			errs := test.input.validateMonitors()
+
+			if len(test.wantErrs) == 0 {
+				assert.Empty(t, errs, "expected no errors")
+			} else {
+				require.Len(t, errs, len(test.wantErrs), "unexpected number of errors")
+
+				errorMessages := make([]string, len(errs))
+				for i, err := range errs {
+					errorMessages[i] = err.Error()
+				}
+
+				for _, wantErr := range test.wantErrs {
+					found := false
+					for _, errMsg := range errorMessages {
+						if strings.Contains(errMsg, wantErr) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found, "expected error message containing %q not found in errors: %v", wantErr, errorMessages)
+				}
+			}
+		})
+	}
+}
