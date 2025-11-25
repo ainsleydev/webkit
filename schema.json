@@ -160,6 +160,10 @@
 			},
 			"type": "object"
 		},
+		"AppdefConfig": {
+			"additionalProperties": {},
+			"type": "object"
+		},
 		"AppdefDomain": {
 			"properties": {
 				"name": {
@@ -239,12 +243,8 @@
 		"AppdefInfra": {
 			"properties": {
 				"config": {
-					"additionalProperties": {},
-					"description": "Provider-specific infrastructure configuration options",
-					"type": [
-						"object",
-						"null"
-					]
+					"$ref": "#/definitions/AppdefConfig",
+					"description": "Provider-specific infrastructure configuration options"
 				},
 				"provider": {
 					"description": "Cloud infrastructure provider (digitalocean, backblaze)",
@@ -259,9 +259,9 @@
 		},
 		"AppdefMonitor": {
 			"properties": {
-				"domain": {
-					"description": "Domain name for DNS monitors",
-					"type": "string"
+				"config": {
+					"$ref": "#/definitions/AppdefConfig",
+					"description": "Type-specific monitor configuration (e.g., url, method, keyword, domain)"
 				},
 				"identifier": {
 					"description": "Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method.",
@@ -271,27 +271,12 @@
 					"description": "Interval in seconds between checks (defaults based on monitor type if not specified)",
 					"type": "integer"
 				},
-				"maxRedirects": {
-					"description": "Maximum redirects to follow for HTTP monitors (default 0). Set to 1 for alias domains that redirect.",
-					"type": [
-						"null",
-						"integer"
-					]
-				},
-				"method": {
-					"description": "HTTP method for HTTP monitors (e.g., GET, POST)",
-					"type": "string"
-				},
 				"name": {
 					"description": "Unique monitor name",
 					"type": "string"
 				},
 				"type": {
-					"description": "Monitor type (http, dns, postgres, push)",
-					"type": "string"
-				},
-				"url": {
-					"description": "URL for HTTP monitors or database connection string for postgres monitors",
+					"description": "Monitor type (http, http-keyword, dns, postgres, push)",
 					"type": "string"
 				}
 			},
@@ -305,6 +290,13 @@
 						"$ref": "#/definitions/AppdefMonitor"
 					},
 					"type": "array"
+				},
+				"enabled": {
+					"description": "Enable or disable all monitoring globally (defaults to true)",
+					"type": [
+						"null",
+						"boolean"
+					]
 				},
 				"statusPage": {
 					"$ref": "#/definitions/AppdefStatusPage",
@@ -345,12 +337,8 @@
 					"description": "Backup configuration for the resource"
 				},
 				"config": {
-					"additionalProperties": {},
-					"description": "Provider-specific resource configuration (e.g., size, region, version)",
-					"type": [
-						"object",
-						"null"
-					]
+					"$ref": "#/definitions/AppdefConfig",
+					"description": "Provider-specific resource configuration (e.g., size, region, version)"
 				},
 				"description": {
 					"description": "Brief description of the resource's purpose and functionality",
