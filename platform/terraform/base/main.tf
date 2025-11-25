@@ -234,7 +234,10 @@ data "json-formatter_format_json" "webkit_outputs" {
 
   indent = "\t"
   json = jsonencode({
-    peekaping_endpoint = var.peekaping_endpoint
+    peekaping = {
+      endpoint    = var.peekaping_endpoint
+      project_tag = module.monitoring[0].peekaping.project_tag
+    }
     monitors = [for m in module.monitoring[0].monitors : {
       id   = m.id
       name = m.name

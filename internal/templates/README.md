@@ -44,6 +44,10 @@ This repository contains **{{ len .Definition.Apps }} application{{ if ne (len .
 ## Status
 
 Uptime monitors for the application. Visit the [status page]({{ .StatusPageURL }}) for more details.
+{{- if .DashboardURL }}
+
+View all monitors on the [dashboard]({{ .DashboardURL }}).
+{{- end }}
 
 | Monitor | Status |
 |---------|--------|

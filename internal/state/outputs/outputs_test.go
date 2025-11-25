@@ -37,7 +37,10 @@ func TestLoad(t *testing.T) {
 
 		fs := afero.NewMemMapFs()
 		outputsJSON := `{
-			"peekaping_endpoint": "https://peekaping.example.com",
+			"peekaping": {
+				"endpoint": "https://peekaping.example.com",
+				"project_tag": "abc-123-def-456"
+			},
 			"monitors": [
 				{"id": "abc123", "name": "HTTP - example.com", "type": "http"},
 				{"id": "def456", "name": "DNS - example.com", "type": "dns"}
@@ -55,7 +58,8 @@ func TestLoad(t *testing.T) {
 
 		got := Load(fs)
 		require.NotNil(t, got)
-		assert.Equal(t, "https://peekaping.example.com", got.PeekapingEndpoint)
+		assert.Equal(t, "https://peekaping.example.com", got.Peekaping.Endpoint)
+		assert.Equal(t, "abc-123-def-456", got.Peekaping.ProjectTag)
 		assert.Equal(t, "alerts-test", got.Slack.ChannelName)
 		assert.Equal(t, "C123456", got.Slack.ChannelID)
 		require.Len(t, got.Monitors, 2)

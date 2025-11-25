@@ -31,15 +31,16 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	webkitOutputs := outputs.Load(input.FS)
 
 	data := map[string]any{
-		"Definition":     appDef,
-		"Content":        mustLoadCustomContent(input.FS, "README.md"),
-		"LogoURL":        detectLogoURL(input.FS),
-		"DomainLinks":    formatDomainLinks(appDef),
-		"ProviderGroups": groupByProvider(appDef),
-		"CurrentYear":    time.Now().Year(),
-		"Outputs":        webkitOutputs,
-		"StatusPageURL":  getStatusPageURL(appDef),
-		"MonitorBadges":  formatMonitorBadges(webkitOutputs),
+		"Definition":      appDef,
+		"Content":         mustLoadCustomContent(input.FS, "README.md"),
+		"LogoURL":         detectLogoURL(input.FS),
+		"DomainLinks":     formatDomainLinks(appDef),
+		"ProviderGroups":  groupByProvider(appDef),
+		"CurrentYear":     time.Now().Year(),
+		"Outputs":         webkitOutputs,
+		"StatusPageURL":   getStatusPageURL(appDef),
+		"DashboardURL":    getDashboardURL(webkitOutputs),
+		"MonitorBadges":   formatMonitorBadges(webkitOutputs),
 	}
 
 	err := input.Generator().Template(
@@ -136,13 +137,32 @@ type monitorBadge struct {
 	Type     string
 }
 
+// getDashboardURL returns the dashboard URL filtered by project tag.
+func getDashboardURL(webkitOutputs *outputs.WebkitOutputs) string {
+	if webkitOutputs == nil {
+		return ""
+	}
+
+	endpoint := webkitOutputs.Peekaping.Endpoint
+	if endpoint == "" {
+		endpoint = fmt.Sprintf("https://%s", defaultPeekapingDomain)
+	}
+
+	projectTag := webkitOutputs.Peekaping.ProjectTag
+	if projectTag == "" {
+		return fmt.Sprintf("%s/monitors", endpoint)
+	}
+
+	return fmt.Sprintf("%s/monitors?tags=%s", endpoint, projectTag)
+}
+
 // formatMonitorBadges creates badge data for all monitors from outputs.
 func formatMonitorBadges(webkitOutputs *outputs.WebkitOutputs) []monitorBadge {
 	if webkitOutputs == nil || len(webkitOutputs.Monitors) == 0 {
 		return nil
 	}
 
-	endpoint := webkitOutputs.PeekapingEndpoint
+	endpoint := webkitOutputs.Peekaping.Endpoint
 	if endpoint == "" {
 		endpoint = fmt.Sprintf("https://%s", defaultPeekapingDomain)
 	}

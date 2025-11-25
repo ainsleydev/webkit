@@ -8,9 +8,9 @@ output "all_monitor_ids" {
   value       = module.monitors.all_ids
 }
 
-output "tag_ids" {
-  description = "Tag IDs for reference."
+output "peekaping" {
+  description = "Peekaping configuration and outputs."
   value = {
-    project = module.project_tag.id
+    project_tag = module.project_tag.id
   }
 }

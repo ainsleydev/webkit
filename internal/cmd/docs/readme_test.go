@@ -188,7 +188,10 @@ func TestReadme(t *testing.T) {
 
 		// Create outputs.json with monitoring data
 		outputsJSON := `{
-			"peekaping_endpoint": "https://peekaping.example.com",
+			"peekaping": {
+				"endpoint": "https://peekaping.example.com",
+				"project_tag": "test-tag-123"
+			},
 			"monitors": [
 				{"id": "mon123", "name": "HTTP - example.com", "type": "http"},
 				{"id": "mon456", "name": "DNS - example.com", "type": "dns"}
@@ -224,6 +227,8 @@ func TestReadme(t *testing.T) {
 		assert.Contains(t, string(got), "## Status")
 		assert.Contains(t, string(got), "status page")
 		assert.Contains(t, string(got), "uptime.ainsley.dev") // default status page URL
+		assert.Contains(t, string(got), "dashboard")
+		assert.Contains(t, string(got), "test-tag-123") // verify dashboard link contains project tag
 		assert.Contains(t, string(got), "HTTP - example.com")
 		assert.Contains(t, string(got), "DNS - example.com")
 		assert.Contains(t, string(got), "mon123")
