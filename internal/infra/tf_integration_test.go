@@ -3,6 +3,7 @@
 package infra
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -86,6 +87,7 @@ func TestTerraform_Resources(t *testing.T) {
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	fmt.Println(err)
 	t.Log(err)
+	fmt.Println(got)
 	require.NoError(t, err)
 	require.NotNil(t, got)
 
@@ -423,7 +425,9 @@ func TestTerraform_Apps(t *testing.T) {
 
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	fmt.Println(err)
-	t.Log(err)
+	fmt.Println(got)
+	indent, _ := json.MarshalIndent(got, "", "\t")
+	t.Log(string(indent))
 
 	require.NoError(t, err)
 	require.NotNil(t, got)
