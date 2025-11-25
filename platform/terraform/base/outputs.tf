@@ -95,12 +95,12 @@ output "project_name" {
 
 output "github_secrets_created" {
   description = "List of GitHub secrets that were created"
-  value       = keys(local.github_secrets)
+  value       = concat(keys(local.github_secrets), ["TF_SLACK_CHANNEL_ID"])
 }
 
 output "github_secrets_count" {
   description = "Number of GitHub secrets created"
-  value       = length(local.github_secrets)
+  value       = length(local.github_secrets) + 1 # +1 for TF_SLACK_CHANNEL_ID
 }
 
 #
