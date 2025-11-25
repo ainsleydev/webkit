@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/internal/state/outputs"
 )
 
 func TestReadme(t *testing.T) {
@@ -188,7 +189,10 @@ func TestReadme(t *testing.T) {
 
 		// Create outputs.json with monitoring data
 		outputsJSON := `{
-			"peekaping_endpoint": "https://peekaping.example.com",
+			"peekaping": {
+				"endpoint": "https://peekaping.example.com",
+				"project_tag": "test-tag-123"
+			},
 			"monitors": [
 				{"id": "mon123", "name": "HTTP - example.com", "type": "http"},
 				{"id": "mon456", "name": "DNS - example.com", "type": "dns"}
@@ -224,6 +228,8 @@ func TestReadme(t *testing.T) {
 		assert.Contains(t, string(got), "## Status")
 		assert.Contains(t, string(got), "status page")
 		assert.Contains(t, string(got), "uptime.ainsley.dev") // default status page URL
+		assert.Contains(t, string(got), "dashboard")
+		assert.Contains(t, string(got), "test-tag-123") // verify dashboard link contains project tag
 		assert.Contains(t, string(got), "HTTP - example.com")
 		assert.Contains(t, string(got), "DNS - example.com")
 		assert.Contains(t, string(got), "mon123")
@@ -249,4 +255,127 @@ func TestReadme(t *testing.T) {
 		got := Readme(t.Context(), input)
 		assert.Error(t, got)
 	})
+}
+
+func TestGetPeekapingEndpoint(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input *outputs.WebkitOutputs
+		want  string
+	}{
+		"Nil outputs": {
+			input: nil,
+			want:  "https://uptime.ainsley.dev",
+		},
+		"Empty endpoint": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint: "",
+				},
+			},
+			want: "https://uptime.ainsley.dev",
+		},
+		"Custom endpoint": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint: "https://peekaping.example.com",
+				},
+			},
+			want: "https://peekaping.example.com",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := getPeekapingEndpoint(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestGetDashboardURL(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input *outputs.WebkitOutputs
+		want  string
+	}{
+		"Nil outputs": {
+			input: nil,
+			want:  "",
+		},
+		"Empty project tag": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://peekaping.example.com",
+					ProjectTag: "",
+				},
+			},
+			want: "https://peekaping.example.com/monitors",
+		},
+		"Valid project tag": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://peekaping.example.com",
+					ProjectTag: "test-tag-123",
+				},
+			},
+			want: "https://peekaping.example.com/monitors?tags=test-tag-123",
+		},
+		"Empty endpoint with project tag": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "",
+					ProjectTag: "test-tag-456",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors?tags=test-tag-456",
+		},
+		"Empty endpoint without project tag": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "",
+					ProjectTag: "",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors",
+		},
+		"Real world example": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://uptime.ainsley.dev",
+					ProjectTag: "08ba3cee-0afb-4d51-815e-daca3f2172f2",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors?tags=08ba3cee-0afb-4d51-815e-daca3f2172f2",
+		},
+		"Project tag with spaces": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://uptime.ainsley.dev",
+					ProjectTag: "tag with spaces",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors?tags=tag+with+spaces",
+		},
+		"Project tag with special characters": {
+			input: &outputs.WebkitOutputs{
+				Peekaping: outputs.Peekaping{
+					Endpoint:   "https://uptime.ainsley.dev",
+					ProjectTag: "tag&special=chars",
+				},
+			},
+			want: "https://uptime.ainsley.dev/monitors?tags=tag%26special%3Dchars",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := getDashboardURL(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
 }

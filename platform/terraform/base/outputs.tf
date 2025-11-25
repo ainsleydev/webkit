@@ -122,3 +122,14 @@ output "digitalocean_project_id" {
   description = "DigitalOcean project ID (add this to your variables after first apply to preserve manual domains)"
   value       = digitalocean_project.this.id
 }
+
+#
+# Monitoring
+#
+output "monitoring" {
+  description = "Monitoring outputs including Peekaping data"
+  value = length(var.monitors) > 0 ? {
+    peekaping = module.monitoring[0].peekaping
+    monitors  = module.monitoring[0].monitors
+  } : null
+}

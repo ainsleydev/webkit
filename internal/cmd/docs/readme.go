@@ -3,6 +3,7 @@ package docs
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -39,6 +40,7 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 		"CurrentYear":    time.Now().Year(),
 		"Outputs":        webkitOutputs,
 		"StatusPageURL":  getStatusPageURL(appDef),
+		"DashboardURL":   getDashboardURL(webkitOutputs),
 		"MonitorBadges":  formatMonitorBadges(webkitOutputs),
 	}
 
@@ -136,17 +138,39 @@ type monitorBadge struct {
 	Type     string
 }
 
+// getPeekapingEndpoint returns the Peekaping endpoint from outputs or the default.
+func getPeekapingEndpoint(webkitOutputs *outputs.WebkitOutputs) string {
+	if webkitOutputs != nil && webkitOutputs.Peekaping.Endpoint != "" {
+		return webkitOutputs.Peekaping.Endpoint
+	}
+	return fmt.Sprintf("https://%s", defaultPeekapingDomain)
+}
+
+// getDashboardURL returns the dashboard URL filtered by project tag.
+// Returns empty string if outputs is nil. The project tag is URL-encoded
+// to handle special characters.
+func getDashboardURL(webkitOutputs *outputs.WebkitOutputs) string {
+	if webkitOutputs == nil {
+		return ""
+	}
+
+	endpoint := getPeekapingEndpoint(webkitOutputs)
+	projectTag := webkitOutputs.Peekaping.ProjectTag
+
+	if projectTag == "" {
+		return fmt.Sprintf("%s/monitors", endpoint)
+	}
+
+	return fmt.Sprintf("%s/monitors?tags=%s", endpoint, url.QueryEscape(projectTag))
+}
+
 // formatMonitorBadges creates badge data for all monitors from outputs.
 func formatMonitorBadges(webkitOutputs *outputs.WebkitOutputs) []monitorBadge {
 	if webkitOutputs == nil || len(webkitOutputs.Monitors) == 0 {
 		return nil
 	}
 
-	endpoint := webkitOutputs.PeekapingEndpoint
-	if endpoint == "" {
-		endpoint = fmt.Sprintf("https://%s", defaultPeekapingDomain)
-	}
-
+	endpoint := getPeekapingEndpoint(webkitOutputs)
 	labels := "style=flat&upLabel=up&downLabel=down&pendingLabel=pending&maintenanceLabel=maintenance&pausedLabel=paused"
 
 	badges := make([]monitorBadge, 0, len(webkitOutputs.Monitors))
