@@ -83,6 +83,19 @@ func TestTerraform_Resources(t *testing.T) {
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
+
+	// Log plan details for debugging
+	t.Logf("Plan Result: HasChanges=%v, ResourceChangesCount=%d",
+		got.HasChanges,
+		len(got.Plan.ResourceChanges))
+
+	if !got.HasChanges {
+		t.Logf("Plan output (no changes detected):\n%s", got.Output)
+		if got.Plan != nil && got.Plan.ResourceChanges != nil {
+			t.Logf("Resource changes count: %d", len(got.Plan.ResourceChanges))
+		}
+	}
+
 	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Digital Ocean Postgres", func(t *testing.T) {
@@ -416,6 +429,19 @@ func TestTerraform_Apps(t *testing.T) {
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
+
+	// Log plan details for debugging
+	t.Logf("Plan Result: HasChanges=%v, ResourceChangesCount=%d",
+		got.HasChanges,
+		len(got.Plan.ResourceChanges))
+
+	if !got.HasChanges {
+		t.Logf("Plan output (no changes detected):\n%s", got.Output)
+		if got.Plan != nil && got.Plan.ResourceChanges != nil {
+			t.Logf("Resource changes count: %d", len(got.Plan.ResourceChanges))
+		}
+	}
+
 	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Digital Ocean App Platform", func(t *testing.T) {
@@ -662,6 +688,19 @@ func TestTerraform_Monitoring(t *testing.T) {
 	got, err := tf.Plan(t.Context(), env.Production, false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
+
+	// Log plan details for debugging
+	t.Logf("Plan Result: HasChanges=%v, ResourceChangesCount=%d",
+		got.HasChanges,
+		len(got.Plan.ResourceChanges))
+
+	if !got.HasChanges {
+		t.Logf("Plan output (no changes detected):\n%s", got.Output)
+		if got.Plan != nil && got.Plan.ResourceChanges != nil {
+			t.Logf("Resource changes count: %d", len(got.Plan.ResourceChanges))
+		}
+	}
+
 	require.True(t, got.HasChanges, "Plan should have changes")
 
 	t.Run("Peekaping Project Tag", func(t *testing.T) {
