@@ -35,6 +35,7 @@ func (d *Definition) Validate(fs afero.Fs) []error {
 	errs = append(errs, d.validateAppPaths(fs)...)
 	errs = append(errs, d.validateTerraformManagedVMs()...)
 	errs = append(errs, d.validateEnvReferences()...)
+	errs = append(errs, d.validateMonitors()...)
 
 	// Return nil if no errors
 	if len(errs) == 0 {
@@ -250,6 +251,24 @@ func (d *Definition) validateEnvVarReferences(
 	})
 	if err != nil {
 		errs = append(errs, fmt.Errorf("walking env variables: %w", err))
+	}
+
+	return errs
+}
+
+// validateMonitors ensures that all custom monitors have valid configuration.
+func (d *Definition) validateMonitors() []error {
+	var errs []error
+
+	for i, monitor := range d.Monitoring.Custom {
+		if err := monitor.ValidateConfig(); err != nil {
+			errs = append(errs, fmt.Errorf(
+				"custom monitor[%d] %q: %w",
+				i,
+				monitor.Name,
+				err,
+			))
+		}
 	}
 
 	return errs

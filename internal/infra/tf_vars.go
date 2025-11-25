@@ -279,39 +279,43 @@ func (t *Terraform) generateMonitors(e env.Environment) []tfMonitor {
 			VariableName: m.VariableName(e.Short()),
 		}
 
+		// Push monitors don't have config, skip extraction.
+		if m.Config == nil {
+			monitors[i] = tfM
+			continue
+		}
+
 		// Extract config fields based on monitor type.
-		if m.Config != nil {
-			// HTTP and HTTP-Keyword fields.
-			if url, ok := m.Config.String("url"); ok {
-				tfM.URL = url
-			}
-			if method, ok := m.Config.String("method"); ok {
-				tfM.Method = method
-			}
-			if maxRedirects, ok := m.Config.Int("max_redirects"); ok {
-				tfM.MaxRedirects = maxRedirects
-			}
+		// HTTP and HTTP-Keyword fields.
+		if url, ok := m.Config.String("url"); ok {
+			tfM.URL = url
+		}
+		if method, ok := m.Config.String("method"); ok {
+			tfM.Method = method
+		}
+		if maxRedirects, ok := m.Config.Int("max_redirects"); ok {
+			tfM.MaxRedirects = maxRedirects
+		}
 
-			// HTTP-Keyword specific fields.
-			if keyword, ok := m.Config.String("keyword"); ok {
-				tfM.Keyword = keyword
-			}
-			if invertKeyword, ok := m.Config.Bool("invert_keyword"); ok {
-				tfM.InvertKeyword = invertKeyword
-			}
+		// HTTP-Keyword specific fields.
+		if keyword, ok := m.Config.String("keyword"); ok {
+			tfM.Keyword = keyword
+		}
+		if invertKeyword, ok := m.Config.Bool("invert_keyword"); ok {
+			tfM.InvertKeyword = invertKeyword
+		}
 
-			// DNS fields.
-			if domain, ok := m.Config.String("domain"); ok {
-				tfM.Domain = domain
-			}
-			if resolverType, ok := m.Config.String("resolver_type"); ok {
-				tfM.ResolverType = resolverType
-			}
+		// DNS fields.
+		if domain, ok := m.Config.String("domain"); ok {
+			tfM.Domain = domain
+		}
+		if resolverType, ok := m.Config.String("resolver_type"); ok {
+			tfM.ResolverType = resolverType
+		}
 
-			// Postgres fields (uses url for connection_string).
-			if connectionString, ok := m.Config.String("connection_string"); ok {
-				tfM.URL = connectionString
-			}
+		// Postgres fields (uses url for connection_string).
+		if connectionString, ok := m.Config.String("connection_string"); ok {
+			tfM.URL = connectionString
 		}
 
 		monitors[i] = tfM
