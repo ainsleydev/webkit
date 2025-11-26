@@ -295,90 +295,67 @@ func TestGetPeekapingEndpoint(t *testing.T) {
 	}
 }
 
-func TestGetLogoWidth(t *testing.T) {
+func TestBuildLogo(t *testing.T) {
 	t.Parallel()
 
-	tt := map[string]struct {
-		input *ReadmeContent
-		want  int
-	}{
-		"Nil logo": {
-			input: &ReadmeContent{},
-			want:  0,
-		},
-		"Logo with width": {
-			input: &ReadmeContent{
-				Meta: ReadmeFrontMatter{
-					Logo: &LogoConfig{
-						Width: 400,
-					},
+	t.Run("No front matter uses default dimensions", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		err := fs.MkdirAll("resources", 0o755)
+		require.NoError(t, err)
+		err = afero.WriteFile(fs, "resources/logo.png", []byte("fake"), 0o644)
+		require.NoError(t, err)
+
+		content := &ReadmeContent{}
+		logo := buildLogo(fs, content)
+
+		assert.Equal(t, "./resources/logo.png", logo.URL)
+		assert.Equal(t, 0, logo.Width)
+		assert.Equal(t, 0, logo.Height)
+	})
+
+	t.Run("Front matter width only", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		content := &ReadmeContent{
+			Meta: ReadmeFrontMatter{
+				Logo: &LogoConfig{
+					Width: 400,
 				},
 			},
-			want: 400,
-		},
-		"Logo with width and height": {
-			input: &ReadmeContent{
-				Meta: ReadmeFrontMatter{
-					Logo: &LogoConfig{
-						Width:  300,
-						Height: 150,
-					},
+		}
+
+		logo := buildLogo(fs, content)
+		assert.Equal(t, webkitSymbolURL, logo.URL)
+		assert.Equal(t, 400, logo.Width)
+		assert.Equal(t, 0, logo.Height)
+	})
+
+	t.Run("Front matter width and height", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		err := fs.MkdirAll("resources", 0o755)
+		require.NoError(t, err)
+		err = afero.WriteFile(fs, "resources/logo.svg", []byte("fake"), 0o644)
+		require.NoError(t, err)
+
+		content := &ReadmeContent{
+			Meta: ReadmeFrontMatter{
+				Logo: &LogoConfig{
+					Width:  300,
+					Height: 150,
 				},
 			},
-			want: 300,
-		},
-	}
+		}
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			got := getLogoWidth(test.input)
-			assert.Equal(t, test.want, got)
-		})
-	}
-}
-
-func TestGetLogoHeight(t *testing.T) {
-	t.Parallel()
-
-	tt := map[string]struct {
-		input *ReadmeContent
-		want  int
-	}{
-		"Nil logo": {
-			input: &ReadmeContent{},
-			want:  0,
-		},
-		"Logo with height": {
-			input: &ReadmeContent{
-				Meta: ReadmeFrontMatter{
-					Logo: &LogoConfig{
-						Height: 200,
-					},
-				},
-			},
-			want: 200,
-		},
-		"Logo with width and height": {
-			input: &ReadmeContent{
-				Meta: ReadmeFrontMatter{
-					Logo: &LogoConfig{
-						Width:  300,
-						Height: 150,
-					},
-				},
-			},
-			want: 150,
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			got := getLogoHeight(test.input)
-			assert.Equal(t, test.want, got)
-		})
-	}
+		logo := buildLogo(fs, content)
+		assert.Equal(t, "./resources/logo.svg", logo.URL)
+		assert.Equal(t, 300, logo.Width)
+		assert.Equal(t, 150, logo.Height)
+	})
 }
 
 func TestGetDashboardURL(t *testing.T) {

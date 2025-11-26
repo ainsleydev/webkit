@@ -25,6 +25,32 @@ const (
 	defaultPeekapingDomain = "uptime.ainsley.dev"
 )
 
+type (
+	// ReadmeFrontMatter contains front matter metadata for README templates.
+	ReadmeFrontMatter struct {
+		Logo *LogoConfig `yaml:"logo,omitempty" json:"logo,omitempty"`
+	}
+
+	// LogoConfig contains logo display configuration.
+	LogoConfig struct {
+		Width  int `yaml:"width,omitempty" json:"width,omitempty"`
+		Height int `yaml:"height,omitempty" json:"height,omitempty"`
+	}
+
+	// ReadmeContent contains parsed front matter and content.
+	ReadmeContent struct {
+		Meta    ReadmeFrontMatter
+		Content string
+	}
+
+	// Logo contains the complete logo information including URL and dimensions.
+	Logo struct {
+		URL    string
+		Width  int
+		Height int
+	}
+)
+
 // Readme creates the README.md file at the project root by combining
 // the base template with project data from app.json.
 func Readme(_ context.Context, input cmdtools.CommandInput) error {
@@ -39,9 +65,7 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	data := map[string]any{
 		"Definition":     appDef,
 		"Content":        readmeContent.Content,
-		"LogoURL":        detectLogoURL(input.FS),
-		"LogoWidth":      getLogoWidth(readmeContent),
-		"LogoHeight":     getLogoHeight(readmeContent),
+		"Logo":           buildLogo(input.FS, readmeContent),
 		"DomainLinks":    formatDomainLinks(appDef),
 		"ProviderGroups": groupByProvider(appDef),
 		"CurrentYear":    time.Now().Year(),
@@ -64,20 +88,36 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	return nil
 }
 
-// getLogoWidth returns the logo width from front matter or 0 if not set.
-func getLogoWidth(content *ReadmeContent) int {
-	if content.Meta.Logo != nil {
-		return content.Meta.Logo.Width
+// loadReadmeContent loads README content and parses front matter if present.
+func loadReadmeContent(fs afero.Fs) (*ReadmeContent, error) {
+	var meta ReadmeFrontMatter
+	content, err := parseContentWithFrontMatter(
+		fs,
+		filepath.Join(customDocsDir, "README.md"),
+		&meta,
+	)
+	if err != nil {
+		return nil, err
 	}
-	return 0
+
+	return &ReadmeContent{
+		Meta:    meta,
+		Content: content,
+	}, nil
 }
 
-// getLogoHeight returns the logo height from front matter or 0 if not set.
-func getLogoHeight(content *ReadmeContent) int {
-	if content.Meta.Logo != nil {
-		return content.Meta.Logo.Height
+// buildLogo constructs a Logo combining the detected URL and front matter dimensions.
+func buildLogo(fs afero.Fs, content *ReadmeContent) Logo {
+	logo := Logo{
+		URL: detectLogoURL(fs),
 	}
-	return 0
+
+	if content.Meta.Logo != nil {
+		logo.Width = content.Meta.Logo.Width
+		logo.Height = content.Meta.Logo.Height
+	}
+
+	return logo
 }
 
 // detectLogoURL checks for logo files in resources directory and returns

@@ -16,25 +16,6 @@ const (
 	customDocsDir = "docs"
 )
 
-type (
-	// ReadmeFrontMatter contains front matter metadata for README templates.
-	ReadmeFrontMatter struct {
-		Logo *LogoConfig `yaml:"logo,omitempty" json:"logo,omitempty"`
-	}
-
-	// LogoConfig contains logo display configuration.
-	LogoConfig struct {
-		Width  int `yaml:"width,omitempty" json:"width,omitempty"`
-		Height int `yaml:"height,omitempty" json:"height,omitempty"`
-	}
-
-	// ReadmeContent contains parsed front matter and content.
-	ReadmeContent struct {
-		Meta    ReadmeFrontMatter
-		Content string
-	}
-)
-
 // loadCustomContent loads custom a documentation file content from the file name.
 func loadCustomContent(fs afero.Fs, fileName string) (string, error) {
 	return readFile(fs, filepath.Join(customDocsDir, fileName))
@@ -52,25 +33,6 @@ func mustLoadCustomContent(fs afero.Fs, fileName string) string {
 // parseContentWithFrontMatter parses a markdown file with optional YAML front matter.
 // The meta parameter should be a pointer to the struct where front matter will be unmarshalled.
 // Returns the content without front matter, or empty string if file doesn't exist.
-//
-// Example usage for future templates:
-//
-//	type AgentsFrontMatter struct {
-//	    ShowTOC bool `yaml:"showTOC,omitempty"`
-//	}
-//
-//	func loadAgentsContent(fs afero.Fs) (*AgentsContent, error) {
-//	    var meta AgentsFrontMatter
-//	    content, err := parseContentWithFrontMatter(
-//	        fs,
-//	        filepath.Join(customDocsDir, "AGENTS.md"),
-//	        &meta,
-//	    )
-//	    if err != nil {
-//	        return nil, err
-//	    }
-//	    return &AgentsContent{Meta: meta, Content: content}, nil
-//	}
 func parseContentWithFrontMatter(fs afero.Fs, filePath string, meta any) (string, error) {
 	content, err := afero.ReadFile(fs, filePath)
 	if errors.Is(err, afero.ErrFileNotFound) || errors.Is(err, os.ErrNotExist) {
@@ -86,24 +48,6 @@ func parseContentWithFrontMatter(fs afero.Fs, filePath string, meta any) (string
 	}
 
 	return string(rest), nil
-}
-
-// loadReadmeContent loads README content and parses front matter if present.
-func loadReadmeContent(fs afero.Fs) (*ReadmeContent, error) {
-	var meta ReadmeFrontMatter
-	content, err := parseContentWithFrontMatter(
-		fs,
-		filepath.Join(customDocsDir, "README.md"),
-		&meta,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ReadmeContent{
-		Meta:    meta,
-		Content: content,
-	}, nil
 }
 
 func readFile(fs afero.Fs, path string) (string, error) {
