@@ -15,13 +15,17 @@ updates:
         update-types: ["version-update:semver-patch"]
       {{- if .HasAppType "payload" }}
       # Payload ecosystem is managed via 'webkit payload bump' command
-      # These dependencies are automatically updated when running that command
+      # These dependencies are automatically updated from Payload's template package.json
       - dependency-name: "payload"
       - dependency-name: "@payloadcms/*"
       - dependency-name: "@ainsleydev/payload-helper"
-      # Lexical dependencies are managed by Payload
-      - dependency-name: "lexical"
-      - dependency-name: "@lexical/*"
+      - dependency-name: "cross-env"
+      - dependency-name: "dotenv"
+      - dependency-name: "graphql"
+      - dependency-name: "next"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "sharp"
       {{- end }}
     groups:
       svelte:
@@ -43,18 +47,21 @@ updates:
         patterns:
           - "*"
         exclude-patterns:
-          {{- if .HasAppType "payload" }}
-          - "payload"
-          - "@payloadcms/*"
-          - "@ainsleydev/payload-helper"
-          - "lexical"
-          - "@lexical/*"
-          {{- end }}
           - "svelte"
           - "@sveltejs/*"
           - "next"
           - "react"
           - "react-dom"
+          {{- if .HasAppType "payload" }}
+          # Exclude all Payload template dependencies (managed by 'webkit payload bump')
+          - "payload"
+          - "@payloadcms/*"
+          - "@ainsleydev/payload-helper"
+          - "cross-env"
+          - "dotenv"
+          - "graphql"
+          - "sharp"
+          {{- end }}
 {{- end }}
 {{- range .Apps }}
 {{- if eq .Language "go" }}
