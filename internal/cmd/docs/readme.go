@@ -26,22 +26,22 @@ const (
 )
 
 type (
-	// ReadmeFrontMatter contains front matter metadata for README templates.
-	ReadmeFrontMatter struct {
-		Logo *LogoConfig `yaml:"logo,omitempty" json:"logo,omitempty"`
+	// readmeFrontMatter contains front matter metadata for README templates.
+	readmeFrontMatter struct {
+		Logo *logoConfig `yaml:"logo,omitempty" json:"logo,omitempty"`
 	}
-	// LogoConfig contains logo display configuration.
-	LogoConfig struct {
+	// logoConfig contains logo display configuration.
+	logoConfig struct {
 		Width  int `yaml:"width,omitempty" json:"width,omitempty"`
 		Height int `yaml:"height,omitempty" json:"height,omitempty"`
 	}
-	// ReadmeContent contains parsed front matter and content.
-	ReadmeContent struct {
-		Meta    ReadmeFrontMatter
+	// readmeContent contains parsed front matter and content.
+	readmeContent struct {
+		Meta    readmeFrontMatter
 		Content string
 	}
-	// Logo contains the complete logo information including URL and dimensions.
-	Logo struct {
+	// logo contains the complete logo information including URL and dimensions.
+	logo struct {
 		URL    string
 		Width  int
 		Height int
@@ -86,8 +86,8 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 }
 
 // loadReadmeContent loads README content and parses front matter if present.
-func loadReadmeContent(fs afero.Fs) (*ReadmeContent, error) {
-	var meta ReadmeFrontMatter
+func loadReadmeContent(fs afero.Fs) (*readmeContent, error) {
+	var meta readmeFrontMatter
 	content, err := parseContentWithFrontMatter(
 		fs,
 		filepath.Join(customDocsDir, "README.md"),
@@ -97,14 +97,15 @@ func loadReadmeContent(fs afero.Fs) (*ReadmeContent, error) {
 		return nil, err
 	}
 
-	return &ReadmeContent{
+	return &readmeContent{
 		Meta:    meta,
 		Content: content,
 	}, nil
 }
 
-// buildLogo constructs a Logo combining the detected URL and front matter dimensions.
-func buildLogo(fs afero.Fs, content *ReadmeContent) Logo {
+// buildLogo constructs a logo combining the detected URL and front matter dimensions.
+// Defaults to 200px width if not specified in front matter.
+func buildLogo(fs afero.Fs, content *readmeContent) logo {
 	// Detect logo URL from resources directory.
 	logoURL := webkitSymbolURL
 	extensions := []string{"svg", "png", "jpg"}
@@ -117,16 +118,19 @@ func buildLogo(fs afero.Fs, content *ReadmeContent) Logo {
 		}
 	}
 
-	logo := Logo{
-		URL: logoURL,
+	result := logo{
+		URL:   logoURL,
+		Width: 200, // Default width
 	}
 
 	if content.Meta.Logo != nil {
-		logo.Width = content.Meta.Logo.Width
-		logo.Height = content.Meta.Logo.Height
+		if content.Meta.Logo.Width > 0 {
+			result.Width = content.Meta.Logo.Width
+		}
+		result.Height = content.Meta.Logo.Height
 	}
 
-	return logo
+	return result
 }
 
 // formatDomainLinks creates the HTML links for all primary domains.

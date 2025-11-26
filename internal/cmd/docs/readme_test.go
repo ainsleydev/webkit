@@ -298,7 +298,7 @@ func TestGetPeekapingEndpoint(t *testing.T) {
 func TestBuildLogo(t *testing.T) {
 	t.Parallel()
 
-	t.Run("No front matter uses default dimensions", func(t *testing.T) {
+	t.Run("No front matter uses default width", func(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
@@ -307,11 +307,11 @@ func TestBuildLogo(t *testing.T) {
 		err = afero.WriteFile(fs, "resources/logo.png", []byte("fake"), 0o644)
 		require.NoError(t, err)
 
-		content := &ReadmeContent{}
+		content := &readmeContent{}
 		logo := buildLogo(fs, content)
 
 		assert.Equal(t, "./resources/logo.png", logo.URL)
-		assert.Equal(t, 0, logo.Width)
+		assert.Equal(t, 200, logo.Width)
 		assert.Equal(t, 0, logo.Height)
 	})
 
@@ -319,9 +319,9 @@ func TestBuildLogo(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		content := &ReadmeContent{
-			Meta: ReadmeFrontMatter{
-				Logo: &LogoConfig{
+		content := &readmeContent{
+			Meta: readmeFrontMatter{
+				Logo: &logoConfig{
 					Width: 400,
 				},
 			},
@@ -342,9 +342,9 @@ func TestBuildLogo(t *testing.T) {
 		err = afero.WriteFile(fs, "resources/logo.svg", []byte("fake"), 0o644)
 		require.NoError(t, err)
 
-		content := &ReadmeContent{
-			Meta: ReadmeFrontMatter{
-				Logo: &LogoConfig{
+		content := &readmeContent{
+			Meta: readmeFrontMatter{
+				Logo: &logoConfig{
 					Width:  300,
 					Height: 150,
 				},

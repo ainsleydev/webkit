@@ -67,7 +67,7 @@ func TestParseContentWithFrontMatter(t *testing.T) {
 		t.Parallel()
 
 		fs := afero.NewMemMapFs()
-		var meta ReadmeFrontMatter
+		var meta readmeFrontMatter
 		got, err := parseContentWithFrontMatter(fs, "docs/nonexistent.md", &meta)
 		require.NoError(t, err)
 		assert.Equal(t, "", got)
@@ -89,7 +89,7 @@ func TestParseContentWithFrontMatter(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		var meta ReadmeFrontMatter
+		var meta readmeFrontMatter
 		got, err := parseContentWithFrontMatter(fs, filepath.Join(customDocsDir, "test.md"), &meta)
 		require.NoError(t, err)
 		assert.Equal(t, content, got)
@@ -116,7 +116,7 @@ Content after front matter`
 		)
 		require.NoError(t, err)
 
-		var meta ReadmeFrontMatter
+		var meta readmeFrontMatter
 		got, err := parseContentWithFrontMatter(fs, filepath.Join(customDocsDir, "test.md"), &meta)
 		require.NoError(t, err)
 		assert.Equal(t, "Content after front matter", got)
@@ -166,7 +166,7 @@ Custom content`
 			Open(gomock.Any()).
 			Return(nil, errors.New("disk error"))
 
-		var meta ReadmeFrontMatter
+		var meta readmeFrontMatter
 		_, err := parseContentWithFrontMatter(mock, "docs/test.md", &meta)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "reading file")
