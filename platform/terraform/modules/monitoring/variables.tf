@@ -16,14 +16,17 @@ variable "environment" {
 variable "monitors" {
   description = "List of monitors to create."
   type = list(object({
-    name          = string
-    type          = string
-    url           = optional(string)
-    method        = optional(string)
-    domain        = optional(string)
-    interval      = number
-    max_redirects = optional(number)
-    variable_name = optional(string)
+    name           = string
+    type           = string
+    url            = optional(string)
+    method         = optional(string)
+    keyword        = optional(string)
+    invert_keyword = optional(bool)
+    domain         = optional(string)
+    resolver_type  = optional(string)
+    interval       = number
+    max_redirects  = optional(number)
+    variable_name  = optional(string)
   }))
   default = []
 }
