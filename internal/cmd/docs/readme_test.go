@@ -295,6 +295,69 @@ func TestGetPeekapingEndpoint(t *testing.T) {
 	}
 }
 
+func TestBuildLogo(t *testing.T) {
+	t.Parallel()
+
+	t.Run("No front matter uses default width", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		err := fs.MkdirAll("resources", 0o755)
+		require.NoError(t, err)
+		err = afero.WriteFile(fs, "resources/logo.png", []byte("fake"), 0o644)
+		require.NoError(t, err)
+
+		content := &readmeContent{}
+		logo := buildLogo(fs, content)
+
+		assert.Equal(t, "./resources/logo.png", logo.URL)
+		assert.Equal(t, 200, logo.Width)
+		assert.Equal(t, 0, logo.Height)
+	})
+
+	t.Run("Front matter width only", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		content := &readmeContent{
+			Meta: readmeFrontMatter{
+				Logo: &logoConfig{
+					Width: 400,
+				},
+			},
+		}
+
+		logo := buildLogo(fs, content)
+		assert.Equal(t, webkitSymbolURL, logo.URL)
+		assert.Equal(t, 400, logo.Width)
+		assert.Equal(t, 0, logo.Height)
+	})
+
+	t.Run("Front matter width and height", func(t *testing.T) {
+		t.Parallel()
+
+		fs := afero.NewMemMapFs()
+		err := fs.MkdirAll("resources", 0o755)
+		require.NoError(t, err)
+		err = afero.WriteFile(fs, "resources/logo.svg", []byte("fake"), 0o644)
+		require.NoError(t, err)
+
+		content := &readmeContent{
+			Meta: readmeFrontMatter{
+				Logo: &logoConfig{
+					Width:  300,
+					Height: 150,
+				},
+			},
+		}
+
+		logo := buildLogo(fs, content)
+		assert.Equal(t, "./resources/logo.svg", logo.URL)
+		assert.Equal(t, 300, logo.Width)
+		assert.Equal(t, 150, logo.Height)
+	})
+}
+
 func TestGetDashboardURL(t *testing.T) {
 	t.Parallel()
 

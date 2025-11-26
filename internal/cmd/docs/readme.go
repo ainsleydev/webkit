@@ -25,16 +25,44 @@ const (
 	defaultPeekapingDomain = "uptime.ainsley.dev"
 )
 
+type (
+	// readmeFrontMatter contains front matter metadata for README templates.
+	readmeFrontMatter struct {
+		Logo *logoConfig `yaml:"logo,omitempty" json:"logo,omitempty"`
+	}
+	// logoConfig contains logo display configuration.
+	logoConfig struct {
+		Width  int `yaml:"width,omitempty" json:"width,omitempty"`
+		Height int `yaml:"height,omitempty" json:"height,omitempty"`
+	}
+	// readmeContent contains parsed front matter and content.
+	readmeContent struct {
+		Meta    readmeFrontMatter
+		Content string
+	}
+	// logo contains the complete logo information including URL and dimensions.
+	logo struct {
+		URL    string
+		Width  int
+		Height int
+	}
+)
+
 // Readme creates the README.md file at the project root by combining
 // the base template with project data from app.json.
 func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	webkitOutputs := outputs.Load(input.FS)
 
+	readmeContent, err := loadReadmeContent(input.FS)
+	if err != nil {
+		return errors.Wrap(err, "loading README content")
+	}
+
 	data := map[string]any{
 		"Definition":     appDef,
-		"Content":        mustLoadCustomContent(input.FS, "README.md"),
-		"LogoURL":        detectLogoURL(input.FS),
+		"Content":        readmeContent.Content,
+		"Logo":           buildLogo(input.FS, readmeContent),
 		"DomainLinks":    formatDomainLinks(appDef),
 		"ProviderGroups": groupByProvider(appDef),
 		"CurrentYear":    time.Now().Year(),
@@ -44,7 +72,7 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 		"MonitorBadges":  formatMonitorBadges(webkitOutputs),
 	}
 
-	err := input.Generator().Template(
+	err = input.Generator().Template(
 		"README.md",
 		templates.MustLoadTemplate("README.md"),
 		data,
@@ -57,20 +85,64 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	return nil
 }
 
-// detectLogoURL checks for logo files in resources directory and returns
-// the path or falls back to the WebKit symbol URL.
-func detectLogoURL(fs afero.Fs) string {
-	extensions := []string{"svg", "png", "jpg"}
+// loadReadmeContent loads README content and parses front matter if present.
+func loadReadmeContent(fs afero.Fs) (*readmeContent, error) {
+	var meta readmeFrontMatter
+	content, err := parseContentWithFrontMatter(
+		fs,
+		filepath.Join(customDocsDir, "README.md"),
+		&meta,
+	)
+	if err != nil {
+		return nil, err
+	}
 
+	return &readmeContent{
+		Meta:    meta,
+		Content: content,
+	}, nil
+}
+
+// buildLogo constructs a logo combining the detected URL and front matter dimensions.
+// If no logo file exists, uses webkitSymbolURL with height=96 and no width.
+// If logo file exists, uses front matter dimensions or defaults to width=200.
+func buildLogo(fs afero.Fs, content *readmeContent) logo {
+	// Check if logo exists in resources directory.
+	extensions := []string{"svg", "png", "jpg"}
 	for _, ext := range extensions {
 		logoPath := filepath.Join(resourcesDir, fmt.Sprintf("logo.%s", ext))
 		exists, err := afero.Exists(fs, logoPath)
 		if err == nil && exists {
-			return fmt.Sprintf("./%s", logoPath)
+			// Logo file exists - use it with user-defined or default dimensions.
+			result := logo{
+				URL:   fmt.Sprintf("./%s", logoPath),
+				Width: 200, // Default width for user logos
+			}
+			if content.Meta.Logo != nil {
+				if content.Meta.Logo.Width > 0 {
+					result.Width = content.Meta.Logo.Width
+				}
+				result.Height = content.Meta.Logo.Height
+			}
+			return result
 		}
 	}
 
-	return webkitSymbolURL
+	// No logo file - use WebKit symbol with front matter dimensions or default height.
+	result := logo{
+		URL:    webkitSymbolURL,
+		Height: 96, // Default height for WebKit symbol
+	}
+	if content.Meta.Logo != nil {
+		if content.Meta.Logo.Width > 0 {
+			result.Width = content.Meta.Logo.Width
+			result.Height = 0 // Clear default height when width is specified
+		}
+		if content.Meta.Logo.Height > 0 {
+			result.Height = content.Meta.Logo.Height
+		}
+	}
+	return result
 }
 
 // formatDomainLinks creates the HTML links for all primary domains.

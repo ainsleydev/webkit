@@ -1,10 +1,12 @@
 package docs
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/adrg/frontmatter"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )
@@ -26,6 +28,26 @@ func mustLoadCustomContent(fs afero.Fs, fileName string) string {
 		return ""
 	}
 	return got
+}
+
+// parseContentWithFrontMatter parses a markdown file with optional YAML front matter.
+// The meta parameter should be a pointer to the struct where front matter will be unmarshalled.
+// Returns the content without front matter, or empty string if file doesn't exist.
+func parseContentWithFrontMatter(fs afero.Fs, filePath string, meta any) (string, error) {
+	content, err := afero.ReadFile(fs, filePath)
+	if errors.Is(err, afero.ErrFileNotFound) || errors.Is(err, os.ErrNotExist) {
+		return "", nil
+	}
+	if err != nil {
+		return "", errors.Wrapf(err, "reading %s", filepath.Base(filePath))
+	}
+
+	rest, err := frontmatter.Parse(bytes.NewReader(content), meta)
+	if err != nil {
+		return "", errors.Wrap(err, "parsing front matter")
+	}
+
+	return string(rest), nil
 }
 
 func readFile(fs afero.Fs, path string) (string, error) {
