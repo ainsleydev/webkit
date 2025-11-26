@@ -30,19 +30,16 @@ type (
 	ReadmeFrontMatter struct {
 		Logo *LogoConfig `yaml:"logo,omitempty" json:"logo,omitempty"`
 	}
-
 	// LogoConfig contains logo display configuration.
 	LogoConfig struct {
 		Width  int `yaml:"width,omitempty" json:"width,omitempty"`
 		Height int `yaml:"height,omitempty" json:"height,omitempty"`
 	}
-
 	// ReadmeContent contains parsed front matter and content.
 	ReadmeContent struct {
 		Meta    ReadmeFrontMatter
 		Content string
 	}
-
 	// Logo contains the complete logo information including URL and dimensions.
 	Logo struct {
 		URL    string
@@ -108,8 +105,20 @@ func loadReadmeContent(fs afero.Fs) (*ReadmeContent, error) {
 
 // buildLogo constructs a Logo combining the detected URL and front matter dimensions.
 func buildLogo(fs afero.Fs, content *ReadmeContent) Logo {
+	// Detect logo URL from resources directory.
+	logoURL := webkitSymbolURL
+	extensions := []string{"svg", "png", "jpg"}
+	for _, ext := range extensions {
+		logoPath := filepath.Join(resourcesDir, fmt.Sprintf("logo.%s", ext))
+		exists, err := afero.Exists(fs, logoPath)
+		if err == nil && exists {
+			logoURL = fmt.Sprintf("./%s", logoPath)
+			break
+		}
+	}
+
 	logo := Logo{
-		URL: detectLogoURL(fs),
+		URL: logoURL,
 	}
 
 	if content.Meta.Logo != nil {
@@ -118,22 +127,6 @@ func buildLogo(fs afero.Fs, content *ReadmeContent) Logo {
 	}
 
 	return logo
-}
-
-// detectLogoURL checks for logo files in resources directory and returns
-// the path or falls back to the WebKit symbol URL.
-func detectLogoURL(fs afero.Fs) string {
-	extensions := []string{"svg", "png", "jpg"}
-
-	for _, ext := range extensions {
-		logoPath := filepath.Join(resourcesDir, fmt.Sprintf("logo.%s", ext))
-		exists, err := afero.Exists(fs, logoPath)
-		if err == nil && exists {
-			return fmt.Sprintf("./%s", logoPath)
-		}
-	}
-
-	return webkitSymbolURL
 }
 
 // formatDomainLinks creates the HTML links for all primary domains.
