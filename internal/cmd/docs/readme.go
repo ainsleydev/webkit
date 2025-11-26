@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -160,6 +161,7 @@ func formatDomainLinks(def *appdef.Definition) string {
 }
 
 // groupByProvider groups apps and resources by their infrastructure provider.
+// Providers are sorted alphabetically to ensure deterministic output.
 func groupByProvider(def *appdef.Definition) map[string]string {
 	groups := make(map[appdef.ResourceProvider][]string)
 
@@ -179,9 +181,18 @@ func groupByProvider(def *appdef.Definition) map[string]string {
 		)
 	}
 
+	// Sort providers alphabetically for deterministic output
+	providers := make([]appdef.ResourceProvider, 0, len(groups))
+	for provider := range groups {
+		providers = append(providers, provider)
+	}
+	sort.Slice(providers, func(i, j int) bool {
+		return string(providers[i]) < string(providers[j])
+	})
+
 	result := make(map[string]string)
-	for provider, items := range groups {
-		result[string(provider)] = strings.Join(items, ", ")
+	for _, provider := range providers {
+		result[string(provider)] = strings.Join(groups[provider], ", ")
 	}
 
 	return result
