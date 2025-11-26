@@ -39,7 +39,7 @@ func parseContentWithFrontMatter(fs afero.Fs, filePath string, meta any) (string
 		return "", nil
 	}
 	if err != nil {
-		return "", errors.Wrap(err, "reading file")
+		return "", errors.Wrapf(err, "reading %s", filepath.Base(filePath))
 	}
 
 	rest, err := frontmatter.Parse(bytes.NewReader(content), meta)

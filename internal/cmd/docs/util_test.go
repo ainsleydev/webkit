@@ -169,7 +169,7 @@ Custom content`
 		var meta readmeFrontMatter
 		_, err := parseContentWithFrontMatter(mock, "docs/test.md", &meta)
 		assert.Error(t, err)
-		assert.ErrorContains(t, err, "reading file")
+		assert.ErrorContains(t, err, "reading test.md")
 	})
 }
 

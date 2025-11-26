@@ -128,11 +128,21 @@ func buildLogo(fs afero.Fs, content *readmeContent) logo {
 		}
 	}
 
-	// No logo file - use WebKit symbol with fixed height.
-	return logo{
+	// No logo file - use WebKit symbol with front matter dimensions or default height.
+	result := logo{
 		URL:    webkitSymbolURL,
-		Height: 96,
+		Height: 96, // Default height for WebKit symbol
 	}
+	if content.Meta.Logo != nil {
+		if content.Meta.Logo.Width > 0 {
+			result.Width = content.Meta.Logo.Width
+			result.Height = 0 // Clear default height when width is specified
+		}
+		if content.Meta.Logo.Height > 0 {
+			result.Height = content.Meta.Logo.Height
+		}
+	}
+	return result
 }
 
 // formatDomainLinks creates the HTML links for all primary domains.
