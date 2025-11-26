@@ -6,6 +6,11 @@ output "monitors" {
       name = monitor.name
       type = "http"
     }],
+    [for name, monitor in peekaping_monitor.http_keyword : {
+      id   = monitor.id
+      name = monitor.name
+      type = "http-keyword"
+    }],
     [for name, monitor in peekaping_monitor.dns : {
       id   = monitor.id
       name = monitor.name
@@ -26,6 +31,7 @@ output "all_ids" {
   description = "All monitor IDs."
   value = concat(
     [for m in peekaping_monitor.http : m.id],
+    [for m in peekaping_monitor.http_keyword : m.id],
     [for m in peekaping_monitor.dns : m.id],
     [for m in peekaping_monitor.push : m.id]
   )
