@@ -10,47 +10,58 @@ updates:
       time: "04:00"
     open-pull-requests-limit: 30
     ignore:
+      # Ignore patch updates to reduce PR volume
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
-    groups:
       {{- if .HasAppType "payload" }}
-      payload:
+      # Payload ecosystem is managed via 'webkit payload bump' command
+      # These dependencies are automatically updated from Payload's template package.json
+      - dependency-name: "payload"
+      - dependency-name: "@payloadcms/*"
+      - dependency-name: "@ainsleydev/payload-helper"
+      - dependency-name: "cross-env"
+      - dependency-name: "dotenv"
+      - dependency-name: "graphql"
+      - dependency-name: "next"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "sharp"
+      {{- end }}
+    groups:
+      svelte:
         patterns:
-          - "@payloadcms/*"
-          - "payload"
-          - "@ainsleydev/payload-helper"
+          - "svelte"
+          - "@sveltejs/*"
         update-types:
           - "minor"
           - "patch"
-      core:
+      react:
         patterns:
           - "next"
           - "react"
           - "react-dom"
-          - "graphql"
-          - "sharp"
-          - "cross-env"
-          - "dotenv"
         update-types:
           - "minor"
           - "patch"
-      {{- end }}
       dependencies:
         patterns:
           - "*"
-        {{- if .HasAppType "payload" }}
         exclude-patterns:
-          - "@payloadcms/*"
-          - "payload"
-          - "@ainsleydev/payload-helper"
+          - "svelte"
+          - "@sveltejs/*"
           - "next"
           - "react"
           - "react-dom"
-          - "graphql"
-          - "sharp"
+          {{- if .HasAppType "payload" }}
+          # Exclude all Payload template dependencies (managed by 'webkit payload bump')
+          - "payload"
+          - "@payloadcms/*"
+          - "@ainsleydev/payload-helper"
           - "cross-env"
           - "dotenv"
-        {{- end }}
+          - "graphql"
+          - "sharp"
+          {{- end }}
 {{- end }}
 {{- range .Apps }}
 {{- if eq .Language "go" }}
