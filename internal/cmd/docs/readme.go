@@ -104,33 +104,35 @@ func loadReadmeContent(fs afero.Fs) (*readmeContent, error) {
 }
 
 // buildLogo constructs a logo combining the detected URL and front matter dimensions.
-// Defaults to 200px width if not specified in front matter.
+// If no logo file exists, uses webkitSymbolURL with height=96 and no width.
+// If logo file exists, uses front matter dimensions or defaults to width=200.
 func buildLogo(fs afero.Fs, content *readmeContent) logo {
-	// Detect logo URL from resources directory.
-	logoURL := webkitSymbolURL
+	// Check if logo exists in resources directory.
 	extensions := []string{"svg", "png", "jpg"}
 	for _, ext := range extensions {
 		logoPath := filepath.Join(resourcesDir, fmt.Sprintf("logo.%s", ext))
 		exists, err := afero.Exists(fs, logoPath)
 		if err == nil && exists {
-			logoURL = fmt.Sprintf("./%s", logoPath)
-			break
+			// Logo file exists - use it with user-defined or default dimensions.
+			result := logo{
+				URL:   fmt.Sprintf("./%s", logoPath),
+				Width: 200, // Default width for user logos
+			}
+			if content.Meta.Logo != nil {
+				if content.Meta.Logo.Width > 0 {
+					result.Width = content.Meta.Logo.Width
+				}
+				result.Height = content.Meta.Logo.Height
+			}
+			return result
 		}
 	}
 
-	result := logo{
-		URL:   logoURL,
-		Width: 200, // Default width
+	// No logo file - use WebKit symbol with fixed height.
+	return logo{
+		URL:    webkitSymbolURL,
+		Height: 96,
 	}
-
-	if content.Meta.Logo != nil {
-		if content.Meta.Logo.Width > 0 {
-			result.Width = content.Meta.Logo.Width
-		}
-		result.Height = content.Meta.Logo.Height
-	}
-
-	return result
 }
 
 // formatDomainLinks creates the HTML links for all primary domains.
