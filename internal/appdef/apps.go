@@ -3,6 +3,7 @@ package appdef
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/ainsleydev/webkit/internal/appdef/types"
@@ -193,10 +194,19 @@ func (a *App) PrimaryDomainURL() string {
 //   - "script": uses the Install field directly
 //
 // If a tool provides an Install field, it overrides the auto-generated command.
+// Tools are sorted alphabetically by name to ensure deterministic output.
 func (a *App) InstallCommands() []string {
-	var commands []string
+	// Sort tool names to ensure deterministic order
+	toolNames := make([]string, 0, len(a.Tools))
+	for name := range a.Tools {
+		toolNames = append(toolNames, name)
+	}
+	sort.Strings(toolNames)
 
-	for _, tool := range a.Tools {
+	var commands []string
+	for _, name := range toolNames {
+		tool := a.Tools[name]
+
 		// If install command is explicitly provided, use it directly.
 		if tool.Install != "" {
 			commands = append(commands, tool.Install)

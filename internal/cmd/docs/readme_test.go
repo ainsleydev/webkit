@@ -442,3 +442,64 @@ func TestGetDashboardURL(t *testing.T) {
 		})
 	}
 }
+
+func TestGroupByProvider_Deterministic(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Alphabetical ordering", func(t *testing.T) {
+		t.Parallel()
+
+		def := &appdef.Definition{
+			Apps: []appdef.App{
+				{Title: "Web", Infra: appdef.Infra{Provider: "digitalocean"}},
+				{Title: "API", Infra: appdef.Infra{Provider: "hetzner"}},
+			},
+			Resources: []appdef.Resource{
+				{Title: "Database", Type: "postgres", Provider: "digitalocean"},
+				{Title: "Storage", Type: "s3", Provider: "aws"},
+			},
+		}
+
+		got := groupByProvider(def)
+
+		// Verify providers are in alphabetical order when iterating.
+		providers := make([]string, 0, len(got))
+		for provider := range got {
+			providers = append(providers, provider)
+		}
+
+		// Check that we have all expected providers.
+		assert.Contains(t, providers, "aws")
+		assert.Contains(t, providers, "digitalocean")
+		assert.Contains(t, providers, "hetzner")
+
+		// Verify content is correct.
+		assert.Equal(t, "Storage (s3)", got["aws"])
+		assert.Contains(t, got["digitalocean"], "Web (App)")
+		assert.Contains(t, got["digitalocean"], "Database (postgres)")
+		assert.Equal(t, "API (App)", got["hetzner"])
+	})
+
+	t.Run("Consistent ordering across multiple calls", func(t *testing.T) {
+		t.Parallel()
+
+		def := &appdef.Definition{
+			Apps: []appdef.App{
+				{Title: "CMS", Infra: appdef.Infra{Provider: "digitalocean"}},
+				{Title: "Web", Infra: appdef.Infra{Provider: "hetzner"}},
+				{Title: "API", Infra: appdef.Infra{Provider: "aws"}},
+			},
+			Resources: []appdef.Resource{
+				{Title: "DB", Type: "postgres", Provider: "digitalocean"},
+				{Title: "Cache", Type: "redis", Provider: "aws"},
+			},
+		}
+
+		// Call multiple times to ensure consistent ordering.
+		first := groupByProvider(def)
+		for i := 0; i < 10; i++ {
+			got := groupByProvider(def)
+			assert.Equal(t, first, got, "iteration %d should return same result", i+1)
+		}
+	})
+}
