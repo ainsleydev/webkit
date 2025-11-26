@@ -49,25 +49,60 @@ func mustLoadCustomContent(fs afero.Fs, fileName string) string {
 	return got
 }
 
-// loadReadmeContent loads README content and parses front matter if present.
-func loadReadmeContent(fs afero.Fs) (*ReadmeContent, error) {
-	content, err := afero.ReadFile(fs, filepath.Join(customDocsDir, "README.md"))
+// parseContentWithFrontMatter parses a markdown file with optional YAML front matter.
+// The meta parameter should be a pointer to the struct where front matter will be unmarshalled.
+// Returns the content without front matter, or empty string if file doesn't exist.
+//
+// Example usage for future templates:
+//
+//	type AgentsFrontMatter struct {
+//	    ShowTOC bool `yaml:"showTOC,omitempty"`
+//	}
+//
+//	func loadAgentsContent(fs afero.Fs) (*AgentsContent, error) {
+//	    var meta AgentsFrontMatter
+//	    content, err := parseContentWithFrontMatter(
+//	        fs,
+//	        filepath.Join(customDocsDir, "AGENTS.md"),
+//	        &meta,
+//	    )
+//	    if err != nil {
+//	        return nil, err
+//	    }
+//	    return &AgentsContent{Meta: meta, Content: content}, nil
+//	}
+func parseContentWithFrontMatter(fs afero.Fs, filePath string, meta any) (string, error) {
+	content, err := afero.ReadFile(fs, filePath)
 	if errors.Is(err, afero.ErrFileNotFound) || errors.Is(err, os.ErrNotExist) {
-		return &ReadmeContent{}, nil
+		return "", nil
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, "reading README.md")
+		return "", errors.Wrap(err, "reading file")
 	}
 
-	var meta ReadmeFrontMatter
-	rest, err := frontmatter.Parse(bytes.NewReader(content), &meta)
+	rest, err := frontmatter.Parse(bytes.NewReader(content), meta)
 	if err != nil {
-		return nil, errors.Wrap(err, "parsing front matter")
+		return "", errors.Wrap(err, "parsing front matter")
+	}
+
+	return string(rest), nil
+}
+
+// loadReadmeContent loads README content and parses front matter if present.
+func loadReadmeContent(fs afero.Fs) (*ReadmeContent, error) {
+	var meta ReadmeFrontMatter
+	content, err := parseContentWithFrontMatter(
+		fs,
+		filepath.Join(customDocsDir, "README.md"),
+		&meta,
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	return &ReadmeContent{
 		Meta:    meta,
-		Content: string(rest),
+		Content: content,
 	}, nil
 }
 
