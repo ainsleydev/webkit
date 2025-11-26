@@ -785,6 +785,55 @@ func TestApp_InstallCommands(t *testing.T) {
 	})
 }
 
+func TestApp_InstallCommands_Deterministic(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Alphabetical ordering", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]Tool{
+				"zebra":   {Type: "go", Name: "github.com/z/zebra", Version: "v1.0.0"},
+				"alpha":   {Type: "go", Name: "github.com/a/alpha", Version: "v1.0.0"},
+				"bravo":   {Type: "go", Name: "github.com/b/bravo", Version: "v1.0.0"},
+				"charlie": {Type: "go", Name: "github.com/c/charlie", Version: "v1.0.0"},
+			},
+		}
+
+		got := app.InstallCommands()
+
+		// Verify tools are in alphabetical order by name.
+		want := []string{
+			"go install github.com/a/alpha@v1.0.0",
+			"go install github.com/b/bravo@v1.0.0",
+			"go install github.com/c/charlie@v1.0.0",
+			"go install github.com/z/zebra@v1.0.0",
+		}
+		assert.Equal(t, want, got)
+	})
+
+	t.Run("Consistent ordering across multiple calls", func(t *testing.T) {
+		t.Parallel()
+
+		app := App{
+			Type: AppTypeGoLang,
+			Tools: map[string]Tool{
+				"templ":         {Type: "go", Name: "github.com/a-h/templ/cmd/templ", Version: "latest"},
+				"golangci-lint": {Type: "go", Name: "github.com/golangci/golangci-lint/cmd/golangci-lint", Version: "latest"},
+				"sqlc":          {Type: "go", Name: "github.com/sqlc-dev/sqlc/cmd/sqlc", Version: "latest"},
+			},
+		}
+
+		// Call multiple times to ensure consistent ordering.
+		first := app.InstallCommands()
+		for i := 0; i < 10; i++ {
+			got := app.InstallCommands()
+			assert.Equal(t, first, got, "iteration %d should return same order", i+1)
+		}
+	})
+}
+
 func TestApp_GenerateMaintenanceMonitor(t *testing.T) {
 	t.Parallel()
 
