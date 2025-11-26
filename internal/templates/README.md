@@ -1,6 +1,6 @@
 <p align="center">
   {{- if .LogoURL }}
-  <img src="{{ .LogoURL }}" width="200">
+  <img src="{{ .LogoURL }}"{{- if gt .LogoWidth 0 }} width="{{ .LogoWidth }}"{{- else }} width="200"{{- end }}{{- if gt .LogoHeight 0 }} height="{{ .LogoHeight }}"{{- end }}>
   {{- end }}
   <h3 align="center">{{ .Definition.Project.Title }}</h3>
 </p>

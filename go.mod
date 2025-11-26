@@ -14,6 +14,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/PuerkitoBio/goquery v1.11.0
 	github.com/a-h/templ v0.3.960
+	github.com/adrg/frontmatter v0.2.0
 	github.com/ainsleyclark/go-payloadcms v0.0.8
 	github.com/aws/aws-sdk-go-v2 v1.40.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.1

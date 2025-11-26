@@ -31,10 +31,17 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 	webkitOutputs := outputs.Load(input.FS)
 
+	readmeContent, err := loadReadmeContent(input.FS)
+	if err != nil {
+		return errors.Wrap(err, "loading README content")
+	}
+
 	data := map[string]any{
 		"Definition":     appDef,
-		"Content":        mustLoadCustomContent(input.FS, "README.md"),
+		"Content":        readmeContent.Content,
 		"LogoURL":        detectLogoURL(input.FS),
+		"LogoWidth":      getLogoWidth(readmeContent),
+		"LogoHeight":     getLogoHeight(readmeContent),
 		"DomainLinks":    formatDomainLinks(appDef),
 		"ProviderGroups": groupByProvider(appDef),
 		"CurrentYear":    time.Now().Year(),
@@ -44,7 +51,7 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 		"MonitorBadges":  formatMonitorBadges(webkitOutputs),
 	}
 
-	err := input.Generator().Template(
+	err = input.Generator().Template(
 		"README.md",
 		templates.MustLoadTemplate("README.md"),
 		data,
@@ -55,6 +62,22 @@ func Readme(_ context.Context, input cmdtools.CommandInput) error {
 	}
 
 	return nil
+}
+
+// getLogoWidth returns the logo width from front matter or 0 if not set.
+func getLogoWidth(content *ReadmeContent) int {
+	if content.Meta.Logo != nil {
+		return content.Meta.Logo.Width
+	}
+	return 0
+}
+
+// getLogoHeight returns the logo height from front matter or 0 if not set.
+func getLogoHeight(content *ReadmeContent) int {
+	if content.Meta.Logo != nil {
+		return content.Meta.Logo.Height
+	}
+	return 0
 }
 
 // detectLogoURL checks for logo files in resources directory and returns

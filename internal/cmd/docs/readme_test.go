@@ -295,6 +295,92 @@ func TestGetPeekapingEndpoint(t *testing.T) {
 	}
 }
 
+func TestGetLogoWidth(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input *ReadmeContent
+		want  int
+	}{
+		"Nil logo": {
+			input: &ReadmeContent{},
+			want:  0,
+		},
+		"Logo with width": {
+			input: &ReadmeContent{
+				Meta: ReadmeFrontMatter{
+					Logo: &LogoConfig{
+						Width: 400,
+					},
+				},
+			},
+			want: 400,
+		},
+		"Logo with width and height": {
+			input: &ReadmeContent{
+				Meta: ReadmeFrontMatter{
+					Logo: &LogoConfig{
+						Width:  300,
+						Height: 150,
+					},
+				},
+			},
+			want: 300,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := getLogoWidth(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestGetLogoHeight(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input *ReadmeContent
+		want  int
+	}{
+		"Nil logo": {
+			input: &ReadmeContent{},
+			want:  0,
+		},
+		"Logo with height": {
+			input: &ReadmeContent{
+				Meta: ReadmeFrontMatter{
+					Logo: &LogoConfig{
+						Height: 200,
+					},
+				},
+			},
+			want: 200,
+		},
+		"Logo with width and height": {
+			input: &ReadmeContent{
+				Meta: ReadmeFrontMatter{
+					Logo: &LogoConfig{
+						Width:  300,
+						Height: 150,
+					},
+				},
+			},
+			want: 150,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := getLogoHeight(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestGetDashboardURL(t *testing.T) {
 	t.Parallel()
 
