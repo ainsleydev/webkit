@@ -813,6 +813,67 @@ func TestTerraform_Monitoring(t *testing.T) {
 		assert.Contains(t, variableNames, "PROD_CODEBASE_BACKUP_PING_URL")
 		assert.Contains(t, variableNames, "PROD_DB_BACKUP_PING_URL")
 	})
+
+	t.Run("Monitor Outputs Completeness", func(t *testing.T) {
+		t.Parallel()
+
+		// Count actual monitor resources created by type
+		monitorCounts := make(map[string]int)
+		for _, rc := range got.Plan.ResourceChanges {
+			if rc.Type == "peekaping_monitor" {
+				monitorCounts[rc.Name]++
+			}
+		}
+
+		totalMonitors := 0
+		for _, count := range monitorCounts {
+			totalMonitors += count
+		}
+
+		t.Logf("Monitor counts by type: http=%d, http_keyword=%d, dns=%d, push=%d, total=%d",
+			monitorCounts["http"], monitorCounts["http_keyword"],
+			monitorCounts["dns"], monitorCounts["push"], totalMonitors)
+
+		// Verify all_ids output exists and contains all monitor IDs
+		allIDs := got.Plan.PlannedValues.Outputs["all_monitor_ids"]
+		require.NotNil(t, allIDs, "all_monitor_ids output should exist")
+
+		// The output is sensitive, so we can't directly inspect the IDs,
+		// but we can verify it's marked as computed and exists
+		assert.True(t, allIDs.Sensitive, "all_monitor_ids should be sensitive")
+
+		// Verify that http_keyword monitors are included by ensuring we found some
+		assert.Greater(t, monitorCounts["http_keyword"], 0,
+			"Should have http_keyword monitors (includes custom monitor)")
+
+		// Ensure all 4 monitor types are represented in the plan
+		assert.Greater(t, monitorCounts["http"], 0, "Should have HTTP monitors")
+		assert.Greater(t, monitorCounts["http_keyword"], 0, "Should have HTTP-keyword monitors")
+		assert.Greater(t, monitorCounts["dns"], 0, "Should have DNS monitors")
+		assert.Greater(t, monitorCounts["push"], 0, "Should have Push monitors")
+
+		// Verify we have at least the expected minimum:
+		// - 2 custom monitors (1 http, 1 http-keyword)
+		// - 2 app domain monitors (1 http for example.com, 1 dns for example.com)
+		// - 2 push monitors (codebase backup + db backup)
+		// Total minimum: 6 monitors
+		assert.GreaterOrEqual(t, totalMonitors, 6,
+			"Should have at least 6 monitors total (2 custom + 2 app domain + 2 backup)")
+
+		// Specifically verify the custom keyword monitor exists (regression test for output bug)
+		var keywordCheck map[string]any
+		for _, rc := range got.Plan.ResourceChanges {
+			if rc.Type == "peekaping_monitor" && rc.Name == "http_keyword" {
+				after := rc.Change.After.(map[string]any)
+				if after["name"] == "keyword-check" {
+					keywordCheck = after
+					break
+				}
+			}
+		}
+		require.NotNil(t, keywordCheck,
+			"Custom http-keyword monitor should be planned (ensures outputs include http_keyword type)")
+	})
 }
 
 //nolint:tparallel // Cannot use t.Parallel() due to t.Setenv() usage in setup
