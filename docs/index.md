@@ -15,23 +15,17 @@ hero:
       link: https://github.com/ainsleydev/webkit
 
 features:
-  - icon: 📄
-    title: Single source of truth
+  - title: Single source of truth
     details: Define your entire project in one app.json file. Apps, infrastructure, environments, and monitoring - all in one place.
-  - icon: 🚀
-    title: Automatic CI/CD
+  - title: Automatic CI/CD
     details: WebKit generates GitHub Actions workflows for testing, building, and deploying. Push to main and watch it deploy.
-  - icon: 🏗️
-    title: Infrastructure as code
+  - title: Infrastructure as code
     details: Terraform configurations generated automatically. Support for DigitalOcean, Hetzner, Backblaze B2, and Turso.
-  - icon: 🔐
-    title: Secret management
+  - title: Secret management
     details: Built-in SOPS integration with Age encryption. Manage secrets securely across environments.
-  - icon: 📊
-    title: Uptime monitoring
+  - title: Uptime monitoring
     details: Configure HTTP, DNS, and custom monitors. Status pages included with Peekaping integration.
-  - icon: 🔄
-    title: Drift detection
+  - title: Drift detection
     details: Track generated files and detect manual modifications. Always know what's changed.
 ---
 

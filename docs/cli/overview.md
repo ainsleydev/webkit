@@ -1,15 +1,16 @@
 # Command reference
 
-WebKit provides a comprehensive CLI for managing your project lifecycle. This page documents all available commands.
+WebKit provides a comprehensive CLI for managing your project lifecycle. This page documents all
+available commands.
 
 ## Global options
 
 These options are available for all commands:
 
-| Flag | Description |
-|------|-------------|
-| `--help`, `-h` | Show help for any command |
-| `--version`, `-v` | Show WebKit version |
+| Flag              | Description               |
+|-------------------|---------------------------|
+| `--help`, `-h`    | Show help for any command |
+| `--version`, `-v` | Show WebKit version       |
 
 ## Commands
 
@@ -22,6 +23,7 @@ webkit update
 ```
 
 This is the primary command you'll use. It:
+
 - Reads your `app.json` manifest
 - Generates GitHub Actions workflows
 - Creates Docker configuration
@@ -38,6 +40,7 @@ webkit validate
 ```
 
 Checks for:
+
 - Required fields
 - Valid values and types
 - Resource references
@@ -77,13 +80,13 @@ webkit version
 
 Infrastructure management commands using Terraform.
 
-| Command | Description |
-|---------|-------------|
-| `webkit infra plan` | Preview infrastructure changes |
-| `webkit infra apply` | Apply infrastructure changes |
-| `webkit infra destroy` | Destroy all infrastructure |
-| `webkit infra output` | Display Terraform outputs |
-| `webkit infra import` | Import existing resources |
+| Command                      | Description                      |
+|------------------------------|----------------------------------|
+| `webkit infra plan`          | Preview infrastructure changes   |
+| `webkit infra apply`         | Apply infrastructure changes     |
+| `webkit infra destroy`       | Destroy all infrastructure       |
+| `webkit infra output`        | Display Terraform outputs        |
+| `webkit infra import`        | Import existing resources        |
 | `webkit infra exec -- <cmd>` | Run arbitrary Terraform commands |
 
 See [Infrastructure overview](/infrastructure/overview) for detailed documentation.
@@ -92,42 +95,42 @@ See [Infrastructure overview](/infrastructure/overview) for detailed documentati
 
 SOPS-encrypted secrets management.
 
-| Command | Description |
-|---------|-------------|
-| `webkit secrets scaffold` | Create secret file templates |
-| `webkit secrets sync` | Sync secrets with SOPS files |
-| `webkit secrets encrypt` | Encrypt a secrets file |
-| `webkit secrets decrypt` | Decrypt a secrets file |
-| `webkit secrets get <key>` | Get a specific secret value |
-| `webkit secrets validate` | Validate secrets configuration |
+| Command                    | Description                    |
+|----------------------------|--------------------------------|
+| `webkit secrets scaffold`  | Create secret file templates   |
+| `webkit secrets sync`      | Sync secrets with SOPS files   |
+| `webkit secrets encrypt`   | Encrypt a secrets file         |
+| `webkit secrets decrypt`   | Decrypt a secrets file         |
+| `webkit secrets get <key>` | Get a specific secret value    |
+| `webkit secrets validate`  | Validate secrets configuration |
 
 ### webkit env
 
 Environment variable management.
 
-| Command | Description |
-|---------|-------------|
-| `webkit env scaffold` | Create .env.example files |
-| `webkit env sync` | Sync environment variables |
+| Command               | Description                            |
+|-----------------------|----------------------------------------|
+| `webkit env scaffold` | Create .env.example files              |
+| `webkit env sync`     | Sync environment variables             |
 | `webkit env generate` | Generate .env files for an environment |
 
 ### webkit cicd
 
 CI/CD workflow generation.
 
-| Command | Description |
-|---------|-------------|
+| Command               | Description                  |
+|-----------------------|------------------------------|
 | `webkit cicd actions` | Copy reusable GitHub Actions |
-| `webkit cicd backup` | Generate backup workflow |
-| `webkit cicd pr` | Generate PR workflow |
-| `webkit cicd release` | Generate release workflow |
+| `webkit cicd backup`  | Generate backup workflow     |
+| `webkit cicd pr`      | Generate PR workflow         |
+| `webkit cicd release` | Generate release workflow    |
 
 ### webkit docs
 
 Documentation generation.
 
-| Command | Description |
-|---------|-------------|
+| Command              | Description        |
+|----------------------|--------------------|
 | `webkit docs agents` | Generate AGENTS.md |
 | `webkit docs readme` | Generate README.md |
 
@@ -135,9 +138,9 @@ Documentation generation.
 
 Payload CMS management.
 
-| Command | Description |
-|---------|-------------|
-| `webkit payload bump` | Update Payload CMS dependencies |
+| Command                         | Description                      |
+|---------------------------------|----------------------------------|
+| `webkit payload bump`           | Update Payload CMS dependencies  |
 | `webkit payload bump --dry-run` | Preview updates without applying |
 
 ## Examples
@@ -193,12 +196,12 @@ webkit env sync
 
 ## Exit codes
 
-| Code | Meaning |
-|------|---------|
-| `0` | Success |
-| `1` | General error |
-| `2` | Configuration error |
-| `3` | Validation error |
+| Code | Meaning             |
+|------|---------------------|
+| `0`  | Success             |
+| `1`  | General error       |
+| `2`  | Configuration error |
+| `3`  | Validation error    |
 
 ## Further reading
 
