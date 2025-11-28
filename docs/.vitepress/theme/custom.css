@@ -50,7 +50,8 @@
   --vp-c-brand-1: #FFFFFF;
   --vp-c-brand-2: #F2F2F2;
   --vp-c-brand-3: #70CBCE;
-  --vp-c-accent: #70CBCE;
+  --vp-c-blue: #70CBCE;
+  --vp-c-orange: #ff5043;
 
   /* Other colors */
   --vp-c-border: rgba(10, 10, 10, 0.15);
@@ -83,12 +84,6 @@
 }
 
 /* ============================================================================
-   Design Tokens - Light Mode Only
-   ========================================================================== */
-
-/* Dark mode is disabled via appearance: false in config.mts */
-
-/* ============================================================================
    Global Styles
    ========================================================================== */
 
@@ -100,10 +95,9 @@ body {
 }
 
 /* ============================================================================
-   Typography System - Fluid Responsive Text
+   Typography System
    ========================================================================== */
 
-/* Headings with fluid typography */
 .VPDoc h1,
 .VPDoc h1 > strong {
   font-size: clamp(24px, 3vw, 40px);
@@ -171,7 +165,7 @@ body {
   font-size: 1.1rem;
   line-height: 1.8;
   color: var(--vp-c-text-2);
-  margin-bottom: 1.2rem;
+  margin-bottom: 1rem;
 }
 
 .VPDoc strong {
@@ -244,22 +238,22 @@ body {
 
 .VPButton.alt:hover {
   background-color: var(--vp-c-border);
-  color: var(--vp-c-accent);
-  border-color: var(--vp-c-accent);
+  color: var( --vp-c-blue);
+  border-color: var( --vp-c-blue);
 }
 
 /* ============================================================================
    Code Styling
    ========================================================================== */
 
-/* Code blocks - add border back */
-.VPDoc pre {
+[class^="language"] {
   border: 1px solid var(--vp-c-border);
   border-radius: 0;
 }
 
-.VPDoc pre code {
-  border-radius: 0;
+.vp-doc :not(pre) > code {
+	color: var(--vp-c-black);
+	font-weight: 500;
 }
 
 /* ============================================================================
@@ -267,15 +261,19 @@ body {
    ========================================================================== */
 
 .VPDoc a {
-  color: var(--vp-c-accent);
+  color: var(--vp-c-black);
   text-decoration: none;
   transition: color 200ms;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .VPDoc a:hover {
-  color: var(--vp-c-brand-1);
-  text-decoration: underline;
+  color: var(--vp-c-orange);
+}
+
+.VPDoc .outline-link.active {
+	color: var(--vp-c-orange);
+	font-weight: 500;
 }
 
 /* ============================================================================
@@ -344,7 +342,7 @@ body {
 
 .VPNavBar a:hover,
 .VPNavBar .active {
-  color: var(--vp-c-brand-1);
+  color: var(--vp-c-orange);
 }
 
 .VPNavBar .nav-item {
@@ -353,7 +351,17 @@ body {
 
 .VPNavBar .nav-item.active,
 .VPNavBar .nav-item:hover {
-  color: var(--vp-c-text-1);
+  color: var(--vp-c-orange);
+}
+
+/* Navbar icons - search, social, hamburger */
+.VPNavBar .vpi-search,
+.VPNavBar .vpi-social-github,
+.VPNavBar .vpi-social-instagram,
+.VPNavBar .vpi-social-linkedin,
+.VPNavBar .vpi-social-twitter,
+.VPNavBar .vpi-more-horizontal {
+  color: var(--vp-c-black) !important;
 }
 
 /* ============================================================================
@@ -365,19 +373,24 @@ body {
   border-right: 1px solid var(--vp-c-border);
 }
 
-.VPSidebarNav a {
+.VPSidebar a {
   color: var(--vp-c-text-2);
   transition: color 200ms;
 }
 
-.VPSidebarNav a:hover,
-.VPSidebarNav a.active {
-  color: var(--vp-c-accent);
+.VPSidebarItem .VPLink:hover *,
+.VPSidebar .VPLink.active *,
+.VPSidebarItem.is-link > .item > .link:hover {
+  color: var( --vp-c-orange) !important;
 }
 
-.VPSidebarNav .group > .items > .item > a.active {
-  color: var(--vp-c-brand-1);
-  font-weight: 700;
+.VPSidebarItem.is-active * {
+	color: var( --vp-c-orange) !important;
+	font-weight: 700;
+}
+
+.VPSidebar .group > .items > .item > a.active {
+
 }
 
 /* ============================================================================
@@ -410,7 +423,7 @@ body {
 }
 
 .VPFooter a {
-  color: var(--vp-c-accent);
+  color: var( --vp-c-blue);
   transition: color 200ms;
 }
 
@@ -595,7 +608,7 @@ body {
 }
 
 .text-accent {
-  color: var(--vp-c-accent);
+  color: var( --vp-c-blue);
 }
 
 .text-secondary {
@@ -619,35 +632,25 @@ body {
 }
 
 /* ============================================================================
-   Print Styles
-   ========================================================================== */
-
-/* ============================================================================
    Pagination - Previous/Next Links
    ========================================================================== */
 
-.VPDocPager a {
-  color: var(--vp-c-text-1) !important;
+.pager a {
+  color: var(--vp-c-text-1);
   text-decoration: none;
 }
 
-.VPDocPager .pager-link-title {
-  color: var(--vp-c-text-1) !important;
+.pager a:hover {
+	border-color: var(--vp-c-orange) !important;
 }
 
-.VPDocPager .pager-link-subtitle {
-  color: var(--vp-c-text-2) !important;
+.pager .title {
+  color: var(--vp-c-text-1);
+	font-weight: 600;
 }
 
-@media print {
-  body {
-    background-color: white;
-    color: black;
-  }
-
-  .VPNav,
-  .VPSidebar,
-  .VPFooter {
-    display: none;
-  }
+.pager .subtitle {
+  color: var(--vp-c-text-2);
+	font-weight: 500;
 }
+
