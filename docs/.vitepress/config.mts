@@ -9,11 +9,11 @@ export default defineConfig({
         hostname: 'https://webkit.ainsley.dev'
     },
     head: [
-        ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+        ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo-white.svg' }],
     ],
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
-        logo: '/logo.svg',
+        logo: '/logo-white.svg',
         nav: [
             { text: 'Home', link: '/' },
             { text: 'Getting started', link: '/getting-started/installation' },

@@ -1,0 +1,626 @@
+/* ============================================================================
+   Font Declarations
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-Regular.woff2') format('woff2'),
+       url('/fonts/PlusJakartaSans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-Medium.woff2') format('woff2'),
+       url('/fonts/PlusJakartaSans-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-Bold.woff2') format('woff2'),
+       url('/fonts/PlusJakartaSans-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================================
+   Design Tokens - Color Palette & Typography
+   ========================================================================== */
+
+:root {
+  /* Background colors */
+  --vp-c-bg: #0A0A0A;
+  --vp-c-bg-soft: #0F0F0F;
+  --vp-c-bg-mute: #171717;
+  --vp-c-bg-alt: #0A0A0A;
+
+  /* Text colors */
+  --vp-c-text-1: #FFFFFF;
+  --vp-c-text-2: #9A9A9A;
+  --vp-c-text-3: #595959;
+
+  /* Brand colors */
+  --vp-c-brand-1: #FF5043;
+  --vp-c-brand-2: #FF5043;
+  --vp-c-brand-3: #FF5043;
+  --vp-c-accent: #70CBCE;
+
+  /* Other colors */
+  --vp-c-border: rgba(255, 255, 255, 0.15);
+  --vp-c-divider: rgba(255, 255, 255, 0.1);
+  --vp-c-white: #FFFFFF;
+  --vp-c-black: #0A0A0A;
+  --vp-c-neutral-bg: #171717;
+
+  /* Typography */
+  --vp-font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --vp-font-family-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* Component styling */
+  --vp-button-brand-bg: #FFFFFF;
+  --vp-button-brand-text: #0A0A0A;
+  --vp-button-brand-hover-bg: #0A0A0A;
+  --vp-button-brand-hover-text: #FFFFFF;
+  --vp-button-brand-border: 2px solid #FFFFFF;
+
+  /* Border radius */
+  --vp-button-border-radius: 4px;
+  --vp-input-border-radius: 4px;
+  --vp-code-border-radius: 4px;
+
+  /* Layout */
+  --vp-layout-max-width: 1600px;
+
+  /* Transitions */
+  --vp-transition-all: 200ms;
+}
+
+/* ============================================================================
+   Global Styles
+   ========================================================================== */
+
+body {
+  background-color: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-family: var(--vp-font-family-base);
+  line-height: 1.6;
+}
+
+/* ============================================================================
+   Typography System - Fluid Responsive Text
+   ========================================================================== */
+
+/* Headings with fluid typography */
+.VPDoc h1,
+.VPDoc h1 > strong {
+  font-size: clamp(36px, 5vw, 68px);
+  line-height: 1.03;
+  letter-spacing: -1px;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+  margin-bottom: 1.5rem;
+}
+
+.VPDoc h2 {
+  font-size: clamp(34px, 4vw, 50px);
+  line-height: 1.2;
+  letter-spacing: -1px;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+  margin-top: 2rem;
+  margin-bottom: 1.2rem;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.VPDoc h3 {
+  font-size: clamp(23px, 3vw, 37px);
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.VPDoc h4 {
+  font-size: clamp(21px, 2.5vw, 29px);
+  line-height: 1.4;
+  letter-spacing: -0.25px;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+  margin-top: 1.2rem;
+  margin-bottom: 0.8rem;
+}
+
+.VPDoc h5 {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+  margin-top: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.VPDoc h6 {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--vp-c-text-2);
+  margin-top: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Paragraph text */
+.VPDoc p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--vp-c-text-2);
+  margin-bottom: 1.2rem;
+}
+
+.VPDoc strong {
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+}
+
+.VPDoc em {
+  font-style: italic;
+  color: var(--vp-c-text-2);
+}
+
+/* Lists */
+.VPDoc ul,
+.VPDoc ol {
+  color: var(--vp-c-text-2);
+  margin-bottom: 1.2rem;
+  padding-left: 2rem;
+}
+
+.VPDoc li {
+  margin-bottom: 0.6rem;
+  line-height: 1.8;
+}
+
+/* Blockquotes */
+.VPDoc blockquote {
+  border-left: 3px solid var(--vp-c-brand-1);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  border-radius: 4px;
+}
+
+/* ============================================================================
+   Button Styling
+   ========================================================================== */
+
+.VPButton {
+  padding: 1rem 1.9rem;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: var(--vp-font-family-base);
+  transition: background-color 200ms, color 200ms, border-color 200ms;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.VPButton.brand {
+  background-color: var(--vp-c-text-1);
+  color: var(--vp-c-bg);
+  border-color: var(--vp-c-text-1);
+}
+
+.VPButton.brand:hover {
+  background-color: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  border-color: var(--vp-c-text-1);
+}
+
+.VPButton.alt {
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+  border-color: var(--vp-c-border);
+}
+
+.VPButton.alt:hover {
+  background-color: var(--vp-c-bg-mute);
+  color: var(--vp-c-accent);
+  border-color: var(--vp-c-accent);
+}
+
+/* ============================================================================
+   Code Styling
+   ========================================================================== */
+
+/* Inline code */
+.VPDoc :not(pre) > code {
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+/* Code blocks */
+.VPDoc pre {
+  background-color: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.VPDoc pre code {
+  color: var(--vp-c-text-1);
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Syntax highlighting classes */
+.vp-code-group > .tabs > input:checked + .tab + .blocks > .block.active {
+  display: block;
+}
+
+/* ============================================================================
+   Links
+   ========================================================================== */
+
+.VPDoc a {
+  color: var(--vp-c-accent);
+  text-decoration: none;
+  transition: color 200ms;
+  font-weight: 500;
+}
+
+.VPDoc a:hover {
+  color: var(--vp-c-brand-1);
+  text-decoration: underline;
+}
+
+/* ============================================================================
+   Tables
+   ========================================================================== */
+
+.VPDoc table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.VPDoc th {
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--vp-c-border);
+  text-align: left;
+}
+
+.VPDoc td {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--vp-c-border);
+  color: var(--vp-c-text-2);
+}
+
+.VPDoc tbody tr:nth-child(even) {
+  background-color: var(--vp-c-bg-soft);
+}
+
+.VPDoc tbody tr:hover {
+  background-color: var(--vp-c-bg-mute);
+}
+
+/* ============================================================================
+   Navigation & Header
+   ========================================================================== */
+
+.VPNav {
+  background-color: var(--vp-c-bg);
+  border-bottom: 1px solid var(--vp-c-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.VPNavBar {
+  background-color: transparent;
+}
+
+.VPNavBar .logo {
+  max-height: 40px;
+}
+
+.VPNavBar a {
+  color: var(--vp-c-text-1);
+  font-weight: 500;
+  transition: color 200ms;
+}
+
+.VPNavBar a:hover,
+.VPNavBar .active {
+  color: var(--vp-c-brand-1);
+}
+
+.VPNavBar .nav-item {
+  color: var(--vp-c-text-2);
+}
+
+.VPNavBar .nav-item.active,
+.VPNavBar .nav-item:hover {
+  color: var(--vp-c-text-1);
+}
+
+/* ============================================================================
+   Sidebar Navigation
+   ========================================================================== */
+
+.VPSidebar {
+  background-color: var(--vp-c-bg);
+  border-right: 1px solid var(--vp-c-border);
+}
+
+.VPSidebarNav a {
+  color: var(--vp-c-text-2);
+  transition: color 200ms;
+}
+
+.VPSidebarNav a:hover,
+.VPSidebarNav a.active {
+  color: var(--vp-c-accent);
+}
+
+.VPSidebarNav .group > .items > .item > a.active {
+  color: var(--vp-c-brand-1);
+  font-weight: 700;
+}
+
+/* ============================================================================
+   Content Area
+   ========================================================================== */
+
+.VPContent {
+  background-color: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+}
+
+.VPDoc {
+  padding: 2rem 2rem;
+}
+
+.VPDoc .content {
+  max-width: 100%;
+}
+
+/* ============================================================================
+   Footer
+   ========================================================================== */
+
+.VPFooter {
+  background-color: var(--vp-c-bg-soft);
+  border-top: 1px solid var(--vp-c-border);
+  color: var(--vp-c-text-2);
+  padding: 2rem;
+  text-align: center;
+}
+
+.VPFooter a {
+  color: var(--vp-c-accent);
+  transition: color 200ms;
+}
+
+.VPFooter a:hover {
+  color: var(--vp-c-brand-1);
+}
+
+/* ============================================================================
+   Home Page - Hero Section
+   ========================================================================== */
+
+.VPHome .hero {
+  background-color: var(--vp-c-bg);
+  padding: clamp(80px, 20vw, 200px) 0;
+}
+
+.VPHome .hero h1 {
+  font-size: clamp(44px, 6vw, 80px);
+  line-height: 1.03;
+  letter-spacing: -2px;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+}
+
+.VPHome .hero .tagline {
+  font-size: clamp(18px, 3vw, 28px);
+  color: var(--vp-c-text-2);
+  line-height: 1.8;
+  font-weight: 400;
+  margin: 1.5rem 0;
+}
+
+.VPHome .hero .actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* ============================================================================
+   Features Section
+   ========================================================================== */
+
+.VPHome .features {
+  padding: clamp(80px, 20vw, 200px) 0;
+}
+
+.VPFeatures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.VPFeature {
+  padding: 1.5rem;
+  border: 2px solid var(--vp-c-border);
+  border-radius: 8px;
+  background-color: var(--vp-c-bg-soft);
+  transition: border-color 200ms, background-color 200ms;
+}
+
+.VPFeature:hover {
+  border-color: var(--vp-c-brand-1);
+  background-color: var(--vp-c-bg-mute);
+}
+
+.VPFeature h3 {
+  color: var(--vp-c-text-1);
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+}
+
+.VPFeature p {
+  color: var(--vp-c-text-2);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ============================================================================
+   Search Box
+   ========================================================================== */
+
+.DocSearch {
+  --docsearch-primary-color: var(--vp-c-brand-1);
+  --docsearch-container-background: rgba(10, 10, 10, 0.8);
+  --docsearch-modal-background: var(--vp-c-bg);
+  --docsearch-searchbox-background: var(--vp-c-bg-soft);
+  --docsearch-searchbox-focus-background: var(--vp-c-bg-mute);
+  --docsearch-text-color: var(--vp-c-text-1);
+  --docsearch-hit-color: var(--vp-c-text-2);
+}
+
+.DocSearchButton {
+  border: 1px solid var(--vp-c-border);
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+}
+
+.DocSearchButton:hover {
+  border-color: var(--vp-c-brand-1);
+  background-color: var(--vp-c-bg-mute);
+  color: var(--vp-c-text-1);
+}
+
+/* ============================================================================
+   Responsive Design
+   ========================================================================== */
+
+/* Tablets */
+@media (max-width: 768px) {
+  .VPDoc {
+    padding: 1.5rem 1rem;
+  }
+
+  .VPFeatures {
+    grid-template-columns: 1fr;
+  }
+
+  .VPHome .hero .actions {
+    flex-direction: column;
+  }
+
+  .VPButton {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 568px) {
+  :root {
+    font-size: 14px;
+  }
+
+  .VPDoc h1 {
+    font-size: clamp(28px, 5vw, 36px);
+  }
+
+  .VPDoc h2 {
+    font-size: clamp(24px, 4vw, 34px);
+  }
+
+  .VPDoc {
+    padding: 1rem;
+  }
+
+  .VPHome .hero {
+    padding: clamp(40px, 10vw, 80px) 0;
+  }
+
+  .VPNav {
+    padding: 0.5rem;
+  }
+}
+
+/* ============================================================================
+   Utility Classes
+   ========================================================================== */
+
+.text-brand {
+  color: var(--vp-c-brand-1);
+}
+
+.text-accent {
+  color: var(--vp-c-accent);
+}
+
+.text-secondary {
+  color: var(--vp-c-text-2);
+}
+
+.text-tertiary {
+  color: var(--vp-c-text-3);
+}
+
+.bg-soft {
+  background-color: var(--vp-c-bg-soft);
+}
+
+.bg-mute {
+  background-color: var(--vp-c-bg-mute);
+}
+
+.border-brand {
+  border-color: var(--vp-c-brand-1);
+}
+
+/* ============================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+
+  .VPNav,
+  .VPSidebar,
+  .VPFooter {
+    display: none;
+  }
+}
