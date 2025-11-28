@@ -4,7 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
     lang: 'en-GB',
     title: 'WebKit',
-    description: 'Streamline your web project lifecycle with a single manifest file',
+    description: 'Configuration-driven infrastructure for modern web projects',
     sitemap: {
         hostname: 'https://webkit.ainsley.dev'
     },
