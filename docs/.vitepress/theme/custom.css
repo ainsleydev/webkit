@@ -207,7 +207,6 @@ body {
 
 .VPButton {
   padding: 1rem 1.9rem;
-  border-radius: 4px;
   font-weight: 700;
   font-size: 1rem;
   font-family: var(--vp-font-family-base);
@@ -216,12 +215,14 @@ body {
   cursor: pointer;
   display: inline-block;
   text-decoration: none;
+	border-radius: 6px !important;
 }
 
 .VPButton.brand {
   background-color: var(--vp-c-text-1);
   color: var(--vp-c-bg);
   border-color: var(--vp-c-text-1);
+
 }
 
 .VPButton.brand:hover {
@@ -342,7 +343,7 @@ body {
 
 .VPNavBar a:hover,
 .VPNavBar .active {
-  color: var(--vp-c-orange);
+  color: var(--vp-c-orange) !important;
 }
 
 .VPNavBar .nav-item {
@@ -351,7 +352,7 @@ body {
 
 .VPNavBar .nav-item.active,
 .VPNavBar .nav-item:hover {
-  color: var(--vp-c-orange);
+  color: var(--vp-c-orange) !important;
 }
 
 /* Navbar icons - search, social, hamburger */
@@ -362,6 +363,15 @@ body {
 .VPNavBar .vpi-social-twitter,
 .VPNavBar .vpi-more-horizontal {
   color: var(--vp-c-black) !important;
+}
+
+.VPNavBar a:hover .vpi-search,
+.VPNavBar a:hover .vpi-social-github,
+.VPNavBar a:hover .vpi-social-instagram,
+.VPNavBar a:hover .vpi-social-linkedin,
+.VPNavBar a:hover .vpi-social-twitter,
+.VPNavBar button:hover .vpi-more-horizontal {
+  color: var(--vp-c-orange) !important;
 }
 
 /* ============================================================================
@@ -480,7 +490,7 @@ body {
 .VPFeature {
   padding: 1.5rem;
   border: 2px solid var(--vp-c-border);
-  border-radius: 8px;
+  border-radius: 6px !important;
   background-color: var(--vp-c-bg-soft);
   transition: border-color 200ms, background-color 200ms;
 }

@@ -6,6 +6,9 @@ export default defineConfig({
     title: 'WebKit',
     description: 'Configuration-driven infrastructure for modern web projects',
     appearance: false,
+    markdown: {
+        theme: 'github-light'
+    },
     sitemap: {
         hostname: 'https://webkit.ainsley.dev'
     },
@@ -17,8 +20,6 @@ export default defineConfig({
         logo: '/logo-black.svg',
         nav: [
             { text: 'Home', link: '/' },
-            { text: 'Getting started', link: '/getting-started/installation' },
-            { text: 'Manifest', link: '/manifest/overview' },
             { text: 'ainsley.dev', link: 'https://ainsley.dev' }
         ],
         sidebar: [
