@@ -255,6 +255,11 @@ body {
 /* Code blocks - add border back */
 .VPDoc pre {
   border: 1px solid var(--vp-c-border);
+  border-radius: 0;
+}
+
+.VPDoc pre code {
+  border-radius: 0;
 }
 
 /* ============================================================================
@@ -616,6 +621,23 @@ body {
 /* ============================================================================
    Print Styles
    ========================================================================== */
+
+/* ============================================================================
+   Pagination - Previous/Next Links
+   ========================================================================== */
+
+.VPDocPager a {
+  color: var(--vp-c-text-1) !important;
+  text-decoration: none;
+}
+
+.VPDocPager .pager-link-title {
+  color: var(--vp-c-text-1) !important;
+}
+
+.VPDocPager .pager-link-subtitle {
+  color: var(--vp-c-text-2) !important;
+}
 
 @media print {
   body {
