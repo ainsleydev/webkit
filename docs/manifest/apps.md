@@ -1,378 +1,432 @@
 # Apps
 
-An app, refers to a service that will exist both locally and in the cloud, this is the backbone of the application.
-Every app defines a Dockerfile so it can be ran in many different environments.
+Apps are the core building blocks of your WebKit project. Each app represents a deployable service with its own build configuration, infrastructure settings, and environment variables.
 
 ## Attributes
 
-| Key           | Description                                         | Required | Notes                                       |
-|---------------|-----------------------------------------------------|----------|---------------------------------------------|
-| `name`        | App machine-readable name                           | Yes      | kebab-case                                  |
-| `type`        | The type of app                                     | Yes      | Supported: `payload`, `sveltekit`, `go`     |
-| `description` | Description of the app                              | No       |                                             |
-| `path`        | The relative path of where the application resides  | Yes      |                                             |
-| `build`       | Instructions for compilation                        | No       |                                             |
-| `infra`       | Infrastructure and provisioning details for the app | Yes      |                                             |
-| `env`         | Per-environment variables                           | No       | [Ref](/manifest/environment-variables.html) |
+| Key | Description | Required |
+|-----|-------------|----------|
+| `name` | Machine-readable name (kebab-case) | Yes |
+| `type` | Application type | Yes |
+| `path` | Relative path to the app directory | Yes |
+| `description` | Human-readable description | No |
+| `build` | Build configuration | No |
+| `infrastructure` | Deployment settings | No |
+| `domains` | Domain configuration | No |
+| `environment` | Per-environment variables | No |
+| `commands` | Custom build/test/lint commands | No |
+| `monitoring` | Uptime monitoring settings | No |
 
-## Example
+## App types
+
+WebKit supports these application types:
+
+| Type | Description | Default commands |
+|------|-------------|------------------|
+| `svelte-kit` | SvelteKit applications | `pnpm build`, `pnpm lint`, `pnpm test` |
+| `payload` | Payload CMS applications | `pnpm build`, `pnpm lint` |
+| `golang` | Go applications | `go build`, `golangci-lint run`, `go test` |
+
+Each type comes with sensible defaults for commands and configuration.
+
+## Basic example
+
+A minimal app definition:
 
 ```json
 {
-    "apps": [
-        {
-            "name": "cms",
-            "type": "payload",
-            "description": "Payload CMS for managing content.",
-            "path": "services/cms",
-            "build": {
-                "dockerfile": "Dockerfile"
-            },
-            "infra": {
-                "provider": "digitalocean",
-                "type": "vm",
-                "config": {
-                    "size": "s-2vcpu-4gb",
-                    "region": "ams3",
-                    "domain": "cms.my-website.com",
-                    "ssh_keys": [
-                        "your-ssh-key-id"
-                    ]
-                }
-            },
-            "env": {
-                "dev": [
-                    {
-                        "key": "DATABASE_URL",
-                        "type": "from_resource",
-                        "from": "resource:db:connection_url"
-                    },
-                    {
-                        "key": "PAYLOAD_SECRET",
-                        "type": "secret",
-                        "from": "sops:secrets/cms.yaml:/PAYLOAD_SECRET"
-                    }
-                ],
-                "staging": [
-                    {
-                        "key": "DATABASE_URL",
-                        "type": "from_resource",
-                        "from": "resource:db:connection_url"
-                    }
-                ],
-                "production": [
-                    {
-                        "key": "DATABASE_URL",
-                        "type": "from_resource",
-                        "from": "resource:db:connection_url"
-                    },
-                    {
-                        "key": "PAYLOAD_SECRET",
-                        "type": "secret",
-                        "from": "github-secrets:PAYLOAD_SECRET"
-                    }
-                ]
-            },
-            "depends_on": [
-                "db"
-            ]
-        },
-        {
-            "name": "web",
-            "type": "sveltekit",
-            "path": "apps/web",
-            "build": {
-                "dockerfile": "Dockerfile"
-            },
-            "infra": {
-                "provider": "digitalocean",
-                "type": "app",
-                "config": {
-                    "region": "fra1",
-                    "domain": "www.my-website.com",
-                    "instance_count": 2,
-                    "env_from_shared": true
-                }
-            },
-            "env": {
-                "dev": [
-                    {
-                        "key": "PUBLIC_API_URL",
-                        "type": "value",
-                        "value": "http://localhost:3000"
-                    }
-                ],
-                "production": [
-                    {
-                        "key": "PUBLIC_API_URL",
-                        "type": "value",
-                        "value": "https://api.my-website.com"
-                    },
-                    {
-                        "key": "ASSETS_BUCKET",
-                        "type": "from_resource",
-                        "from": "resource:object-store:bucket"
-                    }
-                ]
-            }
-        }
-    ]
+  "apps": [
+    {
+      "name": "web",
+      "type": "svelte-kit",
+      "path": "./apps/web"
+    }
+  ]
 }
 ```
+
+## Build configuration
+
+Configure how your app is built:
+
+```json
+{
+  "apps": [
+    {
+      "name": "api",
+      "type": "golang",
+      "path": "./apps/api",
+      "build": {
+        "dockerfile": true,
+        "port": 8080
+      }
+    }
+  ]
+}
+```
+
+| Field | Description | Default |
+|-------|-------------|---------|
+| `dockerfile` | Generate Dockerfile | `true` |
+| `port` | Exposed port | `3000` |
 
 ## Infrastructure
 
-The `infrastructure` block defines how the application will be provisioned in cloud environments. It is similar to the
-resources block but focuses on the runtime environment, compute instances, and cloud provider configurations required to
-deploy the app.
-
-### Attributes
-
-| Key           | Description                                                  | Required | Notes                           |
-|---------------|--------------------------------------------------------------|----------|---------------------------------|
-| `type`        | Type of infrastructure or deployment unit                    | Yes      | Supported values below          |
-| `provider`    | Cloud provider where the infrastructure is provisioned       | Yes      | Supported: `digitalocean`, `b2` |
-| `config`      | Terraform input configuration based on the type and provider | Yes      |                                 |
-| `description` | Description of the resource                                  | No       |                                 |
-
-### Types
-
-WebKit uses generic type names. The CLI maps these to provider-specific resources automatically.
-
-| Type         | Description                | DigitalOcean | 
-|--------------|----------------------------|--------------|
-| `vm`         | Virtual machine            | Droplet      | 
-| `container`  | Managed container platform | App Platform |
-| `serverless` | Function-as-a-service      | Functions    |
-
-### Depends On
-
-Controls startup order in local development (Docker Compose). In production, Terraform automatically handles
-provisioning order through environment variable references. You don't need to explicitly declare
-dependencies—referencing a resource's output creates the dependency.
-
-**When to use:**
-Only needed if your app requires a dependency for local development that isn't referenced in environment variables.
-
-### Example
+Define where and how your app is deployed:
 
 ```json
 {
-    "infra": {
-        "provider": "digitalocean",
-        "type": "vm",
+  "apps": [
+    {
+      "name": "web",
+      "type": "svelte-kit",
+      "path": "./apps/web",
+      "infrastructure": {
+        "provider": "digital_ocean",
+        "type": "app",
         "config": {
-            "size": "s-2vcpu-4gb",
-            "region": "ams3",
-            "domain": "cms.my-website.com",
-            "ssh_keys": [
-                "your-ssh-key-id"
-            ]
+          "instance_size": "basic-xs",
+          "instance_count": 2,
+          "region": "lon"
         }
+      }
     }
+  ]
 }
 ```
 
-## Build
+### Provider options
 
-The `build` block defines how each app app is compiled and packaged. All apps must include a `Dockerfile` in their root
-path. It's assumed that every app will define its own Dockerfile so it can be executed and ran on cloud environments.
-Dockerfile paths can be overridden with the `dockerfile` key.
+| Provider | Description |
+|----------|-------------|
+| `digital_ocean` | DigitalOcean (App Platform or Droplets) |
+| `hetzner` | Hetzner Cloud VMs |
 
-Arguments can be passed in to each dockerfile using the `args` parameter as a key value pair.
+### Infrastructure types
 
-### Example
+| Type | Description |
+|------|-------------|
+| `app` | Managed container platform (DigitalOcean App Platform) |
+| `vm` | Virtual machine (Droplet or Hetzner server) |
+
+### Config options
+
+Config varies by provider and type. See the [infrastructure providers](/infrastructure/overview) documentation for detailed options.
+
+## Domains
+
+Configure domains for your app:
 
 ```json
 {
-    "build": {
-        "dockerfile": "Dockerfile.custom",
-        "args": {
-            "NODE_VERSION": "20",
-            "BUILD_ENV": "production"
-        }
+  "apps": [
+    {
+      "name": "web",
+      "domains": {
+        "primary": "example.com",
+        "aliases": ["www.example.com", "app.example.com"],
+        "managed": true
+      }
     }
+  ]
 }
 ```
 
-### Attributes
+| Field | Description |
+|-------|-------------|
+| `primary` | Main domain for the app |
+| `aliases` | Additional domains pointing to the app |
+| `managed` | Whether WebKit manages DNS records |
+| `unmanaged` | Domains managed externally |
 
-| Key          | Description                     | Required | Default      | Notes |
-|--------------|---------------------------------|----------|--------------|-------|
-| `dockerfile` | Custom Dockerfile name          | No       | `Dockerfile` |       |
-| `args`       | Build-time arguments for Docker | No       | `{}`         |       |
+### Unmanaged domains
 
-### Notes
-
-- Every app must have a `Dockerfile` at `{app.path}/Dockerfile`
-- Build args are passed to Docker with `--build-arg`
-- For advanced Docker features (multi-stage builds, BuildKit), modify your Dockerfile directly.
-
-## Tools and dependencies
-
-The `tools` field allows you to specify build tools and their versions that are required for CI/CD pipelines. WebKit automatically installs these tools in GitHub Actions workflows before running your commands.
-
-### Default behaviour
-
-WebKit provides sensible defaults for common tools based on your app type. For Go applications, the following tools are installed automatically:
-
-- `golangci-lint` - For linting
-- `templ` - For template generation
-- `sqlc` - For SQL code generation
-
-JavaScript applications (Payload, SvelteKit) don't have default tools, as they typically install dependencies via pnpm.
-
-### Configuring tools
-
-Tools are defined as objects with a `type` field that determines how they're installed. WebKit supports three tool types:
-
-#### Go tools
-
-Go tools are installed via `go install`:
+For domains not managed by your infrastructure provider:
 
 ```json
 {
-    "apps": [
-        {
-            "name": "api",
-            "type": "golang",
-            "path": "services/api",
-            "tools": {
-                "custom-tool": {
-                    "type": "go",
-                    "name": "github.com/custom/tool/cmd/mytool",
-                    "version": "v1.0.0"
-                }
-            }
+  "domains": {
+    "primary": "example.com",
+    "unmanaged": ["legacy.example.com"]
+  }
+}
+```
+
+Unmanaged domains are configured in the app but DNS must be set up manually.
+
+## Environment variables
+
+Define per-environment variables using the object format:
+
+```json
+{
+  "apps": [
+    {
+      "name": "cms",
+      "environment": {
+        "dev": {
+          "DATABASE_URL": {
+            "source": "value",
+            "value": "postgres://localhost:5432/cms_dev"
+          }
+        },
+        "staging": {
+          "DATABASE_URL": {
+            "source": "resource",
+            "value": "postgres-staging.connection_url"
+          }
+        },
+        "production": {
+          "DATABASE_URL": {
+            "source": "resource",
+            "value": "postgres.connection_url"
+          },
+          "PAYLOAD_SECRET": {
+            "source": "sops",
+            "value": "payload_secret"
+          }
         }
+      }
+    }
+  ]
+}
+```
+
+### Variable sources
+
+| Source | Description | Example value |
+|--------|-------------|---------------|
+| `value` | Static string | `"https://api.example.com"` |
+| `resource` | Terraform output | `"postgres.connection_url"` |
+| `sops` | Encrypted secret | `"api_key"` |
+
+See [Environment variables](/manifest/environment-variables) for detailed documentation.
+
+## Commands
+
+Override default commands for build, test, lint, and format:
+
+```json
+{
+  "apps": [
+    {
+      "name": "api",
+      "type": "golang",
+      "commands": {
+        "build": {
+          "run": "go build -o bin/api ./cmd/api",
+          "enabled": true
+        },
+        "test": {
+          "run": "go test -race ./...",
+          "enabled": true
+        },
+        "lint": {
+          "run": "golangci-lint run",
+          "enabled": true
+        },
+        "format": {
+          "run": "gofmt -w .",
+          "enabled": true
+        }
+      }
+    }
+  ]
+}
+```
+
+Commands are used in generated CI/CD workflows.
+
+## Monitoring
+
+Enable uptime monitoring for your app:
+
+```json
+{
+  "apps": [
+    {
+      "name": "web",
+      "monitoring": {
+        "http": true
+      }
+    }
+  ]
+}
+```
+
+### Basic HTTP monitoring
+
+Setting `http: true` creates an HTTP monitor for your primary domain.
+
+### Custom monitors
+
+Add additional monitors:
+
+```json
+{
+  "monitoring": {
+    "http": true,
+    "custom": [
+      {
+        "type": "http_keyword",
+        "name": "API Health",
+        "url": "https://api.example.com/health",
+        "keyword": "\"status\":\"ok\"",
+        "interval": 60
+      },
+      {
+        "type": "dns",
+        "name": "DNS Check",
+        "hostname": "example.com",
+        "dns_server": "8.8.8.8"
+      }
     ]
+  }
 }
 ```
 
-This generates: `go install github.com/custom/tool/cmd/mytool@v1.0.0`
+See [Monitoring](/manifest/monitoring) for all monitor types.
 
-#### pnpm tools
+## Complete example
 
-Node.js tools are installed globally via pnpm:
+A fully configured app:
 
 ```json
 {
-    "tools": {
-        "eslint": {
-            "type": "pnpm",
-            "name": "eslint",
-            "version": "8.0.0"
+  "apps": [
+    {
+      "name": "cms",
+      "type": "payload",
+      "description": "Headless CMS for content management",
+      "path": "./apps/cms",
+      "build": {
+        "dockerfile": true,
+        "port": 3000
+      },
+      "infrastructure": {
+        "provider": "digital_ocean",
+        "type": "app",
+        "config": {
+          "instance_size": "basic-s",
+          "instance_count": 1,
+          "region": "lon"
         }
+      },
+      "domains": {
+        "primary": "cms.example.com"
+      },
+      "environment": {
+        "dev": {
+          "DATABASE_URL": {
+            "source": "value",
+            "value": "postgres://localhost:5432/cms_dev"
+          },
+          "PAYLOAD_SECRET": {
+            "source": "value",
+            "value": "dev-secret-change-me"
+          }
+        },
+        "production": {
+          "DATABASE_URL": {
+            "source": "resource",
+            "value": "postgres.connection_url"
+          },
+          "PAYLOAD_SECRET": {
+            "source": "sops",
+            "value": "payload_secret"
+          },
+          "S3_BUCKET": {
+            "source": "resource",
+            "value": "storage.bucket_name"
+          },
+          "S3_ENDPOINT": {
+            "source": "resource",
+            "value": "storage.endpoint"
+          }
+        }
+      },
+      "commands": {
+        "build": {
+          "run": "pnpm build",
+          "enabled": true
+        },
+        "lint": {
+          "run": "pnpm lint",
+          "enabled": true
+        }
+      },
+      "monitoring": {
+        "http": true,
+        "custom": [
+          {
+            "type": "http_keyword",
+            "name": "CMS Health Check",
+            "url": "https://cms.example.com/api/health",
+            "keyword": "ok",
+            "interval": 60
+          }
+        ]
+      }
     }
+  ]
 }
 ```
 
-This generates: `pnpm add -g eslint@8.0.0`
+## Multiple apps
 
-#### Script tools
-
-For custom installation methods (downloading binaries, curl scripts, etc.), use the `script` type:
+WebKit supports multiple apps in a monorepo:
 
 ```json
 {
-    "tools": {
-        "goreleaser": {
-            "type": "script",
-            "install": "curl -sSL https://github.com/goreleaser/goreleaser/releases/download/v1.18.2/goreleaser_Linux_x86_64.tar.gz | tar xz"
-        }
+  "apps": [
+    {
+      "name": "web",
+      "type": "svelte-kit",
+      "path": "./apps/web",
+      "infrastructure": {
+        "provider": "digital_ocean",
+        "type": "app"
+      },
+      "domains": {
+        "primary": "example.com"
+      }
+    },
+    {
+      "name": "cms",
+      "type": "payload",
+      "path": "./apps/cms",
+      "infrastructure": {
+        "provider": "digital_ocean",
+        "type": "app"
+      },
+      "domains": {
+        "primary": "cms.example.com"
+      }
+    },
+    {
+      "name": "api",
+      "type": "golang",
+      "path": "./apps/api",
+      "infrastructure": {
+        "provider": "hetzner",
+        "type": "vm"
+      },
+      "domains": {
+        "primary": "api.example.com"
+      }
     }
+  ]
 }
 ```
 
-The `install` command is executed exactly as written.
+Each app:
+- Has its own build and deployment pipeline
+- Can use different infrastructure providers
+- Shares resources defined in the manifest
 
-### Overriding default tools
+## Next steps
 
-Default tools are automatically populated by `applyDefaults()`. To customise a default tool (like changing the version), simply include it in your `tools` configuration:
-
-```json
-{
-    "tools": {
-        "templ": {
-            "type": "go",
-            "name": "github.com/a-h/templ/cmd/templ",
-            "version": "v0.2.543"
-        }
-    }
-}
-```
-
-### Install command override
-
-You can override the auto-generated install command for any tool type by providing an `install` field:
-
-```json
-{
-    "tools": {
-        "custom": {
-            "type": "go",
-            "name": "github.com/foo/bar",
-            "version": "v1.0.0",
-            "install": "custom install command"
-        }
-    }
-}
-```
-
-### Attributes
-
-| Key     | Description                                     | Required | Default                    | Notes                                                     |
-|---------|-------------------------------------------------|----------|----------------------------|-----------------------------------------------------------|
-| tools   | Map of tool names to tool configurations        | No       | Auto-populated for Go apps | Each tool is an object with type, name, version, install |
-| type    | Installation method                             | Yes      | -                          | One of: "go", "pnpm", "script"                            |
-| name    | Package path (go) or package name (pnpm)        | No       | -                          | Required for "go" and "pnpm" types                        |
-| version | Version to install                              | No       | -                          | Required for "go" and "pnpm" types                        |
-| install | Custom installation command                     | No       | -                          | Required for "script" type, optional override for others  |
-
-### Example
-
-```json
-{
-    "apps": [
-        {
-            "name": "api",
-            "type": "golang",
-            "path": "services/api",
-            "tools": {
-                "golangci-lint": {
-                    "type": "go",
-                    "name": "github.com/golangci/golangci-lint/cmd/golangci-lint",
-                    "version": "v1.55.2"
-                },
-                "templ": {
-                    "type": "go",
-                    "name": "github.com/a-h/templ/cmd/templ",
-                    "version": "v0.2.543"
-                },
-                "buf": {
-                    "type": "go",
-                    "name": "github.com/bufbuild/buf/cmd/buf",
-                    "version": "v1.28.1"
-                },
-                "custom-binary": {
-                    "type": "script",
-                    "install": "curl -sSL https://example.com/install.sh | sh"
-                }
-            },
-            "commands": {
-                "lint": "golangci-lint run",
-                "generate": "templ generate && buf generate"
-            }
-        }
-    ]
-}
-```
-
-### Notes
-
-- Tools are only installed in CI/CD workflows, not in local development.
-- For local development, install tools manually or use a tool like `asdf`.
-- Version `"latest"` installs the most recent release of the tool.
-- Tool installation happens after Go is set up but before commands are run.
-- Go tools are installed via `go install`, pnpm tools via `pnpm add -g`.
-- For other package managers or custom installation methods, use the `script` type.
+- Configure [resources](/manifest/resources) for databases and storage
+- Set up [environment variables](/manifest/environment-variables) properly
+- Add [monitoring](/manifest/monitoring) for uptime checks
+- See complete [examples](/manifest/examples)
