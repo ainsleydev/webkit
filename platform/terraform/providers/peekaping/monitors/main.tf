@@ -2,6 +2,16 @@
 # Peekaping Monitors
 # Creates HTTP, DNS, and Push monitors in Peekaping.
 #
+# Supported monitor types:
+# - http: HTTP endpoint health checks
+# - http-keyword: HTTP endpoint checks with keyword matching
+# - dns: DNS resolution checks
+# - push: Heartbeat/push-based monitoring
+#
+# Note: postgres monitors are defined in the Go code but not yet implemented
+# in Terraform as the peekaping provider doesn't support them. Postgres monitors
+# in app.json will be silently ignored until provider support is added.
+#
 # Ref: https://registry.terraform.io/providers/tafaust/peekaping/latest/docs/resources/monitor
 #
 

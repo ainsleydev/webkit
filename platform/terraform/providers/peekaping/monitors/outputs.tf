@@ -1,5 +1,7 @@
 output "monitors" {
   description = "All monitors as a flat array with type field. Push monitors include extra fields for CI/CD."
+  # IMPORTANT: When adding new monitor types in main.tf, you MUST update this output
+  # to include them. Each monitor type (http, http_keyword, dns, push) must be listed.
   value = concat(
     [for name, monitor in peekaping_monitor.http : {
       id   = monitor.id
@@ -29,6 +31,8 @@ output "monitors" {
 
 output "all_ids" {
   description = "All monitor IDs."
+  # IMPORTANT: When adding new monitor types in main.tf, you MUST update this output
+  # to include them. Each monitor type must be listed to appear on the status page.
   value = concat(
     [for m in peekaping_monitor.http : m.id],
     [for m in peekaping_monitor.http_keyword : m.id],
