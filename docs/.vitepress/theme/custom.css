@@ -83,42 +83,10 @@
 }
 
 /* ============================================================================
-   Design Tokens - Dark Mode
+   Design Tokens - Light Mode Only
    ========================================================================== */
 
-.dark {
-  /* Dark Mode - Override */
-  /* Background colors */
-  --vp-c-bg: #0A0A0A;
-  --vp-c-bg-soft: #0F0F0F;
-  --vp-c-bg-mute: #171717;
-  --vp-c-bg-alt: #0A0A0A;
-
-  /* Text colors */
-  --vp-c-text-1: #FFFFFF;
-  --vp-c-text-2: #9A9A9A;
-  --vp-c-text-3: #595959;
-
-  /* Brand colors - use white for primary, keep blue for accent */
-  --vp-c-brand-1: #FFFFFF;
-  --vp-c-brand-2: #F2F2F2;
-  --vp-c-brand-3: #70CBCE;
-  --vp-c-accent: #70CBCE;
-
-  /* Other colors */
-  --vp-c-border: rgba(255, 255, 255, 0.15);
-  --vp-c-divider: rgba(255, 255, 255, 0.1);
-  --vp-c-white: #FFFFFF;
-  --vp-c-black: #0A0A0A;
-  --vp-c-neutral-bg: #171717;
-
-  /* Component styling */
-  --vp-button-brand-bg: #FFFFFF;
-  --vp-button-brand-text: #0A0A0A;
-  --vp-button-brand-hover-bg: #0A0A0A;
-  --vp-button-brand-hover-text: #FFFFFF;
-  --vp-button-brand-border: 2px solid #FFFFFF;
-}
+/* Dark mode is disabled via appearance: false in config.mts */
 
 /* ============================================================================
    Global Styles
@@ -275,7 +243,7 @@ body {
 }
 
 .VPButton.alt:hover {
-  background-color: var(--vp-c-bg-mute);
+  background-color: var(--vp-c-border);
   color: var(--vp-c-accent);
   border-color: var(--vp-c-accent);
 }
@@ -284,38 +252,7 @@ body {
    Code Styling
    ========================================================================== */
 
-/* Inline code */
-.VPDoc :not(pre) > code {
-  background-color: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-1);
-  padding: 0.2em 0.4em;
-  border-radius: 4px;
-  font-family: var(--vp-font-family-mono);
-  font-size: 0.9em;
-  font-weight: 500;
-}
-
-/* Code blocks */
-.VPDoc pre {
-  background-color: var(--vp-c-bg-soft);
-  border: none;
-  border-radius: 0;
-  padding: 1rem;
-  overflow-x: auto;
-  margin: 1.5rem 0;
-}
-
-.VPDoc pre code {
-  color: var(--vp-c-text-1);
-  font-family: var(--vp-font-family-mono);
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-/* Syntax highlighting classes */
-.vp-code-group > .tabs > input:checked + .tab + .blocks > .block.active {
-  display: block;
-}
+/* Use VitePress default styling for code blocks */
 
 /* ============================================================================
    Links
@@ -542,6 +479,22 @@ body {
   color: var(--vp-c-text-2);
   font-size: 1rem;
   line-height: 1.6;
+}
+
+/* Ensure text in feature cards is always visible */
+.VPFeature,
+.VPFeature a {
+  text-decoration: none;
+}
+
+.VPFeature a {
+  color: var(--vp-c-text-1);
+}
+
+.VPFeature .title,
+.VPFeature span {
+  color: var(--vp-c-text-1) !important;
+  text-decoration: none;
 }
 
 /* ============================================================================

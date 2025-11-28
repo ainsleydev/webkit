@@ -5,15 +5,16 @@ export default defineConfig({
     lang: 'en-GB',
     title: 'WebKit',
     description: 'Configuration-driven infrastructure for modern web projects',
+    appearance: false,
     sitemap: {
         hostname: 'https://webkit.ainsley.dev'
     },
     head: [
-        ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo-white.svg' }],
+        ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo-black.svg' }],
     ],
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
-        logo: '/logo-white.svg',
+        logo: '/logo-black.svg',
         nav: [
             { text: 'Home', link: '/' },
             { text: 'Getting started', link: '/getting-started/installation' },
