@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "WebKit"
-  text: "Streamline your web project lifecycle"
+  text: "Configuration-driven infrastructure for modern web projects"
   tagline: One manifest file. Complete infrastructure. Automatic CI/CD.
   actions:
     - theme: brand

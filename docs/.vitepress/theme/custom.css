@@ -226,8 +226,8 @@ body {
 }
 
 .VPButton.brand:hover {
-  background-color: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
+  background-color: rgba(0,0,0, 0.85) !important;
+  color: #fff !important;
   border-color: var(--vp-c-text-1);
 }
 
@@ -607,6 +607,78 @@ body {
   .VPNav {
     padding: 0.5rem;
   }
+}
+
+/* Desktop devices */
+@media (min-width: 960px) {
+	.name[data-v-677c90aa], .text[data-v-677c90aa] {
+		max-width: 700px;
+	}
+}
+
+/* ============================================================================
+   Custom Blocks (Alerts)
+   ========================================================================== */
+
+.custom-block {
+  border-radius: 0;
+  padding: 1rem 1.5rem;
+  line-height: 1.6;
+}
+
+.custom-block-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.custom-block p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+  color: var(--vp-c-text-1);
+}
+
+/* Warning block */
+.warning.custom-block {
+  border-left: 4px solid #ff9800;
+  background-color: rgba(255, 152, 0, 0.05);
+}
+
+.warning .custom-block-title {
+  color: #ff9800;
+}
+
+/* Info block */
+.info.custom-block {
+  border-left: 4px solid #2196f3;
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+.info .custom-block-title {
+  color: #2196f3;
+}
+
+/* Danger/Error block */
+.danger.custom-block {
+  border-left: 4px solid #f44336;
+  background-color: rgba(244, 67, 54, 0.05);
+}
+
+.danger .custom-block-title {
+  color: #f44336;
+}
+
+/* Tip/Success block */
+.tip.custom-block {
+  border-left: 4px solid #4caf50;
+  background-color: rgba(76, 175, 80, 0.05);
+}
+
+.tip .custom-block-title {
+  color: #4caf50;
 }
 
 /* ============================================================================
