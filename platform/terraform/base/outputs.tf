@@ -129,7 +129,14 @@ output "digitalocean_project_id" {
 output "monitoring" {
   description = "Monitoring outputs including Peekaping data"
   value = length(var.monitors) > 0 ? {
-    peekaping = module.monitoring[0].peekaping
-    monitors  = module.monitoring[0].monitors
+    peekaping       = module.monitoring[0].peekaping
+    monitors        = module.monitoring[0].monitors
+    all_monitor_ids = module.monitoring[0].all_monitor_ids
   } : null
+}
+
+output "all_monitor_ids" {
+  description = "All monitor IDs for reference"
+  value       = length(var.monitors) > 0 ? module.monitoring[0].all_monitor_ids : []
+  sensitive   = true
 }
