@@ -30,10 +30,64 @@
 }
 
 /* ============================================================================
-   Design Tokens - Color Palette & Typography
+   Design Tokens - Light Mode (Default)
    ========================================================================== */
 
 :root {
+  /* Light Mode - Default */
+  /* Background colors */
+  --vp-c-bg: #FFFFFF;
+  --vp-c-bg-soft: #F2F2F2;
+  --vp-c-bg-mute: #F2F2F2;
+  --vp-c-bg-alt: #FFFFFF;
+
+  /* Text colors */
+  --vp-c-text-1: #0A0A0A;
+  --vp-c-text-2: #595959;
+  --vp-c-text-3: #9A9A9A;
+
+  /* Brand colors - use white for primary, keep blue for accent */
+  --vp-c-brand-1: #FFFFFF;
+  --vp-c-brand-2: #F2F2F2;
+  --vp-c-brand-3: #70CBCE;
+  --vp-c-accent: #70CBCE;
+
+  /* Other colors */
+  --vp-c-border: rgba(10, 10, 10, 0.15);
+  --vp-c-divider: rgba(10, 10, 10, 0.1);
+  --vp-c-white: #FFFFFF;
+  --vp-c-black: #0A0A0A;
+  --vp-c-neutral-bg: #F2F2F2;
+
+  /* Typography */
+  --vp-font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --vp-font-family-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* Component styling */
+  --vp-button-brand-bg: #0A0A0A;
+  --vp-button-brand-text: #FFFFFF;
+  --vp-button-brand-hover-bg: #FFFFFF;
+  --vp-button-brand-hover-text: #0A0A0A;
+  --vp-button-brand-border: 2px solid #0A0A0A;
+
+  /* Border radius */
+  --vp-button-border-radius: 4px;
+  --vp-input-border-radius: 4px;
+  --vp-code-border-radius: 4px;
+
+  /* Layout */
+  --vp-layout-max-width: 1600px;
+
+  /* Transitions */
+  --vp-transition-all: 200ms;
+}
+
+/* ============================================================================
+   Design Tokens - Dark Mode
+   ========================================================================== */
+
+.dark {
+  /* Dark Mode - Override */
   /* Background colors */
   --vp-c-bg: #0A0A0A;
   --vp-c-bg-soft: #0F0F0F;
@@ -58,27 +112,12 @@
   --vp-c-black: #0A0A0A;
   --vp-c-neutral-bg: #171717;
 
-  /* Typography */
-  --vp-font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-  --vp-font-family-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
-
   /* Component styling */
   --vp-button-brand-bg: #FFFFFF;
   --vp-button-brand-text: #0A0A0A;
   --vp-button-brand-hover-bg: #0A0A0A;
   --vp-button-brand-hover-text: #FFFFFF;
   --vp-button-brand-border: 2px solid #FFFFFF;
-
-  /* Border radius */
-  --vp-button-border-radius: 4px;
-  --vp-input-border-radius: 4px;
-  --vp-code-border-radius: 4px;
-
-  /* Layout */
-  --vp-layout-max-width: 1600px;
-
-  /* Transitions */
-  --vp-transition-all: 200ms;
 }
 
 /* ============================================================================
@@ -259,8 +298,8 @@ body {
 /* Code blocks */
 .VPDoc pre {
   background-color: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-border);
-  border-radius: 4px;
+  border: none;
+  border-radius: 0;
   padding: 1rem;
   overflow-x: auto;
   margin: 1.5rem 0;
