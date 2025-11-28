@@ -37,8 +37,8 @@
   /* Light Mode - Default */
   /* Background colors */
   --vp-c-bg: #FFFFFF;
-  --vp-c-bg-soft: #F2F2F2;
-  --vp-c-bg-mute: #F2F2F2;
+  --vp-c-bg-soft: #F5F5F5;
+  --vp-c-bg-mute: #E8E8E8;
   --vp-c-bg-alt: #FFFFFF;
 
   /* Text colors */
@@ -252,7 +252,10 @@ body {
    Code Styling
    ========================================================================== */
 
-/* Use VitePress default styling for code blocks */
+/* Code blocks - add border back */
+.VPDoc pre {
+  border: 1px solid var(--vp-c-border);
+}
 
 /* ============================================================================
    Links
@@ -324,7 +327,7 @@ body {
 
 /* Hide the site title text, show only the logo */
 .VPHomeHero .name,
-.VPNavBar .title {
+.VPNavBar .title a span {
   display: none;
 }
 
@@ -483,7 +486,8 @@ body {
 
 /* Ensure text in feature cards is always visible */
 .VPFeature,
-.VPFeature a {
+.VPFeature a,
+.VPFeature * {
   text-decoration: none;
 }
 
@@ -492,7 +496,10 @@ body {
 }
 
 .VPFeature .title,
-.VPFeature span {
+.VPFeature span,
+.VPFeature h3,
+.VPFeature p,
+.VPFeature div {
   color: var(--vp-c-text-1) !important;
   text-decoration: none;
 }
