@@ -249,7 +249,8 @@ body {
 
 [class^="language"] {
 	border: 1px solid var(--vp-c-border);
-	border-radius: 0;
+	border-radius: 6px;
+	margin: 16px 0 !important;
 }
 
 .vp-doc :not(pre) > code {
@@ -282,9 +283,9 @@ body {
    ========================================================================== */
 
 .VPDoc table {
-	width: 100%;
+	width: fit-content;
 	border-collapse: collapse;
-	margin: 1.5rem 0;
+	border-radius: 6px;
 }
 
 .VPDoc th {
@@ -341,8 +342,11 @@ body {
 	transition: color 200ms;
 }
 
-.VPNavBar a:hover,
 .VPNavBar .active {
+	color: var(--vp-c-text-1) !important;
+}
+
+.VPNavBar a:hover {
 	color: var(--vp-c-orange) !important;
 }
 
@@ -353,6 +357,11 @@ body {
 .VPNavBar .nav-item.active,
 .VPNavBar .nav-item:hover {
 	color: var(--vp-c-orange) !important;
+
+}
+
+.VPLocalNavOutlineDropdown .top-link {
+	color: var(--vp-c-text-1);
 }
 
 /* Navbar icons - search, social, hamburger */

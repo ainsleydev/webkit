@@ -2,7 +2,7 @@
 
 This page explains the philosophy and architecture behind WebKit, helping you understand how it transforms a single manifest into production-ready infrastructure.
 
-## Philosophy: Single source of truth
+## Single source of truth
 
 WebKit is built around one core principle: **your entire project configuration should live in a single file**.
 
@@ -179,20 +179,6 @@ project/
 ```
 
 Each app in `app.json` maps to a directory in `apps/`. WebKit generates appropriate build and deploy pipelines for each.
-
-## Comparison with alternatives
-
-| Feature | WebKit | Manual Setup | Platform-specific |
-|---------|--------|--------------|-------------------|
-| Single config file | Yes | No | Varies |
-| Multi-provider support | Yes | N/A | No |
-| Generated CI/CD | Yes | Manual | Platform-only |
-| Infrastructure as code | Terraform | Your choice | Platform-managed |
-| Secret management | SOPS/Age | Your choice | Platform-specific |
-| Drift detection | Yes | No | No |
-| Monorepo support | Yes | Manual | Limited |
-
-WebKit gives you the simplicity of a platform (like Vercel or Railway) with the flexibility of custom infrastructure.
 
 ## Next steps
 
