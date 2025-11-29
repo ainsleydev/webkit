@@ -2,13 +2,13 @@
     "name": "docs",
     "version": "1.0.0",
     "description": "",
-	"private": true,
+    "private": true,
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\"",
-        "dev": "vitepress dev",
+        "dev": "vitepress dev --port 5174",
         "build": "vitepress build",
-        "preview": "vitepress preview",
+        "preview": "vitepress preview --port 5174",
         "concat": "repopack --include \"**/*.md\" --ignore \"combined.md\" --style markdown -o combined.md"
     },
     "keywords": [],

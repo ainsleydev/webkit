@@ -116,7 +116,7 @@ Validation runs automatically during:
 
 Names must follow the lowercase-hyphenated pattern:
 
-❌ **Invalid:**
+**Invalid:**
 ```json
 {
   "name": "MyApp",        // Uppercase
@@ -126,7 +126,7 @@ Names must follow the lowercase-hyphenated pattern:
 }
 ```
 
-✅ **Valid:**
+**Valid:**
 ```json
 {
   "name": "my-app",
@@ -166,7 +166,7 @@ Certain fields only accept predefined values:
 
 **Port numbers** must be between 1 and 65535:
 
-❌ **Invalid:**
+**Invalid:**
 ```json
 {
   "build": {
@@ -183,7 +183,7 @@ Certain fields only accept predefined values:
 }
 ```
 
-✅ **Valid:**
+**Valid:**
 ```json
 {
   "build": {
@@ -196,14 +196,14 @@ Certain fields only accept predefined values:
 
 **Descriptions** have a maximum length of 200 characters:
 
-❌ **Invalid:**
+**Invalid:**
 ```json
 {
   "description": "This is a very long description that exceeds the maximum allowed length of 200 characters. It contains way too much information and should be condensed to be more concise and fit within the character limit imposed by the schema validation rules."
 }
 ```
 
-✅ **Valid:**
+**Valid:**
 ```json
 {
   "description": "A concise description of the project or app."
@@ -214,7 +214,7 @@ Certain fields only accept predefined values:
 
 **Webhook URLs** must be valid URIs:
 
-❌ **Invalid:**
+**Invalid:**
 ```json
 {
   "notifications": {
@@ -223,7 +223,7 @@ Certain fields only accept predefined values:
 }
 ```
 
-✅ **Valid:**
+**Valid:**
 ```json
 {
   "notifications": {
@@ -236,7 +236,7 @@ Certain fields only accept predefined values:
 
 Domains must **not** contain protocol prefixes:
 
-❌ **Invalid:**
+**Invalid:**
 ```json
 {
   "domains": [
@@ -246,7 +246,7 @@ Domains must **not** contain protocol prefixes:
 }
 ```
 
-✅ **Valid:**
+**Valid:**
 ```json
 {
   "domains": [
@@ -281,7 +281,7 @@ app "cms": path "cms" does not exist
 
 Apps with `infra.type` set to `"vm"` or `"app"` that are terraform-managed (default) **must** have at least one domain configured:
 
-❌ **Invalid:**
+**Invalid:**
 ```json
 {
   "name": "api",
@@ -293,7 +293,7 @@ Apps with `infra.type` set to `"vm"` or `"app"` that are terraform-managed (defa
 }
 ```
 
-✅ **Valid:**
+**Valid:**
 ```json
 {
   "name": "api",
@@ -311,7 +311,7 @@ Apps with `infra.type` set to `"vm"` or `"app"` that are terraform-managed (defa
 
 Environment variables with `source: "resource"` must reference valid resources and outputs:
 
-❌ **Invalid:**
+**Invalid:**
 ```json
 {
   "resources": [
@@ -333,7 +333,7 @@ Environment variables with `source: "resource"` must reference valid resources a
 }
 ```
 
-✅ **Valid:**
+**Valid:**
 ```json
 {
   "resources": [

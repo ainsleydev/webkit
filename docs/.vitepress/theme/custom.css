@@ -249,7 +249,8 @@ body {
 
 [class^="language"] {
 	border: 1px solid var(--vp-c-border);
-	border-radius: 0;
+	border-radius: 6px;
+	margin: 16px 0 !important;
 }
 
 .vp-doc :not(pre) > code {
@@ -282,24 +283,33 @@ body {
    ========================================================================== */
 
 .VPDoc table {
-	width: 100%;
-	border-collapse: collapse;
-	margin: 1.5rem 0;
+	width: fit-content;
+	max-width: 100%;
+	overflow: auto;
+	white-space: nowrap;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid var(--vp-c-border);
+	border-radius: 6px;
 }
 
 .VPDoc th {
-	background-color: var(--vp-c-bg-soft);
 	color: var(--vp-c-text-1);
-	font-weight: 700;
-	padding: 0.75rem 1rem;
-	border: 1px solid var(--vp-c-border);
-	text-align: left;
+	border: none;
 }
 
 .VPDoc td {
-	padding: 0.75rem 1rem;
-	border: 1px solid var(--vp-c-border);
 	color: var(--vp-c-text-2);
+	border: none;
+}
+
+.VPDoc table thead tr th {
+	border-bottom: 1px solid var(--vp-c-border);
+}
+
+.VPDoc th:not(:first-child),
+.VPDoc td:not(:first-child) {
+	border-left: 1px solid var(--vp-c-border) !important;
 }
 
 .VPDoc tbody tr:nth-child(even) {
@@ -317,8 +327,6 @@ body {
 .VPNav {
 	background-color: var(--vp-c-bg);
 	border-bottom: 1px solid var(--vp-c-border);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
 }
 
 .VPNavBar {
@@ -341,8 +349,11 @@ body {
 	transition: color 200ms;
 }
 
-.VPNavBar a:hover,
 .VPNavBar .active {
+	color: var(--vp-c-text-1) !important;
+}
+
+.VPNavBar a:hover {
 	color: var(--vp-c-orange) !important;
 }
 
@@ -353,6 +364,11 @@ body {
 .VPNavBar .nav-item.active,
 .VPNavBar .nav-item:hover {
 	color: var(--vp-c-orange) !important;
+
+}
+
+.VPLocalNavOutlineDropdown .top-link {
+	color: var(--vp-c-text-1);
 }
 
 /* Navbar icons - search, social, hamburger */
@@ -589,6 +605,10 @@ body {
 		width: 100%;
 		text-align: center;
 	}
+
+	.VPNav {
+		border: none;
+	}
 }
 
 /* Mobile devices */
@@ -620,8 +640,13 @@ body {
 
 /* Desktop devices */
 @media (min-width: 960px) {
-	.name[data-v-677c90aa], .text[data-v-677c90aa] {
+	.VPHero .name,
+	.VPHero .text {
 		max-width: 700px;
+	}
+
+	.VPNavBarTitle .title {
+		border: none;
 	}
 }
 

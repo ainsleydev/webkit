@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
+// Note: Mermaid support requires vitepress-plugin-mermaid (currently incompatible with VitePress 2.0 alpha)
+// Diagrams are rendered as code blocks with mermaid class for client-side rendering
 export default defineConfig({
     lang: 'en-GB',
     title: 'WebKit',
@@ -13,7 +15,15 @@ export default defineConfig({
         hostname: 'https://webkit.ainsley.dev'
     },
     head: [
-        ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo-black.svg' }],
+        ['link', { rel: 'icon', type: 'image/x-icon', href: '/favicon/favicon.ico' }],
+        ['link', { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon/favicon-16x16.png' }],
+        ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon/favicon-32x32.png' }],
+        ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon/apple-touch-icon.png' }],
+        ['link', { rel: 'mask-icon', href: '/favicon/safari-pinned-tab.svg', color: '#70CBCE' }],
+        ['link', { rel: 'manifest', href: '/favicon/site.webmanifest' }],
+        ['meta', { name: 'msapplication-TileColor', content: '#70CBCE' }],
+        ['meta', { name: 'msapplication-config', content: '/favicon/browserconfig.xml' }],
+        ['meta', { name: 'theme-color', content: '#70CBCE' }],
     ],
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config

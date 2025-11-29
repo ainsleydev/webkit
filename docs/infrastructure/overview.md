@@ -24,19 +24,24 @@ flowchart LR
 
 ## State management
 
-Terraform state is stored remotely in an S3-compatible backend. This enables:
+Terraform state is stored remotely in Backblaze B2 (S3-compatible). This enables:
 
 - **Team collaboration** - Multiple developers can work with the same infrastructure
 - **State locking** - Prevents concurrent modifications
 - **Secure storage** - State contains sensitive data and shouldn't be committed
 
-WebKit supports DigitalOcean Spaces as the state backend. Configure it via environment variables:
+WebKit uses Backblaze B2 as the state backend. Configure it via environment variables:
 
 ```bash
-export TF_STATE_BUCKET="your-bucket-name"
-export TF_STATE_ACCESS_KEY="your-access-key"
-export TF_STATE_SECRET_KEY="your-secret-key"
+export BACK_BLAZE_BUCKET="your-bucket-name"
+export BACK_BLAZE_KEY_ID="your-key-id"
+export BACK_BLAZE_APPLICATION_KEY="your-application-key"
 ```
+
+**In CI/CD environments**, these are automatically available as organisation secrets:
+- `ORG_BACK_BLAZE_TF_BUCKET`
+- `ORG_BACK_BLAZE_KEY_ID`
+- `ORG_BACK_BLAZE_APPLICATION_KEY`
 
 ## Commands
 
