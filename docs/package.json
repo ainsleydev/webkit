@@ -17,10 +17,8 @@
     "packageManager": "pnpm@10.17.1",
     "devDependencies": {
         "@types/node": "^24.6.1",
-        "mermaid": "^11.12.1",
         "ts-node": "^10.9.2",
         "typescript": "^5.9.3",
-        "vitepress": "2.0.0-alpha.12",
-        "vitepress-plugin-mermaid": "^2.0.17"
+        "vitepress": "2.0.0-alpha.12"
     }
 }

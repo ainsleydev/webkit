@@ -327,8 +327,6 @@ body {
 .VPNav {
 	background-color: var(--vp-c-bg);
 	border-bottom: 1px solid var(--vp-c-border);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
 }
 
 .VPNavBar {
@@ -607,6 +605,10 @@ body {
 		width: 100%;
 		text-align: center;
 	}
+
+	.VPNav {
+		border: none;
+	}
 }
 
 /* Mobile devices */
@@ -641,6 +643,10 @@ body {
 	.VPHero .name,
 	.VPHero .text {
 		max-width: 700px;
+	}
+
+	.VPNavBarTitle .title {
+		border: none;
 	}
 }
 
