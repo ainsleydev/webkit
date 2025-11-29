@@ -127,16 +127,21 @@ This creates `.env.example` files that you can copy and customise locally.
 
 ## Step 5: Configure GitHub secrets
 
-For CI/CD to work, add these secrets to your GitHub repository:
+WebKit uses organisation-level secrets that are configured once for all repositories. The required secrets are:
 
-| Secret | Description |
-|--------|-------------|
-| `DIGITALOCEAN_ACCESS_TOKEN` | DigitalOcean API token |
-| `TF_STATE_BUCKET` | S3-compatible bucket for Terraform state |
-| `TF_STATE_ACCESS_KEY` | Access key for state bucket |
-| `TF_STATE_SECRET_KEY` | Secret key for state bucket |
+| Secret | Type | Description |
+|--------|------|-------------|
+| `ORG_DO_ACCESS_TOKEN` | Manual | DigitalOcean API token for infrastructure provisioning |
+| `ORG_BACK_BLAZE_TF_BUCKET` | Manual | Backblaze B2 bucket name for Terraform state storage |
+| `ORG_BACK_BLAZE_KEY_ID` | Manual | Backblaze B2 application key ID |
+| `ORG_BACK_BLAZE_APPLICATION_KEY` | Manual | Backblaze B2 application key |
+| `ORG_AGE_SECRET` | Manual | SOPS Age encryption key for secrets management |
 
-Navigate to your repository's Settings → Secrets and variables → Actions to add these.
+**Organisation admins**: These secrets should be configured once at the organisation level in Settings → Secrets and variables → Actions → Organisation secrets.
+
+**Individual users**: If you're working in a personal repository, add these as repository secrets (without the `ORG_` prefix if preferred, but update your workflows accordingly).
+
+**Note**: Terraform-specific secrets (like `TF_*` environment variables) are generated automatically by Terraform during infrastructure provisioning and don't need to be manually configured.
 
 ## Step 6: Deploy infrastructure
 

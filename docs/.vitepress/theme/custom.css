@@ -284,23 +284,31 @@ body {
 
 .VPDoc table {
 	width: fit-content;
-	border-collapse: collapse;
+	white-space: nowrap;
+	border-collapse: separate;
+	overflow: hidden;
+	border-spacing: 0;
+	border: 1px solid var(--vp-c-border);
 	border-radius: 6px;
 }
 
 .VPDoc th {
-	background-color: var(--vp-c-bg-soft);
 	color: var(--vp-c-text-1);
-	font-weight: 700;
-	padding: 0.75rem 1rem;
-	border: 1px solid var(--vp-c-border);
-	text-align: left;
+	border: none;
 }
 
 .VPDoc td {
-	padding: 0.75rem 1rem;
-	border: 1px solid var(--vp-c-border);
 	color: var(--vp-c-text-2);
+	border: none;
+}
+
+.VPDoc table thead tr th {
+	border-bottom: 1px solid var(--vp-c-border);
+}
+
+.VPDoc th:not(:first-child),
+.VPDoc td:not(:first-child) {
+	border-left: 1px solid var(--vp-c-border) !important;
 }
 
 .VPDoc tbody tr:nth-child(even) {
