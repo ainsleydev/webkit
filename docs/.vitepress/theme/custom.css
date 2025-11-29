@@ -620,7 +620,8 @@ body {
 
 /* Desktop devices */
 @media (min-width: 960px) {
-	.name[data-v-677c90aa], .text[data-v-677c90aa] {
+	.VPHero .name,
+	.VPHero .text {
 		max-width: 700px;
 	}
 }

@@ -18,7 +18,7 @@ import (
 
 const (
 	// docsContentPath is the path to the WebKit-specific content file.
-	docsContentPath = "docs/AGENTS.md"
+	docsContentPath = "docs/gen/AGENTS.md"
 
 	// outputFile is the name of the generated root AGENTS.md file.
 	outputFile = "AGENTS.md"
@@ -47,7 +47,7 @@ func run(fs afero.Fs, output string) error {
 	// Load WebKit-specific content from docs/AGENTS.md
 	contentBytes, err := afero.ReadFile(fs, docsContentPath)
 	if err != nil {
-		return errors.Wrap(err, "reading docs/AGENTS.md")
+		return errors.Wrap(err, "reading docs/gen/AGENTS.md")
 	}
 
 	data := map[string]any{
