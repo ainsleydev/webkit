@@ -94,7 +94,7 @@ Use tabs for indentation.
 		// Should error because docs/AGENTS.md doesn't exist
 		err = run(fs, "AGENTS.md")
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "reading docs/AGENTS.md")
+		assert.Contains(t, err.Error(), "reading docs/gen/AGENTS.md")
 	})
 
 	t.Run("Errors when cannot write output file", func(t *testing.T) {
