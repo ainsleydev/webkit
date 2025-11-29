@@ -284,9 +284,10 @@ body {
 
 .VPDoc table {
 	width: fit-content;
+	max-width: 100%;
+	overflow: auto;
 	white-space: nowrap;
 	border-collapse: separate;
-	overflow: hidden;
 	border-spacing: 0;
 	border: 1px solid var(--vp-c-border);
 	border-radius: 6px;
