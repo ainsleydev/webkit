@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -127,13 +128,22 @@ func fetchTerraformOutputs(
 // marshalEnvWithoutQuotes marshals environment variables without adding quotes.
 // This is necessary for Docker Swarm env_files which don't strip quotes like docker-compose does.
 // Only adds quotes when the value contains spaces, newlines, or is empty.
+// Keys are sorted alphabetically for consistent output.
 func marshalEnvWithoutQuotes(envMap map[string]string) string {
+	// Extract and sort keys alphabetically.
+	keys := make([]string, 0, len(envMap))
+	for key := range envMap {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
 	var builder strings.Builder
-	for key, value := range envMap {
-		// Only quote if value contains spaces, newlines, or is empty
-		// Docker Swarm env_files doesn't handle quotes like docker-compose
+	for _, key := range keys {
+		value := envMap[key]
+		// Only quote if value contains spaces, newlines, or is empty.
+		// Docker Swarm env_files doesn't handle quotes like docker-compose.
 		if strings.ContainsAny(value, " \n\t") || value == "" {
-			// Escape any quotes in the value
+			// Escape any quotes in the value.
 			escapedValue := strings.ReplaceAll(value, `"`, `\"`)
 			builder.WriteString(fmt.Sprintf("%s=\"%s\"\n", key, escapedValue))
 		} else {
