@@ -1110,7 +1110,7 @@ func TestGenerateMonitors(t *testing.T) {
 					Domains: []appdef.Domain{
 						{Name: "example.com", Type: appdef.DomainTypePrimary},
 					},
-					Monitoring: false,
+					Monitoring: ptr.BoolPtr(false),
 				},
 			},
 		}
