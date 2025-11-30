@@ -46,15 +46,17 @@ func TestBackupWorkflow(t *testing.T) {
 			},
 			Resources: []appdef.Resource{
 				{
-					Name:     "db",
-					Type:     appdef.ResourceTypePostgres,
-					Provider: appdef.ResourceProviderDigitalOcean,
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: true,
 					Backup: appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
 			},
 		}
+		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -84,9 +86,10 @@ func TestBackupWorkflow(t *testing.T) {
 			},
 			Resources: []appdef.Resource{
 				{
-					Name:     "store",
-					Type:     appdef.ResourceTypeS3,
-					Provider: appdef.ResourceProviderDigitalOcean,
+					Name:       "store",
+					Type:       appdef.ResourceTypeS3,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: true,
 					Config: map[string]any{
 						"key": "value",
 					},
@@ -96,6 +99,7 @@ func TestBackupWorkflow(t *testing.T) {
 				},
 			},
 		}
+		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -155,23 +159,26 @@ func TestBackupWorkflow(t *testing.T) {
 			},
 			Resources: []appdef.Resource{
 				{
-					Name:     "db",
-					Type:     appdef.ResourceTypePostgres,
-					Provider: appdef.ResourceProviderDigitalOcean,
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: true,
 					Backup: appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
 				{
-					Name:     "store",
-					Type:     appdef.ResourceTypeS3,
-					Provider: appdef.ResourceProviderDigitalOcean,
+					Name:       "store",
+					Type:       appdef.ResourceTypeS3,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: true,
 					Backup: appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
 			},
 		}
+		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -203,15 +210,17 @@ func TestBackupWorkflow(t *testing.T) {
 			},
 			Resources: []appdef.Resource{
 				{
-					Name:     "db",
-					Type:     appdef.ResourceTypeSQLite,
-					Provider: appdef.ResourceProviderTurso,
+					Name:       "db",
+					Type:       appdef.ResourceTypeSQLite,
+					Provider:   appdef.ResourceProviderTurso,
+					Monitoring: true,
 					Backup: appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
 			},
 		}
+		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -243,23 +252,26 @@ func TestBackupWorkflow(t *testing.T) {
 			},
 			Resources: []appdef.Resource{
 				{
-					Name:     "db",
-					Type:     appdef.ResourceTypeSQLite,
-					Provider: appdef.ResourceProviderTurso,
+					Name:       "db",
+					Type:       appdef.ResourceTypeSQLite,
+					Provider:   appdef.ResourceProviderTurso,
+					Monitoring: true,
 					Backup: appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
 				{
-					Name:     "store",
-					Type:     appdef.ResourceTypeS3,
-					Provider: appdef.ResourceProviderDigitalOcean,
+					Name:       "store",
+					Type:       appdef.ResourceTypeS3,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: true,
 					Backup: appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
 			},
 		}
+		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -414,15 +426,17 @@ func TestBackupWorkflow(t *testing.T) {
 			},
 			Resources: []appdef.Resource{
 				{
-					Name:     "db",
-					Type:     appdef.ResourceTypePostgres,
-					Provider: appdef.ResourceProviderDigitalOcean,
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: true,
 					Backup: appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
 			},
 		}
+		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), appDef)
 
