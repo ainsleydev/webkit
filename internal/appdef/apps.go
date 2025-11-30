@@ -35,9 +35,9 @@ type (
 	Build struct {
 		Context         string `json:"context,omitempty" description:"Docker build context path relative to project root (defaults to app path)"`
 		Dockerfile      string `json:"dockerfile" description:"Path to the Dockerfile relative to project root"`
-		HealthCheckPath string `json:"health_check_path,omitempty" description:"Path for health check endpoint (defaults to /)"`
 		Port            int    `json:"port,omitempty" validate:"omitempty,min=1,max=65535" description:"Port number the app listens on inside the container"`
 		Release         *bool  `json:"release,omitempty" description:"Whether to build and release this app in CI/CD (defaults to true)"`
+		HealthCheckPath string `json:"health_check_path,omitempty" description:"Path for health check endpoint (defaults to /)"`
 	}
 	// Infra defines infrastructure and deployment configuration for an app.
 	// This includes the cloud provider, deployment type (VM, container, etc.),
