@@ -217,7 +217,7 @@ func buildTursoSQLiteImports(resource *appdef.Resource, databaseID string) []imp
 func buildProjectImportAddress(projectID string) []importAddress {
 	return []importAddress{
 		{
-			Address: "digitalocean_project.this",
+			Address: "digitalocean_project.this[0]",
 			ID:      projectID,
 		},
 	}
