@@ -35,7 +35,7 @@ func TestTerraform_Resources(t *testing.T) {
 					"region":     "ams3",
 					"node_count": 2,
 				},
-				Backup: appdef.ResourceBackupConfig{
+				Backup: &appdef.ResourceBackupConfig{
 					Enabled: true,
 				},
 			},
@@ -48,7 +48,7 @@ func TestTerraform_Resources(t *testing.T) {
 					"organisation": "test-org",
 					"group":        "default",
 				},
-				Backup: appdef.ResourceBackupConfig{
+				Backup: &appdef.ResourceBackupConfig{
 					Enabled: true,
 				},
 			},
@@ -663,7 +663,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 				Title:    "Database",
 				Type:     appdef.ResourceTypePostgres,
 				Provider: appdef.ResourceProviderDigitalOcean,
-				Backup: appdef.ResourceBackupConfig{
+				Backup: &appdef.ResourceBackupConfig{
 					Enabled: true,
 				},
 			},

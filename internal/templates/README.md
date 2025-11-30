@@ -117,7 +117,7 @@ View all monitors on the [dashboard]({{ .DashboardURL }}).
 <img src="https://img.shields.io/badge/-SQLite-003B57?style=flat&logo=sqlite&logoColor=white"/>
 {{- end }}
 
-**Type:** {{ .Type }} | **Provider:** {{ .Provider }} | **Backups:** {{ if .Backup.Enabled }}Enabled{{ else }}Disabled{{ end }}
+**Type:** {{ .Type }} | **Provider:** {{ .Provider }} | **Backups:** {{ if and .Backup .Backup.Enabled }}Enabled{{ else }}Disabled{{ end }}
 {{- if .Description }}
 
 {{ .Description }}

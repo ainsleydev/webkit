@@ -79,7 +79,7 @@ func TestTFVarsFromDefinition(t *testing.T) {
 					Config: map[string]any{
 						"key": "value",
 					},
-					Backup: appdef.ResourceBackupConfig{},
+					Backup: &appdef.ResourceBackupConfig{},
 				},
 			},
 			Shared: appdef.Shared{

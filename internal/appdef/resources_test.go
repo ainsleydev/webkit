@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ainsleydev/webkit/pkg/env"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 func TestResourceType_String(t *testing.T) {
@@ -88,8 +89,8 @@ func TestResourceApplyDefaults(t *testing.T) {
 			input: Resource{},
 			want: Resource{
 				Config:     make(map[string]any),
-				Backup:     ResourceBackupConfig{Enabled: true},
-				Monitoring: true,
+				Backup:     &ResourceBackupConfig{Enabled: true},
+				Monitoring: ptr.BoolPtr(true),
 			},
 		},
 		"Existing Config And Outputs": {
@@ -98,8 +99,28 @@ func TestResourceApplyDefaults(t *testing.T) {
 			},
 			want: Resource{
 				Config:     map[string]any{"size": "small"},
-				Backup:     ResourceBackupConfig{Enabled: true},
-				Monitoring: true,
+				Backup:     &ResourceBackupConfig{Enabled: true},
+				Monitoring: ptr.BoolPtr(true),
+			},
+		},
+		"Preserves explicit backup false": {
+			input: Resource{
+				Backup: &ResourceBackupConfig{Enabled: false},
+			},
+			want: Resource{
+				Config:     make(map[string]any),
+				Backup:     &ResourceBackupConfig{Enabled: false},
+				Monitoring: ptr.BoolPtr(true),
+			},
+		},
+		"Preserves explicit monitoring false": {
+			input: Resource{
+				Monitoring: ptr.BoolPtr(false),
+			},
+			want: Resource{
+				Config:     make(map[string]any),
+				Backup:     &ResourceBackupConfig{Enabled: true},
+				Monitoring: ptr.BoolPtr(false),
 			},
 		},
 	}
@@ -116,16 +137,13 @@ func TestResourceApplyDefaults(t *testing.T) {
 func TestResource_IsTerraformManaged(t *testing.T) {
 	t.Parallel()
 
-	trueVal := true
-	falseVal := false
-
 	tt := map[string]struct {
 		terraformManaged *bool
 		want             bool
 	}{
 		"Nil defaults to true": {terraformManaged: nil, want: true},
-		"Explicit false":       {terraformManaged: &falseVal, want: false},
-		"Explicit true":        {terraformManaged: &trueVal, want: true},
+		"Explicit false":       {terraformManaged: ptr.BoolPtr(false), want: false},
+		"Explicit true":        {terraformManaged: ptr.BoolPtr(true), want: true},
 	}
 
 	for name, test := range tt {
@@ -150,8 +168,8 @@ func TestResource_GenerateBackupMonitor(t *testing.T) {
 			resource: Resource{
 				Name:       "db",
 				Title:      "Database",
-				Backup:     ResourceBackupConfig{Enabled: true},
-				Monitoring: true,
+				Backup:     &ResourceBackupConfig{Enabled: true},
+				Monitoring: ptr.BoolPtr(true),
 			},
 			projectTitle: "Test Project",
 			want: &Monitor{
@@ -163,8 +181,8 @@ func TestResource_GenerateBackupMonitor(t *testing.T) {
 			resource: Resource{
 				Name:       "db",
 				Title:      "Database",
-				Backup:     ResourceBackupConfig{Enabled: false},
-				Monitoring: true,
+				Backup:     &ResourceBackupConfig{Enabled: false},
+				Monitoring: ptr.BoolPtr(true),
 			},
 			projectTitle: "Test Project",
 			want:         nil,
@@ -173,8 +191,8 @@ func TestResource_GenerateBackupMonitor(t *testing.T) {
 			resource: Resource{
 				Name:       "db",
 				Title:      "Database",
-				Backup:     ResourceBackupConfig{Enabled: true},
-				Monitoring: false,
+				Backup:     &ResourceBackupConfig{Enabled: true},
+				Monitoring: ptr.BoolPtr(false),
 			},
 			projectTitle: "Test Project",
 			want:         nil,
@@ -183,8 +201,8 @@ func TestResource_GenerateBackupMonitor(t *testing.T) {
 			resource: Resource{
 				Name:       "db",
 				Title:      "Database",
-				Backup:     ResourceBackupConfig{Enabled: false},
-				Monitoring: false,
+				Backup:     &ResourceBackupConfig{Enabled: false},
+				Monitoring: ptr.BoolPtr(false),
 			},
 			projectTitle: "Test Project",
 			want:         nil,

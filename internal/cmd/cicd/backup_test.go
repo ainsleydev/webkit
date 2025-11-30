@@ -49,7 +49,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:     "db",
 					Type:     appdef.ResourceTypePostgres,
 					Provider: appdef.ResourceProviderDigitalOcean,
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
@@ -90,7 +90,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Config: map[string]any{
 						"key": "value",
 					},
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
@@ -128,7 +128,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:     "b2store",
 					Type:     appdef.ResourceTypeS3,
 					Provider: appdef.ResourceProviderBackBlaze,
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
@@ -158,7 +158,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:     "db",
 					Type:     appdef.ResourceTypePostgres,
 					Provider: appdef.ResourceProviderDigitalOcean,
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
@@ -166,7 +166,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:     "store",
 					Type:     appdef.ResourceTypeS3,
 					Provider: appdef.ResourceProviderDigitalOcean,
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
@@ -206,7 +206,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:     "db",
 					Type:     appdef.ResourceTypeSQLite,
 					Provider: appdef.ResourceProviderTurso,
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
@@ -246,7 +246,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:     "db",
 					Type:     appdef.ResourceTypeSQLite,
 					Provider: appdef.ResourceProviderTurso,
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
@@ -254,7 +254,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:     "store",
 					Type:     appdef.ResourceTypeS3,
 					Provider: appdef.ResourceProviderDigitalOcean,
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},
@@ -294,7 +294,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:     "db",
 					Type:     appdef.ResourceTypePostgres,
 					Provider: appdef.ResourceProviderDigitalOcean,
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},

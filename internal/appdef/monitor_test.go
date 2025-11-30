@@ -46,7 +46,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: false,
+					Monitoring: ptr.BoolPtr(false),
 				},
 			},
 		}
@@ -69,7 +69,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Name:       "web",
 					Title:      "Web",
 					Domains:    []Domain{},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -94,7 +94,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -138,7 +138,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 						{Name: "www.api.example.com", Type: DomainTypeAlias},
 					},
 					Infra:      Infra{Config: nil}, // Default health check path.
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -195,7 +195,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 						{Name: "www.example.com", Type: DomainTypeAlias},
 					},
 					Infra:      Infra{},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -237,7 +237,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 				{
 					Name:  "api",
@@ -245,7 +245,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "api.example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -294,17 +294,17 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 			Resources: []Resource{
 				{
 					Name:  "db",
 					Title: "Database",
-					Backup: ResourceBackupConfig{
+					Backup: &ResourceBackupConfig{
 						Enabled: true,
 					},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -339,7 +339,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -363,7 +363,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -389,7 +389,7 @@ func TestDefinition_GenerateMonitors(t *testing.T) {
 					Domains: []Domain{
 						{Name: "example.com", Type: DomainTypePrimary},
 					},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}

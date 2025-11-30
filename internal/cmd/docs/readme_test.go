@@ -161,7 +161,7 @@ func TestReadme(t *testing.T) {
 					Config: map[string]any{
 						"size": "db-s-1vcpu-1gb",
 					},
-					Backup: appdef.ResourceBackupConfig{
+					Backup: &appdef.ResourceBackupConfig{
 						Enabled: true,
 					},
 				},

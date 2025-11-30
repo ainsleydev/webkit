@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ainsleydev/webkit/pkg/env"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 type (
@@ -13,15 +14,15 @@ type (
 	// Resources are provisioned via Terraform and their outputs are
 	// made available to apps through environment variables.
 	Resource struct {
-		Name             string               `json:"name" required:"true" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the resource (used in environment variable references)"`
-		Title            string               `json:"title" required:"true" validate:"required" description:"Human-readable resource name for display purposes"`
-		Type             ResourceType         `json:"type" required:"true" validate:"required,oneof=postgres s3 sqlite" description:"Type of resource to provision (postgres, s3, sqlite)"`
-		Description      string               `json:"description,omitempty" validate:"omitempty,max=200" description:"Brief description of the resource's purpose and functionality"`
-		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean hetzner backblaze turso" description:"Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)"`
-		Config           Config               `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
-		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
-		Monitoring       bool                 `json:"monitoring,omitempty" description:"Whether to enable uptime monitoring for this resource (defaults to true)"`
-		TerraformManaged *bool                `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`
+		Name             string                `json:"name" required:"true" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the resource (used in environment variable references)"`
+		Title            string                `json:"title" required:"true" validate:"required" description:"Human-readable resource name for display purposes"`
+		Type             ResourceType          `json:"type" required:"true" validate:"required,oneof=postgres s3 sqlite" description:"Type of resource to provision (postgres, s3, sqlite)"`
+		Description      string                `json:"description,omitempty" validate:"omitempty,max=200" description:"Brief description of the resource's purpose and functionality"`
+		Provider         ResourceProvider      `json:"provider" required:"true" validate:"required,oneof=digitalocean hetzner backblaze turso" description:"Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)"`
+		Config           Config                `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
+		Backup           *ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
+		Monitoring       *bool                 `json:"monitoring,omitempty" description:"Whether to enable uptime monitoring for this resource (defaults to true)"`
+		TerraformManaged *bool                 `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`
 	}
 	// ResourceBackupConfig defines backup behaviour for a resource.
 	// Backups are enabled by default for all resources that support them.
@@ -159,11 +160,15 @@ func (r *Resource) applyDefaults() {
 		r.Config = make(map[string]any)
 	}
 
-	r.Backup = ResourceBackupConfig{
-		Enabled: true,
+	if r.Backup == nil {
+		r.Backup = &ResourceBackupConfig{
+			Enabled: true,
+		}
 	}
 
-	r.Monitoring = true
+	if r.Monitoring == nil {
+		r.Monitoring = ptr.BoolPtr(true)
+	}
 
 	// Apply type-specific defaults
 	// TODO: These types should be nicely hardcoded.
@@ -197,7 +202,7 @@ func (r ResourceType) Documentation() []ResourceOutput {
 // The monitor name follows the format: "{ProjectTitle} - {ResourceTitle} Backup".
 // This creates a heartbeat monitor that can be pinged by CI/CD backup workflows.
 func (r *Resource) GenerateBackupMonitor(projectTitle string) *Monitor {
-	if !r.Backup.Enabled || !r.Monitoring {
+	if r.Backup == nil || !r.Backup.Enabled || r.Monitoring == nil || !*r.Monitoring {
 		return nil
 	}
 
