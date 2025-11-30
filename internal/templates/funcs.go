@@ -33,9 +33,9 @@ func githubEnv(name string) string {
 	return fmt.Sprintf("${{ env.%s }}", name)
 }
 
-// formatKey converts a snake_case key to Title Case for display.
+// prettyConfigKey converts a snake_case configuration key to Title Case for display.
 // Examples: "server_type" → "Server Type", "location" → "Location"
-func formatKey(key string) string {
+func prettyConfigKey(key string) string {
 	// Replace underscores with spaces
 	words := strings.Split(key, "_")
 
