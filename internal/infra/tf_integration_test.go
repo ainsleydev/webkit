@@ -972,7 +972,7 @@ func TestTerraform_Defaults(t *testing.T) {
 		}
 	})
 
-	t.Run("DigitalOcean Project", func(t *testing.T) {
+	t.Run("No DigitalOcean Resources -> No Project", func(t *testing.T) {
 		t.Parallel()
 
 		t.Log("Project not created when no DO resources exist")
@@ -1009,52 +1009,8 @@ func TestTerraform_Defaults(t *testing.T) {
 }
 
 //nolint:tparallel // Cannot use t.Parallel() due to t.Setenv() usage in setup
-func TestTerraform_ConditionalProject(t *testing.T) {
-	t.Run("No DigitalOcean resources", func(t *testing.T) {
-		appDef := &appdef.Definition{
-			Project: appdef.Project{
-				Name:  "project",
-				Title: "Project",
-				Repo: appdef.GitHubRepo{
-					Owner: "ainsley-dev",
-					Name:  "project",
-				},
-			},
-			Resources: []appdef.Resource{
-				{
-					Name:     "cache",
-					Title:    "Cache",
-					Type:     appdef.ResourceTypeSQLite,
-					Provider: appdef.ResourceProviderTurso,
-					Config: map[string]any{
-						"organisation": "test-org",
-						"group":        "default",
-					},
-				},
-			},
-		}
-
-		require.NoError(t, appDef.ApplyDefaults())
-
-		tf, teardown := setup(t, appDef)
-		t.Cleanup(teardown)
-
-		require.NoError(t, tf.Init(t.Context()))
-
-		got, err := tf.Plan(t.Context(), env.Production, false)
-		require.NoError(t, err)
-
-		var doProject map[string]any
-		for _, rc := range got.Plan.ResourceChanges {
-			if rc.Type == "digitalocean_project" && rc.Name == "this" {
-				doProject = rc.Change.After.(map[string]any)
-				break
-			}
-		}
-		assert.Nil(t, doProject)
-	})
-
-	t.Run("With DigitalOcean resources", func(t *testing.T) {
+func TestTerraform_Project(t *testing.T) {
+	t.Run("No DigitalOcean Resources -> With Project", func(t *testing.T) {
 		appDef := &appdef.Definition{
 			Project: appdef.Project{
 				Name:  "project",
