@@ -391,7 +391,7 @@ jobs:
   # Notify Slack on successful release
   notify-success:
     runs-on: ubuntu-latest
-    needs: [{{- range $i, $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (or (eq $app.Infra.Type "container") (eq $app.Infra.Type "vm")) }}{{- if $i }}, {{ end }}{{- if eq $app.Infra.Type "container" }}deploy-app-{{ $app.Name }}{{- else }}deploy-vm-{{ $app.Name }}{{- end }}{{- end }}{{- end }}]
+    needs: [{{- $first := true }}{{- range $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (eq $app.Infra.Type "container") }}{{- if not $first }}, {{ end }}{{- $first = false }}deploy-app-{{ $app.Name }}{{- else if and (or (eq $app.Infra.Provider "digitalocean") (eq $app.Infra.Provider "hetzner")) (eq $app.Infra.Type "vm") }}{{- if not $first }}, {{ end }}{{- $first = false }}deploy-vm-{{ $app.Name }}{{- end }}{{- end }}]
     if: success()
     steps:
       - name: Checkout Repository
@@ -418,7 +418,7 @@ jobs:
   # Notify Slack on release failure
   notify-failure:
     runs-on: ubuntu-latest
-    needs: [build-and-push{{- range $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (or (eq $app.Infra.Type "container") (eq $app.Infra.Type "vm")) }}, {{- if eq $app.Infra.Type "container" }}deploy-app-{{ $app.Name }}{{- else }}deploy-vm-{{ $app.Name }}{{- end }}{{- end }}{{- end }}]
+    needs: [build-and-push{{- range $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (eq $app.Infra.Type "container") }}, deploy-app-{{ $app.Name }}{{- else if and (or (eq $app.Infra.Provider "digitalocean") (eq $app.Infra.Provider "hetzner")) (eq $app.Infra.Type "vm") }}, deploy-vm-{{ $app.Name }}{{- end }}{{- end }}]
     if: failure()
     steps:
       - name: Checkout Repository
