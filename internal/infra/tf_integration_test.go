@@ -10,6 +10,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/pkg/env"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 //nolint:tparallel // Cannot use t.Parallel() due to t.Setenv() usage in setup
@@ -36,7 +37,7 @@ func TestTerraform_Resources(t *testing.T) {
 					"node_count": 2,
 				},
 				Backup: appdef.ResourceBackupConfig{
-					Enabled: true,
+					Enabled: ptr.BoolPtr(true),
 				},
 			},
 			{
@@ -49,7 +50,7 @@ func TestTerraform_Resources(t *testing.T) {
 					"group":        "default",
 				},
 				Backup: appdef.ResourceBackupConfig{
-					Enabled: true,
+					Enabled: ptr.BoolPtr(true),
 				},
 			},
 			{
@@ -641,7 +642,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 				Name:       "web",
 				Title:      "Web",
 				Type:       appdef.AppTypeSvelteKit,
-				Monitoring: true,
+				Monitoring: ptr.BoolPtr(true),
 				Infra: appdef.Infra{
 					Provider: appdef.ResourceProviderDigitalOcean,
 					Type:     "container",
@@ -664,7 +665,7 @@ func TestTerraform_Monitoring(t *testing.T) {
 				Type:     appdef.ResourceTypePostgres,
 				Provider: appdef.ResourceProviderDigitalOcean,
 				Backup: appdef.ResourceBackupConfig{
-					Enabled: true,
+					Enabled: ptr.BoolPtr(true),
 				},
 			},
 		},

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ainsleydev/webkit/pkg/env"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 type (
@@ -20,13 +21,13 @@ type (
 		Provider         ResourceProvider     `json:"provider" required:"true" validate:"required,oneof=digitalocean hetzner backblaze turso" description:"Cloud provider hosting this resource (digitalocean, hetzner, backblaze, turso)"`
 		Config           Config               `json:"config" description:"Provider-specific resource configuration (e.g., size, region, version)"`
 		Backup           ResourceBackupConfig `json:"backup,omitempty" description:"Backup configuration for the resource"`
-		Monitoring       bool                 `json:"monitoring,omitempty" description:"Whether to enable uptime monitoring for this resource (defaults to true)"`
+		Monitoring       *bool                `json:"monitoring,omitempty" description:"Whether to enable uptime monitoring for this resource (defaults to true)"`
 		TerraformManaged *bool                `json:"terraformManaged,omitempty" description:"Whether this resource is managed by Terraform (defaults to true)"`
 	}
 	// ResourceBackupConfig defines backup behaviour for a resource.
 	// Backups are enabled by default for all resources that support them.
 	ResourceBackupConfig struct {
-		Enabled bool `json:"enabled" description:"Whether to enable automated backups for this resource"`
+		Enabled *bool `json:"enabled,omitempty" description:"Whether to enable automated backups for this resource"`
 	}
 )
 
@@ -153,17 +154,33 @@ func (r *Resource) IsTerraformManaged() bool {
 	return *r.TerraformManaged
 }
 
+// IsBackupEnabled returns whether backups are enabled for this resource.
+// It defaults to true when the field is nil or explicitly set to true.
+func (r *Resource) IsBackupEnabled() bool {
+	return r.Backup.Enabled == nil || *r.Backup.Enabled
+}
+
+// IsMonitoringEnabled returns whether monitoring is enabled for this resource.
+// It defaults to true when the field is nil or explicitly set to true.
+func (r *Resource) IsMonitoringEnabled() bool {
+	return r.Monitoring == nil || *r.Monitoring
+}
+
 // applyDefaults applies default values to a Resource.
 func (r *Resource) applyDefaults() {
 	if r.Config == nil {
 		r.Config = make(map[string]any)
 	}
 
-	r.Backup = ResourceBackupConfig{
-		Enabled: true,
+	// Apply backup default only if not explicitly set.
+	if r.Backup.Enabled == nil {
+		r.Backup.Enabled = ptr.BoolPtr(true)
 	}
 
-	r.Monitoring = true
+	// Apply monitoring default only if not explicitly set.
+	if r.Monitoring == nil {
+		r.Monitoring = ptr.BoolPtr(true)
+	}
 
 	// Apply type-specific defaults
 	// TODO: These types should be nicely hardcoded.
@@ -197,7 +214,7 @@ func (r ResourceType) Documentation() []ResourceOutput {
 // The monitor name follows the format: "{ProjectTitle} - {ResourceTitle} Backup".
 // This creates a heartbeat monitor that can be pinged by CI/CD backup workflows.
 func (r *Resource) GenerateBackupMonitor(projectTitle string) *Monitor {
-	if !r.Backup.Enabled || !r.Monitoring {
+	if !r.IsBackupEnabled() || !r.IsMonitoringEnabled() {
 		return nil
 	}
 

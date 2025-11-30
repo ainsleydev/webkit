@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ainsleydev/webkit/internal/appdef/types"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 type (
@@ -23,7 +24,7 @@ type (
 		Build            Build                                   `json:"build" description:"Build configuration for Docker containerisation"`
 		Infra            Infra                                   `json:"infra" validate:"required" description:"Infrastructure and deployment configuration"`
 		Env              Environment                             `json:"env" description:"Environment variables specific to this app"`
-		Monitoring       bool                                    `json:"monitoring,omitempty" description:"Whether to enable uptime monitoring for this app (defaults to true)"`
+		Monitoring       *bool                                   `json:"monitoring,omitempty" description:"Whether to enable uptime monitoring for this app (defaults to true)"`
 		UsesNPM          *bool                                   `json:"usesNPM" description:"Whether this app should be included in the pnpm workspace (auto-detected if not set)"`
 		TerraformManaged *bool                                   `json:"terraformManaged,omitempty" description:"Whether this app's infrastructure is managed by Terraform (defaults to true)"`
 		Domains          []Domain                                `json:"domains,omitzero" description:"Domain configurations for accessing this app"`
@@ -149,6 +150,12 @@ func (a *App) IsTerraformManaged() bool {
 		return true
 	}
 	return *a.TerraformManaged
+}
+
+// IsMonitoringEnabled returns whether monitoring is enabled for this app.
+// It defaults to true when the field is nil or explicitly set to true.
+func (a *App) IsMonitoringEnabled() bool {
+	return a.Monitoring == nil || *a.Monitoring
 }
 
 // ShouldRelease returns whether this app should be built and released in CI/CD.
@@ -297,8 +304,10 @@ func (a *App) applyDefaults() error {
 		a.Path = filepath.Clean(a.Path)
 	}
 
-	// Default monitoring to enabled (opt-out).
-	a.Monitoring = true
+	// Apply monitoring default only if not explicitly set.
+	if a.Monitoring == nil {
+		a.Monitoring = ptr.BoolPtr(true)
+	}
 
 	// Normalise domain types to lowercase for consistent internal comparisons.
 	// DigitalOcean may return uppercase (PRIMARY, ALIAS) which needs to match
@@ -341,7 +350,7 @@ func (a *App) BuildContext() string {
 // The monitor name follows the format: "{ProjectTitle} - {AppTitle} Maintenance".
 // This creates a heartbeat monitor that can be pinged by CI/CD maintenance workflows.
 func (a *App) GenerateMaintenanceMonitor(projectTitle string) *Monitor {
-	if !a.Monitoring || a.Infra.Type != "vm" {
+	if !a.IsMonitoringEnabled() || a.Infra.Type != "vm" {
 		return nil
 	}
 
