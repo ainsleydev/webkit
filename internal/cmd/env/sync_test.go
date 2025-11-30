@@ -3,6 +3,7 @@ package env
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -14,6 +15,11 @@ import (
 	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/internal/secrets/age"
 )
+
+// indexOf returns the index of substr in s, or -1 if not found.
+func indexOf(s, substr string) int {
+	return strings.Index(s, substr)
+}
 
 func TestSync(t *testing.T) {
 	ctx := t.Context()
@@ -151,6 +157,14 @@ func TestSync(t *testing.T) {
 			assert.Contains(t, got, "BAZ=qux")
 			assert.Contains(t, got, "FOO=bar")
 
+			// Verify alphabetical ordering (BAZ before FOO).
+			bazIndex := assert.Contains(t, got, "BAZ=qux")
+			fooIndex := assert.Contains(t, got, "FOO=bar")
+			if bazIndex && fooIndex {
+				assert.Less(t, indexOf(got, "BAZ=qux"), indexOf(got, "FOO=bar"),
+					"Expected BAZ to appear before FOO in alphabetical order")
+			}
+
 			// App 2
 			path = filepath.Join("app2/nested", ".env")
 			content, err = afero.ReadFile(input.FS, path)
@@ -170,6 +184,14 @@ func TestSync(t *testing.T) {
 			got := string(content)
 			assert.Contains(t, got, "BAZ=qux")
 			assert.Contains(t, got, "FOO=bar")
+
+			// Verify alphabetical ordering (BAZ before FOO).
+			bazIndex := assert.Contains(t, got, "BAZ=qux")
+			fooIndex := assert.Contains(t, got, "FOO=bar")
+			if bazIndex && fooIndex {
+				assert.Less(t, indexOf(got, "BAZ=qux"), indexOf(got, "FOO=bar"),
+					"Expected BAZ to appear before FOO in alphabetical order")
+			}
 
 			// App 2
 			path = filepath.Join("app2/nested", ".env.production")

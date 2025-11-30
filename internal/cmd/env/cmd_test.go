@@ -155,3 +155,59 @@ func TestMarshalEnvWithoutQuotes(t *testing.T) {
 		})
 	}
 }
+
+func TestMarshalEnvWithoutQuotes_AlphabeticalOrder(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input map[string]string
+		want  string
+	}{
+		"Keys sorted alphabetically": {
+			input: map[string]string{
+				"ZEBRA":    "last",
+				"APPLE":    "first",
+				"MANGO":    "middle",
+				"BANANA":   "second",
+				"DATABASE": "db",
+			},
+			want: "APPLE=first\nBANANA=second\nDATABASE=db\nMANGO=middle\nZEBRA=last\n",
+		},
+		"Numbers and letters sorted": {
+			input: map[string]string{
+				"VAR_2": "two",
+				"VAR_1": "one",
+				"VAR_3": "three",
+			},
+			want: "VAR_1=one\nVAR_2=two\nVAR_3=three\n",
+		},
+		"Single key": {
+			input: map[string]string{
+				"ONLY_ONE": "value",
+			},
+			want: "ONLY_ONE=value\n",
+		},
+		"Empty map": {
+			input: map[string]string{},
+			want:  "",
+		},
+		"Keys with underscores sorted": {
+			input: map[string]string{
+				"Z_CONFIG":    "z",
+				"A_SETTING":   "a",
+				"M_VARIABLE":  "m",
+				"B_PARAMETER": "b",
+			},
+			want: "A_SETTING=a\nB_PARAMETER=b\nM_VARIABLE=m\nZ_CONFIG=z\n",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := marshalEnvWithoutQuotes(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
