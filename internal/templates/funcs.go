@@ -1,6 +1,10 @@
 package templates
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+	"unicode"
+)
 
 // githubExpression returns a GitHub Actions expression.
 // Use for context expressions like github.sha, steps.*.outputs.*, etc.
@@ -27,4 +31,22 @@ func githubInput(name string) string {
 // githubEnv wraps an env name in GitHub Actions syntax.
 func githubEnv(name string) string {
 	return fmt.Sprintf("${{ env.%s }}", name)
+}
+
+// formatKey converts a snake_case key to Title Case for display.
+// Examples: "server_type" → "Server Type", "location" → "Location"
+func formatKey(key string) string {
+	// Replace underscores with spaces
+	words := strings.Split(key, "_")
+
+	// Capitalize first letter of each word
+	for i, word := range words {
+		if len(word) > 0 {
+			runes := []rune(word)
+			runes[0] = unicode.ToUpper(runes[0])
+			words[i] = string(runes)
+		}
+	}
+
+	return strings.Join(words, " ")
 }
