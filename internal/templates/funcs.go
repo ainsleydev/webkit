@@ -34,18 +34,35 @@ func githubEnv(name string) string {
 }
 
 // prettyConfigKey converts a snake_case configuration key to Title Case for display.
-// Examples: "server_type" → "Server Type", "location" → "Location"
+// It handles edge cases like empty strings, consecutive underscores, and leading/trailing underscores.
+//
+// Examples:
+//   - "server_type" → "Server Type"
+//   - "location" → "Location"
+//   - "mount_point" → "Mount Point"
+//   - "" → ""
 func prettyConfigKey(key string) string {
-	// Replace underscores with spaces
+	// Handle empty string edge case
+	if key == "" {
+		return ""
+	}
+
+	// Split the key by underscores to get individual words
 	words := strings.Split(key, "_")
 
-	// Capitalize first letter of each word
+	// Capitalize the first letter of each word
 	for i, word := range words {
-		if len(word) > 0 {
-			runes := []rune(word)
-			runes[0] = unicode.ToUpper(runes[0])
-			words[i] = string(runes)
+		// Skip empty segments (from consecutive/leading/trailing underscores)
+		if len(word) == 0 {
+			continue
 		}
+
+		// Convert to runes to handle Unicode properly
+		runes := []rune(word)
+		// Capitalize first character
+		runes[0] = unicode.ToUpper(runes[0])
+		// Store the capitalized word back
+		words[i] = string(runes)
 	}
 
 	return strings.Join(words, " ")
