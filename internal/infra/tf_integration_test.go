@@ -1010,3 +1010,97 @@ func TestTerraform_Defaults(t *testing.T) {
 		assert.Equal(t, float64(1), secretsCount.Value.(float64), "Should have 1 secret (Slack channel)")
 	})
 }
+
+//nolint:tparallel // Cannot use t.Parallel() due to t.Setenv() usage in setup
+func TestTerraform_ConditionalProject(t *testing.T) {
+	t.Run("No DigitalOcean resources", func(t *testing.T) {
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name:  "project",
+				Title: "Project",
+				Repo: appdef.GitHubRepo{
+					Owner: "ainsley-dev",
+					Name:  "project",
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:     "cache",
+					Title:    "Cache",
+					Type:     appdef.ResourceTypeSQLite,
+					Provider: appdef.ResourceProviderTurso,
+					Config: map[string]any{
+						"organisation": "test-org",
+						"group":        "default",
+					},
+				},
+			},
+		}
+
+		require.NoError(t, appDef.ApplyDefaults())
+
+		tf, teardown := setup(t, appDef)
+		t.Cleanup(teardown)
+
+		require.NoError(t, tf.Init(t.Context()))
+
+		got, err := tf.Plan(t.Context(), env.Production, false)
+		require.NoError(t, err)
+
+		var doProject map[string]any
+		for _, rc := range got.Plan.ResourceChanges {
+			if rc.Type == "digitalocean_project" && rc.Name == "this" {
+				doProject = rc.Change.After.(map[string]any)
+				break
+			}
+		}
+		assert.Nil(t, doProject)
+	})
+
+	t.Run("With DigitalOcean resources", func(t *testing.T) {
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name:  "project",
+				Title: "Project",
+				Repo: appdef.GitHubRepo{
+					Owner: "ainsley-dev",
+					Name:  "project",
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:     "db",
+					Title:    "Database",
+					Type:     appdef.ResourceTypePostgres,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Config: map[string]any{
+						"pg_version": "18",
+						"size":       "db-s-1vcpu-2gb",
+						"region":     "ams3",
+						"node_count": 1,
+					},
+				},
+			},
+		}
+
+		require.NoError(t, appDef.ApplyDefaults())
+
+		tf, teardown := setup(t, appDef)
+		t.Cleanup(teardown)
+
+		require.NoError(t, tf.Init(t.Context()))
+
+		got, err := tf.Plan(t.Context(), env.Production, false)
+		require.NoError(t, err)
+
+		var doProject map[string]any
+		for _, rc := range got.Plan.ResourceChanges {
+			if rc.Type == "digitalocean_project" && rc.Name == "this" {
+				doProject = rc.Change.After.(map[string]any)
+				break
+			}
+		}
+		require.NotNil(t, doProject)
+		assert.Equal(t, "Project", doProject["name"])
+	})
+}
