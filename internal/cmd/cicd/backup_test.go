@@ -282,6 +282,129 @@ func TestBackupWorkflow(t *testing.T) {
 		assert.NotContains(t, content, "${{ vars._CODEBASE_BACKUP_PING_URL }}")
 	})
 
+	t.Run("Global monitoring disabled", func(t *testing.T) {
+		t.Parallel()
+
+		enabled := false
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Monitoring: appdef.Monitoring{
+				Enabled: &enabled,
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: true,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		content := string(file)
+		assert.NotContains(t, content, "Ping Peekaping Heartbeat Monitor")
+		assert.NotContains(t, content, "PROD_DB_BACKUP_PING_URL")
+		assert.NotContains(t, content, "PROD_CODEBASE_BACKUP_PING_URL")
+	})
+
+	t.Run("Per-resource monitoring disabled", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: false,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		content := string(file)
+		assert.NotContains(t, content, "PROD_DB_BACKUP_PING_URL")
+		assert.Contains(t, content, "PROD_CODEBASE_BACKUP_PING_URL")
+	})
+
+	t.Run("Mixed monitoring enabled and disabled resources", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: true,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+				{
+					Name:       "store",
+					Type:       appdef.ResourceTypeS3,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: false,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: true,
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		content := string(file)
+		assert.Contains(t, content, "PROD_DB_BACKUP_PING_URL")
+		assert.NotContains(t, content, "PROD_STORE_BACKUP_PING_URL")
+		assert.Contains(t, content, "PROD_CODEBASE_BACKUP_PING_URL")
+	})
+
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 
