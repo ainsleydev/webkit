@@ -205,10 +205,8 @@ func (r *Resource) GenerateBackupMonitor(projectTitle string) *Monitor {
 	if r.Backup == nil || !r.Backup.Enabled {
 		return nil
 	}
-	if r.Monitoring == nil {
-		return nil
-	}
-	if !*r.Monitoring {
+	// Only skip if monitoring is explicitly disabled
+	if r.Monitoring != nil && !*r.Monitoring {
 		return nil
 	}
 
