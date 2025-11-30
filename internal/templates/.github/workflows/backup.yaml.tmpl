@@ -7,7 +7,7 @@ on:
 
 jobs:
 {{- range .Resources }}
-{{- if eq .Type "postgres" }}
+{{- if and (.IsBackupEnabled) (eq .Type "postgres") }}
   backup-resource-{{ .Name }}:
     runs-on: ubuntu-latest
     env:
@@ -110,7 +110,7 @@ jobs:
           commit_sha: {{ ghExpr "github.sha" }}
           slack_bot_token: {{ ghSecret "ORG_SLACK_BOT_TOKEN" }}
           channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
-{{- else if eq .Type "s3" }}
+{{- else if and (.IsBackupEnabled) (eq .Type "s3") }}
   backup-resource-{{ .Name }}:
     runs-on: ubuntu-latest
     timeout-minutes: 60 # 1 Hour
@@ -160,7 +160,7 @@ jobs:
           monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" ($.Env.Short | upper) (.Name | snakecase | upper)) }}
           description: '{{ .Title }} backup'
 {{- end }}
-{{- else if eq .Type "sqlite" }}
+{{- else if and (.IsBackupEnabled) (eq .Type "sqlite") }}
   backup-resource-{{ .Name }}:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -325,7 +325,7 @@ jobs:
     timeout-minutes: 120 # 2 Hours
     needs:
 {{- range .Resources }}
-{{- if index $.Data .Name }}
+{{- if and (.IsBackupEnabled) (index $.Data .Name) }}
       - backup-resource-{{ .Name }}
 {{- end }}
 {{- end }}
