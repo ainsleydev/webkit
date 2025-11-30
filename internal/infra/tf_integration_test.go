@@ -408,7 +408,7 @@ func TestTerraform_Apps(t *testing.T) {
 					Provider: appdef.ResourceProviderHetzner,
 					Type:     "vm",
 					Config: map[string]any{
-						"size":   "cx11",
+						"size":   "cx22",
 						"region": "nbg1",
 					},
 				},
@@ -558,7 +558,7 @@ func TestTerraform_Apps(t *testing.T) {
 
 			assert.Equal(t, "project-worker", server["name"])
 			assert.Equal(t, "nbg1", server["location"])
-			assert.Equal(t, "cx11", server["server_type"])
+			assert.Equal(t, "cx22", server["server_type"])
 
 			labels := server["labels"].(map[string]any)
 			// Hetzner labels are created from tags where each tag becomes a key with value "true"
