@@ -77,7 +77,10 @@
 				},
 				"monitoring": {
 					"description": "Whether to enable uptime monitoring for this app (defaults to true)",
-					"type": "boolean"
+					"type": [
+						"null",
+						"boolean"
+					]
 				},
 				"name": {
 					"description": "Unique identifier for the app (lowercase, hyphenated)",
@@ -354,7 +357,10 @@
 				},
 				"monitoring": {
 					"description": "Whether to enable uptime monitoring for this resource (defaults to true)",
-					"type": "boolean"
+					"type": [
+						"null",
+						"boolean"
+					]
 				},
 				"name": {
 					"description": "Unique identifier for the resource (used in environment variable references)",
@@ -392,7 +398,10 @@
 			"properties": {
 				"enabled": {
 					"description": "Whether to enable automated backups for this resource",
-					"type": "boolean"
+					"type": [
+						"null",
+						"boolean"
+					]
 				}
 			},
 			"type": "object"
