@@ -224,6 +224,47 @@ func TestReleaseWorkflow(t *testing.T) {
 		}
 	})
 
+	t.Run("Apps with custom build context", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Apps: []appdef.App{
+				{
+					Name: "api",
+					Type: appdef.AppTypeGoLang,
+					Path: "apps/api",
+					Build: appdef.Build{
+						Context:    ".",
+						Dockerfile: "Dockerfile",
+						Port:       8080,
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := ReleaseWorkflow(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "release.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		content := string(file)
+
+		t.Log("Custom context is used in matrix")
+		{
+			// Context should be root (.) due to monorepo setup
+			assert.Contains(t, content, "- name: api")
+			assert.Contains(t, content, "context: .")
+			// Dockerfile path should still be relative to app directory
+			assert.Contains(t, content, "dockerfile: ./apps/api/Dockerfile")
+		}
+	})
+
 	t.Run("Mixed Release Flags", func(t *testing.T) {
 		t.Parallel()
 

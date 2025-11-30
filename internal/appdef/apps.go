@@ -33,7 +33,8 @@ type (
 	// Build defines Docker build configuration for containerised applications.
 	// These settings control how the app is built and exposed in container environments.
 	Build struct {
-		Dockerfile string `json:"dockerfile" description:"Path to the Dockerfile relative to the app directory"`
+		Context    string `json:"context,omitempty" description:"Docker build context path relative to project root (defaults to app path)"`
+		Dockerfile string `json:"dockerfile" description:"Path to the Dockerfile relative to project root"`
 		Port       int    `json:"port,omitempty" validate:"omitempty,min=1,max=65535" description:"Port number the app listens on inside the container"`
 		Release    *bool  `json:"release,omitempty" description:"Whether to build and release this app in CI/CD (defaults to true)"`
 	}
@@ -278,6 +279,16 @@ func (a *App) applyDefaults() error {
 		a.Build.Dockerfile = "Dockerfile"
 	}
 
+	// Default build context to app path if not specified.
+	if a.Build.Context == "" {
+		a.Build.Context = a.Path
+	}
+
+	// Clean the context path.
+	if a.Build.Context != "" {
+		a.Build.Context = filepath.Clean(a.Build.Context)
+	}
+
 	if a.Build.Port == 0 {
 		a.Build.Port = a.defaultPort()
 	}
@@ -314,6 +325,15 @@ func (a *App) defaultPort() int {
 	default:
 		return 3000
 	}
+}
+
+// BuildContext returns the Docker build context for this app.
+// Returns the explicit context if set, otherwise defaults to the app's path.
+func (a *App) BuildContext() string {
+	if a.Build.Context != "" {
+		return a.Build.Context
+	}
+	return a.Path
 }
 
 // GenerateMaintenanceMonitor creates a push monitor for an app's server maintenance workflow.

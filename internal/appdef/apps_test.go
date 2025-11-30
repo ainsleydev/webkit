@@ -598,6 +598,89 @@ func TestApp_ApplyDefaults_Port(t *testing.T) {
 	}
 }
 
+func TestApp_ApplyDefaults_Context(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		app  App
+		want string
+	}{
+		"Default context uses app path": {
+			app:  App{Name: "api", Type: AppTypeGoLang, Path: "apps/api"},
+			want: "apps/api",
+		},
+		"Explicit context is preserved": {
+			app: App{
+				Name:  "api",
+				Type:  AppTypeGoLang,
+				Path:  "apps/api",
+				Build: Build{Context: "."},
+			},
+			want: ".",
+		},
+		"Context path is cleaned": {
+			app: App{
+				Name:  "api",
+				Type:  AppTypeGoLang,
+				Path:  "apps/api",
+				Build: Build{Context: "./apps/../apps/api"},
+			},
+			want: "apps/api",
+		},
+		"Root context (monorepo case)": {
+			app: App{
+				Name:  "api",
+				Type:  AppTypeGoLang,
+				Path:  "apps/api",
+				Build: Build{Context: "."},
+			},
+			want: ".",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			app := test.app
+
+			err := app.applyDefaults()
+			require.NoError(t, err)
+			assert.Equal(t, test.want, app.Build.Context)
+		})
+	}
+}
+
+func TestApp_BuildContext(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		app  App
+		want string
+	}{
+		"Returns explicit context when set": {
+			app:  App{Path: "apps/api", Build: Build{Context: "."}},
+			want: ".",
+		},
+		"Returns app path when context is empty": {
+			app:  App{Path: "apps/api", Build: Build{Context: ""}},
+			want: "apps/api",
+		},
+		"Returns app path when context not specified": {
+			app:  App{Path: "web", Build: Build{}},
+			want: "web",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			got := test.app.BuildContext()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestApp_PrimaryDomain(t *testing.T) {
 	t.Parallel()
 

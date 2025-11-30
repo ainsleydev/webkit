@@ -60,7 +60,7 @@ jobs:
         service:
 {{- range .Apps }}
           - name: {{ .Name }}
-            context: ./{{ .Path }}
+            context: ./{{ .BuildContext }}
             dockerfile: ./{{ .Path }}/{{ .Build.Dockerfile }}
 {{- end }}
     steps:

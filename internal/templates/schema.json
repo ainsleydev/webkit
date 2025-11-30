@@ -142,8 +142,12 @@
 		},
 		"AppdefBuild": {
 			"properties": {
+				"context": {
+					"description": "Docker build context path relative to project root (defaults to app path)",
+					"type": "string"
+				},
 				"dockerfile": {
-					"description": "Path to the Dockerfile relative to the app directory",
+					"description": "Path to the Dockerfile relative to project root",
 					"type": "string"
 				},
 				"port": {
