@@ -185,7 +185,7 @@
       block:
         - name: Check if app is responding
           uri:
-            url: 'http://localhost:{{ docker_port }}'
+            url: 'http://localhost:{{ docker_port }}{{ health_check_path | default("/") }}'
             method: GET
             status_code: 200
           register: curl_result
@@ -210,12 +210,13 @@
         - name: Fail deployment with clear error message
           fail:
             msg: |
-              Deployment failed: Application did not respond on http://localhost:{{ docker_port }} after 5 minutes.
+              Deployment failed: Application did not respond on http://localhost:{{ docker_port }}{{ health_check_path | default("/") }} after 5 minutes.
               This usually indicates:
               - Application crashed during startup
               - Missing or incorrect environment variables
               - Port {{ docker_port }} is not being bound by the application
               - Application is binding to 127.0.0.1 instead of 0.0.0.0
+              - Health check path {{ health_check_path | default("/") }} is incorrect or not responding
 
               Check the Docker service logs above for details.
 

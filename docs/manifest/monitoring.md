@@ -454,7 +454,6 @@ This monitor will automatically use a 60-second interval.
    - Custom check intervals per app
    - Expected status codes per endpoint
    - Custom heartbeat intervals for backup and maintenance monitors
-   - Custom health check paths
    - Authentication for health checks
    - Regular expression matching for keyword monitors
 

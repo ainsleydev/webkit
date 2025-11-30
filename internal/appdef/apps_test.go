@@ -917,6 +917,48 @@ func TestApp_InstallCommands_Deterministic(t *testing.T) {
 	})
 }
 
+func TestApp_ApplyDefaults_HealthCheckPath(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		app  App
+		want string
+	}{
+		"Default health check path is /": {
+			app:  App{Name: "api", Type: AppTypeGoLang, Path: "./"},
+			want: "/",
+		},
+		"Explicit health check path is preserved": {
+			app:  App{Name: "api", Type: AppTypeGoLang, Path: "./", Build: Build{HealthCheckPath: "/api/health"}},
+			want: "/api/health",
+		},
+		"Custom path with multiple segments": {
+			app:  App{Name: "api", Type: AppTypeGoLang, Path: "./", Build: Build{HealthCheckPath: "/v1/health/check"}},
+			want: "/v1/health/check",
+		},
+		"Health check path for payload app": {
+			app:  App{Name: "cms", Type: AppTypePayload, Path: "./", Build: Build{HealthCheckPath: "/admin/healthz"}},
+			want: "/admin/healthz",
+		},
+		"Empty string gets default /": {
+			app:  App{Name: "web", Type: AppTypeSvelteKit, Path: "./", Build: Build{HealthCheckPath: ""}},
+			want: "/",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			app := test.app
+
+			err := app.applyDefaults()
+			require.NoError(t, err)
+			assert.Equal(t, test.want, app.Build.HealthCheckPath)
+		})
+	}
+}
+
 func TestApp_GenerateMaintenanceMonitor(t *testing.T) {
 	t.Parallel()
 

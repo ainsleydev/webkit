@@ -33,10 +33,11 @@ type (
 	// Build defines Docker build configuration for containerised applications.
 	// These settings control how the app is built and exposed in container environments.
 	Build struct {
-		Context    string `json:"context,omitempty" description:"Docker build context path relative to project root (defaults to app path)"`
-		Dockerfile string `json:"dockerfile" description:"Path to the Dockerfile relative to project root"`
-		Port       int    `json:"port,omitempty" validate:"omitempty,min=1,max=65535" description:"Port number the app listens on inside the container"`
-		Release    *bool  `json:"release,omitempty" description:"Whether to build and release this app in CI/CD (defaults to true)"`
+		Context         string `json:"context,omitempty" description:"Docker build context path relative to project root (defaults to app path)"`
+		Dockerfile      string `json:"dockerfile" description:"Path to the Dockerfile relative to project root"`
+		Port            int    `json:"port,omitempty" validate:"omitempty,min=1,max=65535" description:"Port number the app listens on inside the container"`
+		Release         *bool  `json:"release,omitempty" description:"Whether to build and release this app in CI/CD (defaults to true)"`
+		HealthCheckPath string `json:"health_check_path,omitempty" description:"Path for health check endpoint (defaults to /)"`
 	}
 	// Infra defines infrastructure and deployment configuration for an app.
 	// This includes the cloud provider, deployment type (VM, container, etc.),
@@ -291,6 +292,10 @@ func (a *App) applyDefaults() error {
 
 	if a.Build.Port == 0 {
 		a.Build.Port = a.defaultPort()
+	}
+
+	if a.Build.HealthCheckPath == "" {
+		a.Build.HealthCheckPath = "/"
 	}
 
 	if a.Path != "" {
