@@ -637,3 +637,10 @@ func TestBuildTursoSQLiteImports(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildProjectImportAddress(t *testing.T) {
+	result := buildProjectImportAddress("test-project-id")
+	assert.Len(t, result, 1)
+	assert.Equal(t, "digitalocean_project.this[0]", result[0].Address)
+	assert.Equal(t, "test-project-id", result[0].ID)
+}
