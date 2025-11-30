@@ -43,5 +43,5 @@ resource "digitalocean_project" "this" {
   resources   = local.all_project_resources
   is_default  = local.is_only_project
 
-  depends_on = [time_sleep.wait_for_propagation]
+  depends_on = [time_sleep.wait_for_propagation[0]]
 }
