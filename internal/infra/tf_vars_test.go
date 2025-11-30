@@ -14,6 +14,7 @@ import (
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/mocks"
 	"github.com/ainsleydev/webkit/pkg/env"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 func setupTfVars(t *testing.T, appDef *appdef.Definition) *Terraform {
@@ -1072,7 +1073,7 @@ func TestGenerateMonitors(t *testing.T) {
 					Infra: appdef.Infra{
 						Config: map[string]any{"health_check_path": "/health"},
 					},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -1135,7 +1136,7 @@ func TestGenerateMonitors(t *testing.T) {
 						{Name: "www.example.com", Type: appdef.DomainTypeAlias},
 					},
 					Infra:      appdef.Infra{},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 				{
 					Name:  "api",
@@ -1144,7 +1145,7 @@ func TestGenerateMonitors(t *testing.T) {
 						{Name: "api.example.com", Type: appdef.DomainTypePrimary},
 					},
 					Infra:      appdef.Infra{},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 		}
@@ -1206,7 +1207,7 @@ func TestGenerateMonitors(t *testing.T) {
 						{Name: "example.com", Type: appdef.DomainTypePrimary},
 					},
 					Infra:      appdef.Infra{},
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 				},
 			},
 			Resources: []appdef.Resource{
@@ -1214,8 +1215,8 @@ func TestGenerateMonitors(t *testing.T) {
 					Name:       "db",
 					Title:      "Database",
 					Type:       appdef.ResourceTypePostgres,
-					Monitoring: true,
-					Backup:     appdef.ResourceBackupConfig{Enabled: true},
+					Monitoring: ptr.BoolPtr(true),
+					Backup:     &appdef.ResourceBackupConfig{Enabled: true},
 				},
 			},
 		}
