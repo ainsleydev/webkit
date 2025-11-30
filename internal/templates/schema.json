@@ -150,6 +150,10 @@
 					"description": "Path to the Dockerfile relative to project root",
 					"type": "string"
 				},
+				"health_check_path": {
+					"description": "Path for health check endpoint (defaults to /)",
+					"type": "string"
+				},
 				"port": {
 					"description": "Port number the app listens on inside the container",
 					"type": "integer"
