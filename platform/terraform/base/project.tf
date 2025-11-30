@@ -23,14 +23,19 @@ locals {
   )
 
   is_only_project = tonumber(data.external.project_count.result.count) == 1
+
+  # Only create project when there are Terraform-managed DigitalOcean resources.
+  should_create_project = length(local.terraform_managed_urns) > 0
 }
 
 resource "time_sleep" "wait_for_propagation" {
+  count           = local.should_create_project ? 1 : 0
   create_duration = "30s"
   depends_on      = [module.resources, module.apps]
 }
 
 resource "digitalocean_project" "this" {
+  count       = local.should_create_project ? 1 : 0
   name        = var.project_title
   description = var.project_description
   purpose     = "Web Application"
