@@ -119,8 +119,8 @@ output "slack_channel_name" {
 }
 
 output "digitalocean_project_id" {
-  description = "DigitalOcean project ID (add this to your variables after first apply to preserve manual domains)"
-  value       = digitalocean_project.this.id
+  description = "DigitalOcean project ID (add this to your variables after first apply to preserve manual domains). Returns null when no DigitalOcean resources are managed by Terraform."
+  value       = length(digitalocean_project.this) > 0 ? digitalocean_project.this[0].id : null
 }
 
 #

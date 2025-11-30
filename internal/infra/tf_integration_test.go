@@ -972,10 +972,10 @@ func TestTerraform_Defaults(t *testing.T) {
 		}
 	})
 
-	t.Run("DigitalOcean Project", func(t *testing.T) {
+	t.Run("No DigitalOcean Resources -> No Project", func(t *testing.T) {
 		t.Parallel()
 
-		t.Log("Project Configuration")
+		t.Log("Project not created when no DO resources exist")
 		{
 			var doProject map[string]any
 			for _, rc := range got.Plan.ResourceChanges {
@@ -984,17 +984,14 @@ func TestTerraform_Defaults(t *testing.T) {
 					break
 				}
 			}
-			require.NotNil(t, doProject, "DigitalOcean project should be planned")
-
-			assert.Equal(t, "Project", doProject["name"])
-			assert.Equal(t, "Production", doProject["environment"])
-			assert.Equal(t, "Web Application", doProject["purpose"])
+			assert.Nil(t, doProject, "DigitalOcean project should not be planned when no DO resources exist")
 		}
 
-		t.Log("Project Output")
+		t.Log("Project output is null when no DO resources")
 		{
 			projectID := got.Plan.PlannedValues.Outputs["digitalocean_project_id"]
-			require.NotNil(t, projectID, "DigitalOcean project ID output should exist")
+			require.NotNil(t, projectID)
+			assert.Nil(t, projectID.Value, "Project ID output should be null when no DO resources exist")
 		}
 	})
 
@@ -1008,5 +1005,55 @@ func TestTerraform_Defaults(t *testing.T) {
 		require.NotNil(t, secretsCount)
 
 		assert.Equal(t, float64(1), secretsCount.Value.(float64), "Should have 1 secret (Slack channel)")
+	})
+}
+
+//nolint:tparallel // Cannot use t.Parallel() due to t.Setenv() usage in setup
+func TestTerraform_Project(t *testing.T) {
+	t.Run("No DigitalOcean Resources -> With Project", func(t *testing.T) {
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name:  "project",
+				Title: "Project",
+				Repo: appdef.GitHubRepo{
+					Owner: "ainsley-dev",
+					Name:  "project",
+				},
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:     "db",
+					Title:    "Database",
+					Type:     appdef.ResourceTypePostgres,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Config: map[string]any{
+						"pg_version": "18",
+						"size":       "db-s-1vcpu-2gb",
+						"region":     "ams3",
+						"node_count": 1,
+					},
+				},
+			},
+		}
+
+		require.NoError(t, appDef.ApplyDefaults())
+
+		tf, teardown := setup(t, appDef)
+		t.Cleanup(teardown)
+
+		require.NoError(t, tf.Init(t.Context()))
+
+		got, err := tf.Plan(t.Context(), env.Production, false)
+		require.NoError(t, err)
+
+		var doProject map[string]any
+		for _, rc := range got.Plan.ResourceChanges {
+			if rc.Type == "digitalocean_project" && rc.Name == "this" {
+				doProject = rc.Change.After.(map[string]any)
+				break
+			}
+		}
+		require.NotNil(t, doProject)
+		assert.Equal(t, "Project", doProject["name"])
 	})
 }
