@@ -136,7 +136,7 @@ func TestReleaseWorkflow(t *testing.T) {
 		t.Log("App in matrix")
 		{
 			assert.Contains(t, content, "- name: cms")
-			assert.Contains(t, content, "context: ./cms")
+			assert.Contains(t, content, "context: cms")
 			assert.Contains(t, content, "dockerfile: ./cms/Dockerfile")
 		}
 
@@ -206,15 +206,15 @@ func TestReleaseWorkflow(t *testing.T) {
 		t.Log("All apps in matrix")
 		{
 			assert.Contains(t, content, "- name: cms")
-			assert.Contains(t, content, "context: ./cms")
+			assert.Contains(t, content, "context: cms")
 			assert.Contains(t, content, "dockerfile: ./cms/Dockerfile")
 
 			assert.Contains(t, content, "- name: web")
-			assert.Contains(t, content, "context: ./web")
+			assert.Contains(t, content, "context: web")
 			assert.Contains(t, content, "dockerfile: ./web/Dockerfile")
 
 			assert.Contains(t, content, "- name: api")
-			assert.Contains(t, content, "context: ./api")
+			assert.Contains(t, content, "context: api")
 			assert.Contains(t, content, "dockerfile: ./api/Dockerfile.production")
 		}
 
