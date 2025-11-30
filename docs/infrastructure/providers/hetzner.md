@@ -29,7 +29,7 @@ Hetzner VMs (called "servers") offer excellent price-to-performance ratio for se
         "provider": "hetzner",
         "type": "vm",
         "config": {
-          "server_type": "cx22",
+          "size": "cx22",
           "location": "nbg1",
           "image": "ubuntu-22.04"
         }
@@ -282,7 +282,7 @@ A Go API deployed on Hetzner with attached storage:
         "provider": "hetzner",
         "type": "vm",
         "config": {
-          "server_type": "cx22",
+          "size": "cx22",
           "location": "nbg1",
           "image": "ubuntu-22.04"
         }

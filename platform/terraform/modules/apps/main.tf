@@ -26,7 +26,7 @@ module "hetzner_server" {
   source = "../../providers/hetzner/server"
 
   name        = "${var.project_name}-${var.name}"
-  server_type = try(var.platform_config.size, "cx11")
+  server_type = try(var.platform_config.size, "cx22")
   location    = try(var.platform_config.region, "nbg1")
   ssh_key_ids = var.hetzner_ssh_key_ids
   tags        = try(var.tags, [])
