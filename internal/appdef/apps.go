@@ -344,7 +344,10 @@ func (a *App) BuildContext() string {
 // The monitor name follows the format: "{ProjectTitle} - {AppTitle} Maintenance".
 // This creates a heartbeat monitor that can be pinged by CI/CD maintenance workflows.
 func (a *App) GenerateMaintenanceMonitor(projectTitle string) *Monitor {
-	if a.Monitoring == nil || !*a.Monitoring || a.Infra.Type != "vm" {
+	if a.Monitoring == nil {
+		return nil
+	}
+	if !*a.Monitoring || a.Infra.Type != "vm" {
 		return nil
 	}
 

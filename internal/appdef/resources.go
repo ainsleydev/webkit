@@ -202,7 +202,13 @@ func (r ResourceType) Documentation() []ResourceOutput {
 // The monitor name follows the format: "{ProjectTitle} - {ResourceTitle} Backup".
 // This creates a heartbeat monitor that can be pinged by CI/CD backup workflows.
 func (r *Resource) GenerateBackupMonitor(projectTitle string) *Monitor {
-	if r.Backup == nil || !r.Backup.Enabled || r.Monitoring == nil || !*r.Monitoring {
+	if r.Backup == nil || !r.Backup.Enabled {
+		return nil
+	}
+	if r.Monitoring == nil {
+		return nil
+	}
+	if !*r.Monitoring {
 		return nil
 	}
 
