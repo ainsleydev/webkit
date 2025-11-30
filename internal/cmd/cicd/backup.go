@@ -65,8 +65,9 @@ func BackupWorkflow(_ context.Context, input cmdtools.CommandInput) error {
 	}
 
 	data := map[string]any{
-		"Resources": appDef.Resources,
-		"Data":      secretData,
+		"Resources":         appDef.Resources,
+		"Data":              secretData,
+		"MonitoringEnabled": appDef.Monitoring.IsEnabled(),
 		// TODO: This may change at some point, see workflow for more details.
 		"BucketName": appDef.Project.Name,
 		"Env":        enviro,

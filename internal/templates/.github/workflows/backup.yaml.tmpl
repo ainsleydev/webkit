@@ -84,12 +84,14 @@ jobs:
           # Delete backups older than 30 days
           rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
 
+{{- if and $.MonitoringEnabled .Monitoring }}
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping
         with:
           monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" ($.Env.Short | upper) (.Name | snakecase | upper)) }}
           description: '{{ .Title }} backup'
+{{- end }}
 
       - name: Remove Runner IP from Database
         if: always()
@@ -150,12 +152,14 @@ jobs:
         run: |
           echo "Backup completed successfully!"
 
+{{- if and $.MonitoringEnabled .Monitoring }}
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping
         with:
           monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" ($.Env.Short | upper) (.Name | snakecase | upper)) }}
           description: '{{ .Title }} backup'
+{{- end }}
 {{- else if eq .Type "sqlite" }}
   backup-resource-{{ .Name }}:
     runs-on: ubuntu-latest
@@ -218,12 +222,14 @@ jobs:
           # Delete backups older than 30 days
           rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
 
+{{- if and $.MonitoringEnabled .Monitoring }}
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping
         with:
           monitor-url: {{ ghVar (printf "%s_%s_BACKUP_PING_URL" ($.Env.Short | upper) (.Name | snakecase | upper)) }}
           description: '{{ .Title }} backup'
+{{- end }}
 
       - name: Notify Slack of Backup Failure
         if: failure()
@@ -294,12 +300,14 @@ jobs:
         run: |
           echo "Codebase backup completed successfully!"
 
+{{- if $.MonitoringEnabled }}
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping
         with:
           monitor-url: {{ ghVar (printf "%s_CODEBASE_BACKUP_PING_URL" ($.Env.Short | upper)) }}
           description: 'Codebase backup'
+{{- end }}
 
       - name: Notify Slack of Backup Failure
         if: failure()
