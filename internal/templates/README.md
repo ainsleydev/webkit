@@ -97,7 +97,7 @@ View all monitors on the [dashboard]({{ .DashboardURL }}).
 - **Provider:** {{ .Infra.Provider }}
 - **Type:** {{ .Infra.Type }}
 {{- range $key, $value := .Infra.Config }}
-- **{{ $key }}:** {{ $value }}
+- **{{ formatKey $key }}:** {{ $value }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -128,7 +128,7 @@ View all monitors on the [dashboard]({{ .DashboardURL }}).
 | Setting | Value |
 |---------|-------|
 {{- range $key, $value := .Config }}
-| {{ $key }} | {{ $value }} |
+| {{ formatKey $key }} | {{ $value }} |
 {{- end }}
 
 **Available Outputs:**
