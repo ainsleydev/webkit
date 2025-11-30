@@ -105,7 +105,7 @@ resource "peekaping_monitor" "dns" {
   type = "dns"
   config = jsonencode({
     host            = each.value.domain
-    resolver_server = "1.1.1.1"                          # Cloudflare DNS
+    resolver_server = "1.1.1.1" # Cloudflare DNS
     port            = 53
     resolve_type    = coalesce(each.value.resolver_type, "A") # A record lookup
   })
