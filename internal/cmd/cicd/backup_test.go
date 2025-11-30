@@ -56,7 +56,6 @@ func TestBackupWorkflow(t *testing.T) {
 				},
 			},
 		}
-		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -99,7 +98,6 @@ func TestBackupWorkflow(t *testing.T) {
 				},
 			},
 		}
-		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -178,7 +176,6 @@ func TestBackupWorkflow(t *testing.T) {
 				},
 			},
 		}
-		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -220,7 +217,6 @@ func TestBackupWorkflow(t *testing.T) {
 				},
 			},
 		}
-		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -271,7 +267,6 @@ func TestBackupWorkflow(t *testing.T) {
 				},
 			},
 		}
-		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewMemMapFs(), appDef)
 
@@ -436,7 +431,6 @@ func TestBackupWorkflow(t *testing.T) {
 				},
 			},
 		}
-		appDef.Monitoring.applyDefaults()
 
 		input := setup(t, afero.NewReadOnlyFs(afero.NewMemMapFs()), appDef)
 
