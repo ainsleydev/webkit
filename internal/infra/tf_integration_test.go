@@ -975,7 +975,7 @@ func TestTerraform_Defaults(t *testing.T) {
 	t.Run("DigitalOcean Project", func(t *testing.T) {
 		t.Parallel()
 
-		t.Log("Project Configuration")
+		t.Log("Project not created when no DO resources exist")
 		{
 			var doProject map[string]any
 			for _, rc := range got.Plan.ResourceChanges {
@@ -984,17 +984,14 @@ func TestTerraform_Defaults(t *testing.T) {
 					break
 				}
 			}
-			require.NotNil(t, doProject, "DigitalOcean project should be planned")
-
-			assert.Equal(t, "Project", doProject["name"])
-			assert.Equal(t, "Production", doProject["environment"])
-			assert.Equal(t, "Web Application", doProject["purpose"])
+			assert.Nil(t, doProject, "DigitalOcean project should not be planned when no DO resources exist")
 		}
 
-		t.Log("Project Output")
+		t.Log("Project output is null when no DO resources")
 		{
 			projectID := got.Plan.PlannedValues.Outputs["digitalocean_project_id"]
-			require.NotNil(t, projectID, "DigitalOcean project ID output should exist")
+			require.NotNil(t, projectID)
+			assert.Nil(t, projectID.Value, "Project ID output should be null when no DO resources exist")
 		}
 	})
 
