@@ -37,5 +37,6 @@ func templateFuncs() template.FuncMap {
 	funcs["ghSecret"] = githubSecret
 	funcs["ghInput"] = githubInput
 	funcs["ghEnv"] = githubEnv
+	funcs["prettyConfigKey"] = prettyConfigKey
 	return funcs
 }

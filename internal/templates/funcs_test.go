@@ -124,3 +124,39 @@ func TestGithubEnv(t *testing.T) {
 		})
 	}
 }
+
+func TestPrettyConfigKey(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input string
+		want  string
+	}{
+		"Single word":          {input: "location", want: "Location"},
+		"Snake case":           {input: "server_type", want: "Server Type"},
+		"Multiple underscores": {input: "foo_bar_baz", want: "Foo Bar Baz"},
+		"Empty string":         {input: "", want: ""},
+		"Already capitalised":  {input: "Server_Type", want: "Server Type"},
+		"All caps":             {input: "SSH_KEYS", want: "SSH KEYS"},
+		"Mixed case":           {input: "Api_Key", want: "Api Key"},
+		"Common config keys":   {input: "mount_point", want: "Mount Point"},
+		"IP range":             {input: "ip_range", want: "Ip Range"},
+		"Database size":        {input: "size", want: "Size"},
+		"Long key":             {input: "very_long_config_key_name", want: "Very Long Config Key Name"},
+		"Numeric":              {input: "port_8080", want: "Port 8080"},
+		"With numbers":         {input: "server_1_type", want: "Server 1 Type"},
+		"Single character":     {input: "a", want: "A"},
+		"Two words":            {input: "user_name", want: "User Name"},
+		"Hetzner location":     {input: "nbg1", want: "Nbg1"},
+		"DigitalOcean droplet": {input: "droplet_size", want: "Droplet Size"},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := prettyConfigKey(test.input)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
