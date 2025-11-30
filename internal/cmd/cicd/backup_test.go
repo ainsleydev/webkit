@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ainsleydev/webkit/internal/appdef"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 func TestBackupWorkflow(t *testing.T) {
@@ -49,9 +50,9 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:       "db",
 					Type:       appdef.ResourceTypePostgres,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},
@@ -88,12 +89,12 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:       "store",
 					Type:       appdef.ResourceTypeS3,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Config: map[string]any{
 						"key": "value",
 					},
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},
@@ -131,7 +132,7 @@ func TestBackupWorkflow(t *testing.T) {
 					Type:     appdef.ResourceTypeS3,
 					Provider: appdef.ResourceProviderBackBlaze,
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},
@@ -160,18 +161,18 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:       "db",
 					Type:       appdef.ResourceTypePostgres,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 				{
 					Name:       "store",
 					Type:       appdef.ResourceTypeS3,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},
@@ -210,9 +211,9 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:       "db",
 					Type:       appdef.ResourceTypeSQLite,
 					Provider:   appdef.ResourceProviderTurso,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},
@@ -251,18 +252,18 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:       "db",
 					Type:       appdef.ResourceTypeSQLite,
 					Provider:   appdef.ResourceProviderTurso,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 				{
 					Name:       "store",
 					Type:       appdef.ResourceTypeS3,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},
@@ -305,9 +306,9 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:       "db",
 					Type:       appdef.ResourceTypePostgres,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},
@@ -342,9 +343,9 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:       "db",
 					Type:       appdef.ResourceTypePostgres,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: false,
+					Monitoring: ptr.BoolPtr(false),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},
@@ -378,18 +379,18 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:       "db",
 					Type:       appdef.ResourceTypePostgres,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 				{
 					Name:       "store",
 					Type:       appdef.ResourceTypeS3,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: false,
+					Monitoring: ptr.BoolPtr(false),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},
@@ -424,9 +425,9 @@ func TestBackupWorkflow(t *testing.T) {
 					Name:       "db",
 					Type:       appdef.ResourceTypePostgres,
 					Provider:   appdef.ResourceProviderDigitalOcean,
-					Monitoring: true,
+					Monitoring: ptr.BoolPtr(true),
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},

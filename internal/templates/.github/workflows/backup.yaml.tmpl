@@ -84,7 +84,7 @@ jobs:
           # Delete backups older than 30 days
           rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
 
-{{- if and $.MonitoringEnabled .Monitoring }}
+{{- if and $.MonitoringEnabled (.IsMonitoringEnabled) }}
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping
@@ -152,7 +152,7 @@ jobs:
         run: |
           echo "Backup completed successfully!"
 
-{{- if and $.MonitoringEnabled .Monitoring }}
+{{- if and $.MonitoringEnabled (.IsMonitoringEnabled) }}
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping
@@ -222,7 +222,7 @@ jobs:
           # Delete backups older than 30 days
           rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
 
-{{- if and $.MonitoringEnabled .Monitoring }}
+{{- if and $.MonitoringEnabled (.IsMonitoringEnabled) }}
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping

@@ -10,6 +10,7 @@ import (
 
 	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/state/outputs"
+	"github.com/ainsleydev/webkit/pkg/util/ptr"
 )
 
 func TestReadme(t *testing.T) {
@@ -162,7 +163,7 @@ func TestReadme(t *testing.T) {
 						"size": "db-s-1vcpu-1gb",
 					},
 					Backup: appdef.ResourceBackupConfig{
-						Enabled: true,
+						Enabled: ptr.BoolPtr(true),
 					},
 				},
 			},

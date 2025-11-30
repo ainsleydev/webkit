@@ -257,7 +257,7 @@ func (d *Definition) generateHTTPDNSMonitors() []Monitor {
 	monitors := make([]Monitor, 0)
 
 	for _, app := range d.Apps {
-		if !app.Monitoring {
+		if !app.IsMonitoringEnabled() {
 			continue
 		}
 
@@ -299,7 +299,7 @@ func (d *Definition) generateResourceBackupMonitors() []Monitor {
 
 	for _, resource := range d.Resources {
 		// Only generate backup monitor if both backup and monitoring are enabled.
-		if !resource.Backup.Enabled || !resource.Monitoring {
+		if !resource.IsBackupEnabled() || !resource.IsMonitoringEnabled() {
 			continue
 		}
 
@@ -320,7 +320,7 @@ func (d *Definition) generateMaintenanceMonitors() []Monitor {
 
 	for _, app := range d.Apps {
 		// Only generate maintenance monitor for VM apps with monitoring enabled.
-		if !app.Monitoring || app.Infra.Type != "vm" {
+		if !app.IsMonitoringEnabled() || app.Infra.Type != "vm" {
 			continue
 		}
 
