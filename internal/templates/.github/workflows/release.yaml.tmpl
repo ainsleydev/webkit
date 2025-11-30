@@ -381,6 +381,7 @@ jobs:
             -e docker_image={{ ghExpr "github.event.repository.name" }}-{{ .Name }}
             -e docker_image_tag=sha-{{ ghExpr "steps.determine_sha.outputs.sha" }}
             -e docker_port={{ .Build.Port }}
+            -e health_check_path={{ .Build.HealthCheckPath }}
             -e enable_https={{ if eq (index .Infra.Config "https") false }}false{{ else }}{{ default "true" (index .Infra.Config "https") }}{{ end }}
             -e admin_email={{ default "hello@ainsley.dev" (index .Infra.Config "admin_email") }}
             -e env_file_source_path=/tmp/{{ .Name }}.env

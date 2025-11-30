@@ -58,7 +58,8 @@ Configure how your app is built:
       "path": "./apps/api",
       "build": {
         "dockerfile": true,
-        "port": 8080
+        "port": 8080,
+        "health_check_path": "/api/health"
       }
     }
   ]
@@ -69,6 +70,7 @@ Configure how your app is built:
 |-------|-------------|---------|
 | `dockerfile` | Generate Dockerfile | `true` |
 | `port` | Exposed port | `3000` |
+| `health_check_path` | Path for health check endpoint during deployment | `/` |
 
 ## Infrastructure
 
