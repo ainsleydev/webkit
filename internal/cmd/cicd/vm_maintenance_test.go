@@ -116,6 +116,56 @@ func TestVMMaintenanceWorkflow(t *testing.T) {
 		assert.NotContains(t, content, "${{ vars._API_MAINTENANCE_PING_URL }}")
 	})
 
+	t.Run("Hetzner VM App", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Apps: []appdef.App{
+				{
+					Name:  "cms",
+					Title: "CMS",
+					Type:  appdef.AppTypePayload,
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderHetzner,
+						Type:     "vm",
+						Config: map[string]any{
+							"admin_email": "admin@example.com",
+						},
+					},
+					Domains: []appdef.Domain{
+						{
+							Name: "cms.example.com",
+							Type: appdef.DomainTypePrimary,
+						},
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := VMMaintenanceWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "server-maintenance.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		// Verify the file contains expected content.
+		content := string(file)
+		assert.Contains(t, content, "name: Server Maintenance")
+		assert.Contains(t, content, "maintenance-vm-cms")
+		assert.Contains(t, content, "CMS")
+
+		// Verify correct PROD prefix in Peekaping ping URLs (with vars. prefix for repository variables).
+		assert.Contains(t, content, "${{ vars.PROD_CMS_MAINTENANCE_PING_URL }}")
+	})
+
 	t.Run("Multiple Apps Mixed Types", func(t *testing.T) {
 		t.Parallel()
 
@@ -187,6 +237,77 @@ func TestVMMaintenanceWorkflow(t *testing.T) {
 		assert.Contains(t, content, "${{ vars.PROD_WORKER_MAINTENANCE_PING_URL }}")
 		assert.NotContains(t, content, "${{ vars._API_MAINTENANCE_PING_URL }}")
 		assert.NotContains(t, content, "${{ vars._WORKER_MAINTENANCE_PING_URL }}")
+	})
+
+	t.Run("Mixed Providers", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Apps: []appdef.App{
+				{
+					Name:  "cms",
+					Title: "CMS",
+					Type:  appdef.AppTypePayload,
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderHetzner,
+						Type:     "vm",
+					},
+					Domains: []appdef.Domain{
+						{
+							Name: "cms.example.com",
+							Type: appdef.DomainTypePrimary,
+						},
+					},
+				},
+				{
+					Name:  "api",
+					Title: "API Server",
+					Type:  appdef.AppTypeGoLang,
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Type:     "vm",
+					},
+					Domains: []appdef.Domain{
+						{
+							Name: "api.example.com",
+							Type: appdef.DomainTypePrimary,
+						},
+					},
+				},
+				{
+					Name: "web",
+					Type: appdef.AppTypeSvelteKit,
+					Infra: appdef.Infra{
+						Provider: appdef.ResourceProviderDigitalOcean,
+						Type:     "container",
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := VMMaintenanceWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "server-maintenance.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		// Verify both Hetzner and DigitalOcean VM apps are included but container app is not.
+		content := string(file)
+		assert.Contains(t, content, "maintenance-vm-cms")
+		assert.Contains(t, content, "maintenance-vm-api")
+		assert.NotContains(t, content, "maintenance-vm-web")
+
+		// Verify correct PROD prefix in Peekaping ping URLs for both VM apps.
+		assert.Contains(t, content, "${{ vars.PROD_CMS_MAINTENANCE_PING_URL }}")
+		assert.Contains(t, content, "${{ vars.PROD_API_MAINTENANCE_PING_URL }}")
 	})
 
 	t.Run("FS Failure", func(t *testing.T) {

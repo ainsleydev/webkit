@@ -30,11 +30,13 @@ func VMMaintenanceWorkflow(_ context.Context, input cmdtools.CommandInput) error
 		return nil
 	}
 
-	// Check if there are any Digital Ocean VM apps
+	// Check if there are any Digital Ocean or Hetzner VM apps
 	hasVMApps := false
 	var vmApps []appdef.App
 	for _, app := range appDef.Apps {
-		if app.Infra.Provider == appdef.ResourceProviderDigitalOcean && app.Infra.Type == "vm" {
+		isDigitalOceanVM := app.Infra.Provider == appdef.ResourceProviderDigitalOcean && app.Infra.Type == "vm"
+		isHetznerVM := app.Infra.Provider == appdef.ResourceProviderHetzner && app.Infra.Type == "vm"
+		if isDigitalOceanVM || isHetznerVM {
 			hasVMApps = true
 			vmApps = append(vmApps, app)
 		}
