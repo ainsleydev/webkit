@@ -71,7 +71,7 @@
 		"@lexical/headless": "0.38.2",
 		"@lexical/html": "0.38.2",
 		"@nouance/payload-better-fields-plugin": "^2.0.2",
-		"@payloadcms/db-sqlite": "3.63.0",
+		"@payloadcms/db-sqlite": "3.65.0",
 		"@payloadcms/plugin-form-builder": "3.63.0",
 		"@payloadcms/plugin-seo": "3.63.0",
 		"@payloadcms/richtext-lexical": "3.63.0",
