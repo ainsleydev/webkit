@@ -413,6 +413,149 @@ func TestBackupWorkflow(t *testing.T) {
 		assert.Contains(t, content, "PROD_CODEBASE_BACKUP_PING_URL")
 	})
 
+	t.Run("Backup disabled for single resource", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:     "store",
+					Type:     appdef.ResourceTypeS3,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: ptr.BoolPtr(false),
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		// Verify that no backup job is created for the resource with backup disabled
+		content := string(file)
+		assert.NotContains(t, content, "backup-resource-store:")
+		assert.NotContains(t, content, "PROD_STORE_BACKUP_PING_URL")
+		// Codebase backup should still exist
+		assert.Contains(t, content, "backup-codebase:")
+	})
+
+	t.Run("Mixed backup enabled and disabled resources", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:       "db",
+					Type:       appdef.ResourceTypePostgres,
+					Provider:   appdef.ResourceProviderDigitalOcean,
+					Monitoring: ptr.BoolPtr(true),
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: ptr.BoolPtr(true),
+					},
+				},
+				{
+					Name:     "store",
+					Type:     appdef.ResourceTypeS3,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: ptr.BoolPtr(false),
+					},
+				},
+				{
+					Name:     "cache",
+					Type:     appdef.ResourceTypeSQLite,
+					Provider: appdef.ResourceProviderTurso,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: ptr.BoolPtr(true),
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		content := string(file)
+		// Verify that backup jobs are created only for resources with backup enabled
+		assert.Contains(t, content, "backup-resource-db:")
+		assert.Contains(t, content, "backup-resource-cache:")
+		assert.NotContains(t, content, "backup-resource-store:")
+
+		// Verify sync-to-gdrive only depends on enabled backup jobs
+		assert.Contains(t, content, "- backup-resource-db")
+		assert.Contains(t, content, "- backup-resource-cache")
+		assert.NotContains(t, content, "- backup-resource-store")
+	})
+
+	t.Run("All resources with backup disabled", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Project: appdef.Project{
+				Name: "test-project",
+			},
+			Resources: []appdef.Resource{
+				{
+					Name:     "db",
+					Type:     appdef.ResourceTypePostgres,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: ptr.BoolPtr(false),
+					},
+				},
+				{
+					Name:     "store",
+					Type:     appdef.ResourceTypeS3,
+					Provider: appdef.ResourceProviderDigitalOcean,
+					Backup: appdef.ResourceBackupConfig{
+						Enabled: ptr.BoolPtr(false),
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		got := BackupWorkflow(t.Context(), input)
+		assert.NoError(t, got)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "backup.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		content := string(file)
+		// Verify that no resource backup jobs are created
+		assert.NotContains(t, content, "backup-resource-db:")
+		assert.NotContains(t, content, "backup-resource-store:")
+		// Only codebase backup should exist
+		assert.Contains(t, content, "backup-codebase:")
+	})
+
 	t.Run("FS Failure", func(t *testing.T) {
 		t.Parallel()
 

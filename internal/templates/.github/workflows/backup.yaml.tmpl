@@ -325,9 +325,7 @@ jobs:
     timeout-minutes: 120 # 2 Hours
     needs:
 {{- range .Resources }}
-{{- if index $.Data .Name }}
       - backup-resource-{{ .Name }}
-{{- end }}
 {{- end }}
       - backup-codebase
     env:
