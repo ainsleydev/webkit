@@ -29,6 +29,10 @@
 									"timeout": {
 										"description": "Maximum execution time for the command (e.g., '5m', '1h')",
 										"type": "string"
+									},
+									"working_directory": {
+										"description": "Working directory for the command (defaults to app path if not specified)",
+										"type": "string"
 									}
 								},
 								"type": "object"
@@ -45,6 +49,10 @@
 							},
 							"timeout": {
 								"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+								"type": "string"
+							},
+							"working_directory": {
+								"description": "Working directory for the command (defaults to app path if not specified)",
 								"type": "string"
 							}
 						},
@@ -77,7 +85,10 @@
 				},
 				"monitoring": {
 					"description": "Whether to enable uptime monitoring for this app (defaults to true)",
-					"type": "boolean"
+					"type": [
+						"null",
+						"boolean"
+					]
 				},
 				"name": {
 					"description": "Unique identifier for the app (lowercase, hyphenated)",
@@ -142,8 +153,16 @@
 		},
 		"AppdefBuild": {
 			"properties": {
+				"context": {
+					"description": "Docker build context path relative to project root (defaults to app path)",
+					"type": "string"
+				},
 				"dockerfile": {
-					"description": "Path to the Dockerfile relative to the app directory",
+					"description": "Path to the Dockerfile relative to project root",
+					"type": "string"
+				},
+				"health_check_path": {
+					"description": "Path for health check endpoint (defaults to /)",
 					"type": "string"
 				},
 				"port": {
@@ -158,6 +177,10 @@
 					]
 				}
 			},
+			"type": "object"
+		},
+		"AppdefConfig": {
+			"additionalProperties": {},
 			"type": "object"
 		},
 		"AppdefDomain": {
@@ -239,12 +262,8 @@
 		"AppdefInfra": {
 			"properties": {
 				"config": {
-					"additionalProperties": {},
-					"description": "Provider-specific infrastructure configuration options",
-					"type": [
-						"object",
-						"null"
-					]
+					"$ref": "#/definitions/AppdefConfig",
+					"description": "Provider-specific infrastructure configuration options"
 				},
 				"provider": {
 					"description": "Cloud infrastructure provider (digitalocean, backblaze)",
@@ -259,9 +278,9 @@
 		},
 		"AppdefMonitor": {
 			"properties": {
-				"domain": {
-					"description": "Domain name for DNS monitors",
-					"type": "string"
+				"config": {
+					"$ref": "#/definitions/AppdefConfig",
+					"description": "Type-specific monitor configuration (e.g., url, method, keyword, domain)"
 				},
 				"identifier": {
 					"description": "Machine-readable identifier for variable naming (e.g., 'db' for database). Used by VariableName() method.",
@@ -271,27 +290,12 @@
 					"description": "Interval in seconds between checks (defaults based on monitor type if not specified)",
 					"type": "integer"
 				},
-				"maxRedirects": {
-					"description": "Maximum redirects to follow for HTTP monitors (default 0). Set to 1 for alias domains that redirect.",
-					"type": [
-						"null",
-						"integer"
-					]
-				},
-				"method": {
-					"description": "HTTP method for HTTP monitors (e.g., GET, POST)",
-					"type": "string"
-				},
 				"name": {
 					"description": "Unique monitor name",
 					"type": "string"
 				},
 				"type": {
-					"description": "Monitor type (http, dns, postgres, push)",
-					"type": "string"
-				},
-				"url": {
-					"description": "URL for HTTP monitors or database connection string for postgres monitors",
+					"description": "Monitor type (http, http-keyword, dns, postgres, push)",
 					"type": "string"
 				}
 			},
@@ -305,6 +309,13 @@
 						"$ref": "#/definitions/AppdefMonitor"
 					},
 					"type": "array"
+				},
+				"enabled": {
+					"description": "Enable or disable all monitoring globally (defaults to true)",
+					"type": [
+						"null",
+						"boolean"
+					]
 				},
 				"statusPage": {
 					"$ref": "#/definitions/AppdefStatusPage",
@@ -345,12 +356,8 @@
 					"description": "Backup configuration for the resource"
 				},
 				"config": {
-					"additionalProperties": {},
-					"description": "Provider-specific resource configuration (e.g., size, region, version)",
-					"type": [
-						"object",
-						"null"
-					]
+					"$ref": "#/definitions/AppdefConfig",
+					"description": "Provider-specific resource configuration (e.g., size, region, version)"
 				},
 				"description": {
 					"description": "Brief description of the resource's purpose and functionality",
@@ -358,7 +365,10 @@
 				},
 				"monitoring": {
 					"description": "Whether to enable uptime monitoring for this resource (defaults to true)",
-					"type": "boolean"
+					"type": [
+						"null",
+						"boolean"
+					]
 				},
 				"name": {
 					"description": "Unique identifier for the resource (used in environment variable references)",
@@ -396,7 +406,10 @@
 			"properties": {
 				"enabled": {
 					"description": "Whether to enable automated backups for this resource",
-					"type": "boolean"
+					"type": [
+						"null",
+						"boolean"
+					]
 				}
 			},
 			"type": "object"

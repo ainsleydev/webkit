@@ -11,11 +11,12 @@ import (
 // Commands can be specified as a boolean (enable/disable), a string (command override),
 // or an object (full configuration with timeout and CI settings).
 type CommandSpec struct {
-	Name     string `json:"-"`
-	Cmd      string `json:"command,omitempty" description:"The shell command to execute (e.g., 'pnpm build')"`
-	SkipCI   bool   `json:"skip_ci,omitempty" description:"Whether to skip running this command in CI/CD pipelines"`
-	Timeout  string `json:"timeout,omitempty" description:"Maximum execution time for the command (e.g., '5m', '1h')"`
-	Disabled bool   `json:"-"` // Set during unmarshal
+	Name             string `json:"-"`
+	Cmd              string `json:"command,omitempty" description:"The shell command to execute (e.g., 'pnpm build')"`
+	SkipCI           bool   `json:"skip_ci,omitempty" description:"Whether to skip running this command in CI/CD pipelines"`
+	Timeout          string `json:"timeout,omitempty" description:"Maximum execution time for the command (e.g., '5m', '1h')"`
+	WorkingDirectory string `json:"working_directory,omitempty" description:"Working directory for the command (defaults to app path if not specified)"`
+	Disabled         bool   `json:"-"` // Set during unmarshal
 }
 
 // Ensure CommandSpec implements jsonschema.OneOfExposer

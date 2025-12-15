@@ -532,7 +532,9 @@ jobs:
 {{- if not $spec.Disabled }}
 
       - name: {{ $spec.Name | title }}
-{{- if $app.Path }}
+{{- if $spec.WorkingDirectory }}
+        working-directory: {{ $spec.WorkingDirectory }}
+{{- else if $app.Path }}
         working-directory: {{ $app.Path }}
 {{- end }}
         run: {{ $spec.Cmd }}

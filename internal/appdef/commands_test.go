@@ -30,6 +30,14 @@ func TestCommandSpecUnmarshalJSON(t *testing.T) {
 			input: []byte(`{"command":"run tests","skip_ci":true,"timeout":"5m"}`),
 			want:  CommandSpec{Cmd: "run tests", SkipCI: true, Timeout: "5m"},
 		},
+		"Full Object with WorkingDirectory": {
+			input: []byte(`{"command":"run tests","skip_ci":true,"timeout":"5m","working_directory":"./subdir"}`),
+			want:  CommandSpec{Cmd: "run tests", SkipCI: true, Timeout: "5m", WorkingDirectory: "./subdir"},
+		},
+		"Object with only WorkingDirectory": {
+			input: []byte(`{"command":"pnpm build","working_directory":"./packages/core"}`),
+			want:  CommandSpec{Cmd: "pnpm build", WorkingDirectory: "./packages/core"},
+		},
 		"Invalid JSON": {
 			input:   []byte(`{"invalid":`),
 			wantErr: true,

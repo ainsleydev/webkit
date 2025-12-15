@@ -206,7 +206,37 @@ See [Environment variables](/manifest/environment-variables) for detailed docume
 
 ## Commands
 
-Override default commands for build, test, lint, and format:
+Customise commands for build, test, lint, and format. Commands can be specified in three formats:
+
+### Boolean format
+
+Enable or disable a command:
+
+```json
+{
+  "commands": {
+    "test": false,
+    "build": true
+  }
+}
+```
+
+### String format
+
+Override the command with a simple string:
+
+```json
+{
+  "commands": {
+    "build": "go build -o bin/api ./cmd/api",
+    "test": "go test -race ./..."
+  }
+}
+```
+
+### Object format
+
+Full control with additional options:
 
 ```json
 {
@@ -216,24 +246,45 @@ Override default commands for build, test, lint, and format:
       "type": "golang",
       "commands": {
         "build": {
-          "run": "go build -o bin/api ./cmd/api",
-          "enabled": true
+          "command": "go build -o bin/api ./cmd/api",
+          "working_directory": "./cmd/api",
+          "timeout": "10m"
         },
         "test": {
-          "run": "go test -race ./...",
-          "enabled": true
+          "command": "go test -race ./...",
+          "skip_ci": false
         },
         "lint": {
-          "run": "golangci-lint run",
-          "enabled": true
-        },
-        "format": {
-          "run": "gofmt -w .",
-          "enabled": true
+          "command": "golangci-lint run"
         }
       }
     }
   ]
+}
+```
+
+| Field | Description | Default |
+|-------|-------------|---------|
+| `command` | Shell command to execute | Required |
+| `working_directory` | Directory to run the command in | App's `path` |
+| `skip_ci` | Skip this command in CI/CD workflows | `false` |
+| `timeout` | Maximum execution time (e.g., `5m`, `1h`) | None |
+
+### Working directory
+
+By default, commands run in the app's `path` directory. Use `working_directory` to run commands in a different location:
+
+```json
+{
+  "name": "web",
+  "path": "apps/web",
+  "commands": {
+    "build": "pnpm build",
+    "test": {
+      "command": "pnpm test",
+      "working_directory": "apps/web/src"
+    }
+  }
 }
 ```
 
@@ -348,14 +399,8 @@ A fully configured app:
         }
       },
       "commands": {
-        "build": {
-          "run": "pnpm build",
-          "enabled": true
-        },
-        "lint": {
-          "run": "pnpm lint",
-          "enabled": true
-        }
+        "build": "pnpm build",
+        "lint": "pnpm lint"
       },
       "monitoring": {
         "http": true,
