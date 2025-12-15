@@ -20,7 +20,7 @@ import (
 
 var mtx sync.Mutex
 
-func setup(t *testing.T, appDef *appdef.Definition, mock *mockinfra.MockManager, initErr bool) (cmdtools.CommandInput, func()) {
+func setup(t *testing.T, appDef *appdef.Definition, mock *mockinfra.MockManager, initErr bool) (cmdtools.CommandInput, func()) { //nolint:unparam
 	t.Helper()
 	t.Skip("Need better DI")
 
