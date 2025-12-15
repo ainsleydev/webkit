@@ -10,26 +10,34 @@ updates:
       time: "04:00"
     open-pull-requests-limit: 30
     ignore:
+      # Ignore patch updates to reduce PR volume
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
+      # Payload ecosystem is managed via 'webkit payload bump' command
+      # These dependencies are automatically updated from Payload's template package.json
+      - dependency-name: "payload"
+      - dependency-name: "@payloadcms/*"
+      - dependency-name: "@ainsleydev/payload-helper"
+      - dependency-name: "cross-env"
+      - dependency-name: "dotenv"
+      - dependency-name: "graphql"
+      - dependency-name: "next"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "sharp"
     groups:
-      payload:
+      svelte:
         patterns:
-          - "@payloadcms/*"
-          - "payload"
-          - "@ainsleydev/payload-helper"
+          - "svelte"
+          - "@sveltejs/*"
         update-types:
           - "minor"
           - "patch"
-      core:
+      react:
         patterns:
           - "next"
           - "react"
           - "react-dom"
-          - "graphql"
-          - "sharp"
-          - "cross-env"
-          - "dotenv"
         update-types:
           - "minor"
           - "patch"
@@ -37,16 +45,19 @@ updates:
         patterns:
           - "*"
         exclude-patterns:
-          - "@payloadcms/*"
-          - "payload"
-          - "@ainsleydev/payload-helper"
+          - "svelte"
+          - "@sveltejs/*"
           - "next"
           - "react"
           - "react-dom"
-          - "graphql"
-          - "sharp"
+          # Exclude all Payload template dependencies (managed by 'webkit payload bump')
+          - "payload"
+          - "@payloadcms/*"
+          - "@ainsleydev/payload-helper"
           - "cross-env"
           - "dotenv"
+          - "graphql"
+          - "sharp"
   - package-ecosystem: "gomod"
     directory: "/api"
     schedule:

@@ -82,7 +82,6 @@ jobs:
         run: |
           # Delete backups older than 30 days
           rclone delete b2_backup:${BUCKET_NAME}${BACKUP_PATH} --min-age 30d
-
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping
@@ -147,7 +146,6 @@ jobs:
       - name: Verify Backup
         run: |
           echo "Backup completed successfully!"
-
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping
@@ -210,7 +208,6 @@ jobs:
       - name: Verify Backup
         run: |
           echo "Codebase backup completed successfully!"
-
       - name: Ping Peekaping Heartbeat Monitor
         if: success()
         uses: ./.github/actions/peekaping-ping

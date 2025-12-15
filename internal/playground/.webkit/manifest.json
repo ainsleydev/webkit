@@ -1,6 +1,6 @@
 {
-	"version": "v0.7.4",
-	"generated_at": "2025-11-24T19:50:05.385737Z",
+	"version": "v0.9.8",
+	"generated_at": "2025-12-15T09:17:57.472267068Z",
 	"files": {
 		"./turbo.json": {
 			"path": "./turbo.json",
@@ -86,9 +86,9 @@
 			"path": ".github/dependabot.yaml",
 			"generator": "files:GitSettings",
 			"source": "project",
-			"hash": "f1ce4b0dcad7973e83ce319052e08282eb6c9ee839deb93ccf2e8f07d1f72df1",
+			"hash": "dd5045db25b3ea4c4c94e073479c2d7f00d4d380ddddba25ab47cae2c26315ca",
 			"scaffolded": false,
-			"generated_at": "2025-11-24T19:50:05.376785Z"
+			"generated_at": "2025-12-15T09:16:05.705711066Z"
 		},
 		".github/settings.yml": {
 			"path": ".github/settings.yml",
@@ -102,25 +102,25 @@
 			"path": ".github/workflows/backup.yaml",
 			"generator": "cicd:BackupWorkflow",
 			"source": "resource:store",
-			"hash": "25dabcd4231f662b2267b92e631700d9c0286b9088f59b05102cc99f55a84de6",
+			"hash": "1014a62481cb9cbc4bcbe0aa67777ba953c0157670269ca6793b2fe51ad21914",
 			"scaffolded": false,
-			"generated_at": "2025-11-24T19:50:05.381915Z"
+			"generated_at": "2025-12-15T09:16:05.711894006Z"
 		},
 		".github/workflows/pr.yaml": {
 			"path": ".github/workflows/pr.yaml",
 			"generator": "cicd:PR",
 			"source": "project",
-			"hash": "7206cb778668a8df1bc8b330ba887bacc5874109f72f231b1e72f96e7b17e1fd",
+			"hash": "3d498e017141afd45db9159a9b82d229ccc2130ad4f46893ccc745a9d7188b96",
 			"scaffolded": false,
-			"generated_at": "2025-11-24T19:50:05.380818Z"
+			"generated_at": "2025-12-15T09:17:57.461325727Z"
 		},
 		".github/workflows/release.yaml": {
 			"path": ".github/workflows/release.yaml",
 			"generator": "cicd:ReleaseWorkflow",
 			"source": "app:api",
-			"hash": "8095399f3678fb40b987cc3bd542f09adad52eb00e93ba44a7d41af52532213d",
+			"hash": "a75be6c0a208ec49fcae66e2a2763908ed4f95f9c6cfdeb2340a0e7eb85bb07d",
 			"scaffolded": false,
-			"generated_at": "2025-11-20T13:42:31.968943Z"
+			"generated_at": "2025-12-15T09:16:05.710992465Z"
 		},
 		".github/workflows/server-maintenance.yaml": {
 			"path": ".github/workflows/server-maintenance.yaml",
@@ -166,9 +166,9 @@
 			"path": "README.md",
 			"generator": "docs:Readme",
 			"source": "project",
-			"hash": "f1c694886a54e9aca154614baa293b0740092ea8220b2c396a21777b54846955",
+			"hash": "e8f101a3b06b3221567b3a49f44544c66a3efa26c53df7f749d7336c1e81160a",
 			"scaffolded": false,
-			"generated_at": "2025-11-24T19:50:05.383946Z"
+			"generated_at": "2025-12-15T09:16:05.717099432Z"
 		},
 		"api/.env": {
 			"path": "api/.env",

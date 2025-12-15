@@ -29,6 +29,10 @@
 									"timeout": {
 										"description": "Maximum execution time for the command (e.g., '5m', '1h')",
 										"type": "string"
+									},
+									"working_directory": {
+										"description": "Working directory for the command (defaults to app path if not specified)",
+										"type": "string"
 									}
 								},
 								"type": "object"
@@ -45,6 +49,10 @@
 							},
 							"timeout": {
 								"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+								"type": "string"
+							},
+							"working_directory": {
+								"description": "Working directory for the command (defaults to app path if not specified)",
 								"type": "string"
 							}
 						},
