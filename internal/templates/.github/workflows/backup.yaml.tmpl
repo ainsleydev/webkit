@@ -322,7 +322,7 @@ jobs:
 
   sync-to-gdrive:
     runs-on: ubuntu-latest
-    timeout-minutes: 120 # 2 Hours
+    timeout-minutes: 180 # 3 Hours (increased to accommodate rate limiting)
     needs:
 {{- range .Resources }}
       - backup-resource-{{ .Name }}
@@ -370,9 +370,16 @@ jobs:
           # The bucket name folder (e.g., search-spares) will be created automatically
           rclone sync b2_backup:${BUCKET_NAME} gdrive:${BUCKET_NAME} \
             --progress \
-            --transfers=8 \
-            --checkers=8 \
-            --drive-chunk-size=64M \
+            --transfers=4 \
+            --checkers=4 \
+            --retries 10 \
+            --low-level-retries 10 \
+            --retries-sleep 10s \
+            --tpslimit 5 \
+            --tpslimit-burst 10 \
+            --drive-pacer-min-sleep 100ms \
+            --drive-pacer-burst 100 \
+            --drive-chunk-size=256M \
             --exclude ".DS_Store" \
             --exclude "Thumbs.db" \
             --stats=30s \
