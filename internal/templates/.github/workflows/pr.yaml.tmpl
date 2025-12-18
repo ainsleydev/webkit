@@ -22,7 +22,7 @@ env:
 
 jobs:
   setup-webkit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       version: {{ ghExpr "steps.version.outputs.version" }}
     steps:
@@ -54,7 +54,7 @@ jobs:
           if-no-files-found: error
   secret-scan:
     name: gitleaks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -67,7 +67,7 @@ jobs:
           GITHUB_TOKEN: {{ ghSecret "GITHUB_TOKEN" }}
           GITLEAKS_LICENSE: {{ ghSecret "ORG_GITLEAKS_LICENSE" }}
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
 {{- range .Apps }}
       {{ .Name }}-changed: {{ ghExpr (printf "steps.filter.outputs.%s" .Name) }}
@@ -100,7 +100,7 @@ jobs:
               - 'turbo.json'
 
   drift-detection:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: setup-webkit
     steps:
       - name: Checkout Repository
@@ -148,7 +148,7 @@ jobs:
           echo "Run 'webkit update' to sync your project with the latest templates"
           exit 1
   app-json-diff:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: setup-webkit
     steps:
       - name: Checkout Repository
@@ -327,7 +327,7 @@ jobs:
           issue-number: {{ ghExpr "github.event.pull_request.number" }}
           private-key: {{ ghSecret "ORG_GITHUB_APP_PRIVATE_KEY" }}
   validate-app-json:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: setup-webkit
     steps:
       - name: Checkout Repository
