@@ -21,7 +21,7 @@ env:
 jobs:
   # Setup WebKit CLI
   setup-webkit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       version: {{ ghExpr "steps.version.outputs.version" }}
     steps:
@@ -105,7 +105,7 @@ jobs:
 
   # Remove Unwanted Containers
   cleanup-containers:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: build-and-push
     permissions:
       packages: write
@@ -391,7 +391,7 @@ jobs:
 
   # Notify Slack on successful release
   notify-success:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [{{- $first := true }}{{- range $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (eq $app.Infra.Type "container") }}{{- if not $first }}, {{ end }}{{- $first = false }}deploy-app-{{ $app.Name }}{{- else if and (or (eq $app.Infra.Provider "digitalocean") (eq $app.Infra.Provider "hetzner")) (eq $app.Infra.Type "vm") }}{{- if not $first }}, {{ end }}{{- $first = false }}deploy-vm-{{ $app.Name }}{{- end }}{{- end }}]
     if: success()
     steps:
@@ -418,7 +418,7 @@ jobs:
 
   # Notify Slack on release failure
   notify-failure:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [build-and-push{{- range $app := .Apps }}{{- if and (eq $app.Infra.Provider "digitalocean") (eq $app.Infra.Type "container") }}, deploy-app-{{ $app.Name }}{{- else if and (or (eq $app.Infra.Provider "digitalocean") (eq $app.Infra.Provider "hetzner")) (eq $app.Infra.Type "vm") }}, deploy-vm-{{ $app.Name }}{{- end }}{{- end }}]
     if: failure()
     steps:
