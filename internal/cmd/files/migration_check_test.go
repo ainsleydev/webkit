@@ -42,7 +42,7 @@ func TestMigrationCheckScript(t *testing.T) {
 
 		// Verify no scripts were created.
 		for _, app := range appDef.Apps {
-			scriptPath := filepath.Join(app.Path, "scripts", "check-deps.js")
+			scriptPath := filepath.Join(app.Path, "scripts", "check-deps.cjs")
 			exists, err := afero.Exists(input.FS, scriptPath)
 			require.NoError(t, err)
 			assert.False(t, exists, "expected %s not to exist", scriptPath)
@@ -65,7 +65,7 @@ func TestMigrationCheckScript(t *testing.T) {
 		require.NoError(t, err)
 
 		// Verify script was created for Payload app.
-		cmsScriptPath := filepath.Join("./apps/cms/scripts", "check-deps.js")
+		cmsScriptPath := filepath.Join("./apps/cms/scripts", "check-deps.cjs")
 		exists, err := afero.Exists(input.FS, cmsScriptPath)
 		require.NoError(t, err)
 		assert.True(t, exists, "expected %s to exist", cmsScriptPath)
@@ -78,7 +78,7 @@ func TestMigrationCheckScript(t *testing.T) {
 		assert.Contains(t, string(content), "Dependencies out of sync")
 
 		// Verify script was not created for SvelteKit app.
-		webScriptPath := filepath.Join("./apps/web/scripts", "check-deps.js")
+		webScriptPath := filepath.Join("./apps/web/scripts", "check-deps.cjs")
 		exists, err = afero.Exists(input.FS, webScriptPath)
 		require.NoError(t, err)
 		assert.False(t, exists, "expected %s not to exist", webScriptPath)
@@ -101,7 +101,7 @@ func TestMigrationCheckScript(t *testing.T) {
 
 		// Verify script was created for both Payload apps.
 		for _, app := range appDef.Apps {
-			scriptPath := filepath.Join(app.Path, "scripts", "check-deps.js")
+			scriptPath := filepath.Join(app.Path, "scripts", "check-deps.cjs")
 			exists, err := afero.Exists(input.FS, scriptPath)
 			require.NoError(t, err)
 			assert.True(t, exists, "expected %s to exist", scriptPath)
@@ -123,7 +123,7 @@ func TestMigrationCheckScript(t *testing.T) {
 		err := MigrationCheckScript(t.Context(), input)
 		require.NoError(t, err)
 
-		scriptPath := filepath.Join("./apps/cms/scripts", "check-deps.js")
+		scriptPath := filepath.Join("./apps/cms/scripts", "check-deps.cjs")
 		content1, err := afero.ReadFile(input.FS, scriptPath)
 		require.NoError(t, err)
 
