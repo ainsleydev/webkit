@@ -74,7 +74,7 @@ func TestMigrationCheckScript(t *testing.T) {
 		content, err := afero.ReadFile(input.FS, cmsScriptPath)
 		require.NoError(t, err)
 		assert.Contains(t, string(content), "pnpm-lock.yaml")
-		assert.Contains(t, string(content), "node_modules")
+		assert.Contains(t, string(content), "node_modules/.pnpm/lock.yaml")
 		assert.Contains(t, string(content), "Dependencies out of sync")
 
 		// Verify script was not created for SvelteKit app.

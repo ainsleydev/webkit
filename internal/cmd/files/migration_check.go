@@ -38,30 +38,29 @@ func MigrationCheckScript(_ context.Context, input cmdtools.CommandInput) error 
 }
 
 // checkDepsScript is a simple Node.js script that checks if dependencies are in sync.
-// It compares the modification time of pnpm-lock.yaml against node_modules.
+// It compares the content of pnpm-lock.yaml against the cached version in node_modules.
 const checkDepsScript = `const fs = require('fs');
 const path = require('path');
 
 try {
 	const lockFile = path.join(__dirname, '..', 'pnpm-lock.yaml');
-	const nodeModules = path.join(__dirname, '..', 'node_modules');
+	const nodeModulesLock = path.join(__dirname, '..', 'node_modules', '.pnpm', 'lock.yaml');
 
 	if (!fs.existsSync(lockFile)) {
 		console.error('❌ pnpm-lock.yaml not found');
 		process.exit(1);
 	}
 
-	if (!fs.existsSync(nodeModules)) {
-		console.error('❌ node_modules not found. Run: pnpm install');
+	if (!fs.existsSync(nodeModulesLock)) {
+		console.error('❌ Dependencies not installed. Run: pnpm install');
 		process.exit(1);
 	}
 
-	const lockStat = fs.statSync(lockFile);
-	const nodeModulesStat = fs.statSync(nodeModules);
+	const lockContent = fs.readFileSync(lockFile, 'utf8');
+	const nodeModulesContent = fs.readFileSync(nodeModulesLock, 'utf8');
 
-	if (lockStat.mtimeMs > nodeModulesStat.mtimeMs) {
+	if (lockContent !== nodeModulesContent) {
 		console.error('❌ Dependencies out of sync!');
-		console.error('   pnpm-lock.yaml is newer than node_modules');
 		console.error('   Run: pnpm install');
 		process.exit(1);
 	}
