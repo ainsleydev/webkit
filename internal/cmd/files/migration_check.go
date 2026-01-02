@@ -2,7 +2,6 @@ package files
 
 import (
 	"context"
-	"fmt"
 	"path/filepath"
 
 	"github.com/pkg/errors"
