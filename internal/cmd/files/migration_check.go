@@ -22,12 +22,12 @@ func MigrationCheckScript(_ context.Context, input cmdtools.CommandInput) error 
 	payloadApps := appDef.GetAppsByType(appdef.AppTypePayload)
 
 	for _, app := range payloadApps {
-		scriptPath := filepath.Join(app.Path, "scripts", "check-deps.js")
+		scriptPath := filepath.Join(app.Path, "scripts", "check-deps.cjs")
 
 		// Scaffold the check script from template.
 		err := input.Generator().CopyFromEmbed(
 			templates.Embed,
-			"scripts/check-deps.js",
+			"scripts/check-deps.cjs",
 			scriptPath,
 			scaffold.WithTracking(manifest.SourceApp(app.Name)),
 			scaffold.WithScaffoldMode(),
