@@ -13,6 +13,8 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
+    client_max_body_size 250M;
+
     location / {
         proxy_pass http://localhost:{{ docker_port }};
         proxy_set_header Host $host;
