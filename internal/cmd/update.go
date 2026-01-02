@@ -49,6 +49,7 @@ var updateOps = []runner{
 	{files.PackageJSONApp, "Files: Manipulate app package.json files"},
 	{files.PnpmWorkspace, "Files: Create pnpm-workspace.yaml"},
 	{files.PublicFolder, "Files: Create public folder for Payload apps"},
+	{files.MigrationCheckScript, "Files: Create migration check script for Payload apps"},
 	{files.TurboJSON, "Files: Create turbo.json"},
 	{cicd.PR, "CICD: Create PR workflows"},
 	{cicd.ReleaseWorkflow, "CICD: Create release workflow"},
