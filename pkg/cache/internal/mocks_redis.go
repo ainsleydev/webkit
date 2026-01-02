@@ -22,7 +22,6 @@ import (
 type MockRedisStore struct {
 	ctrl     *gomock.Controller
 	recorder *MockRedisStoreMockRecorder
-	isgomock struct{}
 }
 
 // MockRedisStoreMockRecorder is the mock recorder for MockRedisStore.
@@ -57,10 +56,10 @@ func (mr *MockRedisStoreMockRecorder) Close() *gomock.Call {
 }
 
 // Del mocks base method.
-func (m *MockRedisStore) Del(ctx context.Context, keys ...string) *redis.IntCmd {
+func (m *MockRedisStore) Del(arg0 context.Context, arg1 ...string) *redis.IntCmd {
 	m.ctrl.T.Helper()
-	varargs := []any{ctx}
-	for _, a := range keys {
+	varargs := []any{arg0}
+	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Del", varargs...)
@@ -69,73 +68,73 @@ func (m *MockRedisStore) Del(ctx context.Context, keys ...string) *redis.IntCmd 
 }
 
 // Del indicates an expected call of Del.
-func (mr *MockRedisStoreMockRecorder) Del(ctx any, keys ...any) *gomock.Call {
+func (mr *MockRedisStoreMockRecorder) Del(arg0 any, arg1 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx}, keys...)
+	varargs := append([]any{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Del", reflect.TypeOf((*MockRedisStore)(nil).Del), varargs...)
 }
 
 // Expire mocks base method.
-func (m *MockRedisStore) Expire(ctx context.Context, key string, expiration time.Duration) *redis.BoolCmd {
+func (m *MockRedisStore) Expire(arg0 context.Context, arg1 string, arg2 time.Duration) *redis.BoolCmd {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Expire", ctx, key, expiration)
+	ret := m.ctrl.Call(m, "Expire", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*redis.BoolCmd)
 	return ret0
 }
 
 // Expire indicates an expected call of Expire.
-func (mr *MockRedisStoreMockRecorder) Expire(ctx, key, expiration any) *gomock.Call {
+func (mr *MockRedisStoreMockRecorder) Expire(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Expire", reflect.TypeOf((*MockRedisStore)(nil).Expire), ctx, key, expiration)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Expire", reflect.TypeOf((*MockRedisStore)(nil).Expire), arg0, arg1, arg2)
 }
 
 // FlushAll mocks base method.
-func (m *MockRedisStore) FlushAll(ctx context.Context) *redis.StatusCmd {
+func (m *MockRedisStore) FlushAll(arg0 context.Context) *redis.StatusCmd {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlushAll", ctx)
+	ret := m.ctrl.Call(m, "FlushAll", arg0)
 	ret0, _ := ret[0].(*redis.StatusCmd)
 	return ret0
 }
 
 // FlushAll indicates an expected call of FlushAll.
-func (mr *MockRedisStoreMockRecorder) FlushAll(ctx any) *gomock.Call {
+func (mr *MockRedisStoreMockRecorder) FlushAll(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlushAll", reflect.TypeOf((*MockRedisStore)(nil).FlushAll), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlushAll", reflect.TypeOf((*MockRedisStore)(nil).FlushAll), arg0)
 }
 
 // Get mocks base method.
-func (m *MockRedisStore) Get(ctx context.Context, key string) *redis.StringCmd {
+func (m *MockRedisStore) Get(arg0 context.Context, arg1 string) *redis.StringCmd {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, key)
+	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*redis.StringCmd)
 	return ret0
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockRedisStoreMockRecorder) Get(ctx, key any) *gomock.Call {
+func (mr *MockRedisStoreMockRecorder) Get(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRedisStore)(nil).Get), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRedisStore)(nil).Get), arg0, arg1)
 }
 
 // Ping mocks base method.
-func (m *MockRedisStore) Ping(ctx context.Context) *redis.StatusCmd {
+func (m *MockRedisStore) Ping(arg0 context.Context) *redis.StatusCmd {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Ping", ctx)
+	ret := m.ctrl.Call(m, "Ping", arg0)
 	ret0, _ := ret[0].(*redis.StatusCmd)
 	return ret0
 }
 
 // Ping indicates an expected call of Ping.
-func (mr *MockRedisStoreMockRecorder) Ping(ctx any) *gomock.Call {
+func (mr *MockRedisStoreMockRecorder) Ping(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockRedisStore)(nil).Ping), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockRedisStore)(nil).Ping), arg0)
 }
 
 // SAdd mocks base method.
-func (m *MockRedisStore) SAdd(ctx context.Context, key string, members ...any) *redis.IntCmd {
+func (m *MockRedisStore) SAdd(arg0 context.Context, arg1 string, arg2 ...any) *redis.IntCmd {
 	m.ctrl.T.Helper()
-	varargs := []any{ctx, key}
-	for _, a := range members {
+	varargs := []any{arg0, arg1}
+	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "SAdd", varargs...)
@@ -144,36 +143,36 @@ func (m *MockRedisStore) SAdd(ctx context.Context, key string, members ...any) *
 }
 
 // SAdd indicates an expected call of SAdd.
-func (mr *MockRedisStoreMockRecorder) SAdd(ctx, key any, members ...any) *gomock.Call {
+func (mr *MockRedisStoreMockRecorder) SAdd(arg0, arg1 any, arg2 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, key}, members...)
+	varargs := append([]any{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SAdd", reflect.TypeOf((*MockRedisStore)(nil).SAdd), varargs...)
 }
 
 // SMembers mocks base method.
-func (m *MockRedisStore) SMembers(ctx context.Context, key string) *redis.StringSliceCmd {
+func (m *MockRedisStore) SMembers(arg0 context.Context, arg1 string) *redis.StringSliceCmd {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SMembers", ctx, key)
+	ret := m.ctrl.Call(m, "SMembers", arg0, arg1)
 	ret0, _ := ret[0].(*redis.StringSliceCmd)
 	return ret0
 }
 
 // SMembers indicates an expected call of SMembers.
-func (mr *MockRedisStoreMockRecorder) SMembers(ctx, key any) *gomock.Call {
+func (mr *MockRedisStoreMockRecorder) SMembers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMembers", reflect.TypeOf((*MockRedisStore)(nil).SMembers), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMembers", reflect.TypeOf((*MockRedisStore)(nil).SMembers), arg0, arg1)
 }
 
 // Set mocks base method.
-func (m *MockRedisStore) Set(ctx context.Context, key string, value any, expiration time.Duration) *redis.StatusCmd {
+func (m *MockRedisStore) Set(arg0 context.Context, arg1 string, arg2 any, arg3 time.Duration) *redis.StatusCmd {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", ctx, key, value, expiration)
+	ret := m.ctrl.Call(m, "Set", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*redis.StatusCmd)
 	return ret0
 }
 
 // Set indicates an expected call of Set.
-func (mr *MockRedisStoreMockRecorder) Set(ctx, key, value, expiration any) *gomock.Call {
+func (mr *MockRedisStoreMockRecorder) Set(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockRedisStore)(nil).Set), ctx, key, value, expiration)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockRedisStore)(nil).Set), arg0, arg1, arg2, arg3)
 }
