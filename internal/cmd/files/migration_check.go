@@ -30,7 +30,7 @@ func MigrationCheckScript(_ context.Context, input cmdtools.CommandInput) error 
 			scaffold.WithScaffoldMode(),
 		)
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("creating migration check script for app %s", app.Name))
+			return errors.Wrap(err, "creating migration check script")
 		}
 	}
 
@@ -59,6 +59,8 @@ try {
 	const lockContent = fs.readFileSync(lockFile, 'utf8');
 	const nodeModulesContent = fs.readFileSync(nodeModulesLock, 'utf8');
 
+	// pnpm creates identical lockfiles, so strict equality check is correct.
+	// This catches actual dependency mismatches without false positives from timestamps.
 	if (lockContent !== nodeModulesContent) {
 		console.error('❌ Dependencies out of sync!');
 		console.error('   Run: pnpm install');

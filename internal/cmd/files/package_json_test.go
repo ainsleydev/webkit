@@ -527,7 +527,8 @@ func TestPackageJSONApp(t *testing.T) {
 			scripts, ok := pkg["scripts"].(map[string]any)
 			require.True(t, ok)
 
-			assert.Equal(t, "NODE_ENV=production payload migrate:create", scripts["migrate:create"])
+			assert.Equal(t, "node scripts/check-deps.js", scripts["migrate:check"])
+			assert.Equal(t, "pnpm migrate:check && NODE_ENV=production payload migrate:create", scripts["migrate:create"])
 			assert.Equal(t, "NODE_ENV=production payload migrate:status", scripts["migrate:status"])
 		}
 	})
@@ -593,7 +594,8 @@ func TestGetAppTypeScripts(t *testing.T) {
 		"Payload includes migration scripts": {
 			input: appdef.AppTypePayload,
 			want: map[string]string{
-				"migrate:create": "NODE_ENV=production payload migrate:create",
+				"migrate:check":  "node scripts/check-deps.js",
+				"migrate:create": "pnpm migrate:check && NODE_ENV=production payload migrate:create",
 				"migrate:status": "NODE_ENV=production payload migrate:status",
 			},
 		},
