@@ -17,6 +17,8 @@ var commentMap = map[string]string{
 	".editorconfig": "#",
 	".toml":         "#",
 	".js":           "//",
+	".cjs":          "//",
+	".mjs":          "//",
 	".html":         "<!-- %s -->",
 	".md":           "<!-- %s -->",
 	".json":         "",
