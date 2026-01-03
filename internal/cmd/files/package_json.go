@@ -129,8 +129,7 @@ func PackageJSONApp(_ context.Context, input cmdtools.CommandInput) error {
 // These scripts are injected into app package.json files based on the app type.
 var appTypeScripts = map[appdef.AppType]map[string]string{
 	appdef.AppTypePayload: {
-		"migrate:check":  "node scripts/check-deps.cjs",
-		"migrate:create": "pnpm migrate:check && NODE_ENV=production payload migrate:create",
+		"migrate:create": "NODE_ENV=production payload migrate:create",
 		"migrate:status": "NODE_ENV=production payload migrate:status",
 	},
 	appdef.AppTypeSvelteKit: {},

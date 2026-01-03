@@ -614,7 +614,7 @@ jobs:
         run: |
           result="{{ ghExpr "steps.migration.outputs.result" }}"
           if [[ "$result" == "fail" ]]; then
-            message="🔴 **Schema changes detected!** Please run \`pnpm migrate:create\`, commit the migration, and push."
+            message=$'🔴 **Schema changes detected!** Please run \`pnpm migrate:create\`, commit the migration, and push.\n\n⚠️  **Important:** Make sure you ran \`pnpm install\` after pulling changes, or your local migration may differ from CI.'
           elif [[ "$result" == "pass" ]]; then
             message="🟢 **No pending migrations detected.** All clear to merge!"
           else
