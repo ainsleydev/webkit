@@ -16,8 +16,6 @@
 - name: Install webkit binary
   shell: |
     VERSION={{ webkit_version }} INSTALL_DIR={{ webkit_install_dir }} /tmp/webkit-install.sh
-  args:
-    creates: '{{ webkit_install_dir }}/webkit'
   environment:
     VERSION: '{{ webkit_version }}'
     INSTALL_DIR: '{{ webkit_install_dir }}'
