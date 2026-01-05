@@ -12,7 +12,8 @@ import (
 )
 
 // InMemory implements the Provider interface using an in-memory map for testing purposes.
-// All operations are thread-safe and respect context cancellation.
+// All operations are thread-safe using a read-write mutex. Writes are fully isolated
+// and reads see a consistent snapshot. All operations respect context cancellation.
 type InMemory struct {
 	mu   sync.RWMutex
 	data map[string]*fileEntry
@@ -49,7 +50,7 @@ func (m *InMemory) Upload(ctx context.Context, path string, content io.Reader) e
 
 	m.data[path] = &fileEntry{
 		data:         data,
-		lastModified: time.Now(),
+		lastModified: time.Now().UTC(),
 	}
 	return nil
 }
@@ -149,7 +150,9 @@ func (m *InMemory) Stat(ctx context.Context, path string) (*FileInfo, error) {
 	}, nil
 }
 
-// Reset clears all stored data, useful for test scenarios.
+// Reset clears all stored data. This method is only available on the in-memory
+// implementation and is primarily useful for resetting state between tests without
+// creating new instances.
 func (m *InMemory) Reset() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
