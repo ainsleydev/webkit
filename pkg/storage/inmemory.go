@@ -15,13 +15,19 @@ import (
 // All operations are thread-safe and respect context cancellation.
 type InMemory struct {
 	mu   sync.RWMutex
-	data map[string][]byte
+	data map[string]*fileEntry
+}
+
+// fileEntry holds file data and metadata.
+type fileEntry struct {
+	data         []byte
+	lastModified time.Time
 }
 
 // NewInMemory creates a new in-memory storage provider.
 func NewInMemory() *InMemory {
 	return &InMemory{
-		data: make(map[string][]byte),
+		data: make(map[string]*fileEntry),
 	}
 }
 
@@ -41,7 +47,10 @@ func (m *InMemory) Upload(ctx context.Context, path string, content io.Reader) e
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.data[path] = data
+	m.data[path] = &fileEntry{
+		data:         data,
+		lastModified: time.Now(),
+	}
 	return nil
 }
 
@@ -93,12 +102,12 @@ func (m *InMemory) Download(ctx context.Context, path string) (io.ReadCloser, er
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	data, exists := m.data[path]
+	entry, exists := m.data[path]
 	if !exists {
 		return nil, fmt.Errorf("file not found: %s", path)
 	}
 
-	return io.NopCloser(bytes.NewReader(data)), nil
+	return io.NopCloser(bytes.NewReader(entry.data)), nil
 }
 
 // Exists checks if a file exists at the specified path.
@@ -127,15 +136,22 @@ func (m *InMemory) Stat(ctx context.Context, path string) (*FileInfo, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	data, exists := m.data[path]
+	entry, exists := m.data[path]
 	if !exists {
 		return nil, fmt.Errorf("file not found: %s", path)
 	}
 
 	return &FileInfo{
-		Size:         int64(len(data)),
-		LastModified: time.Now(),
+		Size:         int64(len(entry.data)),
+		LastModified: entry.lastModified,
 		IsDir:        false,
 		ContentType:  "",
 	}, nil
+}
+
+// Reset clears all stored data, useful for test scenarios.
+func (m *InMemory) Reset() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.data = make(map[string]*fileEntry)
 }

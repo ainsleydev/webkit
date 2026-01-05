@@ -32,7 +32,8 @@ func TestInMemory_Upload(t *testing.T) {
 		err := store.Upload(context.Background(), "test.txt", content)
 
 		require.NoError(t, err)
-		assert.Equal(t, []byte("test content"), store.data["test.txt"])
+		assert.Equal(t, []byte("test content"), store.data["test.txt"].data)
+		assert.False(t, store.data["test.txt"].lastModified.IsZero())
 	})
 
 	t.Run("Upload overwrites existing file", func(t *testing.T) {
@@ -43,11 +44,16 @@ func TestInMemory_Upload(t *testing.T) {
 		err := store.Upload(context.Background(), "test.txt", content1)
 		require.NoError(t, err)
 
+		firstModified := store.data["test.txt"].lastModified
+
+		time.Sleep(time.Millisecond)
+
 		content2 := bytes.NewReader([]byte("second content"))
 		err = store.Upload(context.Background(), "test.txt", content2)
 		require.NoError(t, err)
 
-		assert.Equal(t, []byte("second content"), store.data["test.txt"])
+		assert.Equal(t, []byte("second content"), store.data["test.txt"].data)
+		assert.True(t, store.data["test.txt"].lastModified.After(firstModified))
 	})
 
 	t.Run("Upload with cancelled context", func(t *testing.T) {
@@ -83,7 +89,10 @@ func TestInMemory_Delete(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemory()
-		store.data["test.txt"] = []byte("test content")
+		store.data["test.txt"] = &fileEntry{
+			data:         []byte("test content"),
+			lastModified: time.Now(),
+		}
 
 		err := store.Delete(context.Background(), "test.txt")
 		require.NoError(t, err)
@@ -118,9 +127,10 @@ func TestInMemory_List(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemory()
-		store.data["files/test1.txt"] = []byte("content1")
-		store.data["files/test2.txt"] = []byte("content2")
-		store.data["other/test3.txt"] = []byte("content3")
+		now := time.Now()
+		store.data["files/test1.txt"] = &fileEntry{data: []byte("content1"), lastModified: now}
+		store.data["files/test2.txt"] = &fileEntry{data: []byte("content2"), lastModified: now}
+		store.data["other/test3.txt"] = &fileEntry{data: []byte("content3"), lastModified: now}
 
 		keys, err := store.List(context.Background(), "files/")
 		require.NoError(t, err)
@@ -134,8 +144,9 @@ func TestInMemory_List(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemory()
-		store.data["test1.txt"] = []byte("content1")
-		store.data["test2.txt"] = []byte("content2")
+		now := time.Now()
+		store.data["test1.txt"] = &fileEntry{data: []byte("content1"), lastModified: now}
+		store.data["test2.txt"] = &fileEntry{data: []byte("content2"), lastModified: now}
 
 		keys, err := store.List(context.Background(), "")
 		require.NoError(t, err)
@@ -172,7 +183,10 @@ func TestInMemory_Download(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemory()
-		store.data["test.txt"] = []byte("test content")
+		store.data["test.txt"] = &fileEntry{
+			data:         []byte("test content"),
+			lastModified: time.Now(),
+		}
 
 		reader, err := store.Download(context.Background(), "test.txt")
 		require.NoError(t, err)
@@ -215,7 +229,10 @@ func TestInMemory_Exists(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemory()
-		store.data["test.txt"] = []byte("test content")
+		store.data["test.txt"] = &fileEntry{
+			data:         []byte("test content"),
+			lastModified: time.Now(),
+		}
 
 		exists, err := store.Exists(context.Background(), "test.txt")
 		require.NoError(t, err)
@@ -252,13 +269,18 @@ func TestInMemory_Stat(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemory()
-		store.data["test.txt"] = []byte("test content")
+		now := time.Now()
+		store.data["test.txt"] = &fileEntry{
+			data:         []byte("test content"),
+			lastModified: now,
+		}
 
 		info, err := store.Stat(context.Background(), "test.txt")
 		require.NoError(t, err)
 		assert.Equal(t, int64(12), info.Size)
 		assert.False(t, info.IsDir)
 		assert.Equal(t, "", info.ContentType)
+		assert.Equal(t, now, info.LastModified)
 	})
 
 	t.Run("Stat non-existent file", func(t *testing.T) {
@@ -313,7 +335,10 @@ func TestInMemory_ThreadSafety(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemory()
-		store.data["test.txt"] = []byte("initial content")
+		store.data["test.txt"] = &fileEntry{
+			data:         []byte("initial content"),
+			lastModified: time.Now(),
+		}
 
 		var wg sync.WaitGroup
 		iterations := 50
@@ -340,8 +365,9 @@ func TestInMemory_ThreadSafety(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemory()
-		store.data["test1.txt"] = []byte("content1")
-		store.data["test2.txt"] = []byte("content2")
+		now := time.Now()
+		store.data["test1.txt"] = &fileEntry{data: []byte("content1"), lastModified: now}
+		store.data["test2.txt"] = &fileEntry{data: []byte("content2"), lastModified: now}
 
 		var wg sync.WaitGroup
 		iterations := 50
@@ -430,6 +456,58 @@ func TestInMemory_ContextTimeout(t *testing.T) {
 		time.Sleep(2 * time.Nanosecond)
 		_, err := store.Download(ctx, "test.txt")
 		assert.Error(t, err)
+	})
+}
+
+func TestInMemory_Reset(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Reset clears all data", func(t *testing.T) {
+		t.Parallel()
+
+		store := NewInMemory()
+		ctx := context.Background()
+
+		content := bytes.NewReader([]byte("test content"))
+		err := store.Upload(ctx, "test.txt", content)
+		require.NoError(t, err)
+
+		exists, err := store.Exists(ctx, "test.txt")
+		require.NoError(t, err)
+		assert.True(t, exists)
+
+		store.Reset()
+
+		exists, err = store.Exists(ctx, "test.txt")
+		require.NoError(t, err)
+		assert.False(t, exists)
+
+		keys, err := store.List(ctx, "")
+		require.NoError(t, err)
+		assert.Len(t, keys, 0)
+	})
+
+	t.Run("Reset allows reuse", func(t *testing.T) {
+		t.Parallel()
+
+		store := NewInMemory()
+		ctx := context.Background()
+
+		content1 := bytes.NewReader([]byte("first"))
+		err := store.Upload(ctx, "file1.txt", content1)
+		require.NoError(t, err)
+
+		store.Reset()
+
+		content2 := bytes.NewReader([]byte("second"))
+		err = store.Upload(ctx, "file2.txt", content2)
+		require.NoError(t, err)
+
+		keys, err := store.List(ctx, "")
+		require.NoError(t, err)
+		assert.Len(t, keys, 1)
+		assert.Contains(t, keys, "file2.txt")
+		assert.NotContains(t, keys, "file1.txt")
 	})
 }
 
