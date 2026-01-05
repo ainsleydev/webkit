@@ -298,11 +298,11 @@ func TestInMemory_ThreadSafety(t *testing.T) {
 
 		for i := 0; i < iterations; i++ {
 			wg.Add(1)
-			go func(index int) {
+			go func() {
 				defer wg.Done()
 				content := bytes.NewReader([]byte("content"))
 				_ = store.Upload(context.Background(), "test.txt", content)
-			}(i)
+			}()
 		}
 
 		wg.Wait()
