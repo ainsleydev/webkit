@@ -56,7 +56,7 @@ func (m *InMemory) Upload(ctx context.Context, path string, content io.Reader) e
 }
 
 // Delete removes the file at the specified path.
-// Returns nil if the file doesn't exist (matching S3 behaviour).
+// Returns an error if the file doesn't exist.
 func (m *InMemory) Delete(ctx context.Context, path string) error {
 	select {
 	case <-ctx.Done():
@@ -66,6 +66,10 @@ func (m *InMemory) Delete(ctx context.Context, path string) error {
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	if _, exists := m.data[path]; !exists {
+		return fmt.Errorf("file not found: %s", path)
+	}
 
 	delete(m.data, path)
 	return nil
@@ -152,7 +156,8 @@ func (m *InMemory) Stat(ctx context.Context, path string) (*FileInfo, error) {
 
 // Reset clears all stored data. This method is only available on the in-memory
 // implementation and is primarily useful for resetting state between tests without
-// creating new instances.
+// creating new instances. Callers must ensure no concurrent operations are in progress,
+// as this method acquires a write lock and will block until all reads complete.
 func (m *InMemory) Reset() {
 	m.mu.Lock()
 	defer m.mu.Unlock()

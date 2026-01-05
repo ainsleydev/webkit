@@ -104,7 +104,8 @@ func TestInMemory_Delete(t *testing.T) {
 
 		store := NewInMemory()
 		err := store.Delete(context.Background(), "non-existent.txt")
-		require.NoError(t, err)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "file not found")
 	})
 
 	t.Run("Delete with cancelled context", func(t *testing.T) {
