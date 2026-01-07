@@ -1,25 +1,31 @@
+<script lang="ts" module>
+import type { PayloadFormField } from '../../utils/forms/schema';
+
+export type PayloadFormProps = {
+	/**
+	 * Payload form configuration
+	 */
+	form: {
+		id: number | string;
+		fields?: PayloadFormField[] | null;
+		confirmationMessage?: string | null;
+		submitButtonLabel?: string | null;
+	};
+	/**
+	 * API endpoint to submit form data to (defaults to '/api/forms')
+	 */
+	apiEndpoint?: string;
+	/**
+	 * Custom submit handler (overrides default API submission)
+	 */
+	onSubmit?: ((data: Record<string, unknown>) => Promise<void>) | undefined;
+};
+</script>
+
 <script lang="ts">
 import type { PayloadFormField } from '../../utils/forms/schema';
 
-/**
- * Payload form configuration
- */
-export let form: {
-	id: number | string;
-	fields?: PayloadFormField[] | null;
-	confirmationMessage?: string | null;
-	submitButtonLabel?: string | null;
-};
-
-/**
- * API endpoint to submit form data to (defaults to '/api/forms')
- */
-export let apiEndpoint = '/api/forms';
-
-/**
- * Custom submit handler (overrides default API submission)
- */
-export let onSubmit: ((data: Record<string, unknown>) => Promise<void>) | undefined = undefined;
+const { form, apiEndpoint = '/api/forms', onSubmit = undefined }: PayloadFormProps = $props();
 
 let formData = $state<Record<string, unknown>>({});
 let errors: Record<string, string> = $state({});

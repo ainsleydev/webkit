@@ -1,5 +1,11 @@
+<script lang="ts" module>
+export type RowProps = {
+	noGaps?: boolean;
+};
+</script>
+
 <script lang="ts">
-let noGaps = false;
+const { noGaps = false }: RowProps = $props();
 </script>
 
 <!--
