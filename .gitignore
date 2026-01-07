@@ -72,6 +72,9 @@
 **/.next/
 **/out/
 
+# SvelteKit
+**/.svelte-kit/
+
 # Production
 **/build/
 

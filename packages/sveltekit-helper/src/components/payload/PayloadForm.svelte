@@ -200,7 +200,6 @@ async function handleSubmit(event: SubmitEvent) {
 		display: flex;
 		flex-direction: column;
 		gap: var(--form-gap);
-	}
 
 		&__group {
 			display: flex;
@@ -316,6 +315,7 @@ async function handleSubmit(event: SubmitEvent) {
 			border-radius: 50%;
 			animation: spin 0.6s linear infinite;
 		}
+	}
 
 	@keyframes spin {
 		to {
