@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.1.2
+
+### Patch Changes
+
+- d0c2bd2: Fixed Svelte components to use Svelte 5 runes mode instead of legacy export let syntax
+
 ## 0.1.1
 
 ### Patch Changes
