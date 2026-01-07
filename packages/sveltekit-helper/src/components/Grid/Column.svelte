@@ -1,3 +1,7 @@
+<script lang="ts">
+let props: Record<string, unknown> = $props();
+</script>
+
 <!--
 	@component
 
@@ -12,7 +16,7 @@
 	</Column>
 	```
 -->
-<div class="col" {...$$restProps}>
+<div class="col" {...props}>
 	<slot />
 </div>
 
