@@ -68,8 +68,8 @@
 	},
 	"dependencies": {
 		"@ainsleydev/email-templates": "workspace:*",
-		"@lexical/headless": "0.38.2",
-		"@lexical/html": "0.38.2",
+		"@lexical/headless": "0.39.0",
+		"@lexical/html": "0.39.0",
 		"@nouance/payload-better-fields-plugin": "^2.0.2",
 		"@payloadcms/db-sqlite": "3.63.0",
 		"@payloadcms/plugin-form-builder": "3.63.0",
@@ -80,7 +80,7 @@
 		"commander": "^14.0.2",
 		"dotenv": "^16.4.5",
 		"jsdom": "^27.2.0",
-		"lexical": "0.38.2",
+		"lexical": "0.39.0",
 		"mime-types": "^3.0.1",
 		"payload": "3.63.0"
 	},
@@ -97,7 +97,7 @@
 		"@types/jest": "^30.0.0",
 		"@types/jsdom": "^27.0.0",
 		"@types/mime-types": "^3.0.1",
-		"@types/node": "^24.10.1",
+		"@types/node": "^25.0.3",
 		"@types/react": "^18.3.26",
 		"jest": "^30.2.0",
 		"json-schema": "^0.4.0",
@@ -106,7 +106,7 @@
 		"rimraf": "6.1.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.5.4",
-		"vitest": "^2.0.5"
+		"vitest": "^4.0.16"
 	},
 	"engines": {
 		"node": ">=18",
