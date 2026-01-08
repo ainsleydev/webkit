@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.1.3
+
+### Patch Changes
+
+- 0a894ab: Replaced $$restProps with Svelte 5 runes mode rest destructuring using $props()
+
 ## 0.1.2
 
 ### Patch Changes
