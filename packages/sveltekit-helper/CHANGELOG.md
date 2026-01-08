@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.1.4
+
+### Patch Changes
+
+- 9e57cdb: Fixing container example
+
 ## 0.1.3
 
 ### Patch Changes
