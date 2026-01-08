@@ -5,7 +5,7 @@ export type RowProps = {
 </script>
 
 <script lang="ts">
-const { noGaps = false }: RowProps = $props();
+const { noGaps = false, ...restProps }: RowProps = $props();
 </script>
 
 <!--
@@ -27,7 +27,7 @@ const { noGaps = false }: RowProps = $props();
 	</Row>
 	```
 -->
-<div class="row" class:row--no-gaps={noGaps} {...$$restProps}>
+<div class="row" class:row--no-gaps={noGaps} {...restProps}>
 	<slot />
 </div>
 

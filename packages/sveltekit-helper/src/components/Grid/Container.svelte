@@ -1,3 +1,7 @@
+<script lang="ts">
+const { ...restProps } = $props();
+</script>
+
 <!--
 	@component
 
@@ -19,7 +23,7 @@
 	</Container>
 	```
 -->
-<div class="container" {...$$restProps}>
+<div class="container" {...restProps}>
 	<slot />
 </div>
 
