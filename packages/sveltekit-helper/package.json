@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/sveltekit-helper",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"description": "SvelteKit utilities, components and helpers for ainsley.dev builds",
 	"license": "MIT",
 	"type": "module",
