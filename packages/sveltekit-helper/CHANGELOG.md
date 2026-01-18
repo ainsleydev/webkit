@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.1.5
+
+### Patch Changes
+
+- 99c58f8: Improve CSS variable override flexibility with fallback pattern. Adds mobile-specific variables (--row-gap-mobile, --col-gap-mobile) to allow responsive customization without media query conflicts. Includes comprehensive CSS specificity documentation
+
 ## 0.1.4
 
 ### Patch Changes
