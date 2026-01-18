@@ -38,11 +38,19 @@ export type SidebarProps = {
 		onToggle
 	}: SidebarProps = $props();
 
+	// Generate unique ID for this sidebar instance
+	const uniqueId = `sidebar-${Math.random().toString(36).slice(2, 11)}`;
+
+	// Element refs
+	let checkboxRef = $state<HTMLInputElement>();
+	let overlayRef = $state<HTMLLabelElement>();
+	let contentRef = $state<HTMLDivElement>();
+	let previousActiveElement = $state<HTMLElement>();
+
 	// Sync checkbox with isOpen state
 	$effect(() => {
-		const checkbox = document.querySelector<HTMLInputElement>('.sidebar__checkbox');
-		if (checkbox && checkbox.checked !== isOpen) {
-			checkbox.checked = isOpen;
+		if (checkboxRef && checkboxRef.checked !== isOpen) {
+			checkboxRef.checked = isOpen;
 		}
 	});
 
@@ -56,30 +64,57 @@ export type SidebarProps = {
 		onToggle?.(isOpen);
 	});
 
-	onMount(() => {
-		const overlay = document.querySelector('.sidebar__overlay');
-		const checkbox = document.querySelector<HTMLInputElement>('.sidebar__checkbox');
-
-		if (overlay && checkbox) {
-			const handleOverlayClick = (e: Event) => {
-				if (!closeOnOverlayClick) return;
-				e.preventDefault();
-				checkbox.checked = false;
-				isOpen = false;
-			};
-
-			const handleCheckboxChange = () => {
-				isOpen = checkbox.checked;
-			};
-
-			overlay.addEventListener('click', handleOverlayClick);
-			checkbox.addEventListener('change', handleCheckboxChange);
-
-			return () => {
-				overlay.removeEventListener('click', handleOverlayClick);
-				checkbox.removeEventListener('change', handleCheckboxChange);
-			};
+	// Focus management
+	$effect(() => {
+		if (isOpen && contentRef) {
+			previousActiveElement = document.activeElement as HTMLElement;
+			const firstFocusable = contentRef.querySelector<HTMLElement>(
+				'a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])'
+			);
+			firstFocusable?.focus();
+		} else if (!isOpen && previousActiveElement) {
+			previousActiveElement.focus();
+			previousActiveElement = undefined;
 		}
+	});
+
+	onMount(() => {
+		if (!overlayRef || !checkboxRef) return;
+
+		const handleOverlayClick = (e: Event) => {
+			if (!closeOnOverlayClick) return;
+			e.preventDefault();
+			if (checkboxRef) {
+				checkboxRef.checked = false;
+			}
+			isOpen = false;
+		};
+
+		const handleCheckboxChange = () => {
+			if (checkboxRef) {
+				isOpen = checkboxRef.checked;
+			}
+		};
+
+		const handleKeydown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape' && isOpen) {
+				e.preventDefault();
+				if (checkboxRef) {
+					checkboxRef.checked = false;
+				}
+				isOpen = false;
+			}
+		};
+
+		overlayRef.addEventListener('click', handleOverlayClick);
+		checkboxRef.addEventListener('change', handleCheckboxChange);
+		document.addEventListener('keydown', handleKeydown);
+
+		return () => {
+			overlayRef?.removeEventListener('click', handleOverlayClick);
+			checkboxRef?.removeEventListener('change', handleCheckboxChange);
+			document.removeEventListener('keydown', handleKeydown);
+		};
 	});
 </script>
 
@@ -111,8 +146,14 @@ export type SidebarProps = {
 	style="--sidebar-width: {width}; --sidebar-top: {top}px; --sidebar-overlay-opacity: {overlayOpacity}"
 >
 	<!-- Click Logic -->
-	<input type="checkbox" class="sidebar__checkbox" id="sidebar-checkbox" />
-	<label for="sidebar-checkbox" class="sidebar__overlay"></label>
+	<input
+		bind:this={checkboxRef}
+		type="checkbox"
+		class="sidebar__checkbox"
+		id={uniqueId}
+		aria-label={menuLabel}
+	/>
+	<label bind:this={overlayRef} for={uniqueId} class="sidebar__overlay"></label>
 
 	<!-- Hamburger Toggle -->
 	{#if toggleStyle === 'hamburger'}
@@ -120,9 +161,9 @@ export type SidebarProps = {
 	{/if}
 
 	<!-- Content -->
-	<div class="sidebar__content">
+	<div bind:this={contentRef} class="sidebar__content" role="navigation" aria-label={menuLabel}>
 		{#if toggleStyle === 'toggle'}
-			<label for="sidebar-checkbox" class="sidebar__toggle">
+			<label for={uniqueId} class="sidebar__toggle">
 				{menuLabel}
 			</label>
 		{/if}
