@@ -23,6 +23,11 @@
 			"svelte": "./dist/index.js",
 			"default": "./dist/index.js"
 		},
+		"./components": {
+			"types": "./dist/components/index.d.ts",
+			"svelte": "./dist/components/index.js",
+			"default": "./dist/components/index.js"
+		},
 		"./components/Grid": {
 			"types": "./dist/components/Grid/index.d.ts",
 			"svelte": "./dist/components/Grid/index.js",
@@ -66,7 +71,9 @@
 			"optional": true
 		}
 	},
-	"dependencies": {},
+	"dependencies": {
+		"svelte-hamburgers": "^4.1.0"
+	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
 		"@sveltejs/kit": "^2.0.0",
