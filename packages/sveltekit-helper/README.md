@@ -17,6 +17,36 @@ pnpm add @ainsleydev/sveltekit-helper
 
 ## Grid Components
 
+### CSS Variable Customization
+
+All Grid components use CSS variables with fallback values, allowing flexible customization:
+
+**Override Priority (highest to lowest):**
+1. Inline styles: `<Container style="--container-padding: 2rem">`
+2. Page/component-scoped: `.pricing-page { --container-padding: 3rem; }`
+3. Global: `:root { --container-padding: 2rem; }`
+4. Component defaults: Defined in each component's `<style>` block
+
+**Responsive Variables:**
+
+Row and Column components include mobile-specific overrides (< 568px). You can customize responsive behavior using:
+
+```css
+:root {
+	/* Override both desktop and mobile */
+	--row-gap: 1.5rem;
+
+	/* Override mobile only */
+	--row-gap-mobile: 0.75rem;
+	--col-gap-mobile: 0.75rem;
+}
+```
+
+**Fallback chain on mobile:**
+1. `--row-gap-mobile` (if set)
+2. `--row-gap` (if set)
+3. `0.5rem` (component default)
+
 ### Container
 
 Center content horizontally with predefined max-width and support for breakout layouts.
@@ -37,14 +67,28 @@ Center content horizontally with predefined max-width and support for breakout l
 
 #### Customisation
 
-Override CSS variables to customise the container:
+Override CSS variables globally from `:root`:
 
 ```css
-.container {
+/* Global override for ALL containers */
+:root {
 	--container-padding: 2rem;
 	--container-max-width: 1400px;
 	--container-breakout-max-width: 1600px;
 }
+
+/* Page-specific override */
+.pricing-page {
+	--container-padding: 3rem;
+}
+```
+
+Or use inline styles for single instances:
+
+```svelte
+<Container style="--container-padding: 2rem">
+	<Row>...</Row>
+</Container>
 ```
 
 ### Row
@@ -70,9 +114,19 @@ Flexbox row container with gap management.
 #### Customisation
 
 ```css
-.row {
+/* Global override */
+:root {
 	--row-gap: 1.5rem;
+	--row-gap-mobile: 0.75rem; /* Optional: mobile-specific gap (< 568px) */
 }
+```
+
+Or use inline styles:
+
+```svelte
+<Row style="--row-gap: 0.5rem">
+	<Column>...</Column>
+</Row>
 ```
 
 ### Column
@@ -88,8 +142,10 @@ Base column component with customisable gap. Consumers should define their own g
 #### Customisation
 
 ```css
-.col {
+/* Global column gap */
+:root {
 	--col-gap: 1.5rem;
+	--col-gap-mobile: 0.75rem; /* Optional: mobile-specific gap (< 568px) */
 }
 
 /* Define your own grid classes */
@@ -170,10 +226,11 @@ Renders a form dynamically from Payload CMS form builder fields.
 
 #### Customisation
 
-Style the form using CSS variables:
+Override CSS variables globally:
 
 ```css
-.payload-form {
+/* Global form styling */
+:root {
 	--form-gap: 1.5rem;
 	--form-input-padding: 1rem;
 	--form-input-border: 1px solid #e5e7eb;
@@ -181,7 +238,9 @@ Style the form using CSS variables:
 	--form-input-bg: #ffffff;
 	--form-input-text: #111827;
 	--form-error-color: #ef4444;
+	--form-error-bg: #fee2e2;
 	--form-success-color: #10b981;
+	--form-success-bg: #d1fae5;
 	--form-button-bg: #3b82f6;
 	--form-button-text: #ffffff;
 	--form-button-hover-bg: #2563eb;

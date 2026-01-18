@@ -35,11 +35,9 @@ const { noGaps = false, ...restProps }: RowProps = $props();
 	.row {
 		$self: &;
 
-		--row-gap: 1rem;
-
 		display: flex;
 		flex-wrap: wrap;
-		margin-inline: calc(var(--row-gap) * -1);
+		margin-inline: calc(var(--row-gap, 1rem) * -1);
 
 		&--no-gaps {
 			margin-inline: 0;
@@ -51,7 +49,7 @@ const { noGaps = false, ...restProps }: RowProps = $props();
 		}
 
 		@media (max-width: 568px) {
-			--row-gap: 0.5rem;
+			margin-inline: calc(var(--row-gap-mobile, var(--row-gap, 0.5rem)) * -1);
 		}
 	}
 </style>

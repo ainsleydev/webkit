@@ -22,14 +22,12 @@ const { ...restProps } = $props();
 
 <style lang="scss">
 	.col {
-		--col-gap: 1rem;
-
 		position: relative;
 		width: 100%;
-		padding-inline: var(--col-gap);
+		padding-inline: var(--col-gap, 1rem);
 
 		@media (max-width: 568px) {
-			--col-gap: 0.5rem;
+			padding-inline: var(--col-gap-mobile, var(--col-gap, 0.5rem));
 		}
 	}
 </style>
