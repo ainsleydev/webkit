@@ -16,26 +16,23 @@ const { ...restProps } = $props();
 	.container {
 		$self: &;
 
-		--container-padding: var(--container-padding, 1rem);
-		--container-max-width: var(--container-max-width, 1328px);
-		--container-breakout-max-width: var(--container-breakout-max-width, 1500px);
 		--container-breakout-size: calc(
-			(var(--container-breakout-max-width) - var(--container-max-width)) / 2
+			(var(--container-breakout-max-width, 1500px) - var(--container-max-width, 1328px)) / 2
 		);
 
 		display: grid;
 		width: 100%;
 		position: relative;
 		grid-template-columns:
-			[full-width-start] minmax(var(--container-padding), 1fr)
+			[full-width-start] minmax(var(--container-padding, 1rem), 1fr)
 			[breakout-start] minmax(0, var(--container-breakout-size))
 			[content-start] min(
-				100% - (var(--container-padding) * 2),
-				var(--container-max-width)
+				100% - (var(--container-padding, 1rem) * 2),
+				var(--container-max-width, 1328px)
 			)
 			[content-end]
 			minmax(0, var(--container-breakout-size)) [breakout-end]
-			minmax(var(--container-padding), 1fr) [full-width-end];
+			minmax(var(--container-padding, 1rem), 1fr) [full-width-end];
 
 		:global(> *) {
 			grid-column: content;
