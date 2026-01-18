@@ -29,7 +29,7 @@ const { ...restProps } = $props();
 		padding-inline: var(--col-gap);
 
 		@media (max-width: 568px) {
-			--col-gap: 0.5rem;
+			--col-gap: var(--col-gap-mobile, var(--col-gap, 0.5rem));
 		}
 	}
 </style>

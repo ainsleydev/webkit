@@ -17,6 +17,36 @@ pnpm add @ainsleydev/sveltekit-helper
 
 ## Grid Components
 
+### CSS Variable Customization
+
+All Grid components use CSS variables with fallback values, allowing flexible customization:
+
+**Override Priority (highest to lowest):**
+1. Inline styles: `<Container style="--container-padding: 2rem">`
+2. Page/component-scoped: `.pricing-page { --container-padding: 3rem; }`
+3. Global: `:root { --container-padding: 2rem; }`
+4. Component defaults: Defined in each component's `<style>` block
+
+**Responsive Variables:**
+
+Row and Column components include mobile-specific overrides (< 568px). You can customize responsive behavior using:
+
+```css
+:root {
+	/* Override both desktop and mobile */
+	--row-gap: 1.5rem;
+
+	/* Override mobile only */
+	--row-gap-mobile: 0.75rem;
+	--col-gap-mobile: 0.75rem;
+}
+```
+
+**Fallback chain on mobile:**
+1. `--row-gap-mobile` (if set)
+2. `--row-gap` (if set)
+3. `0.5rem` (component default)
+
 ### Container
 
 Center content horizontally with predefined max-width and support for breakout layouts.
@@ -87,10 +117,11 @@ Flexbox row container with gap management.
 /* Global override */
 :root {
 	--row-gap: 1.5rem;
+	--row-gap-mobile: 0.75rem; /* Optional: mobile-specific gap (< 568px) */
 }
-
-/* Or inline style */
 ```
+
+Or use inline styles:
 
 ```svelte
 <Row style="--row-gap: 0.5rem">
@@ -114,6 +145,7 @@ Base column component with customisable gap. Consumers should define their own g
 /* Global column gap */
 :root {
 	--col-gap: 1.5rem;
+	--col-gap-mobile: 0.75rem; /* Optional: mobile-specific gap (< 568px) */
 }
 
 /* Define your own grid classes */

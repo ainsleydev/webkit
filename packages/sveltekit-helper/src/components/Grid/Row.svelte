@@ -51,7 +51,7 @@ const { noGaps = false, ...restProps }: RowProps = $props();
 		}
 
 		@media (max-width: 568px) {
-			--row-gap: 0.5rem;
+			--row-gap: var(--row-gap-mobile, var(--row-gap, 0.5rem));
 		}
 	}
 </style>
