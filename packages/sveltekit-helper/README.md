@@ -37,14 +37,28 @@ Center content horizontally with predefined max-width and support for breakout l
 
 #### Customisation
 
-Override CSS variables to customise the container:
+Override CSS variables globally from `:root`:
 
 ```css
-.container {
+/* Global override for ALL containers */
+:root {
 	--container-padding: 2rem;
 	--container-max-width: 1400px;
 	--container-breakout-max-width: 1600px;
 }
+
+/* Page-specific override */
+.pricing-page {
+	--container-padding: 3rem;
+}
+```
+
+Or use inline styles for single instances:
+
+```svelte
+<Container style="--container-padding: 2rem">
+	<Row>...</Row>
+</Container>
 ```
 
 ### Row
@@ -70,9 +84,18 @@ Flexbox row container with gap management.
 #### Customisation
 
 ```css
-.row {
+/* Global override */
+:root {
 	--row-gap: 1.5rem;
 }
+
+/* Or inline style */
+```
+
+```svelte
+<Row style="--row-gap: 0.5rem">
+	<Column>...</Column>
+</Row>
 ```
 
 ### Column
@@ -88,7 +111,8 @@ Base column component with customisable gap. Consumers should define their own g
 #### Customisation
 
 ```css
-.col {
+/* Global column gap */
+:root {
 	--col-gap: 1.5rem;
 }
 
@@ -170,10 +194,11 @@ Renders a form dynamically from Payload CMS form builder fields.
 
 #### Customisation
 
-Style the form using CSS variables:
+Override CSS variables globally:
 
 ```css
-.payload-form {
+/* Global form styling */
+:root {
 	--form-gap: 1.5rem;
 	--form-input-padding: 1rem;
 	--form-input-border: 1px solid #e5e7eb;
@@ -181,7 +206,9 @@ Style the form using CSS variables:
 	--form-input-bg: #ffffff;
 	--form-input-text: #111827;
 	--form-error-color: #ef4444;
+	--form-error-bg: #fee2e2;
 	--form-success-color: #10b981;
+	--form-success-bg: #d1fae5;
 	--form-button-bg: #3b82f6;
 	--form-button-text: #ffffff;
 	--form-button-hover-bg: #2563eb;

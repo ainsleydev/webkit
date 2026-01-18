@@ -22,7 +22,7 @@ const { ...restProps } = $props();
 
 <style lang="scss">
 	.col {
-		--col-gap: 1rem;
+		--col-gap: var(--col-gap, 1rem);
 
 		position: relative;
 		width: 100%;

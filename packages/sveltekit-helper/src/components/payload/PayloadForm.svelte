@@ -188,20 +188,20 @@ async function handleSubmit(event: SubmitEvent) {
 <style lang="scss">
 	.payload-form {
 		$self: &;
-		--form-gap: 1rem;
-		--form-input-padding: 0.75rem;
-		--form-input-border: 1px solid #d1d5db;
-		--form-input-border-radius: 0.375rem;
-		--form-input-bg: #ffffff;
-		--form-input-text: #111827;
-		--form-error-color: #ef4444;
-		--form-error-bg: #fee2e2;
-		--form-success-color: #10b981;
-		--form-success-bg: #d1fae5;
-		--form-button-bg: #3b82f6;
-		--form-button-text: #ffffff;
-		--form-button-hover-bg: #2563eb;
-		--form-button-disabled-bg: #9ca3af;
+		--form-gap: var(--form-gap, 1rem);
+		--form-input-padding: var(--form-input-padding, 0.75rem);
+		--form-input-border: var(--form-input-border, 1px solid #d1d5db);
+		--form-input-border-radius: var(--form-input-border-radius, 0.375rem);
+		--form-input-bg: var(--form-input-bg, #ffffff);
+		--form-input-text: var(--form-input-text, #111827);
+		--form-error-color: var(--form-error-color, #ef4444);
+		--form-error-bg: var(--form-error-bg, #fee2e2);
+		--form-success-color: var(--form-success-color, #10b981);
+		--form-success-bg: var(--form-success-bg, #d1fae5);
+		--form-button-bg: var(--form-button-bg, #3b82f6);
+		--form-button-text: var(--form-button-text, #ffffff);
+		--form-button-hover-bg: var(--form-button-hover-bg, #2563eb);
+		--form-button-disabled-bg: var(--form-button-disabled-bg, #9ca3af);
 
 		display: flex;
 		flex-direction: column;

@@ -35,7 +35,7 @@ const { noGaps = false, ...restProps }: RowProps = $props();
 	.row {
 		$self: &;
 
-		--row-gap: 1rem;
+		--row-gap: var(--row-gap, 1rem);
 
 		display: flex;
 		flex-wrap: wrap;

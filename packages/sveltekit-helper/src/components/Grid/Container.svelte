@@ -16,9 +16,9 @@ const { ...restProps } = $props();
 	.container {
 		$self: &;
 
-		--container-padding: 1rem;
-		--container-max-width: 1328px;
-		--container-breakout-max-width: 1500px;
+		--container-padding: var(--container-padding, 1rem);
+		--container-max-width: var(--container-max-width, 1328px);
+		--container-breakout-max-width: var(--container-breakout-max-width, 1500px);
 		--container-breakout-size: calc(
 			(var(--container-breakout-max-width) - var(--container-max-width)) / 2
 		);
