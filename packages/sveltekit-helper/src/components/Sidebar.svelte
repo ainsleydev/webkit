@@ -39,7 +39,8 @@ export type SidebarProps = {
 	}: SidebarProps = $props();
 
 	// Generate unique ID for this sidebar instance
-	const uniqueId = `sidebar-${Math.random().toString(36).slice(2, 11)}`;
+	// Using timestamp + random for better uniqueness
+	const uniqueId = `sidebar-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
 	// Element refs
 	let checkboxRef = $state<HTMLInputElement>();
@@ -79,40 +80,38 @@ export type SidebarProps = {
 	});
 
 	onMount(() => {
-		if (!overlayRef || !checkboxRef) return;
+		// Capture refs in local variables to ensure proper cleanup
+		const overlay = overlayRef;
+		const checkbox = checkboxRef;
+
+		if (!overlay || !checkbox) return;
 
 		const handleOverlayClick = (e: Event) => {
 			if (!closeOnOverlayClick) return;
 			e.preventDefault();
-			if (checkboxRef) {
-				checkboxRef.checked = false;
-			}
+			checkbox.checked = false;
 			isOpen = false;
 		};
 
 		const handleCheckboxChange = () => {
-			if (checkboxRef) {
-				isOpen = checkboxRef.checked;
-			}
+			isOpen = checkbox.checked;
 		};
 
 		const handleKeydown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape' && isOpen) {
 				e.preventDefault();
-				if (checkboxRef) {
-					checkboxRef.checked = false;
-				}
+				checkbox.checked = false;
 				isOpen = false;
 			}
 		};
 
-		overlayRef.addEventListener('click', handleOverlayClick);
-		checkboxRef.addEventListener('change', handleCheckboxChange);
+		overlay.addEventListener('click', handleOverlayClick);
+		checkbox.addEventListener('change', handleCheckboxChange);
 		document.addEventListener('keydown', handleKeydown);
 
 		return () => {
-			overlayRef?.removeEventListener('click', handleOverlayClick);
-			checkboxRef?.removeEventListener('change', handleCheckboxChange);
+			overlay.removeEventListener('click', handleOverlayClick);
+			checkbox.removeEventListener('change', handleCheckboxChange);
 			document.removeEventListener('keydown', handleKeydown);
 		};
 	});

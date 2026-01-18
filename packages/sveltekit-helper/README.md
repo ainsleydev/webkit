@@ -30,7 +30,7 @@ All Grid components use CSS variables with fallback values, allowing flexible cu
 
 **Responsive Variables:**
 
-Row and Column components include mobile-specific overrides (< 568px). You can customize responsive behavior using:
+Row and Column components include mobile-specific overrides (< 568px). You can customise responsive behaviour using:
 
 ```css
 :root {
