@@ -72,7 +72,7 @@
 		}
 	},
 	"dependencies": {
-		"svelte-hamburgers": "^4.1.0"
+		"svelte-hamburgers": "^5.0.0"
 	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
