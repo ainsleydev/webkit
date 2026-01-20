@@ -1,21 +1,21 @@
 <script lang="ts" module>
-	import type { Snippet } from 'svelte';
+import type { Snippet } from 'svelte';
 
-	export type SidebarProps = {
-		menuLabel?: string;
-		children: Snippet;
-		isOpen?: boolean;
-		position?: 'left' | 'right';
-		width?: string;
-		top?: number;
-		closeOnOverlayClick?: boolean;
-		overlayOpacity?: number;
-		toggleStyle?: 'toggle' | 'hamburger';
-		class?: string;
-		onOpen?: () => void;
-		onClose?: () => void;
-		onToggle?: (isOpen: boolean) => void;
-	};
+export type SidebarProps = {
+	menuLabel?: string;
+	children: Snippet;
+	isOpen?: boolean;
+	position?: 'left' | 'right';
+	width?: string;
+	top?: number;
+	closeOnOverlayClick?: boolean;
+	overlayOpacity?: number;
+	toggleStyle?: 'toggle' | 'hamburger';
+	class?: string;
+	onOpen?: () => void;
+	onClose?: () => void;
+	onToggle?: (isOpen: boolean) => void;
+};
 </script>
 
 <script lang="ts">

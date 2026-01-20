@@ -1,16 +1,16 @@
 <script lang="ts" module>
-	import type { HamburgerType as HamburgerTypeLib } from "svelte-hamburgers";
+import type { HamburgerType as HamburgerTypeLib } from 'svelte-hamburgers';
 
-	export type HamburgerType = HamburgerTypeLib
+export type HamburgerType = HamburgerTypeLib;
 
-	export type HamburgerProps = {
-		// See: https://github.com/ghostdevv/svelte-hamburgers/blob/main/types.md
-		style?: HamburgerType;
-		isOpen?: boolean;
-		gap?: string;
-		class?: string;
-		onChange?: (isOpen: boolean) => void;
-	};
+export type HamburgerProps = {
+	// See: https://github.com/ghostdevv/svelte-hamburgers/blob/main/types.md
+	style?: HamburgerType;
+	isOpen?: boolean;
+	gap?: string;
+	class?: string;
+	onChange?: (isOpen: boolean) => void;
+};
 </script>
 
 <script lang="ts">
