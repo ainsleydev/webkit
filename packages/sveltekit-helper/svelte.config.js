@@ -5,6 +5,10 @@ const config = {
 	// Preprocess Svelte components with TypeScript support
 	preprocess: vitePreprocess(),
 
+	compilerOptions: {
+		runes: true,
+	},
+
 	kit: {
 		// No adapter needed for library packaging
 	},

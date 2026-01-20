@@ -45,7 +45,9 @@ export type HamburgerProps = {
 	<SvelteHamburger
 		type={style}
 		bind:open={isOpen}
-		on:change={() => onChange?.(isOpen)}
+		onclick={() => {
+			onChange?.(isOpen);
+		}}
 		--color="var(--hamburger-colour, var(--colour-base-light))"
 		--layer-width="var(--hamburger-layer-width, 24px)"
 		--layer-height="var(--hamburger-layer-height, 2px)"

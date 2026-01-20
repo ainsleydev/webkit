@@ -250,8 +250,8 @@ importers:
   packages/sveltekit-helper:
     dependencies:
       svelte-hamburgers:
-        specifier: ^4.1.0
-        version: 4.2.1(svelte@5.43.6)
+        specifier: ^5.0.0
+        version: 5.0.0(svelte@5.43.6)
     devDependencies:
       '@ainsleydev/eslint-config':
         specifier: workspace:*
@@ -6512,10 +6512,10 @@ packages:
       svelte:
         optional: true
 
-  svelte-hamburgers@4.2.1:
-    resolution: {integrity: sha512-m18lOjhGrvzTEYjWTRIPi2k1YOwO7HkJyEnXq1Foo6EOFtqzPC6j2s8PQSauh5kq/nDO4Ekfw48JADx+pDPWkw==}
+  svelte-hamburgers@5.0.0:
+    resolution: {integrity: sha512-MMb47VCozKDgn/jtmeqw+CbI3cZmkDXd/FG3VCkReMdw2YCSOaWYLsqsXiWTWoQE/oSmw1vH/Tm5mChqlsldHQ==}
     peerDependencies:
-      svelte: ^3.46.4 || ^4.0.0
+      svelte: ^5.0.0
 
   svelte2tsx@0.7.45:
     resolution: {integrity: sha512-cSci+mYGygYBHIZLHlm/jYlEc1acjAHqaQaDFHdEBpUueM9kSTnPpvPtSl5VkJOU1qSJ7h1K+6F/LIUYiqC8VA==}
@@ -14411,7 +14411,7 @@ snapshots:
     optionalDependencies:
       svelte: 5.43.6
 
-  svelte-hamburgers@4.2.1(svelte@5.43.6):
+  svelte-hamburgers@5.0.0(svelte@5.43.6):
     dependencies:
       svelte: 5.43.6
 
