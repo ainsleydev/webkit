@@ -11,6 +11,7 @@ pnpm add @ainsleydev/sveltekit-helper
 ## Features
 
 - **Grid System**: Responsive Container, Row, and Column components with CSS variables
+- **Navigation Components**: Mobile-first Sidebar and Hamburger menu components
 - **Form Utilities**: Schema generation and error helpers for Zod validation
 - **Payload CMS Integration**: Ready-to-use components for Payload CMS forms and media
 - **SCSS with BEM**: All components use SCSS with BEM naming convention
@@ -29,7 +30,7 @@ All Grid components use CSS variables with fallback values, allowing flexible cu
 
 **Responsive Variables:**
 
-Row and Column components include mobile-specific overrides (< 568px). You can customize responsive behavior using:
+Row and Column components include mobile-specific overrides (< 568px). You can customise responsive behaviour using:
 
 ```css
 :root {
@@ -154,6 +155,128 @@ Base column component with customisable gap. Consumers should define their own g
 
 @media (min-width: 768px) {
 	.col-tab-6 { width: 50%; }
+}
+```
+
+## Navigation Components
+
+### Sidebar
+
+Mobile-first sidebar navigation component with toggle and hamburger display modes. Automatically collapses on mobile and remains visible on desktop.
+
+```svelte
+<script>
+	import { Sidebar } from '@ainsleydev/sveltekit-helper/components'
+</script>
+
+<Sidebar bind:isOpen>
+	<nav>
+		<a href="/">Home</a>
+		<a href="/about">About</a>
+		<a href="/contact">Contact</a>
+	</nav>
+</Sidebar>
+```
+
+#### Props
+
+- `menuLabel?: string` - Label for toggle button (default: 'Menu')
+- `isOpen?: boolean` - Bindable open/closed state
+- `position?: 'left' | 'right'` - Sidebar position (default: 'left')
+- `width?: string` - Sidebar width on mobile (default: '50vw')
+- `top?: number` - Sticky position offset on desktop (default: 160)
+- `closeOnOverlayClick?: boolean` - Close when overlay is clicked (default: true)
+- `overlayOpacity?: number` - Overlay opacity when open (default: 0.3)
+- `toggleStyle?: 'toggle' | 'hamburger'` - Toggle display mode (default: 'toggle')
+- `class?: string` - Additional CSS classes
+- `onOpen?: () => void` - Callback when sidebar opens
+- `onClose?: () => void` - Callback when sidebar closes
+- `onToggle?: (isOpen: boolean) => void` - Callback when sidebar toggles
+
+#### Examples
+
+With hamburger menu:
+
+```svelte
+<Sidebar toggleStyle="hamburger" bind:isOpen>
+	<nav>...</nav>
+</Sidebar>
+```
+
+Right-side with custom width:
+
+```svelte
+<Sidebar position="right" width="300px">
+	<nav>...</nav>
+</Sidebar>
+```
+
+#### Customisation
+
+Override CSS variables globally from `:root`:
+
+```css
+:root {
+	--sidebar-width: 400px;
+	--sidebar-min-width: 300px;
+	--sidebar-background: #1a1a1a;
+	--sidebar-border-colour: rgba(255, 255, 255, 0.2);
+	--sidebar-overlay-colour: #000;
+	--sidebar-overlay-opacity: 0.5;
+
+	/* Toggle button */
+	--sidebar-toggle-background: #2a2a2a;
+	--sidebar-toggle-colour: #fff;
+	--sidebar-toggle-padding: 0.5rem 1.5rem;
+	--sidebar-toggle-radius: 8px;
+	--sidebar-toggle-font-size: 1rem;
+
+	/* Inner spacing */
+	--sidebar-inner-padding: 2rem 2rem 0 2rem;
+}
+```
+
+Or use inline styles:
+
+```svelte
+<Sidebar style="--sidebar-background: #2a2a2a; --sidebar-width: 400px">
+	<nav>...</nav>
+</Sidebar>
+```
+
+### Hamburger
+
+Hamburger menu icon with animation for mobile navigation. Uses `svelte-hamburgers` under the hood.
+
+```svelte
+<script>
+	import { Hamburger } from '@ainsleydev/sveltekit-helper/components'
+
+	let isOpen = $state(false)
+</script>
+
+<Hamburger bind:isOpen />
+```
+
+#### Props
+
+- `isOpen?: boolean` - Bindable open/closed state
+- `gap?: string` - Distance from top/right edges (default: '0.8rem')
+- `class?: string` - Additional CSS classes
+- `ariaLabel?: string` - Accessibility label (default: 'Toggle menu')
+- `onChange?: (isOpen: boolean) => void` - Callback when state changes
+
+#### Customisation
+
+```css
+:root {
+	--hamburger-gap: 1rem;
+	--hamburger-z-index: 10000;
+	--hamburger-colour: #fff;
+	--hamburger-layer-width: 28px;
+	--hamburger-layer-height: 3px;
+	--hamburger-layer-spacing: 6px;
+	--hamburger-border-radius: 3px;
 }
 ```
 

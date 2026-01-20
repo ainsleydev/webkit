@@ -6,6 +6,7 @@
  */
 
 // Re-export all exports from submodules
+export * from './components/index.js';
 export * from './components/Grid/index.js';
 export * from './components/payload/index.js';
 export * from './utils/forms/index.js';
