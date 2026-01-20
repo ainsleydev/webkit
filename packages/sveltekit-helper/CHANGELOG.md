@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.2.0
+
+### Minor Changes
+
+- 2e83635: Adding Sidebar and Hamburger components for mobile-first navigation. Includes customisable props, CSS variable support with inline fallbacks, and toggle/hamburger display modes. New dependency: svelte-hamburgers
+
 ## 0.1.5
 
 ### Patch Changes
