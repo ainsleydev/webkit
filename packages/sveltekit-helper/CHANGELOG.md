@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.2.1
+
+### Patch Changes
+
+- 45fc51f: Upgrade svelte-hamburgers to v5.0.0 for Svelte 5 compatibility and enable runes mode
+
 ## 0.2.0
 
 ### Minor Changes
