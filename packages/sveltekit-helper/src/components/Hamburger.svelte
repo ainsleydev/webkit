@@ -1,21 +1,26 @@
 <script lang="ts" module>
-export type HamburgerProps = {
-	isOpen?: boolean;
-	gap?: string;
-	class?: string;
-	ariaLabel?: string;
-	onChange?: (isOpen: boolean) => void;
-};
+	import type { HamburgerType as HamburgerTypeLib } from "svelte-hamburgers";
+
+	export type HamburgerType = HamburgerTypeLib
+
+	export type HamburgerProps = {
+		// See: https://github.com/ghostdevv/svelte-hamburgers/blob/main/types.md
+		style?: HamburgerType;
+		isOpen?: boolean;
+		gap?: string;
+		class?: string;
+		onChange?: (isOpen: boolean) => void;
+	};
 </script>
 
 <script lang="ts">
 	import { Hamburger as SvelteHamburger } from 'svelte-hamburgers';
 
 	let {
+		style = 'spin',
 		isOpen = $bindable(false),
 		gap = '0.8rem',
 		class: className = '',
-		ariaLabel = 'Toggle menu',
 		onChange
 	}: HamburgerProps = $props();
 </script>
@@ -33,11 +38,12 @@ export type HamburgerProps = {
 
 	@example
 	```svelte
-	<Hamburger gap="1rem" ariaLabel="Open navigation" />
+	<Hamburger gap="1rem">
 	```
 -->
-<div class="hamburger-wrapper {className}" style="--hamburger-gap: {gap}">
+<div class="hamburger-wrapper {className}" style="--hamburger-gap: {gap}" aria-label="Toggle Menu">
 	<SvelteHamburger
+		type={style}
 		bind:open={isOpen}
 		on:change={() => onChange?.(isOpen)}
 		--color="var(--hamburger-colour, var(--colour-base-light))"
@@ -45,7 +51,6 @@ export type HamburgerProps = {
 		--layer-height="var(--hamburger-layer-height, 2px)"
 		--layer-spacing="var(--hamburger-layer-spacing, 5px)"
 		--border-radius="var(--hamburger-border-radius, 2px)"
-		aria-label={ariaLabel}
 	/>
 </div>
 

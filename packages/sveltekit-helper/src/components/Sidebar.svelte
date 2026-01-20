@@ -1,21 +1,21 @@
 <script lang="ts" module>
-import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 
-export type SidebarProps = {
-	menuLabel?: string;
-	children: Snippet;
-	isOpen?: boolean;
-	position?: 'left' | 'right';
-	width?: string;
-	top?: number;
-	closeOnOverlayClick?: boolean;
-	overlayOpacity?: number;
-	toggleStyle?: 'toggle' | 'hamburger';
-	class?: string;
-	onOpen?: () => void;
-	onClose?: () => void;
-	onToggle?: (isOpen: boolean) => void;
-};
+	export type SidebarProps = {
+		menuLabel?: string;
+		children: Snippet;
+		isOpen?: boolean;
+		position?: 'left' | 'right';
+		width?: string;
+		top?: number;
+		closeOnOverlayClick?: boolean;
+		overlayOpacity?: number;
+		toggleStyle?: 'toggle' | 'hamburger';
+		class?: string;
+		onOpen?: () => void;
+		onClose?: () => void;
+		onToggle?: (isOpen: boolean) => void;
+	};
 </script>
 
 <script lang="ts">
@@ -38,24 +38,20 @@ export type SidebarProps = {
 		onToggle
 	}: SidebarProps = $props();
 
-	// Generate unique ID for this sidebar instance
-	// Using timestamp + random for better uniqueness
 	const uniqueId = `sidebar-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
-	// Element refs
 	let checkboxRef = $state<HTMLInputElement>();
 	let overlayRef = $state<HTMLLabelElement>();
 	let contentRef = $state<HTMLDivElement>();
 	let previousActiveElement = $state<HTMLElement>();
 
-	// Sync checkbox with isOpen state
+	// Sync checkbox with isOpen state.
 	$effect(() => {
 		if (checkboxRef && checkboxRef.checked !== isOpen) {
 			checkboxRef.checked = isOpen;
 		}
 	});
 
-	// Watch for changes to isOpen and call callbacks
+	// Watch for changes to isOpen and call callbacks.
 	$effect(() => {
 		if (isOpen) {
 			onOpen?.();
@@ -65,7 +61,7 @@ export type SidebarProps = {
 		onToggle?.(isOpen);
 	});
 
-	// Focus management
+	// Focus management.
 	$effect(() => {
 		if (isOpen && contentRef) {
 			previousActiveElement = document.activeElement as HTMLElement;
@@ -80,7 +76,7 @@ export type SidebarProps = {
 	});
 
 	onMount(() => {
-		// Capture refs in local variables to ensure proper cleanup
+		// Capture refs in local variables to ensure proper cleanup.
 		const overlay = overlayRef;
 		const checkbox = checkboxRef;
 
@@ -153,12 +149,10 @@ export type SidebarProps = {
 		aria-label={menuLabel}
 	/>
 	<label bind:this={overlayRef} for={uniqueId} class="sidebar__overlay"></label>
-
-	<!-- Hamburger Toggle -->
+	<!-- Hamburger -->
 	{#if toggleStyle === 'hamburger'}
 		<Hamburger bind:isOpen />
 	{/if}
-
 	<!-- Content -->
 	<div bind:this={contentRef} class="sidebar__content" role="navigation" aria-label={menuLabel}>
 		{#if toggleStyle === 'toggle'}
