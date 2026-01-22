@@ -219,13 +219,13 @@ Override CSS variables globally from `:root`:
 :root {
 	--sidebar-width: 400px;
 	--sidebar-min-width: 300px;
-	--sidebar-background: #1a1a1a;
+	--sidebar-bg: #1a1a1a;
 	--sidebar-border-colour: rgba(255, 255, 255, 0.2);
 	--sidebar-overlay-colour: #000;
 	--sidebar-overlay-opacity: 0.5;
 
 	/* Toggle button */
-	--sidebar-toggle-background: #2a2a2a;
+	--sidebar-toggle-bg: #2a2a2a;
 	--sidebar-toggle-colour: #fff;
 	--sidebar-toggle-padding: 0.5rem 1.5rem;
 	--sidebar-toggle-radius: 8px;
@@ -239,7 +239,7 @@ Override CSS variables globally from `:root`:
 Or use inline styles:
 
 ```svelte
-<Sidebar style="--sidebar-background: #2a2a2a; --sidebar-width: 400px">
+<Sidebar style="--sidebar-bg: #2a2a2a; --sidebar-width: 400px">
 	<nav>...</nav>
 </Sidebar>
 ```
@@ -359,13 +359,13 @@ Override CSS variables globally:
 	--form-input-border: 1px solid #e5e7eb;
 	--form-input-border-radius: 0.5rem;
 	--form-input-bg: #ffffff;
-	--form-input-text: #111827;
-	--form-error-color: #ef4444;
+	--form-input-colour: #111827;
+	--form-error-colour: #ef4444;
 	--form-error-bg: #fee2e2;
-	--form-success-color: #10b981;
+	--form-success-colour: #10b981;
 	--form-success-bg: #d1fae5;
 	--form-button-bg: #3b82f6;
-	--form-button-text: #ffffff;
+	--form-button-colour: #ffffff;
 	--form-button-hover-bg: #2563eb;
 	--form-button-disabled-bg: #9ca3af;
 }

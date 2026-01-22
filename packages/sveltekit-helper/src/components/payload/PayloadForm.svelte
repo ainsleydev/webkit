@@ -202,7 +202,7 @@ async function handleSubmit(event: SubmitEvent) {
 		&__label {
 			font-size: 0.875rem;
 			font-weight: 500;
-			color: var(--form-input-text, #111827);
+			color: var(--form-input-colour, #111827);
 
 			&--checkbox {
 				font-weight: 400;
@@ -211,7 +211,7 @@ async function handleSubmit(event: SubmitEvent) {
 		}
 
 		&__required {
-			color: var(--form-error-color, #ef4444);
+			color: var(--form-error-colour, #ef4444);
 			margin-left: 0.25rem;
 		}
 
@@ -221,7 +221,7 @@ async function handleSubmit(event: SubmitEvent) {
 			border: var(--form-input-border, 1px solid #d1d5db);
 			border-radius: var(--form-input-border-radius, 0.375rem);
 			background: var(--form-input-bg, #ffffff);
-			color: var(--form-input-text, #111827);
+			color: var(--form-input-colour, #111827);
 			font-size: 1rem;
 			font-family: inherit;
 
@@ -231,7 +231,7 @@ async function handleSubmit(event: SubmitEvent) {
 			}
 
 			&--error {
-				border-color: var(--form-error-color, #ef4444);
+				border-color: var(--form-error-colour, #ef4444);
 			}
 		}
 
@@ -255,13 +255,13 @@ async function handleSubmit(event: SubmitEvent) {
 
 		&__error {
 			font-size: 0.875rem;
-			color: var(--form-error-color, #ef4444);
+			color: var(--form-error-colour, #ef4444);
 		}
 
 		&__success {
 			padding: 1rem;
 			background-color: var(--form-success-bg, #d1fae5);
-			color: var(--form-success-color, #10b981);
+			color: var(--form-success-colour, #10b981);
 			border-radius: var(--form-input-border-radius, 0.375rem);
 			font-weight: 500;
 		}
@@ -269,7 +269,7 @@ async function handleSubmit(event: SubmitEvent) {
 		&__alert {
 			padding: 1rem;
 			background-color: var(--form-error-bg, #fee2e2);
-			color: var(--form-error-color, #ef4444);
+			color: var(--form-error-colour, #ef4444);
 			border-radius: var(--form-input-border-radius, 0.375rem);
 			font-weight: 500;
 		}
@@ -277,7 +277,7 @@ async function handleSubmit(event: SubmitEvent) {
 		&__submit {
 			padding: var(--form-input-padding, 0.75rem) 1.5rem;
 			background-color: var(--form-button-bg, #3b82f6);
-			color: var(--form-button-text, #ffffff);
+			color: var(--form-button-colour, #ffffff);
 			border: none;
 			border-radius: var(--form-input-border-radius, 0.375rem);
 			font-size: 1rem;
