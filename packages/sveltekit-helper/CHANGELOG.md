@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.3.0
+
+### Minor Changes
+
+- ad8a9ab: Adding notification components
+
 ## 0.2.1
 
 ### Patch Changes
