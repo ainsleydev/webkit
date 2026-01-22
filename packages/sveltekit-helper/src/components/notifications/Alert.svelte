@@ -18,7 +18,7 @@
 	import { X } from '@lucide/svelte'
 	import { fade } from 'svelte/transition'
 
-	import { alertIcons } from './alertIcons'
+	import { alertIcons } from './alertIcons.js'
 
 	let {
 		type = 'info',

@@ -135,6 +135,21 @@ export type SidebarProps = {
 		<nav>...</nav>
 	</Sidebar>
 	```
+
+	CSS Custom Properties:
+	- `--sidebar-width`: Mobile sidebar width (default: 50vw)
+	- `--sidebar-min-width`: Minimum sidebar width (default: 270px)
+	- `--sidebar-top`: Desktop sticky position from top (default: 160px)
+	- `--sidebar-overlay-opacity`: Overlay opacity when open (default: 0.3)
+	- `--sidebar-background`: Sidebar background color (default: var(--colour-base-black))
+	- `--sidebar-border-colour`: Border color (default: rgba(255, 255, 255, 0.1))
+	- `--sidebar-overlay-colour`: Overlay background color (default: var(--colour-grey-900))
+	- `--sidebar-inner-padding`: Content padding (default: 2rem 1.8rem 0 1.8rem)
+	- `--sidebar-toggle-background`: Toggle button background (default: var(--colour-base-black))
+	- `--sidebar-toggle-colour`: Toggle button text color (default: var(--colour-base-light))
+	- `--sidebar-toggle-padding`: Toggle button padding (default: 0.25rem 1.5rem)
+	- `--sidebar-toggle-radius`: Toggle button border radius (default: 0.375rem)
+	- `--sidebar-toggle-font-size`: Toggle button font size (default: 0.9rem)
 -->
 <aside
 	class="sidebar sidebar--{toggleStyle} sidebar--{position} {className}"

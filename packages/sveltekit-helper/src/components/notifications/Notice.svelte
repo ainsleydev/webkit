@@ -66,7 +66,7 @@
 		{...restProps}
 	>
 		<!-- Icon -->
-		<figure class="notice__icon" >
+		<figure class="notice__icon">
 			<Icon size={20} color={iconDetail.colour} strokeWidth={1.2}></Icon>
 		</figure>
 		<!-- Title -->

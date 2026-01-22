@@ -26,6 +26,10 @@ const { noGaps = false, ...restProps }: RowProps = $props();
 		<Column></Column>
 	</Row>
 	```
+
+	CSS Custom Properties:
+	- `--row-gap`: Gap between columns (default: 1rem)
+	- `--row-gap-mobile`: Gap on mobile screens (default: var(--row-gap, 0.5rem))
 -->
 <div class="row" class:row--no-gaps={noGaps} {...restProps}>
 	<slot />

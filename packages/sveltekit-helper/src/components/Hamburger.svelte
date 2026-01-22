@@ -40,6 +40,15 @@ export type HamburgerProps = {
 	```svelte
 	<Hamburger gap="1rem">
 	```
+
+	CSS Custom Properties:
+	- `--hamburger-gap`: Distance from top and right edges (default: 0.8rem)
+	- `--hamburger-z-index`: Stacking order (default: 10000)
+	- `--hamburger-colour`: Icon color (default: var(--colour-base-light))
+	- `--hamburger-layer-width`: Width of each line (default: 24px)
+	- `--hamburger-layer-height`: Height of each line (default: 2px)
+	- `--hamburger-layer-spacing`: Gap between lines (default: 5px)
+	- `--hamburger-border-radius`: Rounding of lines (default: 2px)
 -->
 <div class="hamburger-wrapper {className}" style="--hamburger-gap: {gap}" aria-label="Toggle Menu">
 	<SvelteHamburger

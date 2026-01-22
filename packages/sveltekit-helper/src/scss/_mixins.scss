@@ -1,15 +1,14 @@
 @use 'sass:meta';
 @use 'sass:math';
 @use 'sass:map';
-@use 'breakpoints' as *;
-@use 'typography' as *;
+@use 'breakpoints';
 
 // Media Queries
 // ==========================================================================
 
 @mixin mq($size) {
-	@if map.has-key($breakpoints, $size) {
-		$breakpoint: map.get($breakpoints, $size);
+	@if map.has-key(breakpoints.$breakpoints, $size) {
+		$breakpoint: map.get(breakpoints.$breakpoints, $size);
 		@media screen and (min-width: $breakpoint * 1px) {
 			@content;
 		}
@@ -27,8 +26,8 @@
 }
 
 @mixin mq-max($size) {
-	@if map.has-key($breakpoints, $size) {
-		$breakpoint: map.get($breakpoints, $size);
+	@if map.has-key(breakpoints.$breakpoints, $size) {
+		$breakpoint: map.get(breakpoints.$breakpoints, $size);
 		@media screen and (max-width: $breakpoint * 1px) {
 			@content;
 		}

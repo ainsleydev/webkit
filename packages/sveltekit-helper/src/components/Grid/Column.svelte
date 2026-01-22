@@ -15,6 +15,10 @@ const { ...restProps } = $props();
 		Content
 	</Column>
 	```
+
+	CSS Custom Properties:
+	- `--col-gap`: Horizontal padding on desktop (default: 1rem)
+	- `--col-gap-mobile`: Horizontal padding on mobile (default: var(--col-gap, 0.5rem))
 -->
 <div class="col" {...restProps}>
 	<slot />
