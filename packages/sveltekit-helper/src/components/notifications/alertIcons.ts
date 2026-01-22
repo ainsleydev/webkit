@@ -1,8 +1,19 @@
-import { CircleX, Info, CircleCheck, TriangleAlert } from '@lucide/svelte'
+import { CircleX, Info, CircleCheck, TriangleAlert, type Icon as IconType } from '@lucide/svelte'
 
-import type { AlertType, IconDetail } from './alert.types'
+/**
+ * Notification type variants
+ */
+type NotificationType = 'info' | 'warning' | 'success' | 'error'
 
-export const alertIcons: Record<AlertType, IconDetail> = {
+/**
+ * Icon configuration for notification types
+ */
+type IconDetail = {
+	icon: typeof IconType
+	colour: string
+}
+
+export const alertIcons: Record<NotificationType, IconDetail> = {
 	info: { icon: Info, colour: 'var(--colour-semantic-info)' },
 	success: { icon: CircleCheck, colour: 'var(--colour-semantic-success)' },
 	warning: { icon: TriangleAlert, colour: 'var(--colour-semantic-warning)' },

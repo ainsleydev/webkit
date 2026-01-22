@@ -1,10 +1,13 @@
 <script lang="ts" module>
 	import { type Icon as IconType } from '@lucide/svelte'
 
-	import type { AlertType } from './alert.types'
+	/**
+	 * Available notice type variants
+	 */
+	export type NoticeType = 'info' | 'warning' | 'success' | 'error'
 
 	export type NoticeProps = {
-		type?: AlertType
+		type?: NoticeType
 		title: string
 		visible?: boolean
 		dismiss?: boolean
@@ -32,6 +35,19 @@
 	const hide = () => (visible = false)
 </script>
 
+<!--
+	@component
+
+	Inline notification component for displaying brief messages with icons.
+	Compact design suitable for inline alerts, badges, or status indicators.
+
+	@example
+	```svelte
+	<Notice type="success" title="Upload complete" />
+	<Notice type="warning" title="Session expiring" dismiss />
+	<Notice type="error" title="Connection failed" icon={CustomIcon} />
+	```
+-->
 {#if visible}
 	<div
 		class="notice notice--{type}"

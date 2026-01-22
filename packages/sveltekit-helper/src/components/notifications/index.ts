@@ -1,6 +1,4 @@
 export { default as Alert } from './Alert.svelte'
 export { default as Notice } from './Notice.svelte'
-export type { AlertProps } from './Alert.svelte'
-export type { NoticeProps } from './Notice.svelte'
-export type { AlertType, IconDetail } from './alert.types'
-export { alertIcons } from './alertIcons'
+export type { AlertProps, AlertType } from './Alert.svelte'
+export type { NoticeProps, NoticeType } from './Notice.svelte'

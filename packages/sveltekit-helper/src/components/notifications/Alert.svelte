@@ -1,8 +1,11 @@
 <script lang="ts" module>
 	import { type Icon as IconType } from '@lucide/svelte'
-
-	import type { AlertType } from './alert.types'
 	import type { Snippet } from 'svelte'
+
+	/**
+	 * Available alert type variants
+	 */
+	export type AlertType = 'info' | 'warning' | 'success' | 'error'
 
 	export type AlertProps = {
 		type?: AlertType
@@ -35,6 +38,25 @@
 	const hide = () => (visible = false)
 </script>
 
+<!--
+	@component
+
+	Full-width alert component for displaying important messages with optional body text.
+	Supports title, children content, and custom icons with dismissible functionality.
+
+	@example
+	```svelte
+	<Alert type="info" title="New features available">
+		Check out the latest updates in your dashboard.
+	</Alert>
+
+	<Alert type="warning" title="Maintenance scheduled" dismiss />
+
+	<Alert type="error" title="Payment failed" dismiss>
+		Your card was declined. Please update your payment method.
+	</Alert>
+	```
+-->
 {#if visible}
 	<div
 		class="alert alert--{type}"
