@@ -1,17 +1,17 @@
 <script lang="ts" module>
-	import type { Icon as IconType } from '@lucide/svelte'
-	import type { Snippet } from 'svelte'
+import type { Icon as IconType } from '@lucide/svelte';
+import type { Snippet } from 'svelte';
 
-	export type AlertType = 'info' | 'warning' | 'success' | 'error'
+export type AlertType = 'info' | 'warning' | 'success' | 'error';
 
-	export type AlertProps = {
-		type?: AlertType
-		title?: string
-		children?: Snippet
-		visible?: boolean
-		dismiss?: boolean
-		icon?: typeof IconType
-	}
+export type AlertProps = {
+	type?: AlertType;
+	title?: string;
+	children?: Snippet;
+	visible?: boolean;
+	dismiss?: boolean;
+	icon?: typeof IconType;
+};
 </script>
 
 <script lang="ts">
