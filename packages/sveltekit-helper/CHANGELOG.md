@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.3.1
+
+### Patch Changes
+
+- 41f24c1: Fixing CSS variables
+
 ## 0.3.0
 
 ### Minor Changes
