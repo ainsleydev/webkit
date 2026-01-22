@@ -1,9 +1,6 @@
 <script lang="ts" module>
 	import { type Icon as IconType } from '@lucide/svelte'
 
-	/**
-	 * Available notice type variants
-	 */
 	export type NoticeType = 'info' | 'warning' | 'success' | 'error'
 
 	export type NoticeProps = {

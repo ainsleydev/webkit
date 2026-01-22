@@ -2,9 +2,6 @@
 	import { type Icon as IconType } from '@lucide/svelte'
 	import type { Snippet } from 'svelte'
 
-	/**
-	 * Available alert type variants
-	 */
 	export type AlertType = 'info' | 'warning' | 'success' | 'error'
 
 	export type AlertProps = {

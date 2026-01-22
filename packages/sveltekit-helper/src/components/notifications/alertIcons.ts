@@ -13,6 +13,9 @@ type IconDetail = {
 	colour: string
 }
 
+/**
+ * Icon mapping for notification types
+ */
 export const alertIcons: Record<NotificationType, IconDetail> = {
 	info: { icon: Info, colour: 'var(--colour-semantic-info)' },
 	success: { icon: CircleCheck, colour: 'var(--colour-semantic-success)' },
