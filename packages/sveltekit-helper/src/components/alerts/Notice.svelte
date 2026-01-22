@@ -1,0 +1,108 @@
+<script lang="ts" module>
+	import { type Icon as IconType } from '@lucide/svelte'
+
+	import type { AlertType } from './alert.types'
+
+	export type NoticeProps = {
+		type?: AlertType
+		title: string
+		visible?: boolean
+		dismiss?: boolean
+		icon?: typeof IconType
+	}
+</script>
+
+<script lang="ts">
+	import { X } from '@lucide/svelte'
+	import { fade } from 'svelte/transition'
+
+	import { alertIcons } from './alertIcons'
+
+	let {
+		type = 'info',
+		title = '',
+		visible = true,
+		dismiss = false,
+		icon: customIcon,
+		...restProps
+	}: NoticeProps = $props()
+
+	const iconDetail = $derived(alertIcons[type])
+	const Icon = $derived(customIcon || iconDetail.icon)
+	const hide = () => (visible = false)
+</script>
+
+{#if visible}
+	<div
+		class="notice notice--{type}"
+		role="alert"
+		style="--_notice-icon-colour: {iconDetail.colour}"
+		transition:fade={{ duration: 300 }}
+		{...restProps}
+	>
+		<!-- Icon -->
+		<figure class="notice__icon">
+			<Icon size={20} color={iconDetail.colour} strokeWidth={1.2}></Icon>
+		</figure>
+		<!-- Title -->
+		<p class="notice__title">
+			{title}
+		</p>
+		<!-- Dismiss -->
+		{#if dismiss}
+			<button class="notice__dismiss" onclick={hide} aria-label="Close">
+				<X size={20} color={iconDetail.colour} />
+			</button>
+		{/if}
+	</div>
+{/if}
+
+<style lang="scss">
+	@use '$lib/scss/abstracts' as a;
+
+	.notice {
+		$self: &;
+
+		position: relative;
+		display: inline-flex;
+		width: auto;
+		gap: var(--_notice-gap, a.$size-12);
+		padding: var(--_notice-padding, 0.8rem a.$size-12);
+		border-radius: var(--_notice-border-radius, a.$border-radius-6);
+		background-color: var(--_notice-bg, rgba(255, 255, 255, 0.025));
+		align-items: center;
+
+		&__icon {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin: 0;
+			flex-shrink: 0;
+		}
+
+		&__title {
+			margin: 0;
+			font-size: var(--_notice-font-size, 1rem);
+			font-weight: var(--font-weight-medium);
+			color: var(--_notice-title-colour, rgba(255, 255, 255, 1));
+			line-height: 1;
+		}
+
+		&__dismiss {
+			cursor: pointer;
+			margin-left: auto;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: none;
+			border: none;
+			padding: 0;
+			color: var(--_notice-icon-colour);
+		}
+
+		:global(svg) {
+			min-width: 1.4rem;
+			min-height: 1.4rem;
+		}
+	}
+</style>
