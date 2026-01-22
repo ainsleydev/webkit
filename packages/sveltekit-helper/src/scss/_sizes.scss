@@ -1,0 +1,25 @@
+@use 'sass:map';
+@use 'functions' as f;
+
+$size-2: f.px-to-rem(2);
+$size-4: f.px-to-rem(4);
+$size-8: f.px-to-rem(8);
+$size-12: f.px-to-rem(12);
+$size-16: f.px-to-rem(16);
+$size-24: f.px-to-rem(24);
+$size-32: f.px-to-rem(32);
+$size-40: f.px-to-rem(40);
+$size-48: f.px-to-rem(48);
+
+$sizes: (
+	'0': 0,
+	'2': $size-2,
+	'4': $size-4,
+	'8': $size-8,
+	'12': $size-12,
+	'16': $size-16,
+	'24': $size-24,
+	'32': $size-32,
+	'40': $size-40,
+	'48': $size-48,
+);

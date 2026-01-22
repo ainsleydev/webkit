@@ -7,6 +7,28 @@ const { ...restProps } = $props();
 
 	Centre content such as rows & columns horizontally with predefined max-width.
 	Uses CSS Grid to provide breakout and full-width layout options.
+
+	@example
+	```svelte
+	<Container>
+		<Row>
+			<Column class="col-12">Content</Column>
+		</Row>
+	</Container>
+	```
+
+	@example
+	```svelte
+	<Container>
+		<div class="breakout">Full breakout content</div>
+		<div class="full-width">Full width content</div>
+	</Container>
+	```
+
+	CSS Custom Properties:
+	- `--container-max-width`: Maximum content width (default: 1328px)
+	- `--container-breakout-max-width`: Maximum breakout width (default: 1500px)
+	- `--container-padding`: Horizontal padding (default: 1rem)
 -->
 <div class="container" {...restProps}>
 	<slot />
