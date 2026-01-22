@@ -33,6 +33,7 @@
 	const iconDetail = $derived(alertIcons[type])
 	const Icon = $derived(customIcon || iconDetail.icon)
 	const hide = () => (visible = false)
+	const ariaLive = $derived(type === 'error' ? 'assertive' : 'polite')
 </script>
 
 <!--
@@ -70,6 +71,8 @@
 	<div
 		class="alert alert--{type}"
 		role="alert"
+		aria-live={ariaLive}
+		aria-atomic="true"
 		style="--_alert-icon-colour: {iconDetail.colour}"
 		transition:fade={{ duration: 300 }}
 		{...restProps}
@@ -93,7 +96,7 @@
 		</div>
 		<!-- Dismiss -->
 		{#if dismiss}
-			<button class="alert__dismiss" onclick={hide} aria-label="Close">
+			<button class="alert__dismiss" onclick={hide} aria-label="Close Alert">
 				<X size={24} color={iconDetail.colour} />
 			</button>
 		{/if}
@@ -101,7 +104,7 @@
 {/if}
 
 <style lang="scss">
-	@use '$lib/scss/abstracts' as a;
+	@use '../../scss' as a;
 
 	.alert {
 		$self: &;
@@ -110,7 +113,7 @@
 		display: flex;
 		gap: var(--_alert-gap, a.$size-12);
 		width: 100%;
-		border-radius: var(--_alert-border-radius, a.$border-radius-6);
+		border-radius: var(--_alert-border-radius, 6px);
 		padding: var(--_alert-padding, a.$size-24);
 		background-color: var(--_alert-bg, rgba(255, 255, 255, 0.02));
 

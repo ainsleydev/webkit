@@ -65,7 +65,6 @@
 		"access": "public"
 	},
 	"peerDependencies": {
-		"@lucide/svelte": "^0.562.0",
 		"@sveltejs/kit": "^2.0.0",
 		"svelte": "^5.0.0"
 	},
@@ -78,7 +77,8 @@
 		}
 	},
 	"dependencies": {
-		"svelte-hamburgers": "^5.0.0"
+		"svelte-hamburgers": "^5.0.0",
+		"@lucide/svelte": "^0.562.0"
 	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",

@@ -30,6 +30,7 @@
 	const iconDetail = $derived(alertIcons[type])
 	const Icon = $derived(customIcon || iconDetail.icon)
 	const hide = () => (visible = false)
+	const ariaLive = $derived(type === 'error' ? 'assertive' : 'polite')
 </script>
 
 <!--
@@ -58,12 +59,14 @@
 	<div
 		class="notice notice--{type}"
 		role="alert"
+		aria-live={ariaLive}
+		aria-atomic="true"
 		style="--_notice-icon-colour: {iconDetail.colour}"
 		transition:fade={{ duration: 300 }}
 		{...restProps}
 	>
 		<!-- Icon -->
-		<figure class="notice__icon">
+		<figure class="notice__icon" >
 			<Icon size={20} color={iconDetail.colour} strokeWidth={1.2}></Icon>
 		</figure>
 		<!-- Title -->
@@ -72,7 +75,7 @@
 		</p>
 		<!-- Dismiss -->
 		{#if dismiss}
-			<button class="notice__dismiss" onclick={hide} aria-label="Close">
+			<button class="notice__dismiss" onclick={hide} aria-label="Close Notice">
 				<X size={20} color={iconDetail.colour} />
 			</button>
 		{/if}
@@ -80,7 +83,7 @@
 {/if}
 
 <style lang="scss">
-	@use '$lib/scss/abstracts' as a;
+	@use '../../scss' as a;
 
 	.notice {
 		$self: &;
