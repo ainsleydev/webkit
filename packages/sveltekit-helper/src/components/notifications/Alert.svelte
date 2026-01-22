@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { type Icon as IconType } from '@lucide/svelte'
+	import type { Icon as IconType } from '@lucide/svelte'
 	import type { Snippet } from 'svelte'
 
 	export type AlertType = 'info' | 'warning' | 'success' | 'error'
@@ -24,7 +24,7 @@
 		type = 'info',
 		title = '',
 		children,
-		visible = true,
+		visible = $bindable(true),
 		dismiss = false,
 		icon: customIcon,
 		...restProps
@@ -53,6 +53,18 @@
 		Your card was declined. Please update your payment method.
 	</Alert>
 	```
+
+	CSS Custom Properties:
+	- `--_alert-gap`: Gap between icon and content (default: 12px)
+	- `--_alert-padding`: Internal padding (default: 24px)
+	- `--_alert-border-radius`: Border radius (default: 6px)
+	- `--_alert-bg`: Background color (default: rgba(255, 255, 255, 0.02))
+	- `--_alert-content-gap`: Gap between title and text (default: 8px)
+	- `--_alert-title-font-weight`: Title font weight (default: var(--font-weight-semibold))
+	- `--_alert-title-colour`: Title text color (default: rgba(255, 255, 255, 1))
+	- `--_alert-text-line-height`: Text line height (default: 1.4)
+	- `--_alert-text-colour`: Text color (default: rgba(255, 255, 255, 50%))
+	- `--_alert-icon-colour`: Icon color (set automatically based on type)
 -->
 {#if visible}
 	<div

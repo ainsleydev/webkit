@@ -249,6 +249,9 @@ importers:
 
   packages/sveltekit-helper:
     dependencies:
+      '@lucide/svelte':
+        specifier: ^0.562.0
+        version: 0.562.0(svelte@5.43.6)
       svelte-hamburgers:
         specifier: ^5.0.0
         version: 5.0.0(svelte@5.43.6)
@@ -1726,6 +1729,11 @@ packages:
     resolution: {integrity: sha512-7pJzOWzPm6oJUxml+PCDRzYQ4A1hTMHAciTAHfFK4fkbDZX33nWPVG7Y3vqdKtslcwAzwmrNDc6sXy2nwWnbiw==}
     cpu: [x64]
     os: [win32]
+
+  '@lucide/svelte@0.562.0':
+    resolution: {integrity: sha512-wDMULwtTFN2Sc/TFBm6gfuVCNb4Y5P9LDrwxNnUbV52+IEU7NXZmvxwXoz+vrrpad6Xupq+Hw5eUlqIHEGhouw==}
+    peerDependencies:
+      svelte: ^5
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -8786,6 +8794,10 @@ snapshots:
 
   '@libsql/win32-x64-msvc@0.4.7':
     optional: true
+
+  '@lucide/svelte@0.562.0(svelte@5.43.6)':
+    dependencies:
+      svelte: 5.43.6
 
   '@manypkg/find-root@1.1.0':
     dependencies:

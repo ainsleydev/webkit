@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { type Icon as IconType } from '@lucide/svelte'
+	import type { Icon as IconType } from '@lucide/svelte'
 
 	export type NoticeType = 'info' | 'warning' | 'success' | 'error'
 
@@ -21,7 +21,7 @@
 	let {
 		type = 'info',
 		title = '',
-		visible = true,
+		visible = $bindable(true),
 		dismiss = false,
 		icon: customIcon,
 		...restProps
@@ -44,6 +44,15 @@
 	<Notice type="warning" title="Session expiring" dismiss />
 	<Notice type="error" title="Connection failed" icon={CustomIcon} />
 	```
+
+	CSS Custom Properties:
+	- `--_notice-gap`: Gap between icon and title (default: 12px)
+	- `--_notice-padding`: Internal padding (default: 0.8rem 12px)
+	- `--_notice-border-radius`: Border radius (default: 6px)
+	- `--_notice-bg`: Background color (default: rgba(255, 255, 255, 0.025))
+	- `--_notice-font-size`: Title font size (default: 1rem)
+	- `--_notice-title-colour`: Title text color (default: rgba(255, 255, 255, 1))
+	- `--_notice-icon-colour`: Icon color (set automatically based on type)
 -->
 {#if visible}
 	<div
