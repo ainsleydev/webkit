@@ -1,6 +1,6 @@
 {
 	"name": "@ainsleydev/logger",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "Structured JSON logging for Node.js and browser environments",
 	"license": "MIT",
 	"type": "module",
