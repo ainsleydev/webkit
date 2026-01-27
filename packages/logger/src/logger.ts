@@ -63,7 +63,7 @@ function resolveEnvironment(): string {
  * import { createLogger } from '@ainsleydev/logger';
  *
  * const logger = createLogger({ service: 'my-app' });
- * logger.info('Server started', { attr: { port: 3000 } });
+ * logger.info('Server started', { port: 3000 });
  * ```
  */
 export function createLogger(config: LoggerConfig): Logger {
@@ -96,26 +96,22 @@ export function createLogger(config: LoggerConfig): Logger {
 	const isDev = environment === 'development';
 
 	if (isDev) {
-		let transport: pino.TransportSingleOptions | undefined;
+		// Pino handles transport module resolution internally.
+		// If pino-pretty is not installed, pino will throw and we fall back to JSON.
 		try {
-			require.resolve('pino-pretty');
-			transport = {
-				target: 'pino-pretty',
-				options: {
-					colorize: true,
-					translateTime: 'HH:MM:ss.l',
-					ignore: 'pid,hostname',
-				},
-			};
-		} catch {
-			// pino-pretty not installed, use default JSON output.
-		}
-
-		if (transport) {
 			return pino({
 				...baseOptions,
-				transport,
+				transport: {
+					target: 'pino-pretty',
+					options: {
+						colorize: true,
+						translateTime: 'HH:MM:ss.l',
+						ignore: 'pid,hostname',
+					},
+				},
 			});
+		} catch {
+			// pino-pretty not installed, fall back to JSON output.
 		}
 	}
 

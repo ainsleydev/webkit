@@ -20,26 +20,6 @@ export interface LoggerConfig {
 }
 
 /**
- * Base fields included in every log entry.
- */
-export interface LogFields {
-	/** The company name. */
-	company: string;
-	/** The service or application name. */
-	service: string;
-	/** The environment name. */
-	environment: string;
-	/** Optional request identifier. */
-	request_id?: string;
-}
-
-/**
- * Additional attributes to include in log entries.
- * These are grouped under the "attr" key in JSON output.
- */
-export type LogAttributes = Record<string, unknown>;
-
-/**
  * The logger instance type.
  */
 export type Logger = PinoLogger;
