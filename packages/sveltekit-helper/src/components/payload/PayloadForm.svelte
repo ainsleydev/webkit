@@ -1,25 +1,31 @@
+<script lang="ts" module>
+import type { PayloadFormField } from '../../utils/forms/schema';
+
+export type PayloadFormProps = {
+	/**
+	 * Payload form configuration
+	 */
+	form: {
+		id: number | string;
+		fields?: PayloadFormField[] | null;
+		confirmationMessage?: string | null;
+		submitButtonLabel?: string | null;
+	};
+	/**
+	 * API endpoint to submit form data to (defaults to '/api/forms')
+	 */
+	apiEndpoint?: string;
+	/**
+	 * Custom submit handler (overrides default API submission)
+	 */
+	onSubmit?: ((data: Record<string, unknown>) => Promise<void>) | undefined;
+};
+</script>
+
 <script lang="ts">
 import type { PayloadFormField } from '../../utils/forms/schema';
 
-/**
- * Payload form configuration
- */
-export let form: {
-	id: number | string;
-	fields?: PayloadFormField[] | null;
-	confirmationMessage?: string | null;
-	submitButtonLabel?: string | null;
-};
-
-/**
- * API endpoint to submit form data to (defaults to '/api/forms')
- */
-export let apiEndpoint = '/api/forms';
-
-/**
- * Custom submit handler (overrides default API submission)
- */
-export let onSubmit: ((data: Record<string, unknown>) => Promise<void>) | undefined = undefined;
+const { form, apiEndpoint = '/api/forms', onSubmit = undefined }: PayloadFormProps = $props();
 
 let formData = $state<Record<string, unknown>>({});
 let errors: Record<string, string> = $state({});
@@ -182,25 +188,10 @@ async function handleSubmit(event: SubmitEvent) {
 <style lang="scss">
 	.payload-form {
 		$self: &;
-		--form-gap: 1rem;
-		--form-input-padding: 0.75rem;
-		--form-input-border: 1px solid #d1d5db;
-		--form-input-border-radius: 0.375rem;
-		--form-input-bg: #ffffff;
-		--form-input-text: #111827;
-		--form-error-color: #ef4444;
-		--form-error-bg: #fee2e2;
-		--form-success-color: #10b981;
-		--form-success-bg: #d1fae5;
-		--form-button-bg: #3b82f6;
-		--form-button-text: #ffffff;
-		--form-button-hover-bg: #2563eb;
-		--form-button-disabled-bg: #9ca3af;
 
 		display: flex;
 		flex-direction: column;
-		gap: var(--form-gap);
-	}
+		gap: var(--form-gap, 1rem);
 
 		&__group {
 			display: flex;
@@ -211,7 +202,7 @@ async function handleSubmit(event: SubmitEvent) {
 		&__label {
 			font-size: 0.875rem;
 			font-weight: 500;
-			color: var(--form-input-text);
+			color: var(--form-input-colour, #111827);
 
 			&--checkbox {
 				font-weight: 400;
@@ -220,27 +211,27 @@ async function handleSubmit(event: SubmitEvent) {
 		}
 
 		&__required {
-			color: var(--form-error-color);
+			color: var(--form-error-colour, #ef4444);
 			margin-left: 0.25rem;
 		}
 
 		&__input,
 		&__textarea {
-			padding: var(--form-input-padding);
-			border: var(--form-input-border);
-			border-radius: var(--form-input-border-radius);
-			background: var(--form-input-bg);
-			color: var(--form-input-text);
+			padding: var(--form-input-padding, 0.75rem);
+			border: var(--form-input-border, 1px solid #d1d5db);
+			border-radius: var(--form-input-border-radius, 0.375rem);
+			background: var(--form-input-bg, #ffffff);
+			color: var(--form-input-colour, #111827);
 			font-size: 1rem;
 			font-family: inherit;
 
 			&:focus {
-				outline: 2px solid var(--form-button-bg);
+				outline: 2px solid var(--form-button-bg, #3b82f6);
 				outline-offset: 2px;
 			}
 
 			&--error {
-				border-color: var(--form-error-color);
+				border-color: var(--form-error-colour, #ef4444);
 			}
 		}
 
@@ -264,31 +255,31 @@ async function handleSubmit(event: SubmitEvent) {
 
 		&__error {
 			font-size: 0.875rem;
-			color: var(--form-error-color);
+			color: var(--form-error-colour, #ef4444);
 		}
 
 		&__success {
 			padding: 1rem;
-			background-color: var(--form-success-bg);
-			color: var(--form-success-color);
-			border-radius: var(--form-input-border-radius);
+			background-color: var(--form-success-bg, #d1fae5);
+			color: var(--form-success-colour, #10b981);
+			border-radius: var(--form-input-border-radius, 0.375rem);
 			font-weight: 500;
 		}
 
 		&__alert {
 			padding: 1rem;
-			background-color: var(--form-error-bg);
-			color: var(--form-error-color);
-			border-radius: var(--form-input-border-radius);
+			background-color: var(--form-error-bg, #fee2e2);
+			color: var(--form-error-colour, #ef4444);
+			border-radius: var(--form-input-border-radius, 0.375rem);
 			font-weight: 500;
 		}
 
 		&__submit {
-			padding: var(--form-input-padding) 1.5rem;
-			background-color: var(--form-button-bg);
-			color: var(--form-button-text);
+			padding: var(--form-input-padding, 0.75rem) 1.5rem;
+			background-color: var(--form-button-bg, #3b82f6);
+			color: var(--form-button-colour, #ffffff);
 			border: none;
-			border-radius: var(--form-input-border-radius);
+			border-radius: var(--form-input-border-radius, 0.375rem);
 			font-size: 1rem;
 			font-weight: 500;
 			cursor: pointer;
@@ -299,11 +290,11 @@ async function handleSubmit(event: SubmitEvent) {
 			transition: background-color 0.2s;
 
 			&:hover:not(:disabled) {
-				background-color: var(--form-button-hover-bg);
+				background-color: var(--form-button-hover-bg, #2563eb);
 			}
 
 			&:disabled {
-				background-color: var(--form-button-disabled-bg);
+				background-color: var(--form-button-disabled-bg, #9ca3af);
 				cursor: not-allowed;
 			}
 		}
@@ -316,6 +307,7 @@ async function handleSubmit(event: SubmitEvent) {
 			border-radius: 50%;
 			animation: spin 0.6s linear infinite;
 		}
+	}
 
 	@keyframes spin {
 		to {

@@ -1,5 +1,11 @@
+<script lang="ts" module>
+export type RowProps = {
+	noGaps?: boolean;
+};
+</script>
+
 <script lang="ts">
-let noGaps = false;
+const { noGaps = false, ...restProps }: RowProps = $props();
 </script>
 
 <!--
@@ -20,8 +26,12 @@ let noGaps = false;
 		<Column></Column>
 	</Row>
 	```
+
+	CSS Custom Properties:
+	- `--row-gap`: Gap between columns (default: 1rem)
+	- `--row-gap-mobile`: Gap on mobile screens (default: var(--row-gap, 0.5rem))
 -->
-<div class="row" class:row--no-gaps={noGaps} {...$$restProps}>
+<div class="row" class:row--no-gaps={noGaps} {...restProps}>
 	<slot />
 </div>
 
@@ -29,11 +39,9 @@ let noGaps = false;
 	.row {
 		$self: &;
 
-		--row-gap: 1rem;
-
 		display: flex;
 		flex-wrap: wrap;
-		margin-inline: calc(var(--row-gap) * -1);
+		margin-inline: calc(var(--row-gap, 1rem) * -1);
 
 		&--no-gaps {
 			margin-inline: 0;
@@ -45,7 +53,7 @@ let noGaps = false;
 		}
 
 		@media (max-width: 568px) {
-			--row-gap: 0.5rem;
+			margin-inline: calc(var(--row-gap-mobile, var(--row-gap, 0.5rem)) * -1);
 		}
 	}
 </style>

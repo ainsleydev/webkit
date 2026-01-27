@@ -1,3 +1,7 @@
+<script lang="ts">
+const { ...restProps } = $props();
+</script>
+
 <!--
 	@component
 
@@ -11,21 +15,23 @@
 		Content
 	</Column>
 	```
+
+	CSS Custom Properties:
+	- `--col-gap`: Horizontal padding on desktop (default: 1rem)
+	- `--col-gap-mobile`: Horizontal padding on mobile (default: var(--col-gap, 0.5rem))
 -->
-<div class="col" {...$$restProps}>
+<div class="col" {...restProps}>
 	<slot />
 </div>
 
 <style lang="scss">
 	.col {
-		--col-gap: 1rem;
-
 		position: relative;
 		width: 100%;
-		padding-inline: var(--col-gap);
+		padding-inline: var(--col-gap, 1rem);
 
 		@media (max-width: 568px) {
-			--col-gap: 0.5rem;
+			padding-inline: var(--col-gap-mobile, var(--col-gap, 0.5rem));
 		}
 	}
 </style>

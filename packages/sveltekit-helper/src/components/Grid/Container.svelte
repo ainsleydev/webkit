@@ -1,3 +1,7 @@
+<script lang="ts">
+const { ...restProps } = $props();
+</script>
+
 <!--
 	@component
 
@@ -7,19 +11,26 @@
 	@example
 	```svelte
 	<Container>
-		<Row></Row>
+		<Row>
+			<Column class="col-12">Content</Column>
+		</Row>
 	</Container>
 	```
 
 	@example
 	```svelte
-	<!-- Custom max width via CSS variable -->
-	<Container style="--container-max-width: 1400px">
-		<Row></Row>
+	<Container>
+		<div class="breakout">Full breakout content</div>
+		<div class="full-width">Full width content</div>
 	</Container>
 	```
+
+	CSS Custom Properties:
+	- `--container-max-width`: Maximum content width (default: 1328px)
+	- `--container-breakout-max-width`: Maximum breakout width (default: 1500px)
+	- `--container-padding`: Horizontal padding (default: 1rem)
 -->
-<div class="container" {...$$restProps}>
+<div class="container" {...restProps}>
 	<slot />
 </div>
 
@@ -27,26 +38,23 @@
 	.container {
 		$self: &;
 
-		--container-padding: 1rem;
-		--container-max-width: 1328px;
-		--container-breakout-max-width: 1500px;
 		--container-breakout-size: calc(
-			(var(--container-breakout-max-width) - var(--container-max-width)) / 2
+			(var(--container-breakout-max-width, 1500px) - var(--container-max-width, 1328px)) / 2
 		);
 
 		display: grid;
 		width: 100%;
 		position: relative;
 		grid-template-columns:
-			[full-width-start] minmax(var(--container-padding), 1fr)
+			[full-width-start] minmax(var(--container-padding, 1rem), 1fr)
 			[breakout-start] minmax(0, var(--container-breakout-size))
 			[content-start] min(
-				100% - (var(--container-padding) * 2),
-				var(--container-max-width)
+				100% - (var(--container-padding, 1rem) * 2),
+				var(--container-max-width, 1328px)
 			)
 			[content-end]
 			minmax(0, var(--container-breakout-size)) [breakout-end]
-			minmax(var(--container-padding), 1fr) [full-width-end];
+			minmax(var(--container-padding, 1rem), 1fr) [full-width-end];
 
 		:global(> *) {
 			grid-column: content;

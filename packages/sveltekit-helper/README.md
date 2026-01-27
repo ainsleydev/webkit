@@ -11,11 +11,42 @@ pnpm add @ainsleydev/sveltekit-helper
 ## Features
 
 - **Grid System**: Responsive Container, Row, and Column components with CSS variables
+- **Navigation Components**: Mobile-first Sidebar and Hamburger menu components
 - **Form Utilities**: Schema generation and error helpers for Zod validation
 - **Payload CMS Integration**: Ready-to-use components for Payload CMS forms and media
 - **SCSS with BEM**: All components use SCSS with BEM naming convention
 
 ## Grid Components
+
+### CSS Variable Customization
+
+All Grid components use CSS variables with fallback values, allowing flexible customization:
+
+**Override Priority (highest to lowest):**
+1. Inline styles: `<Container style="--container-padding: 2rem">`
+2. Page/component-scoped: `.pricing-page { --container-padding: 3rem; }`
+3. Global: `:root { --container-padding: 2rem; }`
+4. Component defaults: Defined in each component's `<style>` block
+
+**Responsive Variables:**
+
+Row and Column components include mobile-specific overrides (< 568px). You can customise responsive behaviour using:
+
+```css
+:root {
+	/* Override both desktop and mobile */
+	--row-gap: 1.5rem;
+
+	/* Override mobile only */
+	--row-gap-mobile: 0.75rem;
+	--col-gap-mobile: 0.75rem;
+}
+```
+
+**Fallback chain on mobile:**
+1. `--row-gap-mobile` (if set)
+2. `--row-gap` (if set)
+3. `0.5rem` (component default)
 
 ### Container
 
@@ -37,14 +68,28 @@ Center content horizontally with predefined max-width and support for breakout l
 
 #### Customisation
 
-Override CSS variables to customise the container:
+Override CSS variables globally from `:root`:
 
 ```css
-.container {
+/* Global override for ALL containers */
+:root {
 	--container-padding: 2rem;
 	--container-max-width: 1400px;
 	--container-breakout-max-width: 1600px;
 }
+
+/* Page-specific override */
+.pricing-page {
+	--container-padding: 3rem;
+}
+```
+
+Or use inline styles for single instances:
+
+```svelte
+<Container style="--container-padding: 2rem">
+	<Row>...</Row>
+</Container>
 ```
 
 ### Row
@@ -70,9 +115,19 @@ Flexbox row container with gap management.
 #### Customisation
 
 ```css
-.row {
+/* Global override */
+:root {
 	--row-gap: 1.5rem;
+	--row-gap-mobile: 0.75rem; /* Optional: mobile-specific gap (< 568px) */
 }
+```
+
+Or use inline styles:
+
+```svelte
+<Row style="--row-gap: 0.5rem">
+	<Column>...</Column>
+</Row>
 ```
 
 ### Column
@@ -88,8 +143,10 @@ Base column component with customisable gap. Consumers should define their own g
 #### Customisation
 
 ```css
-.col {
+/* Global column gap */
+:root {
 	--col-gap: 1.5rem;
+	--col-gap-mobile: 0.75rem; /* Optional: mobile-specific gap (< 568px) */
 }
 
 /* Define your own grid classes */
@@ -98,6 +155,128 @@ Base column component with customisable gap. Consumers should define their own g
 
 @media (min-width: 768px) {
 	.col-tab-6 { width: 50%; }
+}
+```
+
+## Navigation Components
+
+### Sidebar
+
+Mobile-first sidebar navigation component with toggle and hamburger display modes. Automatically collapses on mobile and remains visible on desktop.
+
+```svelte
+<script>
+	import { Sidebar } from '@ainsleydev/sveltekit-helper/components'
+</script>
+
+<Sidebar bind:isOpen>
+	<nav>
+		<a href="/">Home</a>
+		<a href="/about">About</a>
+		<a href="/contact">Contact</a>
+	</nav>
+</Sidebar>
+```
+
+#### Props
+
+- `menuLabel?: string` - Label for toggle button (default: 'Menu')
+- `isOpen?: boolean` - Bindable open/closed state
+- `position?: 'left' | 'right'` - Sidebar position (default: 'left')
+- `width?: string` - Sidebar width on mobile (default: '50vw')
+- `top?: number` - Sticky position offset on desktop (default: 160)
+- `closeOnOverlayClick?: boolean` - Close when overlay is clicked (default: true)
+- `overlayOpacity?: number` - Overlay opacity when open (default: 0.3)
+- `toggleStyle?: 'toggle' | 'hamburger'` - Toggle display mode (default: 'toggle')
+- `class?: string` - Additional CSS classes
+- `onOpen?: () => void` - Callback when sidebar opens
+- `onClose?: () => void` - Callback when sidebar closes
+- `onToggle?: (isOpen: boolean) => void` - Callback when sidebar toggles
+
+#### Examples
+
+With hamburger menu:
+
+```svelte
+<Sidebar toggleStyle="hamburger" bind:isOpen>
+	<nav>...</nav>
+</Sidebar>
+```
+
+Right-side with custom width:
+
+```svelte
+<Sidebar position="right" width="300px">
+	<nav>...</nav>
+</Sidebar>
+```
+
+#### Customisation
+
+Override CSS variables globally from `:root`:
+
+```css
+:root {
+	--sidebar-width: 400px;
+	--sidebar-min-width: 300px;
+	--sidebar-bg: #1a1a1a;
+	--sidebar-border-colour: rgba(255, 255, 255, 0.2);
+	--sidebar-overlay-colour: #000;
+	--sidebar-overlay-opacity: 0.5;
+
+	/* Toggle button */
+	--sidebar-toggle-bg: #2a2a2a;
+	--sidebar-toggle-colour: #fff;
+	--sidebar-toggle-padding: 0.5rem 1.5rem;
+	--sidebar-toggle-radius: 8px;
+	--sidebar-toggle-font-size: 1rem;
+
+	/* Inner spacing */
+	--sidebar-inner-padding: 2rem 2rem 0 2rem;
+}
+```
+
+Or use inline styles:
+
+```svelte
+<Sidebar style="--sidebar-bg: #2a2a2a; --sidebar-width: 400px">
+	<nav>...</nav>
+</Sidebar>
+```
+
+### Hamburger
+
+Hamburger menu icon with animation for mobile navigation. Uses `svelte-hamburgers` under the hood.
+
+```svelte
+<script>
+	import { Hamburger } from '@ainsleydev/sveltekit-helper/components'
+
+	let isOpen = $state(false)
+</script>
+
+<Hamburger bind:isOpen />
+```
+
+#### Props
+
+- `isOpen?: boolean` - Bindable open/closed state
+- `gap?: string` - Distance from top/right edges (default: '0.8rem')
+- `class?: string` - Additional CSS classes
+- `ariaLabel?: string` - Accessibility label (default: 'Toggle menu')
+- `onChange?: (isOpen: boolean) => void` - Callback when state changes
+
+#### Customisation
+
+```css
+:root {
+	--hamburger-gap: 1rem;
+	--hamburger-z-index: 10000;
+	--hamburger-colour: #fff;
+	--hamburger-layer-width: 28px;
+	--hamburger-layer-height: 3px;
+	--hamburger-layer-spacing: 6px;
+	--hamburger-border-radius: 3px;
 }
 ```
 
@@ -170,20 +349,23 @@ Renders a form dynamically from Payload CMS form builder fields.
 
 #### Customisation
 
-Style the form using CSS variables:
+Override CSS variables globally:
 
 ```css
-.payload-form {
+/* Global form styling */
+:root {
 	--form-gap: 1.5rem;
 	--form-input-padding: 1rem;
 	--form-input-border: 1px solid #e5e7eb;
 	--form-input-border-radius: 0.5rem;
 	--form-input-bg: #ffffff;
-	--form-input-text: #111827;
-	--form-error-color: #ef4444;
-	--form-success-color: #10b981;
+	--form-input-colour: #111827;
+	--form-error-colour: #ef4444;
+	--form-error-bg: #fee2e2;
+	--form-success-colour: #10b981;
+	--form-success-bg: #d1fae5;
 	--form-button-bg: #3b82f6;
-	--form-button-text: #ffffff;
+	--form-button-colour: #ffffff;
 	--form-button-hover-bg: #2563eb;
 	--form-button-disabled-bg: #9ca3af;
 }

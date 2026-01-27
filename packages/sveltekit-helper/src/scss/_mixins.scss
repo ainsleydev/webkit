@@ -1,0 +1,155 @@
+@use 'sass:meta';
+@use 'sass:math';
+@use 'sass:map';
+@use 'breakpoints';
+
+// Media Queries
+// ==========================================================================
+
+@mixin mq($size) {
+	@if map.has-key(breakpoints.$breakpoints, $size) {
+		$breakpoint: map.get(breakpoints.$breakpoints, $size);
+		@media screen and (min-width: $breakpoint * 1px) {
+			@content;
+		}
+	} @else if meta.type-of($size) == number {
+		@if math.is-unitless($size) {
+			@error 'When using a number with @mq() make sure to include a unit';
+		} @else {
+			@media screen and (min-width: $size) {
+				@content;
+			}
+		}
+	} @else {
+		@error 'The keyword #{$size} is not in the $breakpoints map';
+	}
+}
+
+@mixin mq-max($size) {
+	@if map.has-key(breakpoints.$breakpoints, $size) {
+		$breakpoint: map.get(breakpoints.$breakpoints, $size);
+		@media screen and (max-width: $breakpoint * 1px) {
+			@content;
+		}
+	} @else if meta.type-of($size) == number {
+		@if math.is-unitless($size) {
+			@error 'When using a number with @mq() make sure to include a unit';
+		} @else {
+			@media screen and (max-width: $size) {
+				@content;
+			}
+		}
+	} @else {
+		@error 'The keyword #{$size} is not in the $breakpoints map';
+	}
+}
+
+@mixin media-small-phones {
+	@media (width <= 350px) {
+		@content;
+	}
+}
+
+//// Pixel to REM Converter
+//// ==========================================================================
+//
+//// @author Ainsley Clark
+//// @param {Number} $pxValue - Pixel amount to convert
+//// @param {String} $property [font-size] - Property to convert
+//// @param {Number} $standard-size - Initial base rem size
+//@mixin px-to-rem($pxValue, $property: 'font-size', $standard-size: 16) {
+//	#{$property}: $pxValue + px;
+//	#{$property}: $pxValue / å $standard-size + rem;
+//}
+
+// Type
+// ==========================================================================
+
+@mixin ellipsis($lines) {
+	display: -webkit-box;
+	-webkit-line-clamp: $lines;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+@function strip-unit($value) {
+	@return math.div($value, $value * 0 + 1);
+}
+
+// Usage:
+// @include fluid-type(34px, 98px);
+@mixin fluid-type($min-font-size, $max-font-size) {
+	$u1: math.unit($type-fluid-start-size);
+	$u2: math.unit($type-fluid-end-size);
+	$u3: math.unit($min-font-size);
+	$u4: math.unit($max-font-size);
+
+	@if $u1 == $u2 and $u1 == $u3 and $u1 == $u4 {
+		& {
+			font-size: $min-font-size;
+
+			@media screen and (min-width: $type-fluid-start-size) {
+				font-size: calc(
+					#{$min-font-size} + #{strip-unit($max-font-size - $min-font-size)} *
+						(
+							(100vw - #{$type-fluid-start-size}) /
+								#{strip-unit($type-fluid-end-size - $type-fluid-start-size)}
+						)
+				);
+			}
+
+			@media screen and (min-width: $type-fluid-end-size) {
+				font-size: $max-font-size;
+			}
+		}
+	}
+}
+
+// Landscape Mixin
+// ==========================================================================
+
+@mixin landscape {
+	@media screen and (orientation: landscape) {
+		@content;
+	}
+}
+
+// Browser
+// ==========================================================================
+
+@mixin ie11 {
+	@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+		@content;
+	}
+}
+
+@mixin ie11andedge {
+	// stylelint-disable-next-line media-feature-name-no-unknown
+	@media screen and (min-device-pixel-ratio: 0) and (-ms-high-contrast: none),
+		(-ms-high-contrast: active) {
+		@content;
+	}
+}
+
+@mixin firefox {
+	// stylelint-disable-next-line media-feature-name-no-unknown
+	@media screen and (min-device-pixel-ratio: 0) and (resolution >= 0.001dpcm) {
+		@content;
+	}
+}
+
+@mixin safari {
+	@media not all and (resolution >= 0.001dpcm) {
+		@supports (-webkit-appearance: none) {
+			@content;
+		}
+	}
+}
+
+// Full Height
+// ==========================================================================
+
+@mixin full-height {
+	height: 100vh; /* Use vh as a fallback for browsers that do not support Custom Properties */
+	height: 100svh;
+}

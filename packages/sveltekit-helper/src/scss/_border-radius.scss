@@ -1,0 +1,21 @@
+@use 'sass:map';
+
+$border-radius-2: 2px;
+$border-radius-4: 4px;
+$border-radius-6: 6px;
+$border-radius-8: 8px;
+$border-radius-12: 12px;
+$border-radius-16: 16px;
+$border-radius-32: 32px;
+$border-radius-full: 9999999px;
+
+$border-radius: (
+	'2': $border-radius-2,
+	'4': $border-radius-4,
+	'6': $border-radius-6,
+	'8': $border-radius-8,
+	'12': $border-radius-12,
+	'16': $border-radius-16,
+	'32': $border-radius-32,
+	'full': $border-radius-full,
+);

@@ -1,0 +1,65 @@
+{
+	"name": "@ainsleydev/logger",
+	"version": "0.1.0",
+	"description": "Structured JSON logging for Node.js and browser environments",
+	"license": "MIT",
+	"type": "module",
+	"keywords": ["logger", "logging", "pino", "json", "structured"],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ainsleydev/webkit.git",
+		"directory": "packages/logger"
+	},
+	"author": {
+		"name": "ainsley.dev",
+		"email": "hello@ainsley.dev",
+		"url": "https://ainsley.dev"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "pnpm clean && pnpm build:types && pnpm build:swc",
+		"build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+		"build:types": "tsc --emitDeclarationOnly --outDir dist",
+		"format": "biome check --write --unsafe .",
+		"lint": "biome lint --write .",
+		"clean": "rimraf {dist,*.tsbuildinfo}",
+		"test": "vitest run"
+	},
+	"files": ["dist"],
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"pino": "^9.6.0"
+	},
+	"peerDependencies": {
+		"pino-pretty": "^13.0.0"
+	},
+	"peerDependenciesMeta": {
+		"pino-pretty": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@swc/cli": "^0.7.8",
+		"@swc/core": "^1.7.2",
+		"@types/node": "^24.10.1",
+		"pino-pretty": "^13.0.0",
+		"rimraf": "6.1.0",
+		"typescript": "^5.5.4",
+		"vitest": "^2.0.5"
+	},
+	"engines": {
+		"node": ">=18",
+		"pnpm": ">=9"
+	}
+}
