@@ -73,6 +73,13 @@ describe('createLogger', () => {
 		expect(logger.level).toBe('warn');
 	});
 
+	test('ignores invalid LOG_LEVEL and falls back to default', () => {
+		process.env.LOG_LEVEL = 'invalid';
+		process.env.NODE_ENV = 'production';
+		const logger = createLogger({ service: 'test-service' });
+		expect(logger.level).toBe('info');
+	});
+
 	test('defaults to debug level in development', () => {
 		delete process.env.LOG_LEVEL;
 		process.env.NODE_ENV = 'development';

@@ -3,10 +3,29 @@ import type { LogLevel, Logger, LoggerConfig } from './types.js';
 
 const isBrowser = typeof window !== 'undefined';
 
+const VALID_LEVELS: readonly LogLevel[] = [
+	'trace',
+	'debug',
+	'info',
+	'warn',
+	'error',
+	'fatal',
+	'silent',
+];
+
+/**
+ * Validates whether a string is a valid log level.
+ * @param level - The level string to validate.
+ * @returns True if the level is valid, false otherwise.
+ */
+function isValidLevel(level: string): level is LogLevel {
+	return VALID_LEVELS.includes(level as LogLevel);
+}
+
 /**
  * Determines the default log level based on environment.
  * - Browser: always 'debug' (for devtools visibility).
- * - Node.js: LOG_LEVEL env var, or 'debug' in development, 'info' otherwise.
+ * - Node.js: LOG_LEVEL env var (if valid), or 'debug' in development, 'info' otherwise.
  * @param environment - The current environment name.
  * @returns The resolved log level.
  */
@@ -14,8 +33,8 @@ function resolveLevel(environment: string): LogLevel {
 	if (isBrowser) {
 		return 'debug';
 	}
-	const envLevel = process.env.LOG_LEVEL as LogLevel | undefined;
-	if (envLevel) {
+	const envLevel = process.env.LOG_LEVEL;
+	if (envLevel && isValidLevel(envLevel)) {
 		return envLevel;
 	}
 	const isDev = environment === 'development';
