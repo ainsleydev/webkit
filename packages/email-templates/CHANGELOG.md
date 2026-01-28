@@ -1,5 +1,11 @@
 # @ainsleydev/email-templates
 
+## 0.0.4
+
+### Patch Changes
+
+- 3ea3383: Fix invalid peer dependency version range for @react-email/components and add React 19 support
+
 ## 0.0.3
 
 ### Patch Changes

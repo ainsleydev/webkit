@@ -1,5 +1,12 @@
 # @ainsleydev/payload-helper
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [3ea3383]
+  - @ainsleydev/email-templates@0.0.4
+
 ## 0.1.1
 
 ### Patch Changes
