@@ -107,6 +107,39 @@ func TestIsDevDependency(t *testing.T) {
 	assert.False(t, pkg.IsDevDependency("react"))
 }
 
+func TestGetDependencyVersion(t *testing.T) {
+	t.Parallel()
+
+	pkg := &PackageJSON{
+		Dependencies: map[string]string{
+			"payload": "^3.0.0",
+		},
+		DevDependencies: map[string]string{
+			"typescript": "^5.0.0",
+		},
+		PeerDependencies: map[string]string{
+			"graphql": "^16.0.0",
+		},
+	}
+
+	tt := map[string]struct {
+		input string
+		want  string
+	}{
+		"Found in dependencies":     {input: "payload", want: "^3.0.0"},
+		"Found in devDependencies":  {input: "typescript", want: "^5.0.0"},
+		"Found in peerDependencies": {input: "graphql", want: "^16.0.0"},
+		"Not found":                 {input: "react", want: ""},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, test.want, pkg.GetDependencyVersion(test.input))
+		})
+	}
+}
+
 func TestSortDependencies(t *testing.T) {
 	t.Parallel()
 

@@ -42,6 +42,11 @@ var BumpCmd = &cli.Command{
 			Name:  "no-migrate",
 			Usage: "Skip running pnpm migrate:create after installing dependencies",
 		},
+		&cli.BoolFlag{
+			Name:    "force",
+			Aliases: []string{"f"},
+			Usage:   "Allow dependency downgrades (by default, only upgrades are applied)",
+		},
 	},
 	Action: cmdtools.Wrap(Bump),
 }
@@ -113,8 +118,9 @@ func Bump(ctx context.Context, input cmdtools.CommandInput) error {
 		printer.LineBreak()
 	}
 
-	// Process the current directory's Payload app
-	changed, err := bumpAppDependencies(input, targetVersion, payloadDeps, isDryRun)
+	// Process the current directory's Payload app.
+	forceDowngrades := input.Command.Bool("force")
+	changed, err := bumpAppDependencies(input, targetVersion, payloadDeps, isDryRun, forceDowngrades)
 	if err != nil {
 		return errors.Wrap(err, "bumping dependencies")
 	}
@@ -212,6 +218,7 @@ func bumpAppDependencies(
 	version string,
 	payloadDeps *payloadDependencies,
 	dryRun bool,
+	forceDowngrades bool,
 ) (bool, error) {
 	printer := input.Printer()
 	pkgPath := "package.json"
@@ -258,7 +265,17 @@ func bumpAppDependencies(
 	}
 
 	// Update dependencies.
-	result := pkgjson.UpdateDependencies(pkg, matcher, versionFormatter)
+	result := pkgjson.UpdateDependencies(pkg, matcher, versionFormatter, pkgjson.UpdateOptions{
+		AllowDowngrades: forceDowngrades,
+	})
+
+	// Display skipped downgrades.
+	if len(result.Skipped) > 0 {
+		printer.Printf("⏭ Skipping %d dependencies (would downgrade):\n", len(result.Skipped))
+		for _, dep := range result.Skipped {
+			printer.Printf("   %s: %s (keeping current version)\n", dep, pkg.GetDependencyVersion(dep))
+		}
+	}
 
 	if len(result.Updated) == 0 {
 		printer.Println("✓ All dependencies already up to date")
