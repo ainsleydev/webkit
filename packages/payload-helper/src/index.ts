@@ -44,6 +44,9 @@ export {
 // Common/Reusable
 export { SEOFields } from './common/index.js';
 
+// Email Config Helper
+export { defineEmailConfig } from './email/defineEmailConfig.js';
+
 // Endpoints
 export { findBySlug } from './endpoints/index.js';
 
