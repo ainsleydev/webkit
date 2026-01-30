@@ -282,7 +282,7 @@ func TestBumpAppDependencies(t *testing.T) {
 			},
 		}
 
-		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false)
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false, false)
 		require.NoError(t, err)
 		assert.True(t, changed)
 
@@ -319,7 +319,7 @@ func TestBumpAppDependencies(t *testing.T) {
 			},
 		}
 
-		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false)
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false, false)
 		require.NoError(t, err)
 		assert.False(t, changed)
 	})
@@ -343,7 +343,7 @@ func TestBumpAppDependencies(t *testing.T) {
 		}
 
 		// Run in dry-run mode
-		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, true)
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, true, false)
 		require.NoError(t, err)
 		assert.True(t, changed)
 
@@ -373,7 +373,7 @@ func TestBumpAppDependencies(t *testing.T) {
 			AllDeps: map[string]string{},
 		}
 
-		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false)
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false, false)
 		require.NoError(t, err)
 		assert.True(t, changed)
 
@@ -415,7 +415,7 @@ func TestBumpAppDependencies(t *testing.T) {
 		}
 
 		// Bump to 3.0.0, which is lower than current 4.0.0
-		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false)
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false, false)
 		require.NoError(t, err)
 		assert.False(t, changed)
 
@@ -453,7 +453,7 @@ func TestBumpAppDependencies(t *testing.T) {
 			},
 		}
 
-		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false)
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false, false)
 		require.NoError(t, err)
 		assert.True(t, changed)
 
@@ -466,6 +466,42 @@ func TestBumpAppDependencies(t *testing.T) {
 		assert.Equal(t, "^19.0.0", pkg.Dependencies["react"])
 	})
 
+	t.Run("Force flag allows downgrades", func(t *testing.T) {
+		t.Parallel()
+
+		fs, input := setup(t)
+
+		err := afero.WriteFile(fs, "package.json", []byte(`{
+			"name": "cms",
+			"version": "1.0.0",
+			"dependencies": {
+				"payload": "^4.0.0",
+				"react": "^19.0.0"
+			}
+		}`), 0o644)
+		require.NoError(t, err)
+
+		payloadDeps := &payloadDependencies{
+			Dependencies: map[string]string{
+				"react": "^18.3.1",
+			},
+			DevDependencies: map[string]string{},
+			AllDeps: map[string]string{
+				"react": "^18.3.1",
+			},
+		}
+
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false, true)
+		require.NoError(t, err)
+		assert.True(t, changed)
+
+		pkg, err := pkgjson.Read(fs, "package.json")
+		require.NoError(t, err)
+
+		assert.Equal(t, "^3.0.0", pkg.Dependencies["payload"])
+		assert.Equal(t, "^18.3.1", pkg.Dependencies["react"])
+	})
+
 	t.Run("Returns error if package.json doesn't exist", func(t *testing.T) {
 		t.Parallel()
 
@@ -473,7 +509,7 @@ func TestBumpAppDependencies(t *testing.T) {
 
 		payloadDeps := &payloadDependencies{}
 
-		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false)
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false, false)
 		assert.Error(t, err) // Should error when package.json doesn't exist
 		assert.False(t, changed)
 	})

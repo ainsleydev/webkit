@@ -104,6 +104,21 @@ func (pkg *PackageJSON) IsDevDependency(name string) bool {
 	return ok
 }
 
+// GetDependencyVersion returns the version string for a dependency across all dependency types.
+// Returns an empty string if the dependency is not found in any type.
+func (pkg *PackageJSON) GetDependencyVersion(name string) string {
+	if ver := pkg.Dependencies[name]; ver != "" {
+		return ver
+	}
+	if ver := pkg.DevDependencies[name]; ver != "" {
+		return ver
+	}
+	if ver := pkg.PeerDependencies[name]; ver != "" {
+		return ver
+	}
+	return ""
+}
+
 // sortDependencies sorts all dependency maps alphabetically in-place.
 func (pkg *PackageJSON) sortDependencies() {
 	pkg.Dependencies = sortMap(pkg.Dependencies)

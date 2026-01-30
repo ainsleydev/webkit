@@ -11,16 +11,22 @@ type (
 	// UpdateResult contains information about what dependencies were updated.
 	UpdateResult struct {
 		Updated     []string
-		Skipped     []string // Dependencies skipped because updating would downgrade them
+		Skipped     []string // Dependencies skipped because updating would downgrade them.
 		OldVersions map[string]string
 	}
 	// DependencyMatcher is a function that determines whether
 	// a dependency should be updated.
 	DependencyMatcher func(name string) bool
+	// UpdateOptions configures the behaviour of UpdateDependencies.
+	UpdateOptions struct {
+		// AllowDowngrades permits updating to a lower version than currently installed.
+		AllowDowngrades bool
+	}
 )
 
 // UpdateDependencies updates dependencies that match the provided matcher function.
 // It updates dependencies across all dependency types (dependencies, devDependencies, peerDependencies).
+// By default, downgrades are prevented. Pass UpdateOptions with AllowDowngrades to override.
 //
 // The versionFormatter function determines how to format the version string for each dependency.
 // For example, regular dependencies might use "^1.0.0" while devDependencies use "1.0.0".
@@ -28,7 +34,13 @@ func UpdateDependencies(
 	pkg *PackageJSON,
 	matcher DependencyMatcher,
 	versionFormatter func(name, version string) string,
+	opts ...UpdateOptions,
 ) *UpdateResult {
+	var options UpdateOptions
+	if len(opts) > 0 {
+		options = opts[0]
+	}
+
 	result := &UpdateResult{
 		Updated:     []string{},
 		Skipped:     []string{},
@@ -37,7 +49,7 @@ func UpdateDependencies(
 
 	updateDep := func(deps map[string]string, name, oldVer string) {
 		newVer := versionFormatter(name, oldVer)
-		if IsDowngrade(oldVer, newVer) {
+		if !options.AllowDowngrades && IsDowngrade(oldVer, newVer) {
 			result.Skipped = append(result.Skipped, name)
 			return
 		}

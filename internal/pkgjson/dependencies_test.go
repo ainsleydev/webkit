@@ -152,6 +152,24 @@ func TestUpdateDependencies_SkipsDowngrades(t *testing.T) {
 	}
 }
 
+func TestUpdateDependencies_AllowDowngrades(t *testing.T) {
+	t.Parallel()
+
+	pkg := &PackageJSON{
+		Dependencies: map[string]string{
+			"payload": "^4.0.0",
+		},
+	}
+
+	result := UpdateDependencies(pkg, payloadMatcher, func(_, _ string) string {
+		return "3.1.0"
+	}, UpdateOptions{AllowDowngrades: true})
+
+	assert.Len(t, result.Updated, 1)
+	assert.Len(t, result.Skipped, 0)
+	assert.Equal(t, "3.1.0", pkg.Dependencies["payload"])
+}
+
 func TestStripVersionPrefix(t *testing.T) {
 	t.Parallel()
 
@@ -159,15 +177,17 @@ func TestStripVersionPrefix(t *testing.T) {
 		input string
 		want  string
 	}{
-		"Caret":         {input: "^3.0.0", want: "3.0.0"},
-		"Tilde":         {input: "~3.0.0", want: "3.0.0"},
-		"Greater equal": {input: ">=3.0.0", want: "3.0.0"},
-		"Less equal":    {input: "<=3.0.0", want: "3.0.0"},
-		"Greater":       {input: ">3.0.0", want: "3.0.0"},
-		"Less":          {input: "<3.0.0", want: "3.0.0"},
-		"Exact":         {input: "3.0.0", want: "3.0.0"},
-		"Equals prefix": {input: "=3.0.0", want: "3.0.0"},
-		"With spaces":   {input: " ^3.0.0 ", want: "3.0.0"},
+		"Caret":             {input: "^3.0.0", want: "3.0.0"},
+		"Tilde":             {input: "~3.0.0", want: "3.0.0"},
+		"Greater equal":     {input: ">=3.0.0", want: "3.0.0"},
+		"Less equal":        {input: "<=3.0.0", want: "3.0.0"},
+		"Greater":           {input: ">3.0.0", want: "3.0.0"},
+		"Less":              {input: "<3.0.0", want: "3.0.0"},
+		"Exact":             {input: "3.0.0", want: "3.0.0"},
+		"Equals prefix":     {input: "=3.0.0", want: "3.0.0"},
+		"With spaces":       {input: " ^3.0.0 ", want: "3.0.0"},
+		"Empty string":      {input: "", want: ""},
+		"Multiple prefixes": {input: "^~3.0.0", want: "~3.0.0"},
 	}
 
 	for name, test := range tt {
