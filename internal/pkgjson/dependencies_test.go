@@ -159,15 +159,15 @@ func TestStripVersionPrefix(t *testing.T) {
 		input string
 		want  string
 	}{
-		"Caret":          {input: "^3.0.0", want: "3.0.0"},
-		"Tilde":          {input: "~3.0.0", want: "3.0.0"},
-		"Greater equal":  {input: ">=3.0.0", want: "3.0.0"},
-		"Less equal":     {input: "<=3.0.0", want: "3.0.0"},
-		"Greater":        {input: ">3.0.0", want: "3.0.0"},
-		"Less":           {input: "<3.0.0", want: "3.0.0"},
-		"Exact":          {input: "3.0.0", want: "3.0.0"},
-		"Equals prefix":  {input: "=3.0.0", want: "3.0.0"},
-		"With spaces":    {input: " ^3.0.0 ", want: "3.0.0"},
+		"Caret":         {input: "^3.0.0", want: "3.0.0"},
+		"Tilde":         {input: "~3.0.0", want: "3.0.0"},
+		"Greater equal": {input: ">=3.0.0", want: "3.0.0"},
+		"Less equal":    {input: "<=3.0.0", want: "3.0.0"},
+		"Greater":       {input: ">3.0.0", want: "3.0.0"},
+		"Less":          {input: "<3.0.0", want: "3.0.0"},
+		"Exact":         {input: "3.0.0", want: "3.0.0"},
+		"Equals prefix": {input: "=3.0.0", want: "3.0.0"},
+		"With spaces":   {input: " ^3.0.0 ", want: "3.0.0"},
 	}
 
 	for name, test := range tt {
@@ -186,17 +186,17 @@ func TestIsDowngrade(t *testing.T) {
 		newVersion string
 		want       bool
 	}{
-		"Downgrade major":         {oldVersion: "^4.0.0", newVersion: "^3.0.0", want: true},
-		"Downgrade minor":         {oldVersion: "^3.2.0", newVersion: "^3.1.0", want: true},
-		"Downgrade patch":         {oldVersion: "^3.0.2", newVersion: "^3.0.1", want: true},
-		"Upgrade major":           {oldVersion: "^2.0.0", newVersion: "^3.0.0", want: false},
-		"Upgrade minor":           {oldVersion: "^3.0.0", newVersion: "^3.1.0", want: false},
-		"Upgrade patch":           {oldVersion: "^3.0.0", newVersion: "^3.0.1", want: false},
-		"Same version":            {oldVersion: "^3.0.0", newVersion: "^3.0.0", want: false},
-		"Different prefixes":      {oldVersion: "~3.1.0", newVersion: "^3.0.0", want: true},
-		"Exact to caret upgrade":  {oldVersion: "3.0.0", newVersion: "^4.0.0", want: false},
-		"Invalid old version":     {oldVersion: "invalid", newVersion: "^3.0.0", want: false},
-		"Invalid new version":     {oldVersion: "^3.0.0", newVersion: "invalid", want: false},
+		"Downgrade major":        {oldVersion: "^4.0.0", newVersion: "^3.0.0", want: true},
+		"Downgrade minor":        {oldVersion: "^3.2.0", newVersion: "^3.1.0", want: true},
+		"Downgrade patch":        {oldVersion: "^3.0.2", newVersion: "^3.0.1", want: true},
+		"Upgrade major":          {oldVersion: "^2.0.0", newVersion: "^3.0.0", want: false},
+		"Upgrade minor":          {oldVersion: "^3.0.0", newVersion: "^3.1.0", want: false},
+		"Upgrade patch":          {oldVersion: "^3.0.0", newVersion: "^3.0.1", want: false},
+		"Same version":           {oldVersion: "^3.0.0", newVersion: "^3.0.0", want: false},
+		"Different prefixes":     {oldVersion: "~3.1.0", newVersion: "^3.0.0", want: true},
+		"Exact to caret upgrade": {oldVersion: "3.0.0", newVersion: "^4.0.0", want: false},
+		"Invalid old version":    {oldVersion: "invalid", newVersion: "^3.0.0", want: false},
+		"Invalid new version":    {oldVersion: "^3.0.0", newVersion: "invalid", want: false},
 	}
 
 	for name, test := range tt {

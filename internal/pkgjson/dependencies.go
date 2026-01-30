@@ -11,7 +11,7 @@ type (
 	// UpdateResult contains information about what dependencies were updated.
 	UpdateResult struct {
 		Updated     []string
-		Skipped     []string          // Dependencies skipped because updating would downgrade them
+		Skipped     []string // Dependencies skipped because updating would downgrade them
 		OldVersions map[string]string
 	}
 	// DependencyMatcher is a function that determines whether
