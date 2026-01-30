@@ -260,6 +260,21 @@ func bumpAppDependencies(
 	// Update dependencies.
 	result := pkgjson.UpdateDependencies(pkg, matcher, versionFormatter)
 
+	// Display skipped downgrades.
+	if len(result.Skipped) > 0 {
+		printer.Printf("⏭ Skipping %d dependencies (would downgrade):\n", len(result.Skipped))
+		for _, dep := range result.Skipped {
+			currentVer := pkg.Dependencies[dep]
+			if currentVer == "" {
+				currentVer = pkg.DevDependencies[dep]
+			}
+			if currentVer == "" {
+				currentVer = pkg.PeerDependencies[dep]
+			}
+			printer.Printf("   %s: %s (keeping current version)\n", dep, currentVer)
+		}
+	}
+
 	if len(result.Updated) == 0 {
 		printer.Println("✓ All dependencies already up to date")
 		return false, nil

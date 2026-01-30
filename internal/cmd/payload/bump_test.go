@@ -387,6 +387,85 @@ func TestBumpAppDependencies(t *testing.T) {
 		assert.Equal(t, "3.0.0", pkg.DevDependencies["@payloadcms/eslint-config"])
 	})
 
+	t.Run("Prevents downgrade of dependencies", func(t *testing.T) {
+		t.Parallel()
+
+		fs, input := setup(t)
+
+		// Create package.json with versions HIGHER than target
+		err := afero.WriteFile(fs, "package.json", []byte(`{
+			"name": "cms",
+			"version": "1.0.0",
+			"dependencies": {
+				"payload": "^4.0.0",
+				"@payloadcms/richtext-lexical": "^4.0.0",
+				"react": "^19.0.0"
+			}
+		}`), 0o644)
+		require.NoError(t, err)
+
+		payloadDeps := &payloadDependencies{
+			Dependencies: map[string]string{
+				"react": "^18.3.1",
+			},
+			DevDependencies: map[string]string{},
+			AllDeps: map[string]string{
+				"react": "^18.3.1",
+			},
+		}
+
+		// Bump to 3.0.0, which is lower than current 4.0.0
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false)
+		require.NoError(t, err)
+		assert.False(t, changed)
+
+		// Verify package.json was NOT modified - versions should remain at 4.0.0
+		pkg, err := pkgjson.Read(fs, "package.json")
+		require.NoError(t, err)
+		assert.Equal(t, "^4.0.0", pkg.Dependencies["payload"])
+		assert.Equal(t, "^4.0.0", pkg.Dependencies["@payloadcms/richtext-lexical"])
+		assert.Equal(t, "^19.0.0", pkg.Dependencies["react"])
+	})
+
+	t.Run("Upgrades some and skips downgrades for others", func(t *testing.T) {
+		t.Parallel()
+
+		fs, input := setup(t)
+
+		// payload is old (should upgrade), react is newer (should skip)
+		err := afero.WriteFile(fs, "package.json", []byte(`{
+			"name": "cms",
+			"version": "1.0.0",
+			"dependencies": {
+				"payload": "^2.0.0",
+				"react": "^19.0.0"
+			}
+		}`), 0o644)
+		require.NoError(t, err)
+
+		payloadDeps := &payloadDependencies{
+			Dependencies: map[string]string{
+				"react": "^18.3.1",
+			},
+			DevDependencies: map[string]string{},
+			AllDeps: map[string]string{
+				"react": "^18.3.1",
+			},
+		}
+
+		changed, err := bumpAppDependencies(input, "3.0.0", payloadDeps, false)
+		require.NoError(t, err)
+		assert.True(t, changed)
+
+		pkg, err := pkgjson.Read(fs, "package.json")
+		require.NoError(t, err)
+
+		// payload should be upgraded
+		assert.Equal(t, "^3.0.0", pkg.Dependencies["payload"])
+		// react should NOT be downgraded
+		assert.Equal(t, "^19.0.0", pkg.Dependencies["react"])
+	})
+
 	t.Run("Returns error if package.json doesn't exist", func(t *testing.T) {
 		t.Parallel()
 
