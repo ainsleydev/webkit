@@ -1,6 +1,5 @@
 import type { Field } from 'payload';
-// @ts-ignore
-import { validateURL } from '../util/validation';
+import { validateURL } from '../util/validation.js';
 
 /**
  * SEO Fields define the additional fields that appear
