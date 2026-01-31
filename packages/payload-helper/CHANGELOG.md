@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.1.4
+
+### Patch Changes
+
+- 36eb3da: Decouple email preview CLI from Payload config to fix path alias resolution errors.
+
 ## 0.1.3
 
 ### Patch Changes
