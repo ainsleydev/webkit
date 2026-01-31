@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.1.3
+
+### Patch Changes
+
+- 20b2aa5: Bumping Deps
+
 ## 0.1.2
 
 ### Patch Changes
