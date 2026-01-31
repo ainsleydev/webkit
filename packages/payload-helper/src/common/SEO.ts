@@ -1,5 +1,4 @@
 import type { Field } from 'payload';
-// @ts-ignore
 import { validateURL } from '../util/validation';
 
 /**
