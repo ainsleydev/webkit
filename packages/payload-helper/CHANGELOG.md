@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.1.5
+
+### Patch Changes
+
+- 6906b17: fix: Adding .js extension to ESM import for Node.js compatibility
+
 ## 0.1.4
 
 ### Patch Changes
