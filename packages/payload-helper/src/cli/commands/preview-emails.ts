@@ -1,5 +1,5 @@
-import { createServer } from 'node:http';
 import { existsSync } from 'node:fs';
+import { createServer } from 'node:http';
 import { resolve } from 'node:path';
 import { renderEmail } from '@ainsleydev/email-templates';
 import chalk from 'chalk';
