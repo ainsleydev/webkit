@@ -278,24 +278,59 @@ payloadHelper({
 
 #### Previewing emails
 
-Preview your emails with your actual branding directly from your Payload configuration:
+Preview your emails with your actual branding by creating a standalone email config file:
+
+**1. Create an email config file** (e.g., `src/email.config.ts`):
+
+```typescript
+import { defineEmailConfig } from '@ainsleydev/payload-helper';
+
+export default defineEmailConfig({
+	frontEndUrl: 'https://your-site.com',
+	theme: {
+		branding: {
+			companyName: 'My Company',
+			logoUrl: 'https://your-site.com/logo.png',
+		},
+		colours: {
+			background: {
+				accent: '#ff5043',
+			},
+		},
+	},
+	forgotPassword: {
+		heading: 'Reset your password',
+	},
+	verifyAccount: {
+		heading: 'Welcome aboard',
+	},
+});
+```
+
+**2. Import the same config in your Payload config** to keep things in sync:
+
+```typescript
+import emailConfig from './email.config';
+
+payloadHelper({
+	siteName: 'My Site',
+	email: emailConfig,
+})
+```
+
+**3. Run the preview server:**
 
 ```bash
 npx payload-helper preview-emails
 ```
 
-This command will:
-- Read your `payload.config.ts` to extract your email theme configuration
-- Generate preview templates with your actual branding
-- Launch a preview server at http://localhost:3000
-
-You can optionally specify a custom port:
+The command auto-detects config files at `src/email.config.ts`, `email.config.ts`, or their `.js` equivalents. You can also specify an explicit path:
 
 ```bash
-npx payload-helper preview-emails --port 3001
+npx payload-helper preview-emails --config src/email.config.ts --port 3001
 ```
 
-The preview will show both ForgotPassword and VerifyAccount emails using your configured theme, frontEndUrl, and content overrides.
+The preview server launches at `http://localhost:3000` (or your specified port) and shows both ForgotPassword and VerifyAccount email templates using your configured theme and content overrides.
 
 ## Utilities
 
