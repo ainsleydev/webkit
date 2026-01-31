@@ -40,6 +40,9 @@ type (
 		Exports          any               `json:"exports,omitempty"`
 		Imports          any               `json:"imports,omitempty"`
 		Browser          any               `json:"browser,omitempty"`
+		Types            string            `json:"types,omitempty"`
+		Typings          string            `json:"typings,omitempty"`
+		PublishConfig    any               `json:"publishConfig,omitempty"`
 		Bin              any               `json:"bin,omitempty"`
 		Man              any               `json:"man,omitempty"`
 		Directories      any               `json:"directories,omitempty"`
