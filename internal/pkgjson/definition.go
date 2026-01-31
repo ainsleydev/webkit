@@ -37,6 +37,8 @@ type (
 		Files            []string          `json:"files,omitempty"`
 		Main             string            `json:"main,omitempty"`
 		Module           string            `json:"module,omitempty"`
+		Exports          any               `json:"exports,omitempty"`
+		Imports          any               `json:"imports,omitempty"`
 		Browser          any               `json:"browser,omitempty"`
 		Bin              any               `json:"bin,omitempty"`
 		Man              any               `json:"man,omitempty"`
