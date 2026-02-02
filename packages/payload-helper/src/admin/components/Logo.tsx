@@ -24,13 +24,12 @@ export const Logo: React.FC<LogoProps> = ({ config }) => {
 	const imagePath = theme === 'light' || !config.darkModePath ? config.path : config.darkModePath;
 
 	return (
-		<figure className={config.className ? config.className : undefined}>
-			<Image
-				src={imagePath}
-				alt={config.alt || 'Logo'}
-				width={config.width || 150}
-				height={config.height || 40}
-			/>
-		</figure>
+		<Image
+			className={config.className ? config.className : undefined}
+			src={imagePath}
+			alt={config.alt || 'Logo'}
+			width={config.width || 150}
+			height={config.height || 40}
+		/>
 	);
 };
