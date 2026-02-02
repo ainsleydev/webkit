@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.1.6
+
+### Patch Changes
+
+- 3233efa: Fix admin Icon and Logo visibility by removing block-level figure wrapper
+
 ## 0.1.5
 
 ### Patch Changes
