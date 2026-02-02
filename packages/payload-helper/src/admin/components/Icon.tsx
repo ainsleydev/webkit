@@ -25,13 +25,12 @@ export const Icon: React.FC<IconProps> = ({ config }) => {
 	const imagePath = theme === 'light' || !config.darkModePath ? config.path : config.darkModePath;
 
 	return (
-		<figure className={config.className ? config.className : undefined}>
-			<Image
-				src={imagePath}
-				alt={config.alt || 'Icon'}
-				width={config.width || 120}
-				height={config.height || 120}
-			/>
-		</figure>
+		<Image
+			className={config.className ? config.className : undefined}
+			src={imagePath}
+			alt={config.alt || 'Icon'}
+			width={config.width || 120}
+			height={config.height || 120}
+		/>
 	);
 };
