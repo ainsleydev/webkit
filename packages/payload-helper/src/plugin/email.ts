@@ -66,8 +66,11 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 						resetUrl = await Promise.resolve(
 							emailConfig.forgotPassword.url({ token, config, collection }),
 						);
-					} catch {
-						// Fallback to default URL on callback error
+					} catch (error) {
+						console.warn(
+							'Failed to generate custom forgot password URL, using default:',
+							error,
+						);
 					}
 				}
 
@@ -102,8 +105,11 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 						verifyUrl = await Promise.resolve(
 							emailConfig.verifyAccount.url({ token, config, collection }),
 						);
-					} catch {
-						// Fallback to default URL on callback error
+					} catch (error) {
+						console.warn(
+							'Failed to generate custom verify account URL, using default:',
+							error,
+						);
 					}
 				}
 

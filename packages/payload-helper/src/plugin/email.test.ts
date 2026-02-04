@@ -1,3 +1,4 @@
+import { renderEmail } from '@ainsleydev/email-templates';
 import type { CollectionConfig, Config } from 'payload';
 import { describe, expect, test, vi } from 'vitest';
 import type { EmailConfig } from '../types.js';
@@ -441,6 +442,10 @@ describe('injectEmailTemplates', () => {
 	});
 
 	test('should fallback to default URL when callback throws error', async () => {
+		const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const renderEmailMock = vi.mocked(renderEmail);
+		renderEmailMock.mockClear();
+
 		const errorCallback = vi.fn(() => {
 			throw new Error('Callback failed');
 		});
@@ -470,15 +475,25 @@ describe('injectEmailTemplates', () => {
 			typeof usersCollection?.auth === 'object' &&
 			usersCollection.auth.forgotPassword?.generateEmailHTML
 		) {
-			// Should not throw - falls back to default URL
-			await expect(
-				usersCollection.auth.forgotPassword.generateEmailHTML({
-					token: 'test-token',
-					user: { email: 'test@example.com' },
-				}),
-			).resolves.toBeDefined();
+			await usersCollection.auth.forgotPassword.generateEmailHTML({
+				token: 'fallback-token',
+				user: { email: 'test@example.com' },
+			});
 
 			expect(errorCallback).toHaveBeenCalled();
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Failed to generate custom forgot password URL, using default:',
+				expect.any(Error),
+			);
+			expect(renderEmailMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					props: expect.objectContaining({
+						resetUrl: 'https://api.example.com/admin/reset/fallback-token',
+					}),
+				}),
+			);
 		}
+
+		consoleWarnSpy.mockRestore();
 	});
 });
