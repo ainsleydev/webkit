@@ -57,7 +57,11 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 			generateEmailHTML: async (args) => {
 				const token = args?.token || '';
 				const user = args?.user || {};
-				const resetUrl = `${config.serverURL}/admin/reset/${token}`;
+
+				// Use custom URL callback if provided, otherwise use default
+				const resetUrl = emailConfig.forgotPasswordUrl
+					? emailConfig.forgotPasswordUrl({ token, config, collection })
+					: `${config.serverURL}/admin/reset/${token}`;
 
 				return renderEmail({
 					component: ForgotPasswordEmail,
@@ -81,8 +85,11 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 			generateEmailHTML: async (args) => {
 				const token = args?.token || '';
 				const user = args?.user || {};
-				// For verify emails, the token is used in the verification URL
-				const verifyUrl = `${config.serverURL}/admin/${collection.slug}/verify/${token}`;
+
+				// Use custom URL callback if provided, otherwise use default
+				const verifyUrl = emailConfig.verifyAccountUrl
+					? emailConfig.verifyAccountUrl({ token, config, collection })
+					: `${config.serverURL}/admin/${collection.slug}/verify/${token}`;
 
 				return renderEmail({
 					component: VerifyAccountEmail,
