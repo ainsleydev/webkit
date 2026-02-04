@@ -8,7 +8,9 @@ export type {
 	AdminIconConfig,
 	AdminLogoConfig,
 	EmailConfig,
-	EmailContentOverrides,
+	EmailTemplateConfig,
+	EmailUrlCallback,
+	EmailUrlCallbackArgs,
 	SettingsConfig,
 	WebServerConfig,
 } from './types.js';
