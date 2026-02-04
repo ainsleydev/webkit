@@ -184,11 +184,6 @@ export type EmailTemplateConfig = {
 };
 
 /**
- * @deprecated Use EmailTemplateConfig instead.
- */
-export type EmailContentOverrides = EmailTemplateConfig;
-
-/**
  * Configuration for email templates used in authentication flows.
  */
 export type EmailConfig = {
