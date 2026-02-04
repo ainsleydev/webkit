@@ -30,8 +30,9 @@ export type EmailUrlCallbackArgs = {
 
 /**
  * Callback function type for generating custom email URLs.
+ * Supports both synchronous and asynchronous callbacks.
  */
-export type EmailUrlCallback = (args: EmailUrlCallbackArgs) => string;
+export type EmailUrlCallback = (args: EmailUrlCallbackArgs) => string | Promise<string>;
 // import type {SEOPluginConfig} from "@payloadcms/plugin-seo/dist/types.js";
 
 /**

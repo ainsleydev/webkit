@@ -52,6 +52,7 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 
 		// Inject forgotPassword email template
 		const currentForgotPassword = updatedCollection.auth.forgotPassword;
+		const defaultResetUrl = `${config.serverURL}/admin/reset`;
 		updatedCollection.auth.forgotPassword = {
 			...(typeof currentForgotPassword === 'object' ? currentForgotPassword : {}),
 			generateEmailHTML: async (args) => {
@@ -59,9 +60,16 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 				const user = args?.user || {};
 
 				// Use custom URL callback if provided, otherwise use default
-				const resetUrl = emailConfig.forgotPassword?.url
-					? emailConfig.forgotPassword.url({ token, config, collection })
-					: `${config.serverURL}/admin/reset/${token}`;
+				let resetUrl = `${defaultResetUrl}/${token}`;
+				if (emailConfig.forgotPassword?.url) {
+					try {
+						resetUrl = await Promise.resolve(
+							emailConfig.forgotPassword.url({ token, config, collection }),
+						);
+					} catch {
+						// Fallback to default URL on callback error
+					}
+				}
 
 				return renderEmail({
 					component: ForgotPasswordEmail,
@@ -80,6 +88,7 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 
 		// Inject verify email template
 		const currentVerify = updatedCollection.auth.verify;
+		const defaultVerifyUrl = `${config.serverURL}/admin/${collection.slug}/verify`;
 		updatedCollection.auth.verify = {
 			...(typeof currentVerify === 'object' ? currentVerify : {}),
 			generateEmailHTML: async (args) => {
@@ -87,9 +96,16 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 				const user = args?.user || {};
 
 				// Use custom URL callback if provided, otherwise use default
-				const verifyUrl = emailConfig.verifyAccount?.url
-					? emailConfig.verifyAccount.url({ token, config, collection })
-					: `${config.serverURL}/admin/${collection.slug}/verify/${token}`;
+				let verifyUrl = `${defaultVerifyUrl}/${token}`;
+				if (emailConfig.verifyAccount?.url) {
+					try {
+						verifyUrl = await Promise.resolve(
+							emailConfig.verifyAccount.url({ token, config, collection }),
+						);
+					} catch {
+						// Fallback to default URL on callback error
+					}
+				}
 
 				return renderEmail({
 					component: VerifyAccountEmail,

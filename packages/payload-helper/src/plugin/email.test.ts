@@ -399,4 +399,86 @@ describe('injectEmailTemplates', () => {
 			});
 		}
 	});
+
+	test('should support async URL callbacks', async () => {
+		const asyncUrlCallback = vi.fn(async ({ token }) => {
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			return `https://async.example.com/reset?token=${token}`;
+		});
+
+		const config: Config = {
+			collections: [
+				{
+					slug: 'users',
+					fields: [],
+					auth: true,
+				},
+			] as CollectionConfig[],
+			serverURL: 'https://api.example.com',
+		};
+
+		const emailConfig: EmailConfig = {
+			...mockEmailConfig,
+			forgotPassword: {
+				url: asyncUrlCallback,
+			},
+		};
+
+		const result = injectEmailTemplates(config, emailConfig);
+
+		const usersCollection = result.collections?.[0];
+		if (
+			typeof usersCollection?.auth === 'object' &&
+			usersCollection.auth.forgotPassword?.generateEmailHTML
+		) {
+			await usersCollection.auth.forgotPassword.generateEmailHTML({
+				token: 'async-token',
+				user: { email: 'test@example.com' },
+			});
+
+			expect(asyncUrlCallback).toHaveBeenCalled();
+		}
+	});
+
+	test('should fallback to default URL when callback throws error', async () => {
+		const errorCallback = vi.fn(() => {
+			throw new Error('Callback failed');
+		});
+
+		const config: Config = {
+			collections: [
+				{
+					slug: 'users',
+					fields: [],
+					auth: true,
+				},
+			] as CollectionConfig[],
+			serverURL: 'https://api.example.com',
+		};
+
+		const emailConfig: EmailConfig = {
+			...mockEmailConfig,
+			forgotPassword: {
+				url: errorCallback,
+			},
+		};
+
+		const result = injectEmailTemplates(config, emailConfig);
+
+		const usersCollection = result.collections?.[0];
+		if (
+			typeof usersCollection?.auth === 'object' &&
+			usersCollection.auth.forgotPassword?.generateEmailHTML
+		) {
+			// Should not throw - falls back to default URL
+			await expect(
+				usersCollection.auth.forgotPassword.generateEmailHTML({
+					token: 'test-token',
+					user: { email: 'test@example.com' },
+				}),
+			).resolves.toBeDefined();
+
+			expect(errorCallback).toHaveBeenCalled();
+		}
+	});
 });
