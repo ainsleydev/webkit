@@ -1,5 +1,24 @@
 # @ainsleydev/payload-helper
 
+## 0.2.0
+
+### Minor Changes
+
+- fd80a0c: Adding customisable URL callbacks for verification and forgot password emails. Users can now provide a `url` callback in their email configuration to generate custom URLs for frontend verification flows.
+
+  Example usage:
+
+  ```ts
+  email: {
+    forgotPassword: {
+      url: ({ token }) => `https://myapp.com/reset?token=${token}`,
+    },
+    verifyAccount: {
+      url: ({ token, collection }) => `https://myapp.com/verify?token=${token}`,
+    },
+  }
+  ```
+
 ## 0.1.6
 
 ### Patch Changes
