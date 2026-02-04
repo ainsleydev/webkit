@@ -1,6 +1,38 @@
 // import type { SEOPluginConfig } from "@payloadcms/plugin-seo/types";
 import type { PartialEmailTheme } from '@ainsleydev/email-templates';
-import type { GlobalConfig, Tab, TextField, TextareaField, UploadField } from 'payload';
+import type {
+	CollectionConfig,
+	Config,
+	GlobalConfig,
+	Tab,
+	TextField,
+	TextareaField,
+	UploadField,
+} from 'payload';
+
+/**
+ * Arguments passed to custom URL generator callbacks.
+ */
+export type EmailUrlCallbackArgs = {
+	/**
+	 * The authentication token for the email action.
+	 */
+	token: string;
+	/**
+	 * The Payload configuration object.
+	 */
+	config: Config;
+	/**
+	 * The collection configuration for the user being emailed.
+	 */
+	collection: CollectionConfig;
+};
+
+/**
+ * Callback function type for generating custom email URLs.
+ * Supports both synchronous and asynchronous callbacks.
+ */
+export type EmailUrlCallback = (args: EmailUrlCallbackArgs) => string | Promise<string>;
 // import type {SEOPluginConfig} from "@payloadcms/plugin-seo/dist/types.js";
 
 /**
@@ -120,9 +152,9 @@ export type AdminConfig = {
 };
 
 /**
- * Content overrides for customizing email template text.
+ * Configuration for customising email template content and behaviour.
  */
-export type EmailContentOverrides = {
+export type EmailTemplateConfig = {
 	/**
 	 * Optional preview text shown in email clients before opening.
 	 */
@@ -139,6 +171,17 @@ export type EmailContentOverrides = {
 	 * Optional button text for the call-to-action button.
 	 */
 	buttonText?: string;
+	/**
+	 * Optional callback to generate a custom URL for this email action.
+	 * When provided, this overrides the default URL generation.
+	 *
+	 * @example
+	 * ```ts
+	 * url: ({ token, collection }) =>
+	 *   `https://myapp.com/auth/action?token=${token}&type=${collection.slug}`
+	 * ```
+	 */
+	url?: EmailUrlCallback;
 };
 
 /**
@@ -151,19 +194,19 @@ export type EmailConfig = {
 	frontEndUrl?: string;
 
 	/**
-	 * Optional theme customization for email templates (colors, branding, etc.).
+	 * Optional theme customisation for email templates (colours, branding, etc.).
 	 */
 	theme?: PartialEmailTheme;
 
 	/**
-	 * Optional content overrides for the forgot password email template.
+	 * Optional configuration for the forgot password email template.
 	 */
-	forgotPassword?: EmailContentOverrides;
+	forgotPassword?: EmailTemplateConfig;
 
 	/**
-	 * Optional content overrides for the verify account email template.
+	 * Optional configuration for the verify account email template.
 	 */
-	verifyAccount?: EmailContentOverrides;
+	verifyAccount?: EmailTemplateConfig;
 };
 
 /**

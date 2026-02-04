@@ -52,12 +52,27 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 
 		// Inject forgotPassword email template
 		const currentForgotPassword = updatedCollection.auth.forgotPassword;
+		const defaultResetUrl = `${config.serverURL}/admin/reset`;
 		updatedCollection.auth.forgotPassword = {
 			...(typeof currentForgotPassword === 'object' ? currentForgotPassword : {}),
 			generateEmailHTML: async (args) => {
 				const token = args?.token || '';
 				const user = args?.user || {};
-				const resetUrl = `${config.serverURL}/admin/reset/${token}`;
+
+				// Use custom URL callback if provided, otherwise use default
+				let resetUrl = `${defaultResetUrl}/${token}`;
+				if (emailConfig.forgotPassword?.url) {
+					try {
+						resetUrl = await Promise.resolve(
+							emailConfig.forgotPassword.url({ token, config, collection }),
+						);
+					} catch (error) {
+						console.warn(
+							'Failed to generate custom forgot password URL, using default:',
+							error,
+						);
+					}
+				}
 
 				return renderEmail({
 					component: ForgotPasswordEmail,
@@ -76,13 +91,27 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 
 		// Inject verify email template
 		const currentVerify = updatedCollection.auth.verify;
+		const defaultVerifyUrl = `${config.serverURL}/admin/${collection.slug}/verify`;
 		updatedCollection.auth.verify = {
 			...(typeof currentVerify === 'object' ? currentVerify : {}),
 			generateEmailHTML: async (args) => {
 				const token = args?.token || '';
 				const user = args?.user || {};
-				// For verify emails, the token is used in the verification URL
-				const verifyUrl = `${config.serverURL}/admin/${collection.slug}/verify/${token}`;
+
+				// Use custom URL callback if provided, otherwise use default
+				let verifyUrl = `${defaultVerifyUrl}/${token}`;
+				if (emailConfig.verifyAccount?.url) {
+					try {
+						verifyUrl = await Promise.resolve(
+							emailConfig.verifyAccount.url({ token, config, collection }),
+						);
+					} catch (error) {
+						console.warn(
+							'Failed to generate custom verify account URL, using default:',
+							error,
+						);
+					}
+				}
 
 				return renderEmail({
 					component: VerifyAccountEmail,

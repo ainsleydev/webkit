@@ -1,3 +1,4 @@
+import { renderEmail } from '@ainsleydev/email-templates';
 import type { CollectionConfig, Config } from 'payload';
 import { describe, expect, test, vi } from 'vitest';
 import type { EmailConfig } from '../types.js';
@@ -308,5 +309,191 @@ describe('injectEmailTemplates', () => {
 			expect(usersCollection.auth.verify?.generateEmailSubject).toBeDefined();
 			expect(usersCollection.auth.verify?.generateEmailHTML).toBeDefined();
 		}
+	});
+
+	test('should use custom forgotPassword.url callback when provided', async () => {
+		const customUrlCallback = vi.fn(
+			({ token, collection }) =>
+				`https://custom.example.com/reset?token=${token}&slug=${collection.slug}`,
+		);
+
+		const config: Config = {
+			collections: [
+				{
+					slug: 'users',
+					fields: [],
+					auth: true,
+				},
+			] as CollectionConfig[],
+			serverURL: 'https://api.example.com',
+		};
+
+		const emailConfig: EmailConfig = {
+			...mockEmailConfig,
+			forgotPassword: {
+				...mockEmailConfig.forgotPassword,
+				url: customUrlCallback,
+			},
+		};
+
+		const result = injectEmailTemplates(config, emailConfig);
+
+		const usersCollection = result.collections?.[0];
+		if (
+			typeof usersCollection?.auth === 'object' &&
+			usersCollection.auth.forgotPassword?.generateEmailHTML
+		) {
+			await usersCollection.auth.forgotPassword.generateEmailHTML({
+				token: 'test-token-123',
+				user: { email: 'test@example.com' },
+			});
+
+			expect(customUrlCallback).toHaveBeenCalledWith({
+				token: 'test-token-123',
+				config,
+				collection: expect.objectContaining({ slug: 'users' }),
+			});
+		}
+	});
+
+	test('should use custom verifyAccount.url callback when provided', async () => {
+		const customUrlCallback = vi.fn(
+			({ token, collection }) =>
+				`https://custom.example.com/verify?token=${token}&type=${collection.slug}`,
+		);
+
+		const config: Config = {
+			collections: [
+				{
+					slug: 'admins',
+					fields: [],
+					auth: true,
+				},
+			] as CollectionConfig[],
+			serverURL: 'https://api.example.com',
+		};
+
+		const emailConfig: EmailConfig = {
+			...mockEmailConfig,
+			verifyAccount: {
+				...mockEmailConfig.verifyAccount,
+				url: customUrlCallback,
+			},
+		};
+
+		const result = injectEmailTemplates(config, emailConfig);
+
+		const adminsCollection = result.collections?.[0];
+		if (
+			typeof adminsCollection?.auth === 'object' &&
+			adminsCollection.auth.verify?.generateEmailHTML
+		) {
+			await adminsCollection.auth.verify.generateEmailHTML({
+				token: 'verify-token-456',
+				user: { email: 'admin@example.com' },
+			});
+
+			expect(customUrlCallback).toHaveBeenCalledWith({
+				token: 'verify-token-456',
+				config,
+				collection: expect.objectContaining({ slug: 'admins' }),
+			});
+		}
+	});
+
+	test('should support async URL callbacks', async () => {
+		const asyncUrlCallback = vi.fn(async ({ token }) => {
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			return `https://async.example.com/reset?token=${token}`;
+		});
+
+		const config: Config = {
+			collections: [
+				{
+					slug: 'users',
+					fields: [],
+					auth: true,
+				},
+			] as CollectionConfig[],
+			serverURL: 'https://api.example.com',
+		};
+
+		const emailConfig: EmailConfig = {
+			...mockEmailConfig,
+			forgotPassword: {
+				url: asyncUrlCallback,
+			},
+		};
+
+		const result = injectEmailTemplates(config, emailConfig);
+
+		const usersCollection = result.collections?.[0];
+		if (
+			typeof usersCollection?.auth === 'object' &&
+			usersCollection.auth.forgotPassword?.generateEmailHTML
+		) {
+			await usersCollection.auth.forgotPassword.generateEmailHTML({
+				token: 'async-token',
+				user: { email: 'test@example.com' },
+			});
+
+			expect(asyncUrlCallback).toHaveBeenCalled();
+		}
+	});
+
+	test('should fallback to default URL when callback throws error', async () => {
+		const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const renderEmailMock = vi.mocked(renderEmail);
+		renderEmailMock.mockClear();
+
+		const errorCallback = vi.fn(() => {
+			throw new Error('Callback failed');
+		});
+
+		const config: Config = {
+			collections: [
+				{
+					slug: 'users',
+					fields: [],
+					auth: true,
+				},
+			] as CollectionConfig[],
+			serverURL: 'https://api.example.com',
+		};
+
+		const emailConfig: EmailConfig = {
+			...mockEmailConfig,
+			forgotPassword: {
+				url: errorCallback,
+			},
+		};
+
+		const result = injectEmailTemplates(config, emailConfig);
+
+		const usersCollection = result.collections?.[0];
+		if (
+			typeof usersCollection?.auth === 'object' &&
+			usersCollection.auth.forgotPassword?.generateEmailHTML
+		) {
+			await usersCollection.auth.forgotPassword.generateEmailHTML({
+				token: 'fallback-token',
+				user: { email: 'test@example.com' },
+			});
+
+			expect(errorCallback).toHaveBeenCalled();
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Failed to generate custom forgot password URL, using default:',
+				expect.any(Error),
+			);
+			expect(renderEmailMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					props: expect.objectContaining({
+						resetUrl: 'https://api.example.com/admin/reset/fallback-token',
+					}),
+				}),
+			);
+		}
+
+		consoleWarnSpy.mockRestore();
 	});
 });
