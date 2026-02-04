@@ -309,4 +309,94 @@ describe('injectEmailTemplates', () => {
 			expect(usersCollection.auth.verify?.generateEmailHTML).toBeDefined();
 		}
 	});
+
+	test('should use custom forgotPassword.url callback when provided', async () => {
+		const customUrlCallback = vi.fn(
+			({ token, collection }) =>
+				`https://custom.example.com/reset?token=${token}&slug=${collection.slug}`,
+		);
+
+		const config: Config = {
+			collections: [
+				{
+					slug: 'users',
+					fields: [],
+					auth: true,
+				},
+			] as CollectionConfig[],
+			serverURL: 'https://api.example.com',
+		};
+
+		const emailConfig: EmailConfig = {
+			...mockEmailConfig,
+			forgotPassword: {
+				...mockEmailConfig.forgotPassword,
+				url: customUrlCallback,
+			},
+		};
+
+		const result = injectEmailTemplates(config, emailConfig);
+
+		const usersCollection = result.collections?.[0];
+		if (
+			typeof usersCollection?.auth === 'object' &&
+			usersCollection.auth.forgotPassword?.generateEmailHTML
+		) {
+			await usersCollection.auth.forgotPassword.generateEmailHTML({
+				token: 'test-token-123',
+				user: { email: 'test@example.com' },
+			});
+
+			expect(customUrlCallback).toHaveBeenCalledWith({
+				token: 'test-token-123',
+				config,
+				collection: expect.objectContaining({ slug: 'users' }),
+			});
+		}
+	});
+
+	test('should use custom verifyAccount.url callback when provided', async () => {
+		const customUrlCallback = vi.fn(
+			({ token, collection }) =>
+				`https://custom.example.com/verify?token=${token}&type=${collection.slug}`,
+		);
+
+		const config: Config = {
+			collections: [
+				{
+					slug: 'admins',
+					fields: [],
+					auth: true,
+				},
+			] as CollectionConfig[],
+			serverURL: 'https://api.example.com',
+		};
+
+		const emailConfig: EmailConfig = {
+			...mockEmailConfig,
+			verifyAccount: {
+				...mockEmailConfig.verifyAccount,
+				url: customUrlCallback,
+			},
+		};
+
+		const result = injectEmailTemplates(config, emailConfig);
+
+		const adminsCollection = result.collections?.[0];
+		if (
+			typeof adminsCollection?.auth === 'object' &&
+			adminsCollection.auth.verify?.generateEmailHTML
+		) {
+			await adminsCollection.auth.verify.generateEmailHTML({
+				token: 'verify-token-456',
+				user: { email: 'admin@example.com' },
+			});
+
+			expect(customUrlCallback).toHaveBeenCalledWith({
+				token: 'verify-token-456',
+				config,
+				collection: expect.objectContaining({ slug: 'admins' }),
+			});
+		}
+	});
 });

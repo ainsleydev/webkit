@@ -59,8 +59,8 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 				const user = args?.user || {};
 
 				// Use custom URL callback if provided, otherwise use default
-				const resetUrl = emailConfig.forgotPasswordUrl
-					? emailConfig.forgotPasswordUrl({ token, config, collection })
+				const resetUrl = emailConfig.forgotPassword?.url
+					? emailConfig.forgotPassword.url({ token, config, collection })
 					: `${config.serverURL}/admin/reset/${token}`;
 
 				return renderEmail({
@@ -87,8 +87,8 @@ export const injectEmailTemplates = (config: Config, emailConfig: EmailConfig): 
 				const user = args?.user || {};
 
 				// Use custom URL callback if provided, otherwise use default
-				const verifyUrl = emailConfig.verifyAccountUrl
-					? emailConfig.verifyAccountUrl({ token, config, collection })
+				const verifyUrl = emailConfig.verifyAccount?.url
+					? emailConfig.verifyAccount.url({ token, config, collection })
 					: `${config.serverURL}/admin/${collection.slug}/verify/${token}`;
 
 				return renderEmail({

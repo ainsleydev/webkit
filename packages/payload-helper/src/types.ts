@@ -1,6 +1,14 @@
 // import type { SEOPluginConfig } from "@payloadcms/plugin-seo/types";
 import type { PartialEmailTheme } from '@ainsleydev/email-templates';
-import type { CollectionConfig, Config, GlobalConfig, Tab, TextField, TextareaField, UploadField } from 'payload';
+import type {
+	CollectionConfig,
+	Config,
+	GlobalConfig,
+	Tab,
+	TextField,
+	TextareaField,
+	UploadField,
+} from 'payload';
 
 /**
  * Arguments passed to custom URL generator callbacks.
@@ -143,9 +151,9 @@ export type AdminConfig = {
 };
 
 /**
- * Content overrides for customizing email template text.
+ * Configuration for customising email template content and behaviour.
  */
-export type EmailContentOverrides = {
+export type EmailTemplateConfig = {
 	/**
 	 * Optional preview text shown in email clients before opening.
 	 */
@@ -162,7 +170,23 @@ export type EmailContentOverrides = {
 	 * Optional button text for the call-to-action button.
 	 */
 	buttonText?: string;
+	/**
+	 * Optional callback to generate a custom URL for this email action.
+	 * When provided, this overrides the default URL generation.
+	 *
+	 * @example
+	 * ```ts
+	 * url: ({ token, collection }) =>
+	 *   `https://myapp.com/auth/action?token=${token}&type=${collection.slug}`
+	 * ```
+	 */
+	url?: EmailUrlCallback;
 };
+
+/**
+ * @deprecated Use EmailTemplateConfig instead.
+ */
+export type EmailContentOverrides = EmailTemplateConfig;
 
 /**
  * Configuration for email templates used in authentication flows.
@@ -174,43 +198,19 @@ export type EmailConfig = {
 	frontEndUrl?: string;
 
 	/**
-	 * Optional theme customization for email templates (colors, branding, etc.).
+	 * Optional theme customisation for email templates (colours, branding, etc.).
 	 */
 	theme?: PartialEmailTheme;
 
 	/**
-	 * Optional content overrides for the forgot password email template.
+	 * Optional configuration for the forgot password email template.
 	 */
-	forgotPassword?: EmailContentOverrides;
+	forgotPassword?: EmailTemplateConfig;
 
 	/**
-	 * Optional content overrides for the verify account email template.
+	 * Optional configuration for the verify account email template.
 	 */
-	verifyAccount?: EmailContentOverrides;
-
-	/**
-	 * Optional callback to generate a custom forgot password URL.
-	 * When provided, this overrides the default URL generation.
-	 *
-	 * @example
-	 * ```ts
-	 * forgotPasswordUrl: ({ token, config, collection }) =>
-	 *   `https://myapp.com/auth/reset-password?token=${token}`
-	 * ```
-	 */
-	forgotPasswordUrl?: EmailUrlCallback;
-
-	/**
-	 * Optional callback to generate a custom verify account URL.
-	 * When provided, this overrides the default URL generation.
-	 *
-	 * @example
-	 * ```ts
-	 * verifyAccountUrl: ({ token, config, collection }) =>
-	 *   `https://myapp.com/auth/verify?token=${token}&collection=${collection.slug}`
-	 * ```
-	 */
-	verifyAccountUrl?: EmailUrlCallback;
+	verifyAccount?: EmailTemplateConfig;
 };
 
 /**
