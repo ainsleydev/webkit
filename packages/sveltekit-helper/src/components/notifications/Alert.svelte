@@ -79,7 +79,7 @@ export type AlertProps = {
 	>
 		<!-- Icon -->
 		<figure class="alert__icon">
-			<Icon size={24} color={iconDetail.colour} strokeWidth={1.2}></Icon>
+			<Icon size={24} strokeWidth={1.2}></Icon>
 		</figure>
 		<!-- Content -->
 		<div class="alert__content">
@@ -97,7 +97,7 @@ export type AlertProps = {
 		<!-- Dismiss -->
 		{#if dismiss}
 			<button class="alert__dismiss" onclick={hide} aria-label="Close Alert">
-				<X size={24} color={iconDetail.colour} />
+				<X size={24} />
 			</button>
 		{/if}
 	</div>
@@ -123,6 +123,7 @@ export type AlertProps = {
 			justify-content: center;
 			margin: 0;
 			flex-shrink: 0;
+			color: var(--_alert-icon-colour);
 		}
 
 		&__content {

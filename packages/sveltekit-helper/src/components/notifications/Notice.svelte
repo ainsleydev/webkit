@@ -67,7 +67,7 @@ export type NoticeProps = {
 	>
 		<!-- Icon -->
 		<figure class="notice__icon">
-			<Icon size={20} color={iconDetail.colour} strokeWidth={1.2}></Icon>
+			<Icon size={20} strokeWidth={1.2}></Icon>
 		</figure>
 		<!-- Title -->
 		<p class="notice__title">
@@ -76,7 +76,7 @@ export type NoticeProps = {
 		<!-- Dismiss -->
 		{#if dismiss}
 			<button class="notice__dismiss" onclick={hide} aria-label="Close Notice">
-				<X size={20} color={iconDetail.colour} />
+				<X size={20} />
 			</button>
 		{/if}
 	</div>
@@ -103,6 +103,7 @@ export type NoticeProps = {
 			justify-content: center;
 			margin: 0;
 			flex-shrink: 0;
+			color: var(--_notice-icon-colour);
 		}
 
 		&__title {
