@@ -11,6 +11,7 @@ export type AlertProps = {
 	visible?: boolean;
 	dismiss?: boolean;
 	icon?: typeof IconType;
+	hideIcon?: boolean;
 };
 </script>
 
@@ -27,6 +28,7 @@ export type AlertProps = {
 		visible = $bindable(true),
 		dismiss = false,
 		icon: customIcon,
+		hideIcon = false,
 		...restProps
 	}: AlertProps = $props()
 
@@ -53,6 +55,8 @@ export type AlertProps = {
 	<Alert type="error" title="Payment failed" dismiss>
 		Your card was declined. Please update your payment method.
 	</Alert>
+
+	<Alert type="info" title="No icon" hideIcon />
 	```
 
 	CSS Custom Properties:
@@ -78,9 +82,11 @@ export type AlertProps = {
 		{...restProps}
 	>
 		<!-- Icon -->
-		<figure class="alert__icon">
-			<Icon size={24} strokeWidth={1.2}></Icon>
-		</figure>
+		{#if !hideIcon}
+			<figure class="alert__icon">
+				<Icon size={24} strokeWidth={1.2}></Icon>
+			</figure>
+		{/if}
 		<!-- Content -->
 		<div class="alert__content">
 			{#if title}

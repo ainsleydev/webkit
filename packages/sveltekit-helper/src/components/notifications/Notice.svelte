@@ -9,6 +9,7 @@ export type NoticeProps = {
 	visible?: boolean;
 	dismiss?: boolean;
 	icon?: typeof IconType;
+	hideIcon?: boolean;
 };
 </script>
 
@@ -24,6 +25,7 @@ export type NoticeProps = {
 		visible = $bindable(true),
 		dismiss = false,
 		icon: customIcon,
+		hideIcon = false,
 		...restProps
 	}: NoticeProps = $props()
 
@@ -44,6 +46,7 @@ export type NoticeProps = {
 	<Notice type="success" title="Upload complete" />
 	<Notice type="warning" title="Session expiring" dismiss />
 	<Notice type="error" title="Connection failed" icon={CustomIcon} />
+	<Notice type="info" title="No icon" hideIcon />
 	```
 
 	CSS Custom Properties:
@@ -66,9 +69,11 @@ export type NoticeProps = {
 		{...restProps}
 	>
 		<!-- Icon -->
-		<figure class="notice__icon">
-			<Icon size={20} strokeWidth={1.2}></Icon>
-		</figure>
+		{#if !hideIcon}
+			<figure class="notice__icon">
+				<Icon size={20} strokeWidth={1.2}></Icon>
+			</figure>
+		{/if}
 		<!-- Title -->
 		<p class="notice__title">
 			{title}
