@@ -24,6 +24,9 @@
 # Framework / Tooling
 **/.svelte-kit/
 
+# AI / Agents
+AGENTS.md
+
 # Editor / OS
 **/.DS_Store
 **/.cache
