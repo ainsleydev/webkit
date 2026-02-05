@@ -25,7 +25,7 @@
 **/.svelte-kit/
 
 # AI / Agents
-AGENTS.md
+**/AGENTS.md
 
 # Editor / OS
 **/.DS_Store
