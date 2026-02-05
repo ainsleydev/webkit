@@ -10,3 +10,4 @@ export * from './components/index.js';
 export * from './components/Grid/index.js';
 export * from './components/payload/index.js';
 export * from './utils/forms/index.js';
+export * from './utils/seo/index.js';
