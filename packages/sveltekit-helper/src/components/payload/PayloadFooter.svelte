@@ -1,15 +1,13 @@
 <script lang="ts">
-import { serializeSchema } from '../../utils/seo/ld-json.js';
-
 import type { PayloadFooterProps } from './types.js';
 
-const data: PayloadFooterProps = $props();
+const { settings, pageCodeInjection }: PayloadFooterProps = $props();
 
 /**
  * Code injection meta.
  */
-const siteCodeInjection = $derived(data.settings?.codeInjection?.footer);
-const pageCodeInjection = $derived(data.pageCodeInjection?.footer);
+const siteCodeInjection = $derived(settings?.codeInjection?.footer);
+const pageFooterInjection = $derived(pageCodeInjection?.footer);
 </script>
 
 <!--
@@ -31,6 +29,6 @@ const pageCodeInjection = $derived(data.pageCodeInjection?.footer);
 	{@html siteCodeInjection}
 {/if}
 <!-- Code Injection - Page -->
-{#if pageCodeInjection}
-	{@html pageCodeInjection}
+{#if pageFooterInjection}
+	{@html pageFooterInjection}
 {/if}

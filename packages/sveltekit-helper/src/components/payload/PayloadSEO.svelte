@@ -137,7 +137,9 @@ const organizationSchema = $derived.by(() => {
 	<meta property="og:description" content={meta.description} />
 	<meta property="og:site_name" content={site} />
 	<meta property="og:locale" content={locale} />
-	<meta property="og:url" content={meta.canonical} />
+	{#if meta.canonical}
+		<meta property="og:url" content={meta.canonical} />
+	{/if}
 	{#if meta.media}
 		{#if meta.media.url}
 			<meta property="og:image" content={meta.media.url} />
