@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.4.1
+
+### Patch Changes
+
+- de301c4: Switch the SvelteKit helper grid export path to lower case to match other component exports.
+
 ## 0.4.0
 
 ### Minor Changes
