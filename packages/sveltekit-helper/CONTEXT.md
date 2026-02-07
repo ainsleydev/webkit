@@ -105,7 +105,7 @@ Example consumer implementation:
 packages/sveltekit-helper/
 ├── src/
 │   ├── components/
-│   │   ├── Grid/           # Container, Row, Column
+│   │   ├── grid/           # Container, Row, Column
 │   │   └── payload/        # PayloadForm, PayloadMedia
 │   ├── utils/
 │   │   └── forms/          # generateFormSchema, flattenZodErrors
@@ -121,7 +121,7 @@ packages/sveltekit-helper/
 
 Clean import paths without `/dist`:
 ```typescript
-import { Container, Row, Column } from '@ainsleydev/sveltekit-helper/components/Grid'
+import { Container, Row, Column } from '@ainsleydev/sveltekit-helper/components/grid'
 import { PayloadForm, PayloadMedia } from '@ainsleydev/sveltekit-helper/components/payload'
 import { generateFormSchema, flattenZodErrors } from '@ainsleydev/sveltekit-helper/utils/forms'
 ```

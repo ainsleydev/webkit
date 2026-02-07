@@ -54,7 +54,7 @@ Center content horizontally with predefined max-width and support for breakout l
 
 ```svelte
 <script>
-	import { Container, Row, Column } from '@ainsleydev/sveltekit-helper/components/Grid'
+	import { Container, Row, Column } from '@ainsleydev/sveltekit-helper/components/grid'
 </script>
 
 <Container>
