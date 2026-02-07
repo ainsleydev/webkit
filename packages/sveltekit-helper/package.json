@@ -28,10 +28,10 @@
 			"svelte": "./dist/components/index.js",
 			"default": "./dist/components/index.js"
 		},
-		"./components/Grid": {
-			"types": "./dist/components/Grid/index.d.ts",
-			"svelte": "./dist/components/Grid/index.js",
-			"default": "./dist/components/Grid/index.js"
+		"./components/grid": {
+			"types": "./dist/components/grid/index.d.ts",
+			"svelte": "./dist/components/grid/index.js",
+			"default": "./dist/components/grid/index.js"
 		},
 		"./components/payload": {
 			"types": "./dist/components/payload/index.d.ts",
