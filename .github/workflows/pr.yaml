@@ -171,6 +171,7 @@ jobs:
 
       - name: Run Claude Code Review
         id: claude-review
+        continue-on-error: true
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.ORG_CLAUDE_CODE_TOKEN }}
@@ -231,3 +232,30 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
           claude_args: '--allowed-tools "Bash(gh api:*),Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+
+      - name: Prepare Claude review failure comment
+        if: steps.claude-review.outcome == 'failure' && github.event_name == 'pull_request'
+        id: claude-review-failure
+        run: |
+          {
+            echo 'comment_body<<EOF'
+            echo "<!-- claude-review-failure -->"
+            echo "### Claude Code review failed"
+            echo ""
+            echo "<details>"
+            echo "<summary>View failure details</summary>"
+            echo ""
+            echo "**Reason**: ${{ steps.claude-review.outputs.error || 'Unavailable. Check the workflow logs for the full error.' }}"
+            echo ""
+            echo "</details>"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR
+        if: steps.claude-review.outcome == 'failure' && github.event_name == 'pull_request'
+        uses: ./.github/actions/pr-comment
+        with:
+          body-includes: '<!-- claude-review-failure -->'
+          comment-body: ${{ steps.claude-review-failure.outputs.comment_body }}
+          issue-number: ${{ github.event.pull_request.number }}
+          private-key: ${{ secrets.ORG_GITHUB_APP_PRIVATE_KEY }}
