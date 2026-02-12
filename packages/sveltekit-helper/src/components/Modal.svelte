@@ -1,5 +1,7 @@
 <script lang="ts" module>
-import type { Snippet } from 'svelte';
+import type { Snippet, TransitionConfig } from 'svelte';
+
+export type TransitionFn = (node: Element, params: Record<string, unknown>) => TransitionConfig;
 
 export type ModalProps = {
 	title?: string;
@@ -7,6 +9,8 @@ export type ModalProps = {
 	children?: Snippet;
 	class?: string;
 	onClose?: () => void;
+	transition?: TransitionFn;
+	transitionParams?: Record<string, unknown>;
 };
 </script>
 
@@ -20,7 +24,9 @@ export type ModalProps = {
 		isOpen = $bindable(false),
 		children,
 		class: className = '',
-		onClose
+		onClose,
+		transition: transitionFn = fade,
+		transitionParams = { duration: 100 }
 	}: ModalProps = $props();
 
 	let modalContent = $state<HTMLDivElement>();
@@ -53,17 +59,48 @@ export type ModalProps = {
 	Modal dialog component with backdrop click and Escape key close behaviour.
 	Uses the native `<dialog>` element for accessibility.
 
-	@example
+	@example Basic usage with title
 	```svelte
 	<Modal bind:isOpen title="Confirm action" onClose={() => (isOpen = false)}>
 		<p>Are you sure you want to proceed?</p>
 	</Modal>
 	```
 
-	@example
+	@example Without title
 	```svelte
 	<Modal bind:isOpen onClose={() => (isOpen = false)}>
 		<form>...</form>
+	</Modal>
+	```
+
+	@example Slide in from the left
+	```svelte
+	<script>
+		import { fly } from 'svelte/transition';
+	</script>
+
+	<Modal
+		bind:isOpen
+		title="Slide modal"
+		onClose={() => (isOpen = false)}
+		transition={fly}
+		transitionParams={{ x: -300, duration: 200 }}
+	/>
+	```
+
+	@example Scale up from centre
+	```svelte
+	<script>
+		import { scale } from 'svelte/transition';
+	</script>
+
+	<Modal
+		bind:isOpen
+		onClose={() => (isOpen = false)}
+		transition={scale}
+		transitionParams={{ start: 0.9, duration: 150 }}
+	>
+		<p>Scaled content</p>
 	</Modal>
 	```
 
@@ -85,7 +122,7 @@ export type ModalProps = {
 		aria-modal="true"
 		aria-label={title || undefined}
 		onclick={handleBackdropClick}
-		transition:fade={{ duration: 100 }}
+		transition:transitionFn={transitionParams}
 	>
 		<div class="modal__content" bind:this={modalContent}>
 			{#if title}
@@ -94,7 +131,7 @@ export type ModalProps = {
 					<button
 						class="modal__close"
 						onclick={() => onClose?.()}
-						aria-label="Close button"
+						aria-label={title ? `Close ${title}` : 'Close modal'}
 					>
 						<X color="var(--modal-close-colour, var(--token-icon-grey))" />
 					</button>
