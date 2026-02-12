@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.5.0
+
+### Minor Changes
+
+- 615233c: Adding Modal component with backdrop click, Escape key close, and fade transition.
+
 ## 0.4.1
 
 ### Patch Changes
