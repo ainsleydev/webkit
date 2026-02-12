@@ -16,7 +16,6 @@ export type ModalProps = {
 
 <script lang="ts">
 	import { X } from '@lucide/svelte';
-	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	let {
@@ -37,19 +36,18 @@ export type ModalProps = {
 		}
 	};
 
-	onMount(() => {
+	$effect(() => {
+		if (!isOpen) return;
+
 		const handleKeydown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape' && isOpen) {
+			if (e.key === 'Escape') {
 				e.preventDefault();
 				onClose?.();
 			}
 		};
 
 		document.addEventListener('keydown', handleKeydown);
-
-		return () => {
-			document.removeEventListener('keydown', handleKeydown);
-		};
+		return () => document.removeEventListener('keydown', handleKeydown);
 	});
 </script>
 
