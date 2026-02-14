@@ -6,6 +6,7 @@ export type TransitionFn = (node: Element, params: Record<string, unknown>) => T
 export type ModalProps = {
 	title?: string;
 	isOpen?: boolean;
+	showClose?: boolean;
 	children?: Snippet;
 	class?: string;
 	onClose?: () => void;
@@ -21,6 +22,7 @@ export type ModalProps = {
 	let {
 		title = '',
 		isOpen = $bindable(false),
+		showClose = true,
 		children,
 		class: className = '',
 		onClose,
@@ -112,6 +114,16 @@ export type ModalProps = {
 	- `--modal-content-padding`: Content padding (default: 1.5rem / 2rem on tablet)
 	- `--modal-header-border`: Header bottom border (default: 1px solid var(--token-border-grey))
 	- `--modal-close-colour`: Close icon colour (default: var(--token-icon-grey))
+
+	Props:
+	- `title` (optional): Modal heading text.
+	- `isOpen` (bindable): Controls modal visibility.
+	- `showClose` (default: true): Whether to render the close button.
+	- `children`: Slot content (Snippet).
+	- `class`: Custom CSS class.
+	- `onClose`: Callback when the modal should close.
+	- `transition`: Custom transition function (default: fade).
+	- `transitionParams`: Transition parameters.
 -->
 {#if isOpen}
 	<dialog
@@ -123,16 +135,20 @@ export type ModalProps = {
 		transition:transitionFn={transitionParams}
 	>
 		<div class="modal__content" bind:this={modalContent}>
-			{#if title}
+			{#if title || showClose}
 				<header class="modal__header">
-					<h4 class="modal__title">{title}</h4>
-					<button
-						class="modal__close"
-						onclick={() => onClose?.()}
-						aria-label={title ? `Close ${title}` : 'Close modal'}
-					>
-						<X color="var(--modal-close-colour, var(--token-icon-grey))" />
-					</button>
+					{#if title}
+						<h4 class="modal__title">{title}</h4>
+					{/if}
+					{#if showClose}
+						<button
+							class="modal__close"
+							onclick={() => onClose?.()}
+							aria-label={title ? `Close ${title}` : 'Close modal'}
+						>
+							<X color="var(--modal-close-colour, var(--token-icon-grey))" />
+						</button>
+					{/if}
 				</header>
 			{/if}
 			<div class="modal__body">
@@ -188,6 +204,7 @@ export type ModalProps = {
 			display: flex;
 			align-items: center;
 			justify-content: center;
+			margin-left: auto;
 		}
 
 		&__content {
