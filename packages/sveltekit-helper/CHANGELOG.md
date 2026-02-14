@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.5.1
+
+### Patch Changes
+
+- 16c4e91: Ensuring the modal close button always renders independently of the title prop, controlled by a new `showClose` prop (defaults to `true`).
+
 ## 0.5.0
 
 ### Minor Changes
