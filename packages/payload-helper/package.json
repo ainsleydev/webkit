@@ -43,6 +43,10 @@
 			"types": "./dist/endpoints/index.d.ts",
 			"import": "./dist/endpoints/index.js"
 		},
+		"./fields": {
+			"types": "./dist/fields/index.d.ts",
+			"import": "./dist/fields/index.js"
+		},
 		"./dist/admin/components/*": {
 			"types": "./dist/admin/components/*.d.ts",
 			"import": "./dist/admin/components/*.js",
