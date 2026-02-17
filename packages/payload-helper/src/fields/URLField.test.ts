@@ -68,6 +68,13 @@ describe('URLField', () => {
 		});
 	});
 
+	test('returns undefined when generate returns undefined', async () => {
+		const field = URLField({ generate: async () => undefined });
+		const hooks = (field as TextField).hooks?.afterRead;
+		const result = await hooks?.[0]({ draft: true } as unknown as FieldHookArgs<TypeWithID>);
+		expect(result).toBeUndefined();
+	});
+
 	test('uses empty object when overrides not provided', () => {
 		const field = URLField({
 			generate: () => 'https://example.com',

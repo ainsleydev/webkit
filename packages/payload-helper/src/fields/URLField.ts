@@ -25,9 +25,12 @@ export const URLField = <T extends TypeWithID>({ generate, overrides }: URLField
 		hooks: {
 			afterRead: [
 				async (args: FieldHookArgs<T>) => {
-					let url = await generate(args);
+					const url = await generate(args);
+					if (!url) {
+						return url;
+					}
 					if (args.draft) {
-						url += '?draft=true';
+						return `${url}?draft=true`;
 					}
 					return url;
 				},
