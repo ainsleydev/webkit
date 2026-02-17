@@ -97,7 +97,7 @@ describe('PublishedAt', () => {
 		});
 	});
 
-	test('top-level overrides replace admin when admin is overridden', () => {
+	test('deep merges admin overrides with defaults', () => {
 		const field = PublishedAt({
 			overrides: {
 				admin: {
@@ -110,6 +110,9 @@ describe('PublishedAt', () => {
 		expect((field as DateField).admin).toMatchObject({
 			position: 'sidebar',
 			description: 'Custom description',
+			date: {
+				pickerAppearance: 'dayOnly',
+			},
 		});
 	});
 

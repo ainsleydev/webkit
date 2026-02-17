@@ -30,7 +30,9 @@ export const URLField = <T extends TypeWithID>({ generate, overrides }: URLField
 						return url;
 					}
 					if (args.draft) {
-						return `${url}?draft=true`;
+						const u = new URL(url);
+						u.searchParams.set('draft', 'true');
+						return u.toString();
 					}
 					return url;
 				},

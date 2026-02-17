@@ -42,6 +42,16 @@ describe('URLField', () => {
 		expect(result).toBe('https://example.com/page?draft=true');
 	});
 
+	test('appends draft parameter correctly when URL already has query params', async () => {
+		const field = URLField({
+			generate: () => 'https://example.com/page?foo=bar',
+		});
+
+		const hooks = (field as TextField).hooks?.afterRead;
+		const result = await hooks?.[0]({ draft: true } as unknown as FieldHookArgs<TypeWithID>);
+		expect(result).toBe('https://example.com/page?foo=bar&draft=true');
+	});
+
 	test('handles async generate function', async () => {
 		const field = URLField({
 			generate: async () => 'https://example.com/async',

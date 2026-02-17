@@ -1,4 +1,5 @@
 import type { DateField, Field } from 'payload';
+import { deepMerge } from 'payload';
 
 export type PublishedAtArgs = {
 	overrides?: Partial<DateField>;
@@ -13,7 +14,7 @@ export type PublishedAtArgs = {
  * @param args - Optional arguments to customise the field.
  */
 export const PublishedAt = (args?: PublishedAtArgs): Field => {
-	return {
+	const baseField: Field = {
 		name: 'publishedAt',
 		type: 'date',
 		required: true,
@@ -23,7 +24,6 @@ export const PublishedAt = (args?: PublishedAtArgs): Field => {
 			date: {
 				pickerAppearance: 'dayOnly',
 			},
-			...args?.overrides?.admin,
 		},
 		hooks: {
 			beforeChange: [
@@ -35,6 +35,6 @@ export const PublishedAt = (args?: PublishedAtArgs): Field => {
 				},
 			],
 		},
-		...args?.overrides,
 	};
+	return deepMerge<Field, Partial<DateField>>(baseField, args?.overrides || {});
 };
