@@ -44,9 +44,11 @@ export {
 } from './util/index.js';
 
 // Common/Reusable
-export { PublishedAt, SEOFields, URLField } from './common/index.js';
-export type { PublishedAtArgs } from './common/index.js';
-export type { URLFieldArgs } from './common/index.js';
+export { SEOFields } from './common/index.js';
+
+// Fields
+export { PublishedAt, URLField } from './fields/index.js';
+export type { PublishedAtArgs, URLFieldArgs } from './fields/index.js';
 
 // Email Config Helper
 export { defineEmailConfig } from './email/defineEmailConfig.js';
