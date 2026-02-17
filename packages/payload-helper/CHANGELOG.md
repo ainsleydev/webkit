@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.2.1
+
+### Patch Changes
+
+- 4bc9eec: Add PublishedAt and URLField field helpers and expose via ./fields export path
+
 ## 0.2.0
 
 ### Minor Changes
