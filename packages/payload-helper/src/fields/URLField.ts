@@ -30,9 +30,15 @@ export const URLField = <T extends TypeWithID>({ generate, overrides }: URLField
 						return url;
 					}
 					if (args.draft) {
-						const u = new URL(url);
-						u.searchParams.set('draft', 'true');
-						return u.toString();
+						try {
+							const u = new URL(url);
+							u.searchParams.set('draft', 'true');
+							return u.toString();
+						} catch {
+							// Relative URL — append manually
+							const sep = url.includes('?') ? '&' : '?';
+							return `${url}${sep}draft=true`;
+						}
 					}
 					return url;
 				},
