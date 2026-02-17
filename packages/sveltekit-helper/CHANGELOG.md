@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.6.0
+
+### Minor Changes
+
+- 4bc9eec: Add Payload SEO helper components and tidy metadata handling.
+
 ## 0.5.1
 
 ### Patch Changes
