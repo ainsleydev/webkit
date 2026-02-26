@@ -133,7 +133,8 @@ pnpm generate:agents
 
 Defines the structure of `app.json` and handles parsing/validation. Core types:
 
-- `App`: Represents an application (type: payload, svelte-kit, golang)
+- `App`: Represents a deployable application (type: payload, svelte-kit, golang)
+- `Utility`: Non-deployed workspace members (E2E tests, shared libraries, CLI tools)
 - `Resource`: Represents infrastructure resources (postgres, s3, etc.)
 - `Environment`: Environment-specific variables (dev, staging, production)
 - `Project`: Top-level project metadata
@@ -144,6 +145,12 @@ Each app has:
 - Infrastructure configuration (provider, type, config)
 - Environment variables (can reference resources, SOPS secrets, or plain values)
 - Commands (build, lint, test, format) with sensible defaults per app type
+
+Utilities are workspace members that optionally run on CI but are never deployed. They have:
+
+- A language field (`go` or `js`) for CI toolchain setup
+- Optional CI configuration (`ci.trigger`) to generate CI jobs
+- Tools and commands (same format as apps, but no defaults)
 
 #### internal/scaffold
 

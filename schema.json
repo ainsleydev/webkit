@@ -83,6 +83,10 @@
 					"$ref": "#/definitions/AppdefInfra",
 					"description": "Infrastructure and deployment configuration"
 				},
+				"language": {
+					"description": "Toolchain language for CI setup (auto-populated from type if not set)",
+					"type": "string"
+				},
 				"monitoring": {
 					"description": "Whether to enable uptime monitoring for this app (defaults to true)",
 					"type": [
@@ -460,6 +464,109 @@
 				}
 			},
 			"type": "object"
+		},
+		"AppdefUtility": {
+			"properties": {
+				"ci": {
+					"$ref": "#/definitions/AppdefUtilityCI",
+					"description": "CI configuration. Omit to create a workspace-only utility with no CI job"
+				},
+				"commands": {
+					"additionalProperties": {
+						"oneOf": [
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "string"
+							},
+							{
+								"properties": {
+									"command": {
+										"description": "The shell command to execute (e.g., 'pnpm build')",
+										"type": "string"
+									},
+									"skip_ci": {
+										"description": "Whether to skip running this command in CI/CD pipelines",
+										"type": "boolean"
+									},
+									"timeout": {
+										"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+										"type": "string"
+									},
+									"working_directory": {
+										"description": "Working directory for the command (defaults to app path if not specified)",
+										"type": "string"
+									}
+								},
+								"type": "object"
+							}
+						],
+						"properties": {
+							"command": {
+								"description": "The shell command to execute (e.g., 'pnpm build')",
+								"type": "string"
+							},
+							"skip_ci": {
+								"description": "Whether to skip running this command in CI/CD pipelines",
+								"type": "boolean"
+							},
+							"timeout": {
+								"description": "Maximum execution time for the command (e.g., '5m', '1h')",
+								"type": "string"
+							},
+							"working_directory": {
+								"description": "Working directory for the command (defaults to app path if not specified)",
+								"type": "string"
+							}
+						},
+						"type": "object"
+					},
+					"description": "Custom commands for linting, testing, formatting, and building",
+					"type": "object"
+				},
+				"description": {
+					"description": "Brief description of the utility's purpose and functionality",
+					"type": "string"
+				},
+				"language": {
+					"description": "Toolchain language for CI setup and workspace inclusion (go or js)",
+					"type": "string"
+				},
+				"name": {
+					"description": "Unique identifier for the utility (lowercase, hyphenated)",
+					"type": "string"
+				},
+				"path": {
+					"description": "Relative file path to the utility's source code directory",
+					"type": "string"
+				},
+				"title": {
+					"description": "Human-readable utility name for display purposes",
+					"type": "string"
+				},
+				"tools": {
+					"additionalProperties": {
+						"$ref": "#/definitions/AppdefTool"
+					},
+					"description": "Build tools required for CI/CD workflows",
+					"type": "object"
+				}
+			},
+			"type": "object"
+		},
+		"AppdefUtilityCI": {
+			"properties": {
+				"runs_on": {
+					"description": "GitHub Actions runner (defaults to ubuntu-latest)",
+					"type": "string"
+				},
+				"trigger": {
+					"description": "Event that triggers this CI job (currently only pull_request)",
+					"type": "string"
+				}
+			},
+			"type": "object"
 		}
 	},
 	"description": "Schema for webkit app.json configuration files",
@@ -500,6 +607,13 @@
 		"shared": {
 			"$ref": "#/definitions/AppdefShared",
 			"description": "Shared configuration that applies to all apps"
+		},
+		"utilities": {
+			"description": "Non-deployed workspace members such as E2E tests, shared libraries, and CLI tools",
+			"items": {
+				"$ref": "#/definitions/AppdefUtility"
+			},
+			"type": "array"
 		},
 		"webkit_version": {
 			"description": "The version of webkit used to generate this configuration",

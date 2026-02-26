@@ -569,6 +569,58 @@ jobs:
 {{- end }}
 {{- end }}
 {{- end }}
+{{ range $util := .Utilities }}
+{{- if $util.HasCI }}
+  util-{{ .Name | lower }}:
+    runs-on: {{ $util.CI.RunsOn }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+{{- if eq $util.Language "js" }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+{{- else if eq $util.Language "go" }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+{{- end }}
+
+{{- if gt (len $util.Tools) 0 }}
+      - name: Install Build Tools
+        run: |
+{{- range $util.InstallCommands }}
+          {{ . }}
+{{- end }}
+{{- end }}
+
+{{- range $spec := $util.OrderedCommands }}
+{{- if not $spec.Disabled }}
+
+      - name: {{ $spec.Name | title }}
+{{- if $spec.WorkingDirectory }}
+        working-directory: {{ $spec.WorkingDirectory }}
+{{- else if $util.Path }}
+        working-directory: {{ $util.Path }}
+{{- end }}
+        run: {{ $spec.Cmd }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
 
 {{- range $app := .PayloadPostgresApps }}
   migration-check-{{ $app.App.Name }}:

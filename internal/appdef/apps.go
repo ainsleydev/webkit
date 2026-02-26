@@ -21,6 +21,7 @@ type (
 		Type             AppType                                 `json:"type" validate:"required,oneof=svelte-kit golang payload" description:"Application type (payload, svelte-kit, golang)"`
 		Description      string                                  `json:"description,omitempty" validate:"omitempty,max=200" description:"Brief description of the app's purpose and functionality"`
 		Path             string                                  `json:"path" validate:"required" description:"Relative file path to the app's source code directory"`
+		Language         string                                  `json:"language,omitempty" validate:"omitempty,oneof=go js" description:"Toolchain language for CI setup (auto-populated from type if not set)"`
 		Build            Build                                   `json:"build" description:"Build configuration for Docker containerisation"`
 		Infra            Infra                                   `json:"infra" validate:"required" description:"Infrastructure and deployment configuration"`
 		Env              Environment                             `json:"env" description:"Environment variables specific to this app"`
@@ -73,16 +74,11 @@ func (a AppType) String() string {
 	return string(a)
 }
 
+// appTypeToLanguages maps application types to their language ecosystem.
 var appTypeToLanguages = map[AppType]string{
 	AppTypeGoLang:    "go",
 	AppTypeSvelteKit: "js",
 	AppTypePayload:   "js",
-}
-
-// Language determines what language ecosystem a given app is.
-// Either "go" or "js".
-func (a *App) Language() string {
-	return appTypeToLanguages[a.Type]
 }
 
 // DomainType defines the type of domain that should be provisioned.
@@ -136,12 +132,12 @@ func (a *App) MergeEnvironments(shared Environment) Environment {
 
 // ShouldUseNPM returns whether this app should be included in
 // pnpm workspace. It checks the UsesNPM field first, and if
-// not set, defaults based on Language().
+// not set, defaults based on Language.
 func (a *App) ShouldUseNPM() bool {
 	if a.UsesNPM != nil {
 		return *a.UsesNPM
 	}
-	return a.Language() == "js"
+	return a.Language == "js"
 }
 
 // IsTerraformManaged returns whether this app should be managed by Terraform.
@@ -242,6 +238,11 @@ func (a *App) InstallCommands() []string {
 }
 
 func (a *App) applyDefaults() error {
+	// Auto-populate Language from Type if not explicitly set.
+	if a.Language == "" {
+		a.Language = appTypeToLanguages[a.Type]
+	}
+
 	if a.Commands == nil {
 		a.Commands = types.NewOrderedMap[Command, CommandSpec]()
 	}

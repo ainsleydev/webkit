@@ -33,6 +33,8 @@ func (d *Definition) Validate(fs afero.Fs) []error {
 	// Business logic validation
 	errs = append(errs, d.validateDomains()...)
 	errs = append(errs, d.validateAppPaths(fs)...)
+	errs = append(errs, d.validateUtilityPaths(fs)...)
+	errs = append(errs, d.validateUniqueNames()...)
 	errs = append(errs, d.validateTerraformManagedVMs()...)
 	errs = append(errs, d.validateEnvReferences()...)
 	errs = append(errs, d.validateMonitors()...)
@@ -251,6 +253,63 @@ func (d *Definition) validateEnvVarReferences(
 	})
 	if err != nil {
 		errs = append(errs, fmt.Errorf("walking env variables: %w", err))
+	}
+
+	return errs
+}
+
+// validateUtilityPaths ensures that all utility paths exist on the filesystem.
+func (d *Definition) validateUtilityPaths(fs afero.Fs) []error {
+	var errs []error
+
+	for _, util := range d.Utilities {
+		if util.Path == "" {
+			continue
+		}
+
+		exists, err := afero.DirExists(fs, util.Path)
+		if err != nil {
+			errs = append(errs, fmt.Errorf(
+				"utility %q: error checking path %q: %w",
+				util.Name,
+				util.Path,
+				err,
+			))
+			continue
+		}
+
+		if !exists {
+			errs = append(errs, fmt.Errorf(
+				"utility %q: path %q does not exist",
+				util.Name,
+				util.Path,
+			))
+		}
+	}
+
+	return errs
+}
+
+// validateUniqueNames ensures that no app and utility share the same name.
+// This prevents CI job naming collisions (e.g., both generating a "app-web" and "util-web" job).
+func (d *Definition) validateUniqueNames() []error {
+	var errs []error
+
+	names := make(map[string]string) // name -> "app" or "utility"
+
+	for _, app := range d.Apps {
+		names[app.Name] = "app"
+	}
+
+	for _, util := range d.Utilities {
+		if existing, exists := names[util.Name]; exists {
+			errs = append(errs, fmt.Errorf(
+				"utility %q: name conflicts with existing %s",
+				util.Name,
+				existing,
+			))
+		}
+		names[util.Name] = "utility"
 	}
 
 	return errs

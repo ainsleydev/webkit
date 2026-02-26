@@ -207,5 +207,33 @@
 				"test": {"command": "go test ./..."}
 			}
 		}
+	],
+	"utilities": [
+		{
+			"name": "e2e",
+			"title": "E2E Tests",
+			"description": "End-to-end tests using Playwright.",
+			"path": "e2e",
+			"language": "js",
+			"ci": {
+				"trigger": "pull_request"
+			},
+			"tools": {
+				"playwright": {"type": "pnpm", "name": "@playwright/test", "version": "latest"}
+			},
+			"commands": {
+				"test": "pnpm playwright test"
+			}
+		},
+		{
+			"name": "shared-constants",
+			"title": "Shared Constants",
+			"description": "Shared constants across all JS apps.",
+			"path": "packages/constants",
+			"language": "js",
+			"commands": {
+				"build": "pnpm build"
+			}
+		}
 	]
 }

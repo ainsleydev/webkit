@@ -38,6 +38,7 @@ func PR(_ context.Context, input cmdtools.CommandInput) error {
 		templates.MustLoadTemplate(filepath.Join(workflowsPath, "pr.yaml.tmpl")),
 		map[string]any{
 			"Apps":                appDef.Apps,
+			"Utilities":           appDef.Utilities,
 			"PayloadPostgresApps": findPayloadAppsWithPostgres(appDef.Apps, appDef.Resources),
 			"TerraformVersion":    infra.TerraformVersion,
 		},

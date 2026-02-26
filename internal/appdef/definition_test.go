@@ -59,7 +59,7 @@ func TestContainsGo(t *testing.T) {
 		"Truthy": {
 			input: Definition{
 				Apps: []App{
-					{Type: AppTypeGoLang},
+					{Type: AppTypeGoLang, Language: "go"},
 				},
 			},
 			want: true,
@@ -67,7 +67,7 @@ func TestContainsGo(t *testing.T) {
 		"Falsey": {
 			input: Definition{
 				Apps: []App{
-					{Type: AppTypeSvelteKit},
+					{Type: AppTypeSvelteKit, Language: "js"},
 				},
 			},
 			want: false,
@@ -93,7 +93,7 @@ func TestContainsJS(t *testing.T) {
 		"Truthy": {
 			input: Definition{
 				Apps: []App{
-					{Type: AppTypeSvelteKit},
+					{Type: AppTypeSvelteKit, Language: "js"},
 				},
 			},
 			want: true,
@@ -101,7 +101,7 @@ func TestContainsJS(t *testing.T) {
 		"Falsey": {
 			input: Definition{
 				Apps: []App{
-					{Type: AppTypeGoLang},
+					{Type: AppTypeGoLang, Language: "go"},
 				},
 			},
 			want: false,
@@ -549,6 +549,22 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 			wantSkippedApps: []string{"worker"},
 			wantSkippedRes:  []string{"cache"},
 		},
+		"Utilities passed through unchanged": {
+			input: Definition{
+				Project: Project{Name: "test-project"},
+				Apps: []App{
+					{Name: "app1", TerraformManaged: &trueVal},
+				},
+				Utilities: []Utility{
+					{Name: "e2e", Path: "e2e", Language: "js"},
+					{Name: "constants", Path: "packages/constants", Language: "js"},
+				},
+			},
+			wantApps:        []string{"app1"},
+			wantResources:   []string{},
+			wantSkippedApps: []string{},
+			wantSkippedRes:  []string{},
+		},
 	}
 
 	for name, test := range tt {
@@ -575,6 +591,7 @@ func TestDefinition_FilterTerraformManaged(t *testing.T) {
 			assert.Equal(t, test.input.Monitoring, filtered.Monitoring)
 			assert.Equal(t, test.input.Shared, filtered.Shared)
 			assert.Equal(t, test.input.WebkitVersion, filtered.WebkitVersion)
+			assert.Equal(t, test.input.Utilities, filtered.Utilities, "utilities should pass through unchanged")
 		})
 	}
 }
@@ -662,6 +679,44 @@ func TestDefinition_ApplyDefaults(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "applying defaults to app")
 		assert.ErrorContains(t, err, "unknown")
+	})
+
+	t.Run("Applies defaults to utilities", func(t *testing.T) {
+		t.Parallel()
+
+		def := &Definition{
+			Utilities: []Utility{
+				{
+					Name:     "e2e",
+					Path:     "./e2e",
+					Language: "js",
+					CI:       &UtilityCI{Trigger: "pull_request"},
+				},
+			},
+		}
+
+		err := def.ApplyDefaults()
+		assert.NoError(t, err)
+
+		t.Log("Path cleaned")
+		{
+			assert.Equal(t, "e2e", def.Utilities[0].Path)
+		}
+
+		t.Log("Commands initialised")
+		{
+			assert.NotNil(t, def.Utilities[0].Commands)
+		}
+
+		t.Log("Tools initialised")
+		{
+			assert.NotNil(t, def.Utilities[0].Tools)
+		}
+
+		t.Log("CI RunsOn defaulted")
+		{
+			assert.Equal(t, "ubuntu-latest", def.Utilities[0].CI.RunsOn)
+		}
 	})
 
 	t.Run("Applies defaults to resources", func(t *testing.T) {

@@ -1068,6 +1068,138 @@ func TestDefinition_ValidateMonitors(t *testing.T) {
 	}
 }
 
+func TestDefinition_ValidateUtilityPaths(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input    *Definition
+		setup    func(afero.Fs)
+		wantErrs []string
+	}{
+		"Valid Paths": {
+			input: &Definition{
+				Utilities: []Utility{
+					{Name: "e2e", Path: "/e2e"},
+					{Name: "constants", Path: "/packages/constants"},
+				},
+			},
+			setup: func(fs afero.Fs) {
+				require.NoError(t, fs.MkdirAll("/e2e", 0o755))
+				require.NoError(t, fs.MkdirAll("/packages/constants", 0o755))
+			},
+			wantErrs: []string{},
+		},
+		"Non-existent Path": {
+			input: &Definition{
+				Utilities: []Utility{
+					{Name: "e2e", Path: "/e2e/nonexistent"},
+				},
+			},
+			setup:    func(fs afero.Fs) {},
+			wantErrs: []string{`utility "e2e": path "/e2e/nonexistent" does not exist`},
+		},
+		"Empty Path Is Skipped": {
+			input: &Definition{
+				Utilities: []Utility{
+					{Name: "e2e", Path: ""},
+				},
+			},
+			setup:    func(fs afero.Fs) {},
+			wantErrs: []string{},
+		},
+		"No Utilities": {
+			input:    &Definition{},
+			setup:    func(fs afero.Fs) {},
+			wantErrs: []string{},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			fs := afero.NewMemMapFs()
+			if test.setup != nil {
+				test.setup(fs)
+			}
+
+			errs := test.input.validateUtilityPaths(fs)
+
+			if len(test.wantErrs) == 0 {
+				assert.Empty(t, errs)
+			} else {
+				require.Len(t, errs, len(test.wantErrs))
+				for i, wantErr := range test.wantErrs {
+					assert.Contains(t, errs[i].Error(), wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestDefinition_ValidateUniqueNames(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input    *Definition
+		wantErrs []string
+	}{
+		"No Conflicts": {
+			input: &Definition{
+				Apps: []App{
+					{Name: "cms"},
+					{Name: "web"},
+				},
+				Utilities: []Utility{
+					{Name: "e2e"},
+					{Name: "constants"},
+				},
+			},
+			wantErrs: []string{},
+		},
+		"Name Conflict": {
+			input: &Definition{
+				Apps: []App{
+					{Name: "web"},
+				},
+				Utilities: []Utility{
+					{Name: "web"},
+				},
+			},
+			wantErrs: []string{`utility "web": name conflicts with existing app`},
+		},
+		"No Utilities": {
+			input: &Definition{
+				Apps: []App{{Name: "cms"}},
+			},
+			wantErrs: []string{},
+		},
+		"No Apps": {
+			input: &Definition{
+				Utilities: []Utility{{Name: "e2e"}},
+			},
+			wantErrs: []string{},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			errs := test.input.validateUniqueNames()
+
+			if len(test.wantErrs) == 0 {
+				assert.Empty(t, errs)
+			} else {
+				require.Len(t, errs, len(test.wantErrs))
+				for i, wantErr := range test.wantErrs {
+					assert.Contains(t, errs[i].Error(), wantErr)
+				}
+			}
+		})
+	}
+}
+
 func TestDefinition_ValidateMonitors_IntervalValidation(t *testing.T) {
 	t.Parallel()
 

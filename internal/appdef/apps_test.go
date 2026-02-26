@@ -21,23 +21,37 @@ func TestAppType_String(t *testing.T) {
 func TestApp_Language(t *testing.T) {
 	t.Parallel()
 
-	tt := []struct {
-		input AppType
-		want  string
-	}{
-		{input: AppTypeGoLang, want: "go"},
-		{input: AppTypePayload, want: "js"},
-		{input: AppTypeSvelteKit, want: "js"},
-	}
+	t.Run("Auto-populated from Type via applyDefaults", func(t *testing.T) {
+		t.Parallel()
 
-	for _, test := range tt {
-		t.Run(test.input.String(), func(t *testing.T) {
-			t.Parallel()
-			a := App{Type: test.input}
-			got := a.Language()
-			assert.Equal(t, test.want, got)
-		})
-	}
+		tt := []struct {
+			input AppType
+			want  string
+		}{
+			{input: AppTypeGoLang, want: "go"},
+			{input: AppTypePayload, want: "js"},
+			{input: AppTypeSvelteKit, want: "js"},
+		}
+
+		for _, test := range tt {
+			t.Run(test.input.String(), func(t *testing.T) {
+				t.Parallel()
+				a := App{Type: test.input, Path: "./"}
+				err := a.applyDefaults()
+				require.NoError(t, err)
+				assert.Equal(t, test.want, a.Language)
+			})
+		}
+	})
+
+	t.Run("Explicit Language preserved", func(t *testing.T) {
+		t.Parallel()
+
+		a := App{Type: AppTypePayload, Path: "./", Language: "go"}
+		err := a.applyDefaults()
+		require.NoError(t, err)
+		assert.Equal(t, "go", a.Language)
+	})
 }
 
 func TestDomainType_String(t *testing.T) {
@@ -75,23 +89,25 @@ func TestApp_ShouldUseNPM(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		appType AppType
-		usesNPM *bool
-		want    bool
+		appType  AppType
+		language string
+		usesNPM  *bool
+		want     bool
 	}{
-		"Payload Default":        {appType: AppTypePayload, usesNPM: nil, want: true},
-		"SvelteKit Default":      {appType: AppTypeSvelteKit, usesNPM: nil, want: true},
-		"GoLang Default":         {appType: AppTypeGoLang, usesNPM: nil, want: false},
-		"Payload Explicit False": {appType: AppTypePayload, usesNPM: ptr.BoolPtr(false), want: false},
-		"GoLang Explicit True":   {appType: AppTypeGoLang, usesNPM: ptr.BoolPtr(true), want: true},
+		"Payload Default":        {appType: AppTypePayload, language: "js", usesNPM: nil, want: true},
+		"SvelteKit Default":      {appType: AppTypeSvelteKit, language: "js", usesNPM: nil, want: true},
+		"GoLang Default":         {appType: AppTypeGoLang, language: "go", usesNPM: nil, want: false},
+		"Payload Explicit False": {appType: AppTypePayload, language: "js", usesNPM: ptr.BoolPtr(false), want: false},
+		"GoLang Explicit True":   {appType: AppTypeGoLang, language: "go", usesNPM: ptr.BoolPtr(true), want: true},
 	}
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			a := App{
-				Type:    test.appType,
-				UsesNPM: test.usesNPM,
+				Type:     test.appType,
+				Language: test.language,
+				UsesNPM:  test.usesNPM,
 			}
 			got := a.ShouldUseNPM()
 			assert.Equal(t, test.want, got)
