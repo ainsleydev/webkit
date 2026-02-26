@@ -122,10 +122,10 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name:     "web",
-			Type:     AppTypeGoLang,
-			Path:     "./",
-			Commands: types.NewOrderedMap[Command, CommandSpec](),
+			Name:    "web",
+			Type:    AppTypeGoLang,
+			Path:    "./",
+			Toolset: Toolset{Commands: types.NewOrderedMap[Command, CommandSpec]()},
 		}
 
 		commands := app.OrderedCommands()
@@ -180,10 +180,10 @@ func TestApp_OrderedCommands(t *testing.T) {
 			Name: "api",
 			Type: AppTypeGoLang,
 			Path: "./",
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"templ": {Type: "go", Name: "github.com/a-h/templ/cmd/templ", Version: "v0.2.543"},
 				"buf":   {Type: "go", Name: "github.com/bufbuild/buf/cmd/buf", Version: "v1.28.1"},
-			},
+			}},
 		}
 
 		err := app.applyDefaults()
@@ -231,10 +231,10 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name:     "web",
-			Type:     AppTypeGoLang,
-			Path:     "./",
-			Commands: types.NewOrderedMap[Command, CommandSpec](),
+			Name:    "web",
+			Type:    AppTypeGoLang,
+			Path:    "./",
+			Toolset: Toolset{Commands: types.NewOrderedMap[Command, CommandSpec]()},
 		}
 
 		// Add custom "generate" command first
@@ -274,10 +274,10 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name:     "api",
-			Type:     AppTypeGoLang,
-			Path:     "./",
-			Commands: types.NewOrderedMap[Command, CommandSpec](),
+			Name:    "api",
+			Type:    AppTypeGoLang,
+			Path:    "./",
+			Toolset: Toolset{Commands: types.NewOrderedMap[Command, CommandSpec]()},
 		}
 
 		// Add multiple custom commands
@@ -320,10 +320,9 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name:     "web",
-			Type:     AppTypeGoLang,
-			Path:     "./",
-			Commands: nil,
+			Name: "web",
+			Type: AppTypeGoLang,
+			Path: "./",
 		}
 
 		commands := app.OrderedCommands()
@@ -813,9 +812,9 @@ func TestApp_InstallCommands(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"templ": {Type: "go", Name: "github.com/a-h/templ/cmd/templ", Version: "v0.2.543"},
-			},
+			}},
 		}
 		err := app.applyDefaults()
 		require.NoError(t, err)
@@ -832,9 +831,9 @@ func TestApp_InstallCommands(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"eslint": {Type: "pnpm", Name: "eslint", Version: "8.0.0"},
-			},
+			}},
 		}
 		err := app.applyDefaults()
 		require.NoError(t, err)
@@ -848,12 +847,12 @@ func TestApp_InstallCommands(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"custom": {
 					Type:    "script",
 					Install: "curl -sSL https://example.com/install.sh | sh",
 				},
-			},
+			}},
 		}
 		err := app.applyDefaults()
 		require.NoError(t, err)
@@ -867,14 +866,14 @@ func TestApp_InstallCommands(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"custom": {
 					Type:    "go",
 					Name:    "github.com/foo/bar",
 					Version: "v1.0.0",
 					Install: "custom install command",
 				},
-			},
+			}},
 		}
 		err := app.applyDefaults()
 		require.NoError(t, err)
@@ -892,12 +891,12 @@ func TestApp_InstallCommands_Deterministic(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"zebra":   {Type: "go", Name: "github.com/z/zebra", Version: "v1.0.0"},
 				"alpha":   {Type: "go", Name: "github.com/a/alpha", Version: "v1.0.0"},
 				"bravo":   {Type: "go", Name: "github.com/b/bravo", Version: "v1.0.0"},
 				"charlie": {Type: "go", Name: "github.com/c/charlie", Version: "v1.0.0"},
-			},
+			}},
 		}
 
 		got := app.InstallCommands()
@@ -917,11 +916,11 @@ func TestApp_InstallCommands_Deterministic(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"templ":         {Type: "go", Name: "github.com/a-h/templ/cmd/templ", Version: "latest"},
 				"golangci-lint": {Type: "go", Name: "github.com/golangci/golangci-lint/cmd/golangci-lint", Version: "latest"},
 				"sqlc":          {Type: "go", Name: "github.com/sqlc-dev/sqlc/cmd/sqlc", Version: "latest"},
-			},
+			}},
 		}
 
 		// Call multiple times to ensure consistent ordering.

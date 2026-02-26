@@ -40,7 +40,6 @@ func TestUtility_OrderedCommands(t *testing.T) {
 			Name:     "e2e",
 			Path:     "e2e",
 			Language: "js",
-			Commands: nil,
 		}
 
 		commands := u.OrderedCommands()
@@ -54,7 +53,7 @@ func TestUtility_OrderedCommands(t *testing.T) {
 			Name:     "e2e",
 			Path:     "e2e",
 			Language: "js",
-			Commands: types.NewOrderedMap[Command, CommandSpec](),
+			Toolset:  Toolset{Commands: types.NewOrderedMap[Command, CommandSpec]()},
 		}
 
 		commands := u.OrderedCommands()
@@ -68,7 +67,7 @@ func TestUtility_OrderedCommands(t *testing.T) {
 			Name:     "e2e",
 			Path:     "e2e",
 			Language: "js",
-			Commands: types.NewOrderedMap[Command, CommandSpec](),
+			Toolset:  Toolset{Commands: types.NewOrderedMap[Command, CommandSpec]()},
 		}
 
 		u.Commands.Set("test", CommandSpec{Cmd: "pnpm playwright test"})
@@ -112,9 +111,9 @@ func TestUtility_InstallCommands(t *testing.T) {
 
 		u := Utility{
 			Language: "go",
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"golangci-lint": {Type: "go", Name: "github.com/golangci/golangci-lint/cmd/golangci-lint", Version: "latest"},
-			},
+			}},
 		}
 
 		got := u.InstallCommands()
@@ -127,9 +126,9 @@ func TestUtility_InstallCommands(t *testing.T) {
 
 		u := Utility{
 			Language: "js",
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"playwright": {Type: "pnpm", Name: "@playwright/test", Version: "latest"},
-			},
+			}},
 		}
 
 		got := u.InstallCommands()
@@ -142,12 +141,12 @@ func TestUtility_InstallCommands(t *testing.T) {
 
 		u := Utility{
 			Language: "js",
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"custom": {
 					Type:    "script",
 					Install: "curl -sSL https://example.com/install.sh | sh",
 				},
-			},
+			}},
 		}
 
 		got := u.InstallCommands()
@@ -159,10 +158,10 @@ func TestUtility_InstallCommands(t *testing.T) {
 
 		u := Utility{
 			Language: "go",
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"zebra": {Type: "go", Name: "github.com/z/zebra", Version: "v1.0.0"},
 				"alpha": {Type: "go", Name: "github.com/a/alpha", Version: "v1.0.0"},
-			},
+			}},
 		}
 
 		got := u.InstallCommands()
@@ -176,7 +175,7 @@ func TestUtility_InstallCommands(t *testing.T) {
 	t.Run("Empty tools", func(t *testing.T) {
 		t.Parallel()
 
-		u := Utility{Language: "js", Tools: map[string]Tool{}}
+		u := Utility{Language: "js", Toolset: Toolset{Tools: map[string]Tool{}}}
 		got := u.InstallCommands()
 		assert.Nil(t, got)
 	})
@@ -269,10 +268,12 @@ func TestUtility_ApplyDefaults(t *testing.T) {
 			Name:     "e2e",
 			Path:     "e2e",
 			Language: "js",
-			Tools: map[string]Tool{
-				"playwright": {Type: "pnpm", Name: "@playwright/test", Version: "latest"},
+			Toolset: Toolset{
+				Tools: map[string]Tool{
+					"playwright": {Type: "pnpm", Name: "@playwright/test", Version: "latest"},
+				},
+				Commands: cmds,
 			},
-			Commands: cmds,
 		}
 
 		u.applyDefaults()
