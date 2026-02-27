@@ -6,10 +6,6 @@ import (
 	"regexp"
 )
 
-// cronRegexp validates a 5-field cron expression (minute hour dom month dow).
-// Each field allows digits, *, commas, hyphens, and slashes.
-var cronRegexp = regexp.MustCompile(`^(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)$`)
-
 type (
 	// UtilityCI defines the CI configuration for a utility.
 	// When present, a CI job will be generated for this utility.
@@ -19,7 +15,6 @@ type (
 		Schedule string `json:"schedule,omitempty" validate:"required_if=Trigger cron" description:"Cron expression for scheduled triggers (e.g. '0 0 * * *')"`
 		RunsOn   string `json:"runs_on,omitempty" description:"GitHub Actions runner (defaults to ubuntu-latest)"`
 	}
-
 	// Utility represents a non-deployed workspace member within the webkit project.
 	// Utilities are included in the pnpm workspace (if JS) and optionally run on CI,
 	// but are never deployed. Examples include E2E tests, shared constants,
@@ -34,6 +29,13 @@ type (
 		Toolset
 	}
 )
+
+// cronRegexp validates a 5-field cron expression (minute hour dom month dow).
+// Each field allows digits, *, commas, hyphens, and slashes.
+var cronRegexp = regexp.MustCompile(`^(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)$`)
+
+// nameAndPath returns the utility's name and path, satisfying the pathItem interface.
+func (u Utility) nameAndPath() (string, string) { return u.Name, u.Path }
 
 // HasCI returns whether this utility has CI configuration and should
 // generate a CI job.

@@ -32,8 +32,8 @@ func (d *Definition) Validate(fs afero.Fs) []error {
 
 	// Business logic validation
 	errs = append(errs, d.validateDomains()...)
-	errs = append(errs, d.validateAppPaths(fs)...)
-	errs = append(errs, d.validateUtilityPaths(fs)...)
+	errs = append(errs, validatePaths(fs, "app", d.Apps)...)
+	errs = append(errs, validatePaths(fs, "utility", d.Utilities)...)
 	errs = append(errs, d.validateUniqueNames()...)
 	errs = append(errs, d.validateTerraformManagedVMs()...)
 	errs = append(errs, d.validateEnvReferences()...)
@@ -78,7 +78,7 @@ func validateLowercase(fl validator.FieldLevel) bool {
 }
 
 // validateAlphanumDash validates that a string matches the pattern ^[a-z][a-z0-9-]*$
-// (starts with a lowercase letter, followed by lowercase letters, numbers, or hyphens).
+// (starts with a  lowercase letter, followed by lowercase letters, numbers, or hyphens).
 func validateAlphanumDash(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
 	matched, _ := regexp.MatchString(`^[a-z][a-z0-9-]*$`, value)
@@ -104,32 +104,30 @@ func (d *Definition) validateDomains() []error {
 	return errs
 }
 
-// validateAppPaths ensures that all app paths exist on the filesystem.
-func (d *Definition) validateAppPaths(fs afero.Fs) []error {
+// pathItem is implemented by types that expose a name and path for validation.
+type pathItem interface {
+	nameAndPath() (string, string)
+}
+
+// validatePaths ensures that a set of named paths exist on the filesystem.
+// kind is used in error messages (e.g. "app" or "utility").
+func validatePaths[T pathItem](fs afero.Fs, kind string, items []T) []error {
 	var errs []error
 
-	for _, app := range d.Apps {
-		if app.Path == "" {
+	for _, item := range items {
+		name, path := item.nameAndPath()
+		if path == "" {
 			continue
 		}
 
-		exists, err := afero.DirExists(fs, app.Path)
+		exists, err := afero.DirExists(fs, path)
 		if err != nil {
-			errs = append(errs, fmt.Errorf(
-				"app %q: error checking path %q: %w",
-				app.Name,
-				app.Path,
-				err,
-			))
+			errs = append(errs, fmt.Errorf("%s %q: error checking path %q: %w", kind, name, path, err))
 			continue
 		}
 
 		if !exists {
-			errs = append(errs, fmt.Errorf(
-				"app %q: path %q does not exist",
-				app.Name,
-				app.Path,
-			))
+			errs = append(errs, fmt.Errorf("%s %q: path %q does not exist", kind, name, path))
 		}
 	}
 
@@ -253,38 +251,6 @@ func (d *Definition) validateEnvVarReferences(
 	})
 	if err != nil {
 		errs = append(errs, fmt.Errorf("walking env variables: %w", err))
-	}
-
-	return errs
-}
-
-// validateUtilityPaths ensures that all utility paths exist on the filesystem.
-func (d *Definition) validateUtilityPaths(fs afero.Fs) []error {
-	var errs []error
-
-	for _, util := range d.Utilities {
-		if util.Path == "" {
-			continue
-		}
-
-		exists, err := afero.DirExists(fs, util.Path)
-		if err != nil {
-			errs = append(errs, fmt.Errorf(
-				"utility %q: error checking path %q: %w",
-				util.Name,
-				util.Path,
-				err,
-			))
-			continue
-		}
-
-		if !exists {
-			errs = append(errs, fmt.Errorf(
-				"utility %q: path %q does not exist",
-				util.Name,
-				util.Path,
-			))
-		}
 	}
 
 	return errs

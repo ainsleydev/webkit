@@ -114,6 +114,9 @@ func (a *App) ShouldUseNPM() bool {
 	return a.Language == "js"
 }
 
+// nameAndPath returns the app's name and path, satisfying the pathItem interface.
+func (a App) nameAndPath() (string, string) { return a.Name, a.Path }
+
 // IsTerraformManaged returns whether this app should be managed by Terraform.
 // It defaults to true when the field is nil or explicitly set to true.
 func (a *App) IsTerraformManaged() bool {
