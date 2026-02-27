@@ -1125,13 +1125,9 @@ func TestDefinition_ValidateUtilityPaths(t *testing.T) {
 
 			errs := test.input.validateUtilityPaths(fs)
 
-			if len(test.wantErrs) == 0 {
-				assert.Empty(t, errs)
-			} else {
-				require.Len(t, errs, len(test.wantErrs))
-				for i, wantErr := range test.wantErrs {
-					assert.Contains(t, errs[i].Error(), wantErr)
-				}
+			require.Len(t, errs, len(test.wantErrs))
+			for i, wantErr := range test.wantErrs {
+				assert.Contains(t, errs[i].Error(), wantErr)
 			}
 		})
 	}
@@ -1157,7 +1153,7 @@ func TestDefinition_ValidateUniqueNames(t *testing.T) {
 			},
 			wantErrs: []string{},
 		},
-		"Name Conflict": {
+		"App Utility Name Conflict": {
 			input: &Definition{
 				Apps: []App{
 					{Name: "web"},
@@ -1167,6 +1163,15 @@ func TestDefinition_ValidateUniqueNames(t *testing.T) {
 				},
 			},
 			wantErrs: []string{`utility "web": name conflicts with existing app`},
+		},
+		"Duplicate Utility Names": {
+			input: &Definition{
+				Utilities: []Utility{
+					{Name: "e2e"},
+					{Name: "e2e"},
+				},
+			},
+			wantErrs: []string{`utility "e2e": name conflicts with existing utility`},
 		},
 		"No Utilities": {
 			input: &Definition{
@@ -1188,13 +1193,9 @@ func TestDefinition_ValidateUniqueNames(t *testing.T) {
 
 			errs := test.input.validateUniqueNames()
 
-			if len(test.wantErrs) == 0 {
-				assert.Empty(t, errs)
-			} else {
-				require.Len(t, errs, len(test.wantErrs))
-				for i, wantErr := range test.wantErrs {
-					assert.Contains(t, errs[i].Error(), wantErr)
-				}
+			require.Len(t, errs, len(test.wantErrs))
+			for i, wantErr := range test.wantErrs {
+				assert.Contains(t, errs[i].Error(), wantErr)
 			}
 		})
 	}

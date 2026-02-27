@@ -24,17 +24,17 @@ func TestApp_Language(t *testing.T) {
 	t.Run("Auto-populated from Type via applyDefaults", func(t *testing.T) {
 		t.Parallel()
 
-		tt := []struct {
+		tt := map[string]struct {
 			input AppType
 			want  string
 		}{
-			{input: AppTypeGoLang, want: "go"},
-			{input: AppTypePayload, want: "js"},
-			{input: AppTypeSvelteKit, want: "js"},
+			"GoLang":    {input: AppTypeGoLang, want: "go"},
+			"Payload":   {input: AppTypePayload, want: "js"},
+			"SvelteKit": {input: AppTypeSvelteKit, want: "js"},
 		}
 
-		for _, test := range tt {
-			t.Run(test.input.String(), func(t *testing.T) {
+		for name, test := range tt {
+			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 				a := App{Type: test.input, Path: "./"}
 				err := a.applyDefaults()

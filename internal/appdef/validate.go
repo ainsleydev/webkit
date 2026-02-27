@@ -290,26 +290,33 @@ func (d *Definition) validateUtilityPaths(fs afero.Fs) []error {
 	return errs
 }
 
-// validateUniqueNames ensures that no app and utility share the same name.
-// This prevents CI job naming collisions (e.g., both generating a "app-web" and "util-web" job).
+// validateUniqueNames ensures that all app and utility names are unique within
+// the definition, preventing ambiguity and duplicate CI job generation.
 func (d *Definition) validateUniqueNames() []error {
 	var errs []error
 
-	names := make(map[string]string) // name -> "app" or "utility"
-
+	appNames := make(map[string]struct{})
 	for _, app := range d.Apps {
-		names[app.Name] = "app"
+		if app.Name == "" {
+			continue
+		}
+		appNames[app.Name] = struct{}{}
 	}
 
+	utilNames := make(map[string]struct{})
 	for _, util := range d.Utilities {
-		if existing, exists := names[util.Name]; exists {
-			errs = append(errs, fmt.Errorf(
-				"utility %q: name conflicts with existing %s",
-				util.Name,
-				existing,
-			))
+		if util.Name == "" {
+			continue
 		}
-		names[util.Name] = "utility"
+		if _, exists := appNames[util.Name]; exists {
+			errs = append(errs, fmt.Errorf("utility %q: name conflicts with existing app", util.Name))
+			continue
+		}
+		if _, exists := utilNames[util.Name]; exists {
+			errs = append(errs, fmt.Errorf("utility %q: name conflicts with existing utility", util.Name))
+			continue
+		}
+		utilNames[util.Name] = struct{}{}
 	}
 
 	return errs

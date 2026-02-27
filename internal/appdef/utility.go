@@ -62,7 +62,7 @@ func (u *Utility) applyDefaults() error {
 				return fmt.Errorf("utility %q has cron trigger but no schedule", u.Name)
 			}
 			if !cronRegexp.MatchString(u.CI.Schedule) {
-				return fmt.Errorf("utility %q has invalid cron expression %q: must be 5 fields (minute hour dom month dow)", u.Name, u.CI.Schedule)
+				return fmt.Errorf("utility %q has invalid cron expression %q: expected 5 fields (minute hour dom month dow), e.g. '0 2 * * 1'", u.Name, u.CI.Schedule)
 			}
 		}
 	}

@@ -35,6 +35,13 @@ func (t *Toolset) OrderedCommands() []CommandSpec {
 	return ordered
 }
 
+// toolInstallFormatters maps a tool type to a function that generates its install command.
+// Types not present in the map (e.g. "script") are skipped.
+var toolInstallFormatters = map[string]func(name, version string) string{
+	"go":   func(name, version string) string { return fmt.Sprintf("go install %s@%s", name, version) },
+	"pnpm": func(name, version string) string { return fmt.Sprintf("pnpm add -g %s@%s", name, version) },
+}
+
 // InstallCommands returns the shell commands needed to install all tools.
 // Commands are generated based on the tool's Type field:
 //   - "go": generates "go install <name>@<version>"
@@ -59,18 +66,11 @@ func (t *Toolset) InstallCommands() []string {
 			continue
 		}
 
-		switch tool.Type {
-		case "go":
-			if tool.Name != "" && tool.Version != "" {
-				commands = append(commands, fmt.Sprintf("go install %s@%s", tool.Name, tool.Version))
-			}
-		case "pnpm":
-			if tool.Name != "" && tool.Version != "" {
-				commands = append(commands, fmt.Sprintf("pnpm add -g %s@%s", tool.Name, tool.Version))
-			}
-		case "script":
+		formatter, ok := toolInstallFormatters[tool.Type]
+		if !ok || tool.Name == "" || tool.Version == "" {
 			continue
 		}
+		commands = append(commands, formatter(tool.Name, tool.Version))
 	}
 
 	return commands
