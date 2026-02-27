@@ -357,20 +357,20 @@ func TestDefinition_ValidateDomains(t *testing.T) {
 	}
 }
 
-func TestDefinition_ValidateAppPaths(t *testing.T) {
+func TestValidatePaths(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		input    *Definition
+		run      func(afero.Fs) []error
 		setup    func(afero.Fs)
 		wantErrs []string
 	}{
-		"Valid Paths": {
-			input: &Definition{
-				Apps: []App{
+		"App: Valid Paths": {
+			run: func(fs afero.Fs) []error {
+				return validatePaths(fs, "app", []App{
 					{Name: "app1", Path: "/apps/app1"},
 					{Name: "app2", Path: "/apps/app2"},
-				},
+				})
 			},
 			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/app1", 0o755))
@@ -378,47 +378,39 @@ func TestDefinition_ValidateAppPaths(t *testing.T) {
 			},
 			wantErrs: []string{},
 		},
-		"Non-existent Path": {
-			input: &Definition{
-				Apps: []App{
-					{Name: "app1", Path: "/apps/nonexistent"},
-				},
+		"App: Non-existent Path": {
+			run: func(fs afero.Fs) []error {
+				return validatePaths(fs, "app", []App{{Name: "app1", Path: "/apps/nonexistent"}})
 			},
-			setup: func(fs afero.Fs) {},
-			wantErrs: []string{
-				`app "app1": path "/apps/nonexistent" does not exist`,
-			},
+			setup:    func(fs afero.Fs) {},
+			wantErrs: []string{`app "app1": path "/apps/nonexistent" does not exist`},
 		},
-		"Empty Path Is Skipped": {
-			input: &Definition{
-				Apps: []App{
-					{Name: "app1", Path: ""},
-				},
+		"App: Empty Path Is Skipped": {
+			run: func(fs afero.Fs) []error {
+				return validatePaths(fs, "app", []App{{Name: "app1", Path: ""}})
 			},
 			setup:    func(fs afero.Fs) {},
 			wantErrs: []string{},
 		},
-		"Mixed Valid And Invalid Paths": {
-			input: &Definition{
-				Apps: []App{
+		"App: Mixed Valid And Invalid Paths": {
+			run: func(fs afero.Fs) []error {
+				return validatePaths(fs, "app", []App{
 					{Name: "app1", Path: "/apps/app1"},
 					{Name: "app2", Path: "/apps/nonexistent"},
-				},
+				})
 			},
 			setup: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/apps/app1", 0o755))
 			},
-			wantErrs: []string{
-				`app "app2": path "/apps/nonexistent" does not exist`,
-			},
+			wantErrs: []string{`app "app2": path "/apps/nonexistent" does not exist`},
 		},
-		"Multiple Non-existent Paths": {
-			input: &Definition{
-				Apps: []App{
+		"App: Multiple Non-existent Paths": {
+			run: func(fs afero.Fs) []error {
+				return validatePaths(fs, "app", []App{
 					{Name: "app1", Path: "/apps/missing1"},
 					{Name: "app2", Path: "/apps/missing2"},
 					{Name: "app3", Path: "/apps/missing3"},
-				},
+				})
 			},
 			setup: func(fs afero.Fs) {},
 			wantErrs: []string{
@@ -426,6 +418,38 @@ func TestDefinition_ValidateAppPaths(t *testing.T) {
 				`app "app2": path "/apps/missing2" does not exist`,
 				`app "app3": path "/apps/missing3" does not exist`,
 			},
+		},
+		"Utility: Valid Paths": {
+			run: func(fs afero.Fs) []error {
+				return validatePaths(fs, "utility", []Utility{
+					{Name: "e2e", Path: "/e2e"},
+					{Name: "constants", Path: "/packages/constants"},
+				})
+			},
+			setup: func(fs afero.Fs) {
+				require.NoError(t, fs.MkdirAll("/e2e", 0o755))
+				require.NoError(t, fs.MkdirAll("/packages/constants", 0o755))
+			},
+			wantErrs: []string{},
+		},
+		"Utility: Non-existent Path": {
+			run: func(fs afero.Fs) []error {
+				return validatePaths(fs, "utility", []Utility{{Name: "e2e", Path: "/e2e/nonexistent"}})
+			},
+			setup:    func(fs afero.Fs) {},
+			wantErrs: []string{`utility "e2e": path "/e2e/nonexistent" does not exist`},
+		},
+		"Utility: Empty Path Is Skipped": {
+			run: func(fs afero.Fs) []error {
+				return validatePaths(fs, "utility", []Utility{{Name: "e2e", Path: ""}})
+			},
+			setup:    func(fs afero.Fs) {},
+			wantErrs: []string{},
+		},
+		"Utility: No Items": {
+			run:      func(fs afero.Fs) []error { return validatePaths(fs, "utility", []Utility{}) },
+			setup:    func(fs afero.Fs) {},
+			wantErrs: []string{},
 		},
 	}
 
@@ -438,30 +462,11 @@ func TestDefinition_ValidateAppPaths(t *testing.T) {
 				test.setup(fs)
 			}
 
-			errs := test.input.validateAppPaths(fs)
+			errs := test.run(fs)
 
-			if len(test.wantErrs) == 0 {
-				assert.Empty(t, errs, "expected no errors")
-			} else {
-				require.Len(t, errs, len(test.wantErrs), "unexpected number of errors")
-
-				// Collect all error messages for comparison
-				errorMessages := make([]string, len(errs))
-				for i, err := range errs {
-					errorMessages[i] = err.Error()
-				}
-
-				// Check that each expected error is present in the actual errors
-				for _, wantErr := range test.wantErrs {
-					found := false
-					for _, errMsg := range errorMessages {
-						if strings.Contains(errMsg, wantErr) {
-							found = true
-							break
-						}
-					}
-					assert.True(t, found, "expected error message containing %q not found in errors: %v", wantErr, errorMessages)
-				}
+			require.Len(t, errs, len(test.wantErrs))
+			for i, wantErr := range test.wantErrs {
+				assert.Contains(t, errs[i].Error(), wantErr)
 			}
 		})
 	}
@@ -1063,6 +1068,74 @@ func TestDefinition_ValidateMonitors(t *testing.T) {
 					}
 					assert.True(t, found, "expected error message containing %q not found in errors: %v", wantErr, errorMessages)
 				}
+			}
+		})
+	}
+}
+
+func TestDefinition_ValidateUniqueNames(t *testing.T) {
+	t.Parallel()
+
+	tt := map[string]struct {
+		input    *Definition
+		wantErrs []string
+	}{
+		"No Conflicts": {
+			input: &Definition{
+				Apps: []App{
+					{Name: "cms"},
+					{Name: "web"},
+				},
+				Utilities: []Utility{
+					{Name: "e2e"},
+					{Name: "constants"},
+				},
+			},
+			wantErrs: []string{},
+		},
+		"App Utility Name Conflict": {
+			input: &Definition{
+				Apps: []App{
+					{Name: "web"},
+				},
+				Utilities: []Utility{
+					{Name: "web"},
+				},
+			},
+			wantErrs: []string{`utility "web": name conflicts with existing app`},
+		},
+		"Duplicate Utility Names": {
+			input: &Definition{
+				Utilities: []Utility{
+					{Name: "e2e"},
+					{Name: "e2e"},
+				},
+			},
+			wantErrs: []string{`utility "e2e": name conflicts with existing utility`},
+		},
+		"No Utilities": {
+			input: &Definition{
+				Apps: []App{{Name: "cms"}},
+			},
+			wantErrs: []string{},
+		},
+		"No Apps": {
+			input: &Definition{
+				Utilities: []Utility{{Name: "e2e"}},
+			},
+			wantErrs: []string{},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			errs := test.input.validateUniqueNames()
+
+			require.Len(t, errs, len(test.wantErrs))
+			for i, wantErr := range test.wantErrs {
+				assert.Contains(t, errs[i].Error(), wantErr)
 			}
 		})
 	}

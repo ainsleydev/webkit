@@ -9,11 +9,11 @@ import (
 )
 
 // PnpmWorkspace scaffolds the pnpm-workspace.yaml file with
-// all apps that use NPM/pnpm.
+// all apps and utilities that use NPM/pnpm.
 func PnpmWorkspace(_ context.Context, input cmdtools.CommandInput) error {
 	appDef := input.AppDef()
 
-	if len(appDef.Apps) == 0 {
+	if len(appDef.Apps) == 0 && len(appDef.Utilities) == 0 {
 		return nil
 	}
 
@@ -21,6 +21,11 @@ func PnpmWorkspace(_ context.Context, input cmdtools.CommandInput) error {
 	for _, app := range appDef.Apps {
 		if app.ShouldUseNPM() {
 			packages = append(packages, app.Path)
+		}
+	}
+	for _, util := range appDef.Utilities {
+		if util.ShouldUseNPM() {
+			packages = append(packages, util.Path)
 		}
 	}
 

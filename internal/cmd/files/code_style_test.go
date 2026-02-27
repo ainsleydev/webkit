@@ -33,8 +33,9 @@ func TestCodeStyle(t *testing.T) {
 		input := setup(t, afero.NewMemMapFs(), &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name: "api",
-					Type: appdef.AppTypeGoLang,
+					Name:     "api",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 				},
 			},
 		})

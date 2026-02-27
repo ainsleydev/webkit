@@ -6,6 +6,20 @@ on:
     branches:
       - main
       - master
+{{- $hasCron := false }}
+{{- range .Utilities }}
+{{- if and .HasCI (eq .CI.Trigger "cron") }}
+{{- $hasCron = true }}
+{{- end }}
+{{- end }}
+{{- if $hasCron }}
+  schedule:
+{{- range .Utilities }}
+{{- if and .HasCI (eq .CI.Trigger "cron") }}
+    - cron: '{{ .CI.Schedule }}'
+{{- end }}
+{{- end }}
+{{- end }}
 
 # Only allow one of these to run per branch
 concurrency:
@@ -566,6 +580,63 @@ jobs:
         working-directory: {{ $app.Path }}
 {{- end }}
         run: {{ $spec.Cmd }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{ range $util := .Utilities }}
+{{- if $util.HasCI }}
+  util-{{ $util.Name | lower }}:
+    runs-on: {{ $util.CI.RunsOn }}
+{{- if eq $util.CI.Trigger "cron" }}
+    if: github.event_name == 'schedule' && github.event.schedule == '{{ $util.CI.Schedule }}' || github.event_name == 'workflow_dispatch'
+{{- else }}
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+{{- end }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+{{- if eq $util.Language "js" }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+{{- else if eq $util.Language "go" }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+{{- end }}
+
+{{- if gt (len $util.Tools) 0 }}
+      - name: Install Build Tools
+        run: |
+{{- range $util.InstallCommands }}
+          {{ . }}
+{{- end }}
+{{- end }}
+
+{{- range $spec := $util.OrderedCommands }}
+{{- if not $spec.Disabled }}
+
+      - name: {{ $spec.Name | title }}
+{{- if $spec.WorkingDirectory }}
+        working-directory: {{ $spec.WorkingDirectory }}
+{{- else if $util.Path }}
+        working-directory: {{ $util.Path }}
+{{- end }}
+        run: {{ $spec.Cmd }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

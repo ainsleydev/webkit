@@ -21,16 +21,18 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "cms",
-					Title: "CMS",
-					Path:  "./cms",
-					Type:  appdef.AppTypePayload,
+					Name:     "cms",
+					Title:    "CMS",
+					Path:     "./cms",
+					Type:     appdef.AppTypePayload,
+					Language: "js",
 				},
 				{
-					Name:  "web",
-					Title: "Web",
-					Path:  "./web",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "web",
+					Title:    "Web",
+					Path:     "./web",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 				},
 			},
 		}
@@ -94,10 +96,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "web",
-					Title: "Web",
-					Path:  "./web",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "web",
+					Title:    "Web",
+					Path:     "./web",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 				},
 			},
 		}
@@ -114,10 +117,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "cms",
-					Title: "CMS",
-					Path:  "./cms",
-					Type:  appdef.AppTypePayload,
+					Name:     "cms",
+					Title:    "CMS",
+					Path:     "./cms",
+					Type:     appdef.AppTypePayload,
+					Language: "js",
 					Env: appdef.Environment{
 						Production: appdef.EnvVar{
 							"DATABASE_URL": {
@@ -167,10 +171,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "cms",
-					Title: "CMS",
-					Path:  "./cms",
-					Type:  appdef.AppTypePayload,
+					Name:     "cms",
+					Title:    "CMS",
+					Path:     "./cms",
+					Type:     appdef.AppTypePayload,
+					Language: "js",
 					Env: appdef.Environment{
 						Production: appdef.EnvVar{
 							"API_KEY": {
@@ -209,10 +214,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "api",
-					Title: "API",
-					Path:  "./api",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "api",
+					Title:    "API",
+					Path:     "./api",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 					Env: appdef.Environment{
 						Production: appdef.EnvVar{
 							"DATABASE_URL": {
@@ -251,10 +257,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "web",
-					Title: "Web",
-					Path:  "./web",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "web",
+					Title:    "Web",
+					Path:     "./web",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 				},
 			},
 		}
@@ -289,10 +296,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "web",
-					Title: "Web",
-					Path:  "./web",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "web",
+					Title:    "Web",
+					Path:     "./web",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 				},
 			},
 		}
@@ -315,6 +323,64 @@ func TestPR(t *testing.T) {
 			// Verify TF_VERSION is set correctly and not '<no value>'
 			assert.Contains(t, content, "TF_VERSION: '1.13.0'", "workflow should contain correct Terraform version")
 			assert.NotContains(t, content, "TF_VERSION: '<no value>'", "workflow should not contain '<no value>' placeholder")
+		}
+	})
+
+	t.Run("Utility CI Jobs", func(t *testing.T) {
+		t.Parallel()
+
+		appDef := &appdef.Definition{
+			Utilities: []appdef.Utility{
+				{
+					Name:     "e2e",
+					Title:    "E2E Tests",
+					Path:     "./e2e",
+					Language: "js",
+					CI: &appdef.UtilityCI{
+						Trigger: "pull_request",
+						RunsOn:  "ubuntu-latest",
+					},
+				},
+				{
+					Name:     "nightly-e2e",
+					Title:    "Nightly E2E Tests",
+					Path:     "./e2e",
+					Language: "js",
+					CI: &appdef.UtilityCI{
+						Trigger:  "cron",
+						Schedule: "0 0 * * *",
+						RunsOn:   "ubuntu-latest",
+					},
+				},
+			},
+		}
+
+		input := setup(t, afero.NewMemMapFs(), appDef)
+
+		err := PR(t.Context(), input)
+		require.NoError(t, err)
+
+		file, err := afero.ReadFile(input.FS, filepath.Join(workflowsPath, "pr.yaml"))
+		require.NoError(t, err)
+
+		err = validateGithubYaml(t, file, false)
+		assert.NoError(t, err)
+
+		content := string(file)
+
+		t.Log("Pull request utility job")
+		{
+			assert.Contains(t, content, "util-e2e:", "workflow should contain job for e2e utility")
+			assert.Contains(t, content, "Install pnpm", "JS utility should have pnpm setup")
+			assert.Contains(t, content, "Set up Node", "JS utility should have Node setup")
+		}
+
+		t.Log("Cron utility job and schedule trigger")
+		{
+			assert.Contains(t, content, "util-nightly-e2e:", "workflow should contain job for nightly-e2e utility")
+			assert.Contains(t, content, "schedule:", "workflow should contain schedule trigger for cron utility")
+			assert.Contains(t, content, "- cron: '0 0 * * *'", "workflow should contain the cron expression")
+			assert.Contains(t, content, "github.event_name == 'schedule'", "cron job should guard on schedule event")
 		}
 	})
 }

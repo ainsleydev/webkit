@@ -27,6 +27,7 @@ type (
 		Shared        Shared     `json:"shared" description:"Shared configuration that applies to all apps"`
 		Resources     []Resource `json:"resources" description:"Infrastructure resources such as databases and storage buckets"`
 		Apps          []App      `json:"apps" required:"true" validate:"required,min=1,dive" minItems:"1" description:"Application definitions for all apps in the project"`
+		Utilities     []Utility  `json:"utilities,omitempty" validate:"omitempty,dive" description:"Non-deployed workspace members such as E2E tests, shared libraries, and CLI tools"`
 	}
 	// Shared contains configuration that is shared across all applications
 	// in the project, such as common environment variables.
@@ -97,6 +98,12 @@ func (d *Definition) ApplyDefaults() error {
 		}
 	}
 
+	for i := range d.Utilities {
+		if err := d.Utilities[i].applyDefaults(); err != nil {
+			return fmt.Errorf("applying defaults to utility %q: %w", d.Utilities[i].Name, err)
+		}
+	}
+
 	for i := range d.Resources {
 		d.Resources[i].applyDefaults()
 	}
@@ -118,6 +125,7 @@ func (d *Definition) FilterTerraformManaged() (*Definition, SkippedItems) {
 		Shared:        d.Shared,
 		Apps:          make([]App, 0, len(d.Apps)),
 		Resources:     make([]Resource, 0, len(d.Resources)),
+		Utilities:     d.Utilities, // Utilities are never terraform-managed, pass through unchanged.
 	}
 
 	skipped := SkippedItems{
@@ -150,20 +158,30 @@ func (d *Definition) FilterTerraformManaged() (*Definition, SkippedItems) {
 	Apps
 ************************************/
 
-// ContainsGo returns true if any of the apps are marked as Go.
+// ContainsGo returns true if any of the apps or utilities use Go.
 func (d *Definition) ContainsGo() bool {
 	for _, app := range d.Apps {
-		if app.Language() == "go" {
+		if app.Language == "go" {
+			return true
+		}
+	}
+	for _, util := range d.Utilities {
+		if util.Language == "go" {
 			return true
 		}
 	}
 	return false
 }
 
-// ContainsJS returns true if any of the apps are marked as JS.
+// ContainsJS returns true if any of the apps or utilities use JS.
 func (d *Definition) ContainsJS() bool {
 	for _, app := range d.Apps {
-		if app.Language() == "js" {
+		if app.Language == "js" {
+			return true
+		}
+	}
+	for _, util := range d.Utilities {
+		if util.Language == "js" {
 			return true
 		}
 	}

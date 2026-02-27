@@ -21,23 +21,37 @@ func TestAppType_String(t *testing.T) {
 func TestApp_Language(t *testing.T) {
 	t.Parallel()
 
-	tt := []struct {
-		input AppType
-		want  string
-	}{
-		{input: AppTypeGoLang, want: "go"},
-		{input: AppTypePayload, want: "js"},
-		{input: AppTypeSvelteKit, want: "js"},
-	}
+	t.Run("Auto-populated from Type via applyDefaults", func(t *testing.T) {
+		t.Parallel()
 
-	for _, test := range tt {
-		t.Run(test.input.String(), func(t *testing.T) {
-			t.Parallel()
-			a := App{Type: test.input}
-			got := a.Language()
-			assert.Equal(t, test.want, got)
-		})
-	}
+		tt := map[string]struct {
+			input AppType
+			want  string
+		}{
+			"GoLang":    {input: AppTypeGoLang, want: "go"},
+			"Payload":   {input: AppTypePayload, want: "js"},
+			"SvelteKit": {input: AppTypeSvelteKit, want: "js"},
+		}
+
+		for name, test := range tt {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+				a := App{Type: test.input, Path: "./"}
+				err := a.applyDefaults()
+				require.NoError(t, err)
+				assert.Equal(t, test.want, a.Language)
+			})
+		}
+	})
+
+	t.Run("Explicit Language preserved", func(t *testing.T) {
+		t.Parallel()
+
+		a := App{Type: AppTypePayload, Path: "./", Language: "go"}
+		err := a.applyDefaults()
+		require.NoError(t, err)
+		assert.Equal(t, "go", a.Language)
+	})
 }
 
 func TestDomainType_String(t *testing.T) {
@@ -75,23 +89,25 @@ func TestApp_ShouldUseNPM(t *testing.T) {
 	t.Parallel()
 
 	tt := map[string]struct {
-		appType AppType
-		usesNPM *bool
-		want    bool
+		appType  AppType
+		language string
+		usesNPM  *bool
+		want     bool
 	}{
-		"Payload Default":        {appType: AppTypePayload, usesNPM: nil, want: true},
-		"SvelteKit Default":      {appType: AppTypeSvelteKit, usesNPM: nil, want: true},
-		"GoLang Default":         {appType: AppTypeGoLang, usesNPM: nil, want: false},
-		"Payload Explicit False": {appType: AppTypePayload, usesNPM: ptr.BoolPtr(false), want: false},
-		"GoLang Explicit True":   {appType: AppTypeGoLang, usesNPM: ptr.BoolPtr(true), want: true},
+		"Payload Default":        {appType: AppTypePayload, language: "js", usesNPM: nil, want: true},
+		"SvelteKit Default":      {appType: AppTypeSvelteKit, language: "js", usesNPM: nil, want: true},
+		"GoLang Default":         {appType: AppTypeGoLang, language: "go", usesNPM: nil, want: false},
+		"Payload Explicit False": {appType: AppTypePayload, language: "js", usesNPM: ptr.BoolPtr(false), want: false},
+		"GoLang Explicit True":   {appType: AppTypeGoLang, language: "go", usesNPM: ptr.BoolPtr(true), want: true},
 	}
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			a := App{
-				Type:    test.appType,
-				UsesNPM: test.usesNPM,
+				Type:     test.appType,
+				Language: test.language,
+				UsesNPM:  test.usesNPM,
 			}
 			got := a.ShouldUseNPM()
 			assert.Equal(t, test.want, got)
@@ -106,10 +122,10 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name:     "web",
-			Type:     AppTypeGoLang,
-			Path:     "./",
-			Commands: types.NewOrderedMap[Command, CommandSpec](),
+			Name:    "web",
+			Type:    AppTypeGoLang,
+			Path:    "./",
+			Toolset: Toolset{Commands: types.NewOrderedMap[Command, CommandSpec]()},
 		}
 
 		commands := app.OrderedCommands()
@@ -164,10 +180,10 @@ func TestApp_OrderedCommands(t *testing.T) {
 			Name: "api",
 			Type: AppTypeGoLang,
 			Path: "./",
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"templ": {Type: "go", Name: "github.com/a-h/templ/cmd/templ", Version: "v0.2.543"},
 				"buf":   {Type: "go", Name: "github.com/bufbuild/buf/cmd/buf", Version: "v1.28.1"},
-			},
+			}},
 		}
 
 		err := app.applyDefaults()
@@ -215,10 +231,10 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name:     "web",
-			Type:     AppTypeGoLang,
-			Path:     "./",
-			Commands: types.NewOrderedMap[Command, CommandSpec](),
+			Name:    "web",
+			Type:    AppTypeGoLang,
+			Path:    "./",
+			Toolset: Toolset{Commands: types.NewOrderedMap[Command, CommandSpec]()},
 		}
 
 		// Add custom "generate" command first
@@ -258,10 +274,10 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name:     "api",
-			Type:     AppTypeGoLang,
-			Path:     "./",
-			Commands: types.NewOrderedMap[Command, CommandSpec](),
+			Name:    "api",
+			Type:    AppTypeGoLang,
+			Path:    "./",
+			Toolset: Toolset{Commands: types.NewOrderedMap[Command, CommandSpec]()},
 		}
 
 		// Add multiple custom commands
@@ -304,10 +320,9 @@ func TestApp_OrderedCommands(t *testing.T) {
 		t.Parallel()
 
 		app := &App{
-			Name:     "web",
-			Type:     AppTypeGoLang,
-			Path:     "./",
-			Commands: nil,
+			Name: "web",
+			Type: AppTypeGoLang,
+			Path: "./",
 		}
 
 		commands := app.OrderedCommands()
@@ -797,9 +812,9 @@ func TestApp_InstallCommands(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"templ": {Type: "go", Name: "github.com/a-h/templ/cmd/templ", Version: "v0.2.543"},
-			},
+			}},
 		}
 		err := app.applyDefaults()
 		require.NoError(t, err)
@@ -816,9 +831,9 @@ func TestApp_InstallCommands(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"eslint": {Type: "pnpm", Name: "eslint", Version: "8.0.0"},
-			},
+			}},
 		}
 		err := app.applyDefaults()
 		require.NoError(t, err)
@@ -832,12 +847,12 @@ func TestApp_InstallCommands(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"custom": {
 					Type:    "script",
 					Install: "curl -sSL https://example.com/install.sh | sh",
 				},
-			},
+			}},
 		}
 		err := app.applyDefaults()
 		require.NoError(t, err)
@@ -851,14 +866,14 @@ func TestApp_InstallCommands(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"custom": {
 					Type:    "go",
 					Name:    "github.com/foo/bar",
 					Version: "v1.0.0",
 					Install: "custom install command",
 				},
-			},
+			}},
 		}
 		err := app.applyDefaults()
 		require.NoError(t, err)
@@ -876,12 +891,12 @@ func TestApp_InstallCommands_Deterministic(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"zebra":   {Type: "go", Name: "github.com/z/zebra", Version: "v1.0.0"},
 				"alpha":   {Type: "go", Name: "github.com/a/alpha", Version: "v1.0.0"},
 				"bravo":   {Type: "go", Name: "github.com/b/bravo", Version: "v1.0.0"},
 				"charlie": {Type: "go", Name: "github.com/c/charlie", Version: "v1.0.0"},
-			},
+			}},
 		}
 
 		got := app.InstallCommands()
@@ -901,11 +916,11 @@ func TestApp_InstallCommands_Deterministic(t *testing.T) {
 
 		app := App{
 			Type: AppTypeGoLang,
-			Tools: map[string]Tool{
+			Toolset: Toolset{Tools: map[string]Tool{
 				"templ":         {Type: "go", Name: "github.com/a-h/templ/cmd/templ", Version: "latest"},
 				"golangci-lint": {Type: "go", Name: "github.com/golangci/golangci-lint/cmd/golangci-lint", Version: "latest"},
 				"sqlc":          {Type: "go", Name: "github.com/sqlc-dev/sqlc/cmd/sqlc", Version: "latest"},
-			},
+			}},
 		}
 
 		// Call multiple times to ensure consistent ordering.

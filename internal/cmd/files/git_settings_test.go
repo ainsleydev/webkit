@@ -18,14 +18,16 @@ func TestGitSettings(t *testing.T) {
 		Project: appdef.Project{Name: "my-website"},
 		Apps: []appdef.App{
 			{
-				Name: "cms",
-				Type: appdef.AppTypePayload,
-				Path: "cms",
+				Name:     "cms",
+				Type:     appdef.AppTypePayload,
+				Language: "js",
+				Path:     "cms",
 			},
 			{
-				Name: "web",
-				Type: appdef.AppTypeGoLang,
-				Path: "web",
+				Name:     "web",
+				Type:     appdef.AppTypeGoLang,
+				Language: "go",
+				Path:     "web",
 			},
 		},
 	}
