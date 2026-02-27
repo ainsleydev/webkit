@@ -164,7 +164,7 @@ func TestPnpmWorkspace(t *testing.T) {
 
 		packages, ok := workspace["packages"]
 		require.True(t, ok)
-		assert.Contains(t, packages, "./apps/cms")     // JS app
+		assert.Contains(t, packages, "./apps/cms")      // JS app
 		assert.Contains(t, packages, "./e2e")           // JS utility
 		assert.NotContains(t, packages, "./benchmarks") // Go utility
 	})

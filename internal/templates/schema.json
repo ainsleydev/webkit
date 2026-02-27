@@ -561,8 +561,12 @@
 					"description": "GitHub Actions runner (defaults to ubuntu-latest)",
 					"type": "string"
 				},
+				"schedule": {
+					"description": "Cron expression for scheduled triggers (e.g. '0 0 * * *')",
+					"type": "string"
+				},
 				"trigger": {
-					"description": "Event that triggers this CI job (currently only pull_request)",
+					"description": "Event that triggers this CI job (pull_request or cron)",
 					"type": "string"
 				}
 			},

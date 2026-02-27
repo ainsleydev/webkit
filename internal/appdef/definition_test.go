@@ -72,6 +72,22 @@ func TestContainsGo(t *testing.T) {
 			},
 			want: false,
 		},
+		"Go utility only": {
+			input: Definition{
+				Utilities: []Utility{
+					{Name: "bench", Language: "go", Path: "bench"},
+				},
+			},
+			want: true,
+		},
+		"JS utility does not match": {
+			input: Definition{
+				Utilities: []Utility{
+					{Name: "e2e", Language: "js", Path: "e2e"},
+				},
+			},
+			want: false,
+		},
 	}
 
 	for name, test := range tt {
@@ -102,6 +118,22 @@ func TestContainsJS(t *testing.T) {
 			input: Definition{
 				Apps: []App{
 					{Type: AppTypeGoLang, Language: "go"},
+				},
+			},
+			want: false,
+		},
+		"JS utility only": {
+			input: Definition{
+				Utilities: []Utility{
+					{Name: "e2e", Language: "js", Path: "e2e"},
+				},
+			},
+			want: true,
+		},
+		"Go utility does not match": {
+			input: Definition{
+				Utilities: []Utility{
+					{Name: "bench", Language: "go", Path: "bench"},
 				},
 			},
 			want: false,

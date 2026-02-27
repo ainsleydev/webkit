@@ -52,9 +52,10 @@ func TestTurboJSON(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name: "cms",
-					Type: appdef.AppTypePayload,
-					Path: "./apps/cms",
+					Name:     "cms",
+					Type:     appdef.AppTypePayload,
+					Language: "js",
+					Path:     "./apps/cms",
 				},
 			},
 		}
@@ -76,7 +77,7 @@ func TestTurboJSON(t *testing.T) {
 
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
-				{Name: "cms", Type: appdef.AppTypePayload, Path: "./apps/cms"},
+				{Name: "cms", Type: appdef.AppTypePayload, Language: "js", Path: "./apps/cms"},
 			},
 		}
 

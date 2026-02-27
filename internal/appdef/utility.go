@@ -1,6 +1,7 @@
 package appdef
 
 import (
+	"fmt"
 	"path/filepath"
 )
 
@@ -9,8 +10,9 @@ type (
 	// When present, a CI job will be generated for this utility.
 	// Omit CI entirely to create a workspace-only utility with no CI job.
 	UtilityCI struct {
-		Trigger string `json:"trigger" validate:"required,oneof=pull_request" description:"Event that triggers this CI job (currently only pull_request)"`
-		RunsOn  string `json:"runs_on,omitempty" description:"GitHub Actions runner (defaults to ubuntu-latest)"`
+		Trigger  string `json:"trigger" validate:"required,oneof=pull_request cron" description:"Event that triggers this CI job (pull_request or cron)"`
+		Schedule string `json:"schedule,omitempty" validate:"required_if=Trigger cron" description:"Cron expression for scheduled triggers (e.g. '0 0 * * *')"`
+		RunsOn   string `json:"runs_on,omitempty" description:"GitHub Actions runner (defaults to ubuntu-latest)"`
 	}
 
 	// Utility represents a non-deployed workspace member within the webkit project.
@@ -41,12 +43,18 @@ func (u *Utility) ShouldUseNPM() bool {
 }
 
 // applyDefaults sets default values for the utility.
-func (u *Utility) applyDefaults() {
+func (u *Utility) applyDefaults() error {
 	u.Toolset.initDefaults()
 	if u.Path != "" {
 		u.Path = filepath.Clean(u.Path)
 	}
-	if u.CI != nil && u.CI.RunsOn == "" {
-		u.CI.RunsOn = "ubuntu-latest"
+	if u.CI != nil {
+		if u.CI.RunsOn == "" {
+			u.CI.RunsOn = "ubuntu-latest"
+		}
+		if u.CI.Trigger == "cron" && u.CI.Schedule == "" {
+			return fmt.Errorf("utility %q has cron trigger but no schedule", u.Name)
+		}
 	}
+	return nil
 }

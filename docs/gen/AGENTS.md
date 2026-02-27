@@ -130,7 +130,9 @@ Each app has:
 Utilities are workspace members that optionally run on CI but are never deployed. They have:
 
 - A language field (`go` or `js`) for CI toolchain setup
-- Optional CI configuration (`ci.trigger`) to generate CI jobs
+- Optional CI configuration with trigger support:
+  - `pull_request`: runs on pull request events
+  - `cron`: runs on a schedule (requires `schedule` field with a cron expression)
 - Tools and commands (same format as apps, but no defaults)
 
 #### internal/scaffold

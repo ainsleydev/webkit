@@ -16,7 +16,7 @@ func TestUtility_HasCI(t *testing.T) {
 		ci   *UtilityCI
 		want bool
 	}{
-		"Nil CI":    {ci: nil, want: false},
+		"Nil CI":     {ci: nil, want: false},
 		"Non-nil CI": {ci: &UtilityCI{Trigger: "pull_request"}, want: true},
 	}
 
@@ -89,8 +89,8 @@ func TestUtility_ShouldUseNPM(t *testing.T) {
 		language string
 		want     bool
 	}{
-		"JS":     {language: "js", want: true},
-		"Go":     {language: "go", want: false},
+		"JS": {language: "js", want: true},
+		"Go": {language: "go", want: false},
 	}
 
 	for name, test := range tt {
@@ -193,7 +193,8 @@ func TestUtility_ApplyDefaults(t *testing.T) {
 			Language: "js",
 		}
 
-		u.applyDefaults()
+		err := u.applyDefaults()
+		assert.NoError(t, err)
 
 		require.NotNil(t, u.Commands)
 		require.NotNil(t, u.Tools)
@@ -209,7 +210,8 @@ func TestUtility_ApplyDefaults(t *testing.T) {
 			Language: "js",
 		}
 
-		u.applyDefaults()
+		err := u.applyDefaults()
+		assert.NoError(t, err)
 
 		assert.Equal(t, "e2e", u.Path)
 	})
@@ -224,7 +226,8 @@ func TestUtility_ApplyDefaults(t *testing.T) {
 			CI:       &UtilityCI{Trigger: "pull_request"},
 		}
 
-		u.applyDefaults()
+		err := u.applyDefaults()
+		assert.NoError(t, err)
 
 		assert.Equal(t, "ubuntu-latest", u.CI.RunsOn)
 	})
@@ -239,7 +242,8 @@ func TestUtility_ApplyDefaults(t *testing.T) {
 			CI:       &UtilityCI{Trigger: "pull_request", RunsOn: "ubuntu-22.04"},
 		}
 
-		u.applyDefaults()
+		err := u.applyDefaults()
+		assert.NoError(t, err)
 
 		assert.Equal(t, "ubuntu-22.04", u.CI.RunsOn)
 	})
@@ -253,9 +257,42 @@ func TestUtility_ApplyDefaults(t *testing.T) {
 			Language: "js",
 		}
 
-		u.applyDefaults()
+		err := u.applyDefaults()
+		assert.NoError(t, err)
 
 		assert.Nil(t, u.CI)
+	})
+
+	t.Run("Cron trigger with schedule", func(t *testing.T) {
+		t.Parallel()
+
+		u := &Utility{
+			Name:     "nightly-e2e",
+			Path:     "e2e",
+			Language: "js",
+			CI:       &UtilityCI{Trigger: "cron", Schedule: "0 0 * * *"},
+		}
+
+		err := u.applyDefaults()
+		assert.NoError(t, err)
+
+		assert.Equal(t, "ubuntu-latest", u.CI.RunsOn)
+		assert.Equal(t, "0 0 * * *", u.CI.Schedule)
+	})
+
+	t.Run("Cron trigger without schedule returns error", func(t *testing.T) {
+		t.Parallel()
+
+		u := &Utility{
+			Name:     "nightly-e2e",
+			Path:     "e2e",
+			Language: "js",
+			CI:       &UtilityCI{Trigger: "cron"},
+		}
+
+		err := u.applyDefaults()
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "cron trigger but no schedule")
 	})
 
 	t.Run("Preserves existing Commands and Tools", func(t *testing.T) {
@@ -276,7 +313,8 @@ func TestUtility_ApplyDefaults(t *testing.T) {
 			},
 		}
 
-		u.applyDefaults()
+		err := u.applyDefaults()
+		assert.NoError(t, err)
 
 		assert.Len(t, u.Tools, 1)
 		spec, exists := u.Commands.Get("test")
