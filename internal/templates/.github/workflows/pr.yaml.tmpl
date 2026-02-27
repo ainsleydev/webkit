@@ -588,7 +588,7 @@ jobs:
   util-{{ $util.Name | lower }}:
     runs-on: {{ $util.CI.RunsOn }}
 {{- if eq $util.CI.Trigger "cron" }}
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' && github.event.schedule == '{{ $util.CI.Schedule }}' || github.event_name == 'workflow_dispatch'
 {{- else }}
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
 {{- end }}

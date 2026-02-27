@@ -85,6 +85,10 @@
 				},
 				"language": {
 					"description": "Toolchain language for CI setup (auto-populated from type if not set)",
+					"enum": [
+						"go",
+						"js"
+					],
 					"type": "string"
 				},
 				"monitoring": {
@@ -531,6 +535,10 @@
 				},
 				"language": {
 					"description": "Toolchain language for CI setup and workspace inclusion (go or js)",
+					"enum": [
+						"go",
+						"js"
+					],
 					"type": "string"
 				},
 				"name": {
@@ -553,6 +561,12 @@
 					"type": "object"
 				}
 			},
+			"required": [
+				"name",
+				"title",
+				"path",
+				"language"
+			],
 			"type": "object"
 		},
 		"AppdefUtilityCI": {
@@ -567,9 +581,16 @@
 				},
 				"trigger": {
 					"description": "Event that triggers this CI job (pull_request or cron)",
+					"enum": [
+						"pull_request",
+						"cron"
+					],
 					"type": "string"
 				}
 			},
+			"required": [
+				"trigger"
+			],
 			"type": "object"
 		}
 	},

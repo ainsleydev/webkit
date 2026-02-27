@@ -19,7 +19,7 @@ type (
 		Type             AppType     `json:"type" validate:"required,oneof=svelte-kit golang payload" description:"Application type (payload, svelte-kit, golang)"`
 		Description      string      `json:"description,omitempty" validate:"omitempty,max=200" description:"Brief description of the app's purpose and functionality"`
 		Path             string      `json:"path" validate:"required" description:"Relative file path to the app's source code directory"`
-		Language         string      `json:"language,omitempty" validate:"omitempty,oneof=go js" description:"Toolchain language for CI setup (auto-populated from type if not set)"`
+		Language         string      `json:"language,omitempty" validate:"omitempty,oneof=go js" enum:"go,js" description:"Toolchain language for CI setup (auto-populated from type if not set)"`
 		Build            Build       `json:"build" description:"Build configuration for Docker containerisation"`
 		Infra            Infra       `json:"infra" validate:"required" description:"Infrastructure and deployment configuration"`
 		Env              Environment `json:"env" description:"Environment variables specific to this app"`

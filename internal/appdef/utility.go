@@ -15,7 +15,7 @@ type (
 	// When present, a CI job will be generated for this utility.
 	// Omit CI entirely to create a workspace-only utility with no CI job.
 	UtilityCI struct {
-		Trigger  string `json:"trigger" validate:"required,oneof=pull_request cron" description:"Event that triggers this CI job (pull_request or cron)"`
+		Trigger  string `json:"trigger" required:"true" validate:"required,oneof=pull_request cron" enum:"pull_request,cron" description:"Event that triggers this CI job (pull_request or cron)"`
 		Schedule string `json:"schedule,omitempty" validate:"required_if=Trigger cron" description:"Cron expression for scheduled triggers (e.g. '0 0 * * *')"`
 		RunsOn   string `json:"runs_on,omitempty" description:"GitHub Actions runner (defaults to ubuntu-latest)"`
 	}
@@ -25,11 +25,11 @@ type (
 	// but are never deployed. Examples include E2E tests, shared constants,
 	// benchmark suites, and CLI tools.
 	Utility struct {
-		Name        string     `json:"name" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the utility (lowercase, hyphenated)"`
-		Title       string     `json:"title" validate:"required" description:"Human-readable utility name for display purposes"`
+		Name        string     `json:"name" required:"true" validate:"required,lowercase,alphanumdash" description:"Unique identifier for the utility (lowercase, hyphenated)"`
+		Title       string     `json:"title" required:"true" validate:"required" description:"Human-readable utility name for display purposes"`
 		Description string     `json:"description,omitempty" validate:"omitempty,max=200" description:"Brief description of the utility's purpose and functionality"`
-		Path        string     `json:"path" validate:"required" description:"Relative file path to the utility's source code directory"`
-		Language    string     `json:"language" validate:"required,oneof=go js" description:"Toolchain language for CI setup and workspace inclusion (go or js)"`
+		Path        string     `json:"path" required:"true" validate:"required" description:"Relative file path to the utility's source code directory"`
+		Language    string     `json:"language" required:"true" validate:"required,oneof=go js" enum:"go,js" description:"Toolchain language for CI setup and workspace inclusion (go or js)"`
 		CI          *UtilityCI `json:"ci,omitempty" description:"CI configuration. Omit to create a workspace-only utility with no CI job"`
 		Toolset
 	}
