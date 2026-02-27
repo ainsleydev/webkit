@@ -21,16 +21,18 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "cms",
-					Title: "CMS",
-					Path:  "./cms",
-					Type:  appdef.AppTypePayload,
+					Name:     "cms",
+					Title:    "CMS",
+					Path:     "./cms",
+					Type:     appdef.AppTypePayload,
+					Language: "js",
 				},
 				{
-					Name:  "web",
-					Title: "Web",
-					Path:  "./web",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "web",
+					Title:    "Web",
+					Path:     "./web",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 				},
 			},
 		}
@@ -94,10 +96,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "web",
-					Title: "Web",
-					Path:  "./web",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "web",
+					Title:    "Web",
+					Path:     "./web",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 				},
 			},
 		}
@@ -114,10 +117,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "cms",
-					Title: "CMS",
-					Path:  "./cms",
-					Type:  appdef.AppTypePayload,
+					Name:     "cms",
+					Title:    "CMS",
+					Path:     "./cms",
+					Type:     appdef.AppTypePayload,
+					Language: "js",
 					Env: appdef.Environment{
 						Production: appdef.EnvVar{
 							"DATABASE_URL": {
@@ -167,10 +171,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "cms",
-					Title: "CMS",
-					Path:  "./cms",
-					Type:  appdef.AppTypePayload,
+					Name:     "cms",
+					Title:    "CMS",
+					Path:     "./cms",
+					Type:     appdef.AppTypePayload,
+					Language: "js",
 					Env: appdef.Environment{
 						Production: appdef.EnvVar{
 							"API_KEY": {
@@ -209,10 +214,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "api",
-					Title: "API",
-					Path:  "./api",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "api",
+					Title:    "API",
+					Path:     "./api",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 					Env: appdef.Environment{
 						Production: appdef.EnvVar{
 							"DATABASE_URL": {
@@ -251,10 +257,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "web",
-					Title: "Web",
-					Path:  "./web",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "web",
+					Title:    "Web",
+					Path:     "./web",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 				},
 			},
 		}
@@ -289,10 +296,11 @@ func TestPR(t *testing.T) {
 		appDef := &appdef.Definition{
 			Apps: []appdef.App{
 				{
-					Name:  "web",
-					Title: "Web",
-					Path:  "./web",
-					Type:  appdef.AppTypeGoLang,
+					Name:     "web",
+					Title:    "Web",
+					Path:     "./web",
+					Type:     appdef.AppTypeGoLang,
+					Language: "go",
 				},
 			},
 		}

@@ -295,6 +295,21 @@ func TestUtility_ApplyDefaults(t *testing.T) {
 		assert.ErrorContains(t, err, "cron trigger but no schedule")
 	})
 
+	t.Run("Invalid cron expression returns error", func(t *testing.T) {
+		t.Parallel()
+
+		u := &Utility{
+			Name:     "nightly-e2e",
+			Path:     "e2e",
+			Language: "js",
+			CI:       &UtilityCI{Trigger: "cron", Schedule: "not-a-cron"},
+		}
+
+		err := u.applyDefaults()
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "invalid cron expression")
+	})
+
 	t.Run("Preserves existing Commands and Tools", func(t *testing.T) {
 		t.Parallel()
 

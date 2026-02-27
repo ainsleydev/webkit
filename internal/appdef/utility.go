@@ -3,7 +3,12 @@ package appdef
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 )
+
+// cronRegexp validates a 5-field cron expression (minute hour dom month dow).
+// Each field allows digits, *, commas, hyphens, and slashes.
+var cronRegexp = regexp.MustCompile(`^(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)$`)
 
 type (
 	// UtilityCI defines the CI configuration for a utility.
@@ -52,8 +57,13 @@ func (u *Utility) applyDefaults() error {
 		if u.CI.RunsOn == "" {
 			u.CI.RunsOn = "ubuntu-latest"
 		}
-		if u.CI.Trigger == "cron" && u.CI.Schedule == "" {
-			return fmt.Errorf("utility %q has cron trigger but no schedule", u.Name)
+		if u.CI.Trigger == "cron" {
+			if u.CI.Schedule == "" {
+				return fmt.Errorf("utility %q has cron trigger but no schedule", u.Name)
+			}
+			if !cronRegexp.MatchString(u.CI.Schedule) {
+				return fmt.Errorf("utility %q has invalid cron expression %q: must be 5 fields (minute hour dom month dow)", u.Name, u.CI.Schedule)
+			}
 		}
 	}
 	return nil
