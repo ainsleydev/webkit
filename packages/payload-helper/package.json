@@ -72,8 +72,8 @@
 	},
 	"dependencies": {
 		"@ainsleydev/email-templates": "workspace:*",
-		"@lexical/headless": "0.39.0",
-		"@lexical/html": "0.39.0",
+		"@lexical/headless": "0.35.0",
+		"@lexical/html": "0.35.0",
 		"@nouance/payload-better-fields-plugin": "^2.0.2",
 		"@payloadcms/db-sqlite": "3.74.0",
 		"@payloadcms/plugin-form-builder": "3.74.0",
@@ -84,7 +84,7 @@
 		"commander": "^14.0.2",
 		"dotenv": "16.4.7",
 		"jsdom": "^27.2.0",
-		"lexical": "0.39.0",
+		"lexical": "0.35.0",
 		"mime-types": "^3.0.1",
 		"payload": "3.74.0"
 	},
