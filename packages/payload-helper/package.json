@@ -93,6 +93,11 @@
 		"next": "15.x || 16.x",
 		"react": "^18.0.0 || ^19.0.0"
 	},
+	"peerDependenciesMeta": {
+		"@lexical/headless": { "optional": true },
+		"@lexical/html": { "optional": true },
+		"lexical": { "optional": true }
+	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
 		"@lexical/headless": "0.35.0",
