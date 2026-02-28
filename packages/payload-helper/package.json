@@ -72,8 +72,6 @@
 	},
 	"dependencies": {
 		"@ainsleydev/email-templates": "workspace:*",
-		"@lexical/headless": "0.39.0",
-		"@lexical/html": "0.39.0",
 		"@nouance/payload-better-fields-plugin": "^2.0.2",
 		"@payloadcms/db-sqlite": "3.74.0",
 		"@payloadcms/plugin-form-builder": "3.74.0",
@@ -84,17 +82,26 @@
 		"commander": "^14.0.2",
 		"dotenv": "16.4.7",
 		"jsdom": "^27.2.0",
-		"lexical": "0.39.0",
 		"mime-types": "^3.0.1",
 		"payload": "3.74.0"
 	},
 	"peerDependencies": {
+		"@lexical/headless": ">=0.35.0",
+		"@lexical/html": ">=0.35.0",
 		"@payloadcms/ui": "3.x",
+		"lexical": ">=0.35.0",
 		"next": "15.x || 16.x",
 		"react": "^18.0.0 || ^19.0.0"
 	},
+	"peerDependenciesMeta": {
+		"@lexical/headless": { "optional": true },
+		"@lexical/html": { "optional": true },
+		"lexical": { "optional": true }
+	},
 	"devDependencies": {
 		"@ainsleydev/eslint-config": "workspace:*",
+		"@lexical/headless": "0.35.0",
+		"@lexical/html": "0.35.0",
 		"@payloadcms/ui": "3.74.0",
 		"@swc/cli": "^0.7.8",
 		"@swc/core": "^1.7.2",
@@ -105,6 +112,7 @@
 		"@types/react": "19.2.9",
 		"jest": "^30.2.0",
 		"json-schema": "^0.4.0",
+		"lexical": "0.35.0",
 		"next": "^16.0.1",
 		"react": "^19.2.1",
 		"rimraf": "6.1.0",
