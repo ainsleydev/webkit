@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.3.0
+
+### Minor Changes
+
+- fe26c53: Add a reusable `SlugField` helper with a lockable admin component and automatic slug formatting hook.
+
 ## 0.2.2
 
 ### Patch Changes
