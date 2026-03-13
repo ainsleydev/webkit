@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.6.1
+
+### Patch Changes
+
+- f194cae: Add TableOfContents component with scrollspy and auto-discovery of headings via data attributes or CSS selector props
+
 ## 0.6.0
 
 ### Minor Changes
