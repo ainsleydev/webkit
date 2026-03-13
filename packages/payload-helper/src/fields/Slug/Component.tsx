@@ -81,7 +81,11 @@ export const Component: React.FC<SlugComponentProps> = ({
 		<div className='field-type slug-field-component'>
 			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 				<FieldLabel htmlFor={`field-${resolvedPath}`} label={label} />
-				<Button style={{ margin: 0, paddingBottom: '0.3125rem' }} buttonStyle='none' onClick={handleLock}>
+				<Button
+					style={{ margin: 0, paddingBottom: '0.3125rem' }}
+					buttonStyle='none'
+					onClick={handleLock}
+				>
 					{checkboxValue ? 'Unlock' : 'Lock'}
 				</Button>
 			</div>
