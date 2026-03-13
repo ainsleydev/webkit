@@ -1,42 +1,42 @@
 <script lang="ts" module>
-	export type TOCItem = {
-		label: string;
-		href: string;
-	};
+export type TOCItem = {
+	label: string;
+	href: string;
+};
 
-	export type TableOfContentsProps = {
-		/**
-		 * Optional heading displayed above the TOC list.
-		 */
-		heading?: string;
-		/**
-		 * Optional pre-generated items. If omitted, items are auto-discovered
-		 * from the DOM using contentSelector + headingSelector on mount.
-		 */
-		items?: TOCItem[];
-		/**
-		 * Adds a left border to the TOC on tablet and above.
-		 */
-		displayBorder?: boolean;
-		/**
-		 * CSS selector used to find the content element containing headings.
-		 * Defaults to `[data-sidebar-content="true"]`.
-		 */
-		contentSelector?: string;
-		/**
-		 * CSS selector for headings within the content element.
-		 * Falls back to the `data-sidebar-selector` attribute on the content
-		 * element, then `h2`.
-		 *
-		 * Priority: prop > data-sidebar-selector attribute > 'h2'
-		 */
-		headingSelector?: string;
-		/**
-		 * Scroll offset in pixels applied to scrollspy detection.
-		 * @default 80
-		 */
-		scrollOffset?: number;
-	};
+export type TableOfContentsProps = {
+	/**
+	 * Optional heading displayed above the TOC list.
+	 */
+	heading?: string;
+	/**
+	 * Optional pre-generated items. If omitted, items are auto-discovered
+	 * from the DOM using contentSelector + headingSelector on mount.
+	 */
+	items?: TOCItem[];
+	/**
+	 * Adds a left border to the TOC on tablet and above.
+	 */
+	displayBorder?: boolean;
+	/**
+	 * CSS selector used to find the content element containing headings.
+	 * Defaults to `[data-sidebar-content="true"]`.
+	 */
+	contentSelector?: string;
+	/**
+	 * CSS selector for headings within the content element.
+	 * Falls back to the `data-sidebar-selector` attribute on the content
+	 * element, then `h2`.
+	 *
+	 * Priority: prop > data-sidebar-selector attribute > 'h2'
+	 */
+	headingSelector?: string;
+	/**
+	 * Scroll offset in pixels applied to scrollspy detection.
+	 * @default 80
+	 */
+	scrollOffset?: number;
+};
 </script>
 
 <script lang="ts">
