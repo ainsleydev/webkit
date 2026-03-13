@@ -1,9 +1,6 @@
 import type { FieldHook } from 'payload';
 
-export const formatSlug = (val: string): string =>
-	val
-		.replace(/ /g, '-')
-		.toLowerCase();
+export const formatSlug = (val: string): string => val.replace(/ /g, '-').toLowerCase();
 
 export const formatSlugHook =
 	(fallback: string): FieldHook =>

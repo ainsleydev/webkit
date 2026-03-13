@@ -1,6 +1,6 @@
 import { type CheckboxField, type TextField, deepMerge } from 'payload';
 
-import { formatSlugHook } from './formatSlug';
+import { formatSlugHook } from './formatSlug.js';
 
 type Overrides = {
 	slugOverrides?: Partial<TextField>;

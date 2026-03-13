@@ -10,9 +10,10 @@ import {
 	useFormFields,
 } from '@payloadcms/ui';
 import type { TextFieldClientProps } from 'payload';
-import React, { useCallback, useEffect } from 'react';
+import type React from 'react';
+import { useCallback, useEffect } from 'react';
 
-import { formatSlug } from './formatSlug';
+import { formatSlug } from './formatSlug.js';
 import './index.scss';
 
 type SlugComponentProps = {
@@ -27,7 +28,10 @@ export const Component: React.FC<SlugComponentProps> = ({
 	path,
 	readOnly: readOnlyFromProps,
 }) => {
-	const { admin: { description } = {}, label } = field;
+	const {
+		admin: { description } = {},
+		label,
+	} = field;
 
 	const checkboxFieldPath = path?.includes('.')
 		? `${path}.${checkboxFieldPathFromProps}`
@@ -35,7 +39,6 @@ export const Component: React.FC<SlugComponentProps> = ({
 	const resolvedPath = path || field.name;
 
 	const { value, setValue } = useField<string>({ path: resolvedPath });
-
 	const { dispatchFields } = useForm();
 
 	const checkboxValue = useFormFields(([fields]) => {
@@ -61,8 +64,8 @@ export const Component: React.FC<SlugComponentProps> = ({
 	}, [targetFieldValue, checkboxValue, setValue, value]);
 
 	const handleLock = useCallback(
-		(e: React.MouseEvent<HTMLButtonElement>) => {
-			e.preventDefault();
+		(event: React.MouseEvent<Element>) => {
+			event.preventDefault();
 
 			dispatchFields({
 				type: 'UPDATE',
@@ -76,10 +79,10 @@ export const Component: React.FC<SlugComponentProps> = ({
 	const readOnly = readOnlyFromProps || checkboxValue;
 
 	return (
-		<div className="field-type slug-field-component">
-			<div className="label-wrapper">
+		<div className='field-type slug-field-component'>
+			<div className='label-wrapper'>
 				<FieldLabel htmlFor={`field-${resolvedPath}`} label={label} />
-				<Button className="lock-button" buttonStyle="none" onClick={handleLock}>
+				<Button className='lock-button' buttonStyle='none' onClick={handleLock}>
 					{checkboxValue ? 'Unlock' : 'Lock'}
 				</Button>
 			</div>
