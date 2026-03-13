@@ -1,5 +1,11 @@
 # @ainsleydev/payload-helper
 
+## 0.3.1
+
+### Patch Changes
+
+- d57ed1b: Fix slug field component import path resolving to relative path in consumer's importMap
+
 ## 0.3.0
 
 ### Minor Changes
