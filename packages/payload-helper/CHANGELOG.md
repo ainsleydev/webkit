@@ -1,5 +1,12 @@
 # @ainsleydev/payload-helper
 
+## 0.3.2
+
+### Patch Changes
+
+- f194cae: Fix Slug field component build error by removing unsupported style prop from Payload Button
+- d171604: Fix slug field component import path resolving to relative path in consumer's importMap
+
 ## 0.3.1
 
 ### Patch Changes
