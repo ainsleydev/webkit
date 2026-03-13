@@ -189,7 +189,7 @@ export type TableOfContentsProps = {
 			}
 		}
 
-		@include a.mq(tab) {
+		@include a.mq(tablet) {
 			&--border {
 				margin-left: a.$size-48;
 				padding-left: a.$size-48;
