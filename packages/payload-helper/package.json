@@ -47,6 +47,11 @@
 			"types": "./dist/fields/index.d.ts",
 			"import": "./dist/fields/index.js"
 		},
+		"./fields/Slug/Component": {
+			"types": "./dist/fields/Slug/Component.d.ts",
+			"import": "./dist/fields/Slug/Component.js",
+			"default": "./dist/fields/Slug/Component.js"
+		},
 		"./dist/admin/components/*": {
 			"types": "./dist/admin/components/*.d.ts",
 			"import": "./dist/admin/components/*.js",

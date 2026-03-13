@@ -44,7 +44,7 @@ export const SlugField: Slug = (fieldToUse = 'title', overrides = {}) => {
 					'The URL friendly version of the title, users will see this text in the URL bar.',
 				components: {
 					Field: {
-						path: '/fields/Slug/Component#Component',
+						path: '@ainsleydev/payload-helper/fields/Slug/Component#Component',
 						clientProps: {
 							fieldToUse,
 							checkboxFieldPath: checkBoxField.name,
