@@ -47,8 +47,8 @@ export {
 export { SEOFields } from './common/index.js';
 
 // Fields
-export { PublishedAt, URLField } from './fields/index.js';
-export type { PublishedAtArgs, URLFieldArgs } from './fields/index.js';
+export { PublishedAt, SlugField, URLField } from './fields/index.js';
+export type { PublishedAtArgs, Slug, SlugOverrides, URLFieldArgs } from './fields/index.js';
 
 // Email Config Helper
 export { defineEmailConfig } from './email/defineEmailConfig.js';
