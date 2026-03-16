@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.6.5
+
+### Patch Changes
+
+- b748144: feat(TableOfContents): Adding onLinkClick callback prop for click events on TOC links.
+
 ## 0.6.4
 
 ### Patch Changes
