@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.6.2
+
+### Patch Changes
+
+- 05777bf: Fix `TableOfContents` component erroring at runtime due to nested HTML comments in the `@component` doc block closing the outer comment early, causing Svelte to parse example markup as real template code.
+
 ## 0.6.1
 
 ### Patch Changes
