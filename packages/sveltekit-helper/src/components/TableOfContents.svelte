@@ -36,6 +36,11 @@ export type TableOfContentsProps = {
 	 * @default 80
 	 */
 	scrollOffset?: number;
+	/**
+	 * Optional callback invoked when a TOC link is clicked.
+	 * Useful for closing a sidebar or drawer on navigation.
+	 */
+	onLinkClick?: (event: MouseEvent, item: TOCItem) => void;
 };
 </script>
 
@@ -49,6 +54,7 @@ export type TableOfContentsProps = {
 		contentSelector = '[data-sidebar-content="true"]',
 		headingSelector,
 		scrollOffset = 80,
+		onLinkClick,
 	}: TableOfContentsProps = $props()
 
 	let activeId = $state<string | null>(null)
@@ -146,6 +152,7 @@ export type TableOfContentsProps = {
 					class:toc__link--active={activeId ===
 						(item.href.startsWith('#') ? item.href.slice(1) : item.href)}
 					href="#{item.href}"
+					onclick={(e) => onLinkClick?.(e, item)}
 				>
 					<small>{item.label}</small>
 				</a>
