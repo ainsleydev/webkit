@@ -175,20 +175,20 @@ export type TableOfContentsProps = {
 			will-change: color;
 
 			&--active {
-				color: var(--token-text-action);
+				color: var(--toc-colour-active, var(--token-text-action));
 				font-weight: var(--font-weight-medium);
 			}
 
 			&:hover {
-				color: var(--token-text-action);
+				color: var(--toc-colour-active, var(--token-text-action));
 			}
 		}
 
 		@include a.mq(tablet) {
 			&--border {
-				margin-left: a.$size-48;
-				padding-left: a.$size-48;
-				border-left: 1px solid var(--colour-light-600);
+				margin-left: var(--toc-border-offset, #{a.$size-48});
+				padding-left: var(--toc-border-offset, #{a.$size-48});
+				border-left: 1px solid var(--toc-border-colour, var(--colour-light-600));
 			}
 		}
 	}
