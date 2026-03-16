@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.6.4
+
+### Patch Changes
+
+- 1a14ce7: Remove `<Sidebar>` wrapper from `TableOfContents` — consumers should wrap it themselves.
+
 ## 0.6.3
 
 ### Patch Changes
