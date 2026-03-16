@@ -114,16 +114,12 @@ export type TableOfContentsProps = {
 
 	@example
 	```svelte
-	{/* Attach data attributes to the content element */}
 	<RichText content={data.body} data-sidebar-content="true" data-sidebar-selector="h3" />
-
-	{/* TOC auto-discovers headings */}
 	<TableOfContents heading="On this page" />
 	```
 
 	@example
 	```svelte
-	{/* Explicit prop overrides */}
 	<TableOfContents
 		contentSelector=".article-body"
 		headingSelector="h2, h3"
@@ -134,7 +130,6 @@ export type TableOfContentsProps = {
 
 	@example
 	```svelte
-	{/* Manual items (scrollspy still driven by DOM) */}
 	<TableOfContents items={[{ label: 'Intro', href: 'intro' }]} />
 	```
 -->
