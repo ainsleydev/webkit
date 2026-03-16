@@ -41,7 +41,6 @@ export type TableOfContentsProps = {
 
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import Sidebar from './Sidebar.svelte'
 
 	let {
 		heading = '',
@@ -133,29 +132,27 @@ export type TableOfContentsProps = {
 	<TableOfContents items={[{ label: 'Intro', href: 'intro' }]} />
 	```
 -->
-<Sidebar>
-	<div class="toc" class:toc--border={displayBorder}>
-		{#if heading !== ''}
-			<p class="toc__heading">
-				{heading}
-			</p>
-		{/if}
-		<menu class="toc__items">
-			{#each items as item, index (index)}
-				<li class="toc__item">
-					<a
-						class="toc__link"
-						class:toc__link--active={activeId ===
-							(item.href.startsWith('#') ? item.href.slice(1) : item.href)}
-						href="#{item.href}"
-					>
-						<small>{item.label}</small>
-					</a>
-				</li>
-			{/each}
-		</menu>
-	</div>
-</Sidebar>
+<div class="toc" class:toc--border={displayBorder}>
+	{#if heading !== ''}
+		<p class="toc__heading">
+			{heading}
+		</p>
+	{/if}
+	<menu class="toc__items">
+		{#each items as item, index (index)}
+			<li class="toc__item">
+				<a
+					class="toc__link"
+					class:toc__link--active={activeId ===
+						(item.href.startsWith('#') ? item.href.slice(1) : item.href)}
+					href="#{item.href}"
+				>
+					<small>{item.label}</small>
+				</a>
+			</li>
+		{/each}
+	</menu>
+</div>
 
 <style lang="scss">
 	@use '../scss' as a;
