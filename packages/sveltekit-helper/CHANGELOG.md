@@ -1,5 +1,11 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.6.6
+
+### Patch Changes
+
+- 818860f: Make `Media.alt` nullable and extend `PayloadMediaProps` with `HTMLVideoAttributes`, `HTMLImgAttributes`, and `HTMLPictureAttributes` to allow video, image, and picture props to be spread onto the rendered element.
+
 ## 0.6.5
 
 ### Patch Changes
