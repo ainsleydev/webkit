@@ -1,4 +1,9 @@
-import type { HTMLAttributes, HTMLVideoAttributes, HTMLImgAttributes, HTMLPictureAttributes } from 'svelte/elements';
+import type {
+	HTMLAttributes,
+	HTMLImgAttributes,
+	HTMLPictureAttributes,
+	HTMLVideoAttributes,
+} from 'svelte/elements';
 
 export type MediaSizes = Record<
 	string,
@@ -11,14 +16,17 @@ export type MediaSizes = Record<
 	| undefined
 >;
 
-export type PayloadMediaProps = HTMLAttributes<HTMLElement> & HTMLVideoAttributes & HTMLImgAttributes & HTMLPictureAttributes & {
-	data: Media;
-	loading?: 'lazy' | 'eager' | undefined;
-	className?: string;
-	breakpointBuffer?: number;
-	maxWidth?: number | undefined;
-	onload?: (event: Event) => void;
-};
+export type PayloadMediaProps = HTMLAttributes<HTMLElement> &
+	HTMLVideoAttributes &
+	HTMLImgAttributes &
+	HTMLPictureAttributes & {
+		data: Media;
+		loading?: 'lazy' | 'eager' | undefined;
+		className?: string;
+		breakpointBuffer?: number;
+		maxWidth?: number | undefined;
+		onload?: (event: Event) => void;
+	};
 
 export type Media = {
 	id: number;
