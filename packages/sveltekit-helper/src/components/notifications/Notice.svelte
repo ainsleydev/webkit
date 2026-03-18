@@ -17,7 +17,7 @@ export type NoticeProps = {
 	import { X } from '@lucide/svelte'
 	import { fade } from 'svelte/transition'
 
-	import { alertIcons } from './alertIcons'
+	import { alertIconStore } from './alertIcons'
 
 	let {
 		type = 'info',
@@ -29,7 +29,7 @@ export type NoticeProps = {
 		...restProps
 	}: NoticeProps = $props()
 
-	const iconDetail = $derived(alertIcons[type])
+	const iconDetail = $derived($alertIconStore[type])
 	const Icon = $derived(customIcon || iconDetail.icon)
 	const hide = () => (visible = false)
 	const ariaLive = $derived(type === 'error' ? 'assertive' : 'polite')
