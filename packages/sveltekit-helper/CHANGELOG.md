@@ -1,5 +1,15 @@
 # @ainsleydev/sveltekit-helper
 
+## 0.7.0
+
+### Minor Changes
+
+- 946e027: Adding global icon mapping for Alert and Notice components via `setAlertIcons()`.
+
+### Patch Changes
+
+- c69f2ce: Fix duplicate site name in page title when no page meta is set.
+
 ## 0.6.6
 
 ### Patch Changes
