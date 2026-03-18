@@ -121,7 +121,7 @@ const organizationSchema = $derived.by(() => {
 -->
 <svelte:head>
 	<!-- Meta -->
-	<title>{meta.title} | {siteName}</title>
+	<title>{meta.title === site ? site : `${meta.title} | ${siteName}`}</title>
 	<meta name="description" content={meta.description} />
 	<!-- Canonical -->
 	{#if meta.canonical}
