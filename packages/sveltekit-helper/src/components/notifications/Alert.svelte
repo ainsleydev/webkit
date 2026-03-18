@@ -1,6 +1,5 @@
 <script lang="ts" module>
-import type { Icon as IconType } from '@lucide/svelte';
-import type { Snippet } from 'svelte';
+import type { Component, Snippet } from 'svelte';
 
 export type AlertType = 'info' | 'warning' | 'success' | 'error';
 
@@ -10,7 +9,7 @@ export type AlertProps = {
 	children?: Snippet;
 	visible?: boolean;
 	dismiss?: boolean;
-	icon?: typeof IconType;
+	icon?: Component;
 	hideIcon?: boolean;
 };
 </script>
@@ -19,7 +18,7 @@ export type AlertProps = {
 	import { X } from '@lucide/svelte'
 	import { fade } from 'svelte/transition'
 
-	import { alertIcons } from './alertIcons.js'
+	import { alertIconStore } from './alertIcons.js'
 
 	let {
 		type = 'info',
@@ -32,7 +31,7 @@ export type AlertProps = {
 		...restProps
 	}: AlertProps = $props()
 
-	const iconDetail = $derived(alertIcons[type])
+	const iconDetail = $derived($alertIconStore[type])
 	const Icon = $derived(customIcon || iconDetail.icon)
 	const hide = () => (visible = false)
 	const ariaLive = $derived(type === 'error' ? 'assertive' : 'polite')
