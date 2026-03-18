@@ -1,5 +1,5 @@
 <script lang="ts" module>
-import type { Icon as IconType } from '@lucide/svelte';
+import type { Component } from 'svelte';
 
 export type NoticeType = 'info' | 'warning' | 'success' | 'error';
 
@@ -8,7 +8,7 @@ export type NoticeProps = {
 	title: string;
 	visible?: boolean;
 	dismiss?: boolean;
-	icon?: typeof IconType;
+	icon?: Component;
 	hideIcon?: boolean;
 };
 </script>
