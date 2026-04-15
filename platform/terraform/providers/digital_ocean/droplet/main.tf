@@ -37,7 +37,7 @@ resource "digitalocean_droplet" "this" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes        = [user_data]
+    ignore_changes        = [user_data, public_networking]
   }
 
   user_data = templatefile("${path.module}/templates/server.yaml", {
