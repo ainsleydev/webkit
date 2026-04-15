@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v3"
 
-	"github.com/ainsleydev/webkit/internal/appdef"
 	"github.com/ainsleydev/webkit/internal/cmdtools"
 	"github.com/ainsleydev/webkit/internal/secrets"
 	"github.com/ainsleydev/webkit/pkg/env"
@@ -49,15 +48,15 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 
 	environment := env.Environment(environmentStr)
 
-	var targetApp *appdef.App
-	for _, app := range appDef.Apps {
+	targetAppIdx := -1
+	for i, app := range appDef.Apps {
 		if app.Name == appName {
-			targetApp = &app
+			targetAppIdx = i
 			break
 		}
 	}
 
-	if targetApp == nil {
+	if targetAppIdx == -1 {
 		return fmt.Errorf("app '%s' not found in app.json", appName)
 	}
 
@@ -86,7 +85,9 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 		return err
 	}
 
-	mergedApp := targetApp.MergeEnvironments(appDef.Shared.Env)
+	// Use the slice element directly after resolution so that SOPS vars resolved
+	// into appDef.Apps[i].Env are visible, rather than the pre-resolution copy.
+	mergedApp := appDef.Apps[targetAppIdx].MergeEnvironments(appDef.Shared.Env)
 
 	vars, err := mergedApp.GetVarsForEnvironment(environment)
 	if err != nil {
@@ -101,7 +102,7 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 	err = writeMapToFile(writeArgs{
 		Input:            input,
 		Vars:             vars,
-		App:              *targetApp,
+		App:              appDef.Apps[targetAppIdx],
 		Environment:      environment,
 		CustomOutputPath: outputPath,
 	})
@@ -110,7 +111,7 @@ func Generate(ctx context.Context, input cmdtools.CommandInput) error {
 	}
 
 	if outputPath == "" {
-		outputPath = fmt.Sprintf("%s/.env%s", targetApp.Path, envSuffix(environment))
+		outputPath = fmt.Sprintf("%s/.env%s", appDef.Apps[targetAppIdx].Path, envSuffix(environment))
 	}
 
 	printer.Success(fmt.Sprintf("Generated env file for app '%s' (%s) at: %s", appName, environment, outputPath))
