@@ -69,6 +69,30 @@ func (k *Kit) Plug(plugs ...Plug) {
 	k.plugs = append(k.plugs, plugs...)
 }
 
+// Use registers middleware functions that run before route matching. Unlike
+// Plug, Use wraps each plug as chi router middleware so it fires on every
+// request — including OPTIONS preflights to paths that only register other
+// HTTP methods.
+//
+// For example: app.Use(middleware.CORS)
+func (k *Kit) Use(plugs ...Plug) {
+	for _, plug := range plugs {
+		k.mux.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ctx := NewContext(w, r)
+				h := plug(func(c *Context) error {
+					r = c.Request
+					next.ServeHTTP(w, r)
+					return nil
+				})
+				if err := h(ctx); err != nil {
+					k.handleError(ctx, err)
+				}
+			})
+		})
+	}
+}
+
 // Start starts the HTTP server.
 func (k *Kit) Start(address string) error {
 	server := &http.Server{
