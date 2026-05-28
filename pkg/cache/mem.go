@@ -53,7 +53,7 @@ func (c *MemCache) Get(_ context.Context, key string, value interface{}) error {
 	}
 
 	// Check if value is a pointer
-	if reflect.TypeOf(value).Kind() != reflect.Ptr {
+	if reflect.TypeOf(value).Kind() != reflect.Pointer {
 		return errors.New("value must be a pointer")
 	}
 

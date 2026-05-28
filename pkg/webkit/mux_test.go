@@ -167,7 +167,6 @@ func TestKit_Mount(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rr.Code)
 }
 
-
 func TestKit_Group(t *testing.T) {
 	app := New()
 
