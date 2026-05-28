@@ -23,7 +23,6 @@ type (
 		ErrorHandler    ErrorHandler
 		NotFoundHandler Handler
 		mux             *chi.Mux
-		plugs           []Plug
 	}
 	// Handler is a function that handles HTTP requests.
 	Handler func(c *Context) error
@@ -39,7 +38,6 @@ func New() *Kit {
 		ErrorHandler:    DefaultErrorHandler,
 		NotFoundHandler: DefaultNotFoundHandler,
 		mux:             chi.NewRouter(),
-		plugs:           []Plug{},
 	}
 }
 
@@ -61,12 +59,28 @@ func (k *Kit) Add(method string, pattern string, handler Handler, plugs ...Plug)
 	})
 }
 
-// Plug adds a middleware function to the chain. These are called after
-// the funcs that are passed directly to the route-level handlers.
+// Plug registers middleware that runs before route matching, mirroring chi's
+// Use. It fires on every request — including OPTIONS preflights to paths that
+// only register other HTTP methods — making it suitable for cross-cutting
+// concerns such as CORS, logging, and request IDs.
 //
 // For example: app.Plug(middleware.Logger)
 func (k *Kit) Plug(plugs ...Plug) {
-	k.plugs = append(k.plugs, plugs...)
+	for _, plug := range plugs {
+		k.mux.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ctx := NewContext(w, r)
+				h := plug(func(c *Context) error {
+					r = c.Request
+					next.ServeHTTP(w, r)
+					return nil
+				})
+				if err := h(ctx); err != nil {
+					k.handleError(ctx, err)
+				}
+			})
+		})
+	}
 }
 
 // Start starts the HTTP server.
@@ -134,10 +148,6 @@ func (k *Kit) handle(w http.ResponseWriter, r *http.Request, handler Handler, pl
 	h := handler
 	for i := len(plugs) - 1; i >= 0; i-- {
 		h = plugs[i](h)
-	}
-
-	for i := len(k.plugs) - 1; i >= 0; i-- {
-		h = k.plugs[i](h)
 	}
 
 	if err := h(ctx); err != nil {
@@ -223,37 +233,15 @@ func (k *Kit) Mount(pattern string, handler http.Handler) {
 // Group allows you to group multiple routes together under a common path.
 // The provided function can use the `kit` to add routes, middleware, etc.
 func (k *Kit) Group(pattern string, groupFunc func(kit *Kit)) {
-	// Create a sub-router using Chi.
 	subRouter := chi.NewRouter()
 
-	// Apply middleware from parent to the subRouter.
-	for _, plug := range k.plugs {
-		subRouter.Use(func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				ctx := NewContext(w, r)
-				h := plug(func(c *Context) error {
-					r = c.Request
-					next.ServeHTTP(w, r)
-					return nil
-				})
-				if err := h(ctx); err != nil {
-					k.handleError(ctx, err)
-				}
-			})
-		})
-	}
-
-	// Create a new kit with the sub-router and inherit error handlers.
 	subKit := &Kit{
 		ErrorHandler:    k.ErrorHandler,
 		NotFoundHandler: k.NotFoundHandler,
 		mux:             subRouter,
-		plugs:           k.plugs, // Inherit parent plugs
 	}
 
-	// Call the provided function with the sub-kit.
 	groupFunc(subKit)
 
-	// Mount the sub router to the parent router.
 	k.mux.Mount(pattern, subRouter)
 }

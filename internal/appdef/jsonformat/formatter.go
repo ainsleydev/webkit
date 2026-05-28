@@ -22,7 +22,7 @@ func RegisterType(t reflect.Type) {
 
 // scanType recursively scans a type for inline tags.
 func scanType(t reflect.Type) {
-	for t.Kind() == reflect.Ptr {
+	for t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
 	if t.Kind() != reflect.Struct {
@@ -52,7 +52,7 @@ func scanType(t reflect.Type) {
 
 		// Recurse into struct fields.
 		fieldType := field.Type
-		for fieldType.Kind() == reflect.Ptr || fieldType.Kind() == reflect.Slice || fieldType.Kind() == reflect.Map {
+		for fieldType.Kind() == reflect.Pointer || fieldType.Kind() == reflect.Slice || fieldType.Kind() == reflect.Map {
 			fieldType = fieldType.Elem()
 		}
 		if fieldType.Kind() == reflect.Struct {
