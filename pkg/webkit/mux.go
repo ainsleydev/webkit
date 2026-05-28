@@ -71,8 +71,7 @@ func (k *Kit) Plug(plugs ...Plug) {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				ctx := NewContext(w, r)
 				h := plug(func(c *Context) error {
-					r = c.Request
-					next.ServeHTTP(w, r)
+					next.ServeHTTP(c.Response, c.Request)
 					return nil
 				})
 				if err := h(ctx); err != nil {
