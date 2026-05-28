@@ -65,6 +65,30 @@ func TestKit_Plug(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rr.Code)
 	})
 
+	t.Run("Response writer swap in plug is visible to downstream handler", func(t *testing.T) {
+		// Regression: Plug used to call next.ServeHTTP(w, r) with the captured outer
+		// writer, discarding any ctx.Response swap made by the plug (e.g. a recorder).
+		t.Parallel()
+		app := New()
+
+		var recorded int
+		app.Plug(func(next Handler) Handler {
+			return func(ctx *Context) error {
+				rr := httptest.NewRecorder()
+				ctx.Response = rr
+				err := next(ctx)
+				recorded = rr.Code
+				return err
+			}
+		})
+		app.Get("/", func(ctx *Context) error {
+			return ctx.String(http.StatusCreated, "hi")
+		})
+
+		app.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/", nil))
+		assert.Equal(t, http.StatusCreated, recorded, "plug's recorder must see the status written by the handler")
+	})
+
 	t.Run("Runs on OPTIONS preflight to GET-only route", func(t *testing.T) {
 		t.Parallel()
 		app := New()

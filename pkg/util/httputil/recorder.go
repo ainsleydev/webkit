@@ -23,7 +23,11 @@ func NewResponseRecorder(w http.ResponseWriter) *ResponseRecorder {
 }
 
 // Write writes the response body to the captured buffer and the underlying ResponseWriter.
+// Mirrors net/http behaviour: if WriteHeader has not been called, status defaults to 200.
 func (r *ResponseRecorder) Write(b []byte) (int, error) {
+	if r.Status == 0 {
+		r.Status = http.StatusOK
+	}
 	r.Body.Write(b)
 	return r.ResponseWriter.Write(b)
 }
