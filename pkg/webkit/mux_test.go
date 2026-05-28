@@ -45,20 +45,45 @@ func TestAdd(t *testing.T) {
 }
 
 func TestKit_Plug(t *testing.T) {
-	app := New()
-	app.Plug(func(next Handler) Handler {
-		return func(ctx *Context) error {
-			ctx.Set("test", "test")
-			return next(ctx)
-		}
+	t.Parallel()
+
+	t.Run("Sets context value visible to handler", func(t *testing.T) {
+		t.Parallel()
+		app := New()
+		app.Plug(func(next Handler) Handler {
+			return func(ctx *Context) error {
+				ctx.Set("test", "test")
+				return next(ctx)
+			}
+		})
+		app.Get("/", func(ctx *Context) error {
+			assert.Equal(t, "test", ctx.Get("test"))
+			return ctx.String(http.StatusOK, "test")
+		})
+		rr := httptest.NewRecorder()
+		app.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
+		assert.Equal(t, http.StatusOK, rr.Code)
 	})
-	app.Get("/", func(ctx *Context) error {
-		assert.Equal(t, "test", ctx.Get("test"))
-		return ctx.String(http.StatusOK, "test")
+
+	t.Run("Runs on OPTIONS preflight to GET-only route", func(t *testing.T) {
+		t.Parallel()
+		app := New()
+		app.Plug(func(next Handler) Handler {
+			return func(ctx *Context) error {
+				ctx.Response.Header().Set("X-Plug-Middleware", "ran")
+				if ctx.Request.Method == http.MethodOptions {
+					ctx.Response.WriteHeader(http.StatusOK)
+					return nil
+				}
+				return next(ctx)
+			}
+		})
+		app.Get("/thing", handler)
+		rr := httptest.NewRecorder()
+		app.ServeHTTP(rr, httptest.NewRequest(http.MethodOptions, "/thing", nil))
+		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Equal(t, "ran", rr.Header().Get("X-Plug-Middleware"))
 	})
-	rr := httptest.NewRecorder()
-	app.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
-	assert.Equal(t, http.StatusOK, rr.Code)
 }
 
 func TestKit_Connect(t *testing.T) {
@@ -142,45 +167,6 @@ func TestKit_Mount(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rr.Code)
 }
 
-func TestKit_Use(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Runs on matched route", func(t *testing.T) {
-		t.Parallel()
-		app := New()
-		app.Use(func(next Handler) Handler {
-			return func(ctx *Context) error {
-				ctx.Response.Header().Set("X-Use-Middleware", "ran")
-				return next(ctx)
-			}
-		})
-		app.Get("/thing", handler)
-		rr := httptest.NewRecorder()
-		app.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/thing", nil))
-		assert.Equal(t, http.StatusOK, rr.Code)
-		assert.Equal(t, "ran", rr.Header().Get("X-Use-Middleware"))
-	})
-
-	t.Run("Runs on OPTIONS preflight to GET-only route", func(t *testing.T) {
-		t.Parallel()
-		app := New()
-		app.Use(func(next Handler) Handler {
-			return func(ctx *Context) error {
-				ctx.Response.Header().Set("X-Use-Middleware", "ran")
-				if ctx.Request.Method == http.MethodOptions {
-					ctx.Response.WriteHeader(http.StatusOK)
-					return nil
-				}
-				return next(ctx)
-			}
-		})
-		app.Get("/thing", handler)
-		rr := httptest.NewRecorder()
-		app.ServeHTTP(rr, httptest.NewRequest(http.MethodOptions, "/thing", nil))
-		assert.Equal(t, http.StatusOK, rr.Code)
-		assert.Equal(t, "ran", rr.Header().Get("X-Use-Middleware"))
-	})
-}
 
 func TestKit_Group(t *testing.T) {
 	app := New()
