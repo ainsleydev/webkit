@@ -1,0 +1,38 @@
+# TEMPORARY: verifies the backup "Install PG Dump" step on real runners for #454.
+# Remove before merging.
+name: Verify PG Dump Install
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-26.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Copied verbatim from the generated backup.yaml "Install PG Dump" step.
+      - name: Install PG Dump
+        run: |
+          # apt-key is deprecated and removed in Ubuntu 26.04, so the
+          # PostgreSQL signing key is stored as a keyring and referenced via
+          # signed-by, as per https://www.postgresql.org/download/linux/ubuntu/
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          . /etc/os-release
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+          echo "/usr/lib/postgresql/17/bin" >> $GITHUB_PATH
+
+      - name: Verify pg_dump is version 17
+        run: |
+          . /etc/os-release
+          echo "Runner OS: $PRETTY_NAME ($VERSION_CODENAME)"
+          which pg_dump
+          pg_dump --version
+          pg_dump --version | grep -E ' 17\.'
