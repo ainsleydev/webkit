@@ -33,7 +33,7 @@ func TestAdapter_Robots(t *testing.T) {
 		},
 		"Digital Ocean": {
 			ctx: func(c *webkit.Context) {
-				u, err := url.Parse("https://s-clark-cms-ejioo.ondigitalocean.app/")
+				u, err := url.Parse("https://s-clark-cms-ejioo.ondigitalocean.app/robots.txt")
 				require.NoError(t, err)
 				c.Request.URL = u
 			},

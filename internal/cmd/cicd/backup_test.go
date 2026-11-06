@@ -80,6 +80,10 @@ func TestBackupWorkflow(t *testing.T) {
 		assert.NotContains(t, content, "apt-key add")
 		assert.Contains(t, content, "signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc")
 		assert.Contains(t, content, "postgresql-client-17")
+
+		// Backup jobs are pinned so runner OS upgrades are deliberate.
+		assert.NotContains(t, content, "runs-on: ubuntu-latest")
+		assert.Contains(t, content, "runs-on: ubuntu-24.04")
 	})
 
 	t.Run("S3", func(t *testing.T) {

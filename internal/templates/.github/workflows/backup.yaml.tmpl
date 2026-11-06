@@ -5,11 +5,13 @@ on:
   schedule:
     - cron: '0 2 * * *' # Runs daily at 2 AM
 
+# Backup jobs are pinned to a specific Ubuntu version rather than ubuntu-latest
+# so runner OS upgrades are a deliberate change, not a silent failure.
 jobs:
 {{- range .Resources }}
 {{- if eq .Type "postgres" }}
   backup-resource-{{ .Name }}:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       BUCKET_NAME: '{{ $.BucketName }}'
       BACKUP_PATH: '/backups/{{ .Name }}/'
@@ -36,7 +38,7 @@ jobs:
 
       - name: Install PG Dump
         run: |
-          # apt-key no longer exists on Ubuntu 26.04 (ubuntu-latest), so the
+          # apt-key is deprecated and removed in Ubuntu 26.04, so the
           # PostgreSQL signing key is stored as a keyring and referenced via
           # signed-by, as per https://www.postgresql.org/download/linux/ubuntu/
           sudo install -d /usr/share/postgresql-common/pgdg
@@ -116,7 +118,7 @@ jobs:
           channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
 {{- else if eq .Type "s3" }}
   backup-resource-{{ .Name }}:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60 # 1 Hour
     env:
       BUCKET_NAME: '{{ $.BucketName }}'
@@ -166,7 +168,7 @@ jobs:
 {{- end }}
 {{- else if eq .Type "sqlite" }}
   backup-resource-{{ .Name }}:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       BUCKET_NAME: '{{ $.BucketName }}'
@@ -249,7 +251,7 @@ jobs:
 {{- end }}
 
   backup-codebase:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       BUCKET_NAME: '{{ $.BucketName }}'
@@ -325,7 +327,7 @@ jobs:
           channel_id: {{ ghSecret "TF_SLACK_CHANNEL_ID" }}
 
   sync-to-gdrive:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 180 # 3 Hours (increased to accommodate rate limiting)
     needs:
 {{- range .Resources }}
