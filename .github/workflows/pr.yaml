@@ -56,11 +56,11 @@ jobs:
       - name: Biome
         run: biome ci .
 
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6
+
       - name: Lint Terraform
-        run: |
-          export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-          brew install tflint
-          make lint
+        run: make lint
         working-directory: ./platform/terraform
 
       - name: Diff

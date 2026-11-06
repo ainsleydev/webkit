@@ -6,7 +6,7 @@ BACKEND := backend.hcl
 
 setup: # Setup's local machine
 	brew install terraform
-	brew install tflint
+	go install github.com/terraform-linters/tflint@latest
 	brew install jq
 .PHONY: setup
 

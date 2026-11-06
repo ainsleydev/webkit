@@ -75,6 +75,15 @@ func TestBackupWorkflow(t *testing.T) {
 		assert.Contains(t, content, "${{ vars.PROD_CODEBASE_BACKUP_PING_URL }}")
 		assert.NotContains(t, content, "${{ vars._DB_BACKUP_PING_URL }}")
 		assert.NotContains(t, content, "${{ vars._CODEBASE_BACKUP_PING_URL }}")
+
+		// apt-key was removed in Ubuntu 26.04, so the PGDG repo must use a signed-by keyring.
+		assert.NotContains(t, content, "apt-key add")
+		assert.Contains(t, content, "signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc")
+		assert.Contains(t, content, "postgresql-client-17")
+
+		// Backup jobs are pinned so runner OS upgrades are deliberate.
+		assert.NotContains(t, content, "runs-on: ubuntu-latest")
+		assert.Contains(t, content, "runs-on: ubuntu-24.04")
 	})
 
 	t.Run("S3", func(t *testing.T) {
