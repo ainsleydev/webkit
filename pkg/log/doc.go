@@ -24,6 +24,6 @@
 //	slog.SetDefault(slog.New(h))
 //	slog.Error("payment failed", "error", err) // Also sent to Sentry.
 //
-// NewSentryHandler replaces the logrus-based SentryHook, which was removed
-// along with the logrus dependency.
+// NewSentryHandler replaces the logrus-based SentryHook, which is
+// deprecated and will be removed in a future release.
 package log

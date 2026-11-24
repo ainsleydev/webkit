@@ -34,8 +34,7 @@ const defaultSentryFlushTimeout = 2 * time.Second
 // group names joined by dots. A request ID in the context is added as
 // the request_id tag.
 //
-// It replaces the logrus-based SentryHook, which was removed with the
-// logrus dependency.
+// It is the slog replacement for the deprecated logrus-based SentryHook.
 type SentryHandler struct {
 	next         slog.Handler
 	client       *sentry.Client
