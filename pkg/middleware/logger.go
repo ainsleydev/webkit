@@ -8,7 +8,6 @@ import (
 
 	"github.com/logrusorgru/aurora"
 
-	webkitctx "github.com/ainsleydev/webkit/pkg/context"
 	"github.com/ainsleydev/webkit/pkg/env"
 	"github.com/ainsleydev/webkit/pkg/util/httputil"
 	"github.com/ainsleydev/webkit/pkg/webkit"
@@ -59,25 +58,32 @@ func Logger(next webkit.Handler) webkit.Handler {
 			req.RequestURI,
 		)
 
+		latency := time.Since(start)
+
 		var fields []any
 		if env.IsProduction() {
+			// The request ID is added by the log handler from the
+			// request context, so it isn't repeated here.
 			fields = []any{
 				slog.String("url", req.URL.Path),
 				slog.String("proto", req.Proto),
 				slog.String("method", req.Method),
 				slog.Int("status", rr.Status),
 				slog.String("remote_addr", req.RemoteAddr),
-				slog.Duration("latency", time.Since(start)),
-				slog.Any(string(webkitctx.ContextKeyRequestID), ctx.Get(string(webkitctx.ContextKeyRequestID))),
+				slog.Float64("latency_ms", latencyMillis(latency)),
 				slog.String("user_agent", req.UserAgent()),
-				slog.Any(webkit.ErrorKey, ctx.Get("error")),
-				slog.Any("cache", rr.Header().Get("X-Cache")),
+			}
+			if err := ctx.Get(webkit.ErrorKey); err != nil {
+				fields = append(fields, slog.Any(webkit.ErrorKey, err))
+			}
+			if cache := rr.Header().Get("X-Cache"); cache != "" {
+				fields = append(fields, slog.String("cache", cache))
 			}
 		} else {
-			msg = fmt.Sprintf("%s - %s", msg, aurora.Gray(10, fmt.Sprintf("Path: %s, Status: %d, Latency: %d",
+			msg = fmt.Sprintf("%s - %s", msg, aurora.Gray(10, fmt.Sprintf("Path: %s, Status: %d, Latency: %dms",
 				req.URL.Path,
 				rr.Status,
-				time.Since(start).Milliseconds(),
+				latency.Milliseconds(),
 			)))
 		}
 
@@ -95,14 +101,19 @@ func statusLevel(status int) slog.Level {
 	case status < 400: // for codes in 100s, 200s, 300s
 		return slog.LevelInfo
 	case status >= 400 && status < 500:
-		// switching to info level to be less noisy
-		// return slog.LevelInfo
-		return slog.LevelError
+		// Client errors (bots probing for missing pages, bad input)
+		// aren't failures of the app, so keep them out of ERROR.
+		return slog.LevelWarn
 	case status >= 500:
 		return slog.LevelError
 	default:
 		return slog.LevelInfo
 	}
+}
+
+// latencyMillis returns d in milliseconds, to microsecond precision.
+func latencyMillis(d time.Duration) float64 {
+	return float64(d.Microseconds()) / 1000
 }
 
 // statusLabel returns a human readable status code label.
