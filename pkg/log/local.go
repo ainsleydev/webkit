@@ -169,6 +169,8 @@ func colouredLevel(rec slog.Record) string {
 		out = aurora.BrightYellow(level)
 	case slog.LevelError:
 		out = aurora.BrightRed(level)
+	case LevelFatal:
+		out = aurora.BrightRed(levelFatalName).Bold()
 	default:
 		out = aurora.Gray(3, slog.LevelInfo.String())
 	}
